@@ -7,10 +7,10 @@
     <!-- ▼▼▼ 【桌面图标】纯HTML单文件方案，请粘贴到 <title> 之后 ▼▼▼ -->
     <!-- 1. (核心) 为苹果设备设置主屏幕图标 -->
     <!-- 浏览器会自动选择最合适的尺寸 -->
-    <link rel="apple-touch-icon" href="https://s3plus.meituan.net/opapisdk/op_ticket_885190757_1756312261242_qdqqd_g0eriz.jpeg">
-    <link rel="apple-touch-icon" sizes="152x152" href="https://s3plus.meituan.net/opapisdk/op_ticket_885190757_1756312261242_qdqqd_g0eriz.jpeg">
-    <link rel="apple-touch-icon" sizes="180x180" href="https://s3plus.meituan.net/opapisdk/op_ticket_885190757_1756312261242_qdqqd_g0eriz.jpeg">
-    <link rel="apple-touch-icon" sizes="167x167" href="https://s3plus.meituan.net/opapisdk/op_ticket_885190757_1756312261242_qdqqd_g0eriz.jpeg">
+    <link rel="apple-touch-icon" href="https://s3plus.meituan.net/opapisdk/op_ticket_885190757_1758510900942_qdqqd_djw0z2.jpeg">
+    <link rel="apple-touch-icon" sizes="152x152" href="https://s3plus.meituan.net/opapisdk/op_ticket_885190757_1758510900942_qdqqd_djw0z2.jpeg">
+    <link rel="apple-touch-icon" sizes="180x180" href="https://s3plus.meituan.net/opapisdk/op_ticket_885190757_1758510900942_qdqqd_djw0z2.jpeg">
+    <link rel="apple-touch-icon" sizes="167x167" href="https://s3plus.meituan.net/opapisdk/op_ticket_885190757_1758510900942_qdqqd_djw0z2.jpeg">
     <link rel="manifest" href="manifest.json">
     <!-- 2. (核心) 告诉苹果设备，这是一个Web应用，可以全屏显示 -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -10476,14 +10476,14 @@
             <div class="modal-header">
                 <span id="transcript-modal-title">通话详情</span>
             </div>
-            <div class="modal-body" id="transcript-modal-body" style="background-color: #f0f2f5;">
+            <div class="modal-body" id="call-transcript-modal-body" style="background-color: #f0f2f5;">
                 <!-- 通话文字记录将由JS动态生成在这里 -->
             </div>
             <div class="modal-footer">
                 <button class="cancel" id="delete-transcript-btn" style="background-color: #ff3b30; color: white; border-color: #ff3b30;">删除记录</button>
                 <!-- 【【【核心新增】】】 -->
                 <button class="save" id="manual-summarize-btn" style="background-color: #ffc107; border-color: #ffc107;">手动总结</button>
-                <button class="save" id="close-transcript-modal-btn" style="width: 100%;">关闭</button>
+                <button class="save" id="close-call-transcript-btn" style="width: 100%;">关闭</button>
             </div>
         </div>
     </div>
@@ -14992,7 +14992,7 @@ if (!state.globalSettings.widgetData) {
                         if (!response.ok) throw new Error(`API失败: ${(await response.json()).error.message}`);
                         
                         const data = await response.json();
-                        const aiResponseContent = isGemini ? getGeminiResponseText(data) : data.choices.message.content;
+                        const aiResponseContent = getGeminiResponseText(data);
                         const responseArray = parseAiResponse(aiResponseContent);
         
                         // 直接处理返回的通话决策
@@ -23271,7 +23271,7 @@ async function showCallTranscript(recordId) {
 
     const modal = document.getElementById('call-transcript-modal');
     const titleEl = document.getElementById('transcript-modal-title');
-    const bodyEl = document.getElementById('transcript-modal-body');
+    const bodyEl = document.getElementById('call-transcript-modal-body');
 
     titleEl.textContent = `通话于 ${new Date(record.timestamp).toLocaleString()} (时长: ${Math.floor(record.duration / 60)}分${record.duration % 60}秒)`;
     bodyEl.innerHTML = '';
@@ -23340,7 +23340,18 @@ async function showCallTranscript(recordId) {
         }
     });
     // ▲▲▲ 核心修改到这里结束 ▲▲▲
+// ▼▼▼ 【这是您需要添加的核心修复代码】 ▼▼▼
 
+// 3. 为“关闭”按钮也创建克隆并绑定事件，确保它总是可用
+const closeBtn = document.getElementById('close-transcript-modal-btn');
+const newCloseBtn = closeBtn.cloneNode(true);
+closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+
+newCloseBtn.addEventListener('click', () => {
+    modal.classList.remove('visible');
+});
+
+// ▲▲▲ 新增代码粘贴结束 ▲▲▲
     modal.classList.add('visible');
 }
         
@@ -24401,29 +24412,33 @@ function updateMusicProgressBar() {
             }
         }
         // ▲▲▲ 全新JS函数粘贴结束 ▲▲▲
-/**
- * 【V2.1 | 最终修复版】一个简单的 Markdown 解析器
- * @param {string} text - 包含 Markdown 语法的原始文本
- * @returns {string} - 转换成 HTML 后的文本
- */
-function parseMarkdown(text) {
-    if (!text || typeof text !== 'string') return '';
+        /**
+         * 【V2.1 | 最终修复版】一个简单的 Markdown 解析器
+         * @param {string} text - 包含 Markdown 语法的原始文本
+         * @returns {string} - 转换成 HTML 后的文本
+         */
+        function parseMarkdown(text) {
+            if (!text || typeof text !== 'string') return '';
 
-    // 顺序很重要：先处理我们自定义的复杂规则
-    text = text.replace(/!h\{(.*?)\}/g, '<span class="diary-highlight">$1</span>');
-    text = text.replace(/!u\{(.*?)\}/g, '<span class="diary-underline">$1</span>');
-    text = text.replace(/!e\{(.*?)\}/g, '<span class="diary-emphasis">$1</span>');
-    text = text.replace(/!w\{(.*?)\}/g, '<span class="diary-handwritten">$1</span>');
-    text = text.replace(/!m\{(.*?)\}/g, '<span class="diary-messy">$1</span>');
-    text = text.replace(/!c\{(.*?)\}/g, '<span class="diary-censored">$1</span>');
+            // 顺序很重要：先处理我们自定义的复杂规则
+            text = text.replace(/!h\{(.*?)\}/g, '<span class="diary-highlight">$1</span>');
+            text = text.replace(/!u\{(.*?)\}/g, '<span class="diary-underline">$1</span>');
+            text = text.replace(/!e\{(.*?)\}/g, '<span class="diary-emphasis">$1</span>');
+            text = text.replace(/!w\{(.*?)\}/g, '<span class="diary-handwritten">$1</span>');
+            text = text.replace(/!m\{(.*?)\}/g, '<span class="diary-messy">$1</span>');
+            
+            // ▼▼▼ 核心修改就在这里 ▼▼▼
+            // 将原来的 !c{...} 规则，替换为您想要的 ||...|| 规则
+            text = text.replace(/\|\|(.*?)\|\|/g, '<span class="spoiler">$1</span>');
+            // ▲▲▲ 修改结束 ▲▲▲
 
-    // 再处理标准Markdown
-    text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    text = text.replace(/\~\~(.*?)\~\~/g, '<s>$1</s>'); 
-    text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            // 再处理标准Markdown
+            text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            text = text.replace(/\~\~(.*?)\~\~/g, '<s>$1</s>'); 
+            text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
 
-    return text;
-}
+            return text;
+        }
 
 
         // ▼▼▼ 【全新 | 数据修复函数】请将这个函数粘贴到您的JS功能区 ▼▼▼
@@ -27437,7 +27452,7 @@ document.getElementById('thoughts-history-list').addEventListener('click', (e) =
             });
         }
 
-        /**
+/**
          * 当用户从下拉框选择一个主题预设时，加载该预设
          */
         async function handleThemePresetSelectionChange() {
@@ -27447,35 +27462,62 @@ document.getElementById('thoughts-history-list').addEventListener('click', (e) =
         
             const preset = await db.appearancePresets.get(selectedId);
             if (preset) {
-                const themeRadio = document.querySelector(`input[name="theme-select"][value="${preset.value}"]`);
+                // ▼▼▼ 核心修改 ▼▼▼
+                // 1. 从保存的对象中分别获取基础主题和自定义CSS
+                const baseTheme = preset.value.base || 'default';
+                const customCss = preset.value.custom || '';
+
+                // 2. 应用基础主题（勾选对应的单选框）
+                const themeRadio = document.querySelector(`input[name="theme-select"][value="${baseTheme}"]`);
                 if (themeRadio) {
                     themeRadio.checked = true;
-                    updateSettingsPreview(); // 实时更新预览
                 }
+
+                // 3. 将保存的CSS加载回输入框
+                const customCssInput = document.getElementById('custom-css-input');
+                customCssInput.value = customCss;
+
+                // 4. 立刻刷新预览区，让效果显示出来
+                updateSettingsPreview(); 
+                // ▲▲▲ 修改结束 ▲▲▲
             }
         }
         
-        /**
+ /**
          * 将当前选择的气泡主题保存为一个新的预设
          */
         async function saveThemePreset() {
             const name = await showCustomPrompt('保存主题预设', '请输入预设名称');
             if (!name || !name.trim()) return;
         
+            // ▼▼▼ 核心修改 ▼▼▼
+            // 1. 获取基础主题的选择
             const selectedThemeRadio = document.querySelector('input[name="theme-select"]:checked');
             const themeValue = selectedThemeRadio ? selectedThemeRadio.value : 'default';
+
+            // 2. 获取自定义CSS的内容
+            const cssValue = document.getElementById('custom-css-input').value.trim();
+
+            // 3. 将基础主题和自定义CSS打包成一个对象进行保存
+            const presetValueObject = {
+                base: themeValue,
+                custom: cssValue
+            };
+            // ▲▲▲ 修改结束 ▲▲▲
         
             const existingPreset = await db.appearancePresets.where({ name: name.trim(), type: 'bubble_theme' }).first();
             if (existingPreset) {
                 const confirmed = await showCustomConfirm('覆盖预设', `名为 “${name.trim()}” 的预设已存在。要覆盖它吗？`, { confirmButtonClass: 'btn-danger' });
                 if (!confirmed) return;
                 
-                await db.appearancePresets.update(existingPreset.id, { value: themeValue });
+                // 保存打包后的对象
+                await db.appearancePresets.update(existingPreset.id, { value: presetValueObject });
             } else {
                 await db.appearancePresets.add({
                     name: name.trim(),
                     type: 'bubble_theme',
-                    value: themeValue
+                    // 保存打包后的对象
+                    value: presetValueObject
                 });
             }
         
@@ -28249,7 +28291,7 @@ async function saveMemo(content) {
     \`\`\`json
     [
       {
-        "title": "这篇日记的标题，例如：X月X日 晴",
+        "title": "这篇日记的标题，例如：9月20日 晴",
         "content": "这里是日记的详细正文，必须支持换行符\\n，并且必须巧妙地使用下面的【日记专属Markdown语法】来丰富文本表现力。"
       }
     ]
@@ -28262,7 +28304,7 @@ async function saveMemo(content) {
     -   \`!e{粉色强调}\`: 用于表达强烈的情绪。
     -   \`!w{手写体}\`: 用于写下引言、歌词或特殊笔记。
     -   \`!m{凌乱的手写体}\`: 用于表达激动、慌乱或潦草记录时的心情。
-    -   \`!c{涂黑}\`: 用于隐藏秘密或敏感词汇 (每次涂黑2~5个字)。
+    -   \`||涂黑||\`: 用于隐藏秘密或敏感词汇 (每次涂黑2~5个字)。
 
 # 供你参考的上下文
 - **你的角色设定**: ${chat.settings.aiPersona}
@@ -28345,7 +28387,7 @@ ${recentHistoryWithUser}
     \`\`\`json
     [
       {
-        "title": "这篇日记的标题，例如：X月X日 晴",
+        "title": "这篇日记的标题，例如：9月20日 晴",
         "content": "这里是日记的详细正文，必须支持换行符\\n，并且必须巧妙地使用下面的【日记专属Markdown语法】来丰富文本表现力。"
       }
     ]
@@ -28358,7 +28400,7 @@ ${recentHistoryWithUser}
     -   \`!e{粉色强调}\`: 用于表达强烈的情绪。
     -   \`!w{手写体}\`: 用于写下引言、歌词或特殊笔记。
     -   \`!m{凌乱的手写体}\`: 用于表达激动、慌乱或潦草记录时的心情。
-    -   \`!c{涂黑}\`: 用于隐藏秘密或敏感词汇 (每次涂黑2~5个字)。
+    -   \`||涂黑||\`: 用于隐藏秘密或敏感词汇(每次涂黑2~5个字)。
 
 # 供你参考的上下文
 - **你的角色设定**: ${chat.settings.aiPersona}
@@ -29149,7 +29191,7 @@ function renderCharArticle(articleData) {
       ]
     }
     \`\`\`
-    - **purchases**: 一个包含5到8个商品对象的数组。
+    - **purchases**: 一个包含12到15个商品对象的数组。
     - **status (订单状态)**: 只能从 "已签收", "待发货", "运输中", "待评价" 中选择。
 
 # 供你参考的上下文
@@ -29682,7 +29724,7 @@ ${recentHistoryWithUser}
 
             const systemPrompt = `
 # 你的任务
-你是一个虚拟音乐品味模拟器。你的任务是扮演角色“${chat.name}”，并根据其人设、记忆和最近的互动，挑选出【6到9首】最能代表TA此刻心情或品味的歌曲。
+你是一个虚拟音乐品味模拟器。你的任务是扮演角色“${chat.name}”，并根据其人设、记忆和最近的互动，挑选出【14到18首】最能代表TA此刻心情或品味的歌曲。
 
 # 核心规则
 1.  **创造性与合理性**: 歌单必须完全符合角色的性格、爱好和生活背景。
@@ -32984,9 +33026,9 @@ document.getElementById('chat-settings-screen').addEventListener('click', (e) =>
         });
         
         // 4. 关闭详情弹窗的逻辑保持不变
-        document.getElementById('close-transcript-modal-btn').addEventListener('click', () => {
-            document.getElementById('call-transcript-modal').classList.remove('visible');
-        });
+document.getElementById('close-call-transcript-btn').addEventListener('click', () => {
+    document.getElementById('call-transcript-modal').classList.remove('visible');
+});
         
         // ▲▲▲ 替换结束 ▲▲▲
         
@@ -34230,4 +34272,5 @@ document.getElementById('regenerate-char-usage-btn').addEventListener('click', h
 <audio id="char-audio-player" preload="auto"></audio>
 </body>
 </html>
+
 
