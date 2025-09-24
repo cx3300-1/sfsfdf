@@ -3181,14 +3181,15 @@
           }
         
         /* ▼▼▼ 【全新】App图标设置样式 ▼▼▼ */
-        #icon-settings-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
-            gap: 20px;
-            width: 100%;
-            padding: 0 10px;
-            box-sizing: border-box;
-        }
+#icon-settings-grid,
+#cphone-icon-settings-grid { /* <--- 核心修复：在这里为两个容器同时应用样式 */
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    gap: 20px;
+    width: 100%;
+    padding: 0 10px;
+    box-sizing: border-box;
+}
         
         .icon-setting-item {
             display: flex;
@@ -8281,8 +8282,346 @@
     /* 核心2：强制移除之前用于间距的 margin，现在完全由 gap 控制 */
     margin-right: 0 !important;
 }
+/* ▼▼▼ 【全新V2.0 | 仿豆瓣UI】豆瓣小组功能样式 ▼▼▼ */
+
+/* 1. 豆瓣主题色与页面背景 */
+#douban-screen {
+    background-color: #F6F6F1; /* 豆瓣经典的米色背景 */
+}
+#phone-screen.dark-mode #douban-screen {
+    background-color: #1a1a1a;
+}
+#douban-posts-list {
+    padding: 0; /* 列表本身不需要内边距 */
+    display: flex;
+    flex-direction: column;
+}
+
+/* 2. 帖子卡片美化 (V2.0) */
+.douban-post-item {
+    background-color: var(--secondary-bg);
+    padding: 12px 15px;
+    border: none;
+    box-shadow: none;
+    border-bottom: 1px solid var(--border-color); /* 用分割线代替边框 */
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.douban-post-item:hover {
+    background-color: #f9f9f9;
+}
+#phone-screen.dark-mode .douban-post-item:hover {
+    background-color: #2c2c2e;
+}
+
+/* 3. 帖子头部 (头像、昵称、小组名) */
+.douban-post-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+.douban-post-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+.douban-author-info {
+    flex-grow: 1;
+}
+.douban-author-name {
+    font-weight: 500;
+    color: var(--text-primary);
+    font-size: 14px;
+}
+.douban-group-name {
+    font-size: 12px;
+    color: #007722; /* 豆瓣标志性的绿色 */
+    font-weight: 500;
+}
+
+/* 4. 帖子标题和内容预览 */
+.douban-post-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+}
+.douban-post-content {
+    font-size: 14px;
+    color: #555;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    word-break: break-word;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+#phone-screen.dark-mode .douban-post-content {
+    color: #dcdcdc;
+}
+
+/* 5. 帖子底部 (统计数据) */
+.douban-post-footer {
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top: 1px solid #f0f0f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+.douban-post-actions {
+    display: flex;
+    gap: 20px;
+}
+.douban-post-actions span {
+    display: flex;
+    align-items: center;
+    gap: 6px; /* 增加图标和数字之间的间距 */
+    color: var(--text-secondary); /* 确保颜色统一 */
+}
+/* 【核心新增】为SVG图标设置统一样式 */
+.douban-post-actions svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor; /* 让图标颜色跟随父元素的文字颜色 */
+    position: relative;
+    top: -1px; /* 位置微调，使其与数字更对齐 */
+}
+/* ▼▼▼ 【全新】羽毛笔图标按钮样式 ▼▼▼ */
+.douban-feather-btn {
+    /* 1. 基础样式 (复用主聊天界面的圆形按钮) */
+    font-size: 24px;
+    padding: 0;
+    width: 38px;
+    height: 38px;
+    line-height: 38px;
+    text-align: center;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0; /* 防止被压缩 */
+    margin-right: 8px; /* 和发送按钮拉开距离 */
+
+    /* 2. 外观 (仿iOS风格的浅灰色) */
+    background-color: #f0f2f5;
+    color: #555;
+    transition: background-color 0.2s;
+}
+.douban-feather-btn:hover {
+    background-color: #e2e6ea;
+}
+.douban-feather-btn svg {
+    width: 20px;
+    height: 20px;
+}
+/* ▲▲▲ 新增CSS结束 ▲▲▲ */
+/* 6. 【V2.2 | 最终布局修复版】帖子详情页 */
+
+#douban-post-detail-screen {
+    background-color: #F6F6F1; /* 外部米色背景 */
+}
+#phone-screen.dark-mode #douban-post-detail-screen {
+    background-color: #1a1a1a;
+}
+
+/* 【核心修复1】重置外部容器的内边距，让白色背景能撑满全屏 */
+#douban-detail-content-wrapper {
+    background-color: var(--secondary-bg);
+    padding: 0; /* 移除导致两侧空白的内边距 */
+    padding-bottom: 80px; /* 只保留底部的空间给输入框 */
+}
+
+/* 【核心修复2】将边距应用到内部的正文区域 */
+#douban-post-detail-body {
+    padding: 20px 18px 25px 18px; /* 在内容四周留出呼吸空间 */
+    border-bottom: 1px solid #f0f0f0;
+}
+#phone-screen.dark-mode #douban-post-detail-body {
+    border-bottom-color: #38383a;
+}
+
+/* 美化帖子标题 */
+.douban-post-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    line-height: 1.5;
+}
+
+/* 优化正文阅读体验 */
+.douban-detail-content {
+    white-space: pre-wrap;
+    line-height: 1.8;
+    font-size: 15px;
+    color: #333;
+}
+#phone-screen.dark-mode .douban-detail-content {
+    color: #dcdcdc;
+}
+
+/* 【核心修复3】将边距也应用到评论区，并移除与正文的间距 */
+.douban-comments-section {
+    margin-top: 0;
+    padding: 15px 18px;
+}
+
+/* 为“回应”增加标题样式 */
+.douban-comments-section h4 {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin: 0 0 15px 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f0f0f0;
+}
+#phone-screen.dark-mode .douban-comments-section h4 {
+    border-bottom-color: #38383a;
+}
+
+/* 美化单条评论 */
+.douban-comment-item {
+    display: flex;
+    gap: 12px;
+    padding: 15px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+.douban-comment-item:last-child {
+    border-bottom: none;
+}
+#phone-screen.dark-mode .douban-comment-item {
+    border-bottom-color: #38383a;
+}
+
+.douban-comment-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.douban-comment-body {
+    flex-grow: 1;
+}
+.douban-comment-author {
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--text-primary);
+}
+.douban-comment-text {
+    font-size: 14px;
+    color: #555;
+    margin-top: 6px;
+    line-height: 1.7;
+    word-break: break-word;
+}
+#phone-screen.dark-mode .douban-comment-text {
+    color: #b0b0b0;
+}
+
+/* 7. 【V2.2 | 最终布局修复版】详情页底部评论输入栏 */
+#douban-comment-footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    
+    /* 【核心修复1】增加上下左右的内边距，解决贴边问题 */
+    padding: 10px 18px; 
+    
+    /* 【核心修复2】保留对iPhone底部安全区域的适配 */
+    padding-bottom: calc(10px + env(safe-area-inset-bottom));
+    
+    /* 【核心修复3】确保 padding 不会撑破布局 */
+    box-sizing: border-box; 
+    
+    /* (其他样式保持不变) */
+    background-color: rgba(247, 247, 247, 0.9);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-top: 1px solid var(--border-color); /* 在顶部也加一条分割线，更精致 */
+}
+#douban-send-comment-btn {
+    background-color: #007722; /* 豆瓣绿 */
+}
+/* ▲▲▲ 新增CSS结束 ▲▲▲ */
+/* ▼▼▼ 【最终修复 | V3.0】豆瓣头部按钮显示终极解决方案 ▼▼▼ */
+
+/* 1. 确保右侧的按钮容器本身不会被意外压缩 */
+#douban-screen .header .header-actions {
+    flex-shrink: 0;
+    display: flex;       /* 确保它是一个flex容器 */
+    align-items: center; /* 垂直居中内部的图标 */
+}
+
+/* 2. 【核心修复】为所有头部操作按钮内的SVG图标设置一个固定的、统一的尺寸 */
+.header .action-btn svg {
+    width: 24px;   /* 确保尺寸统一 */
+    height: 24px;
+    display: block; /* 移除SVG可能带有的额外底部空间 */
+}
+
+/* 3. 为所有操作按钮设置一个最小宽度，保证它们不会被挤压得过小 */
+.header .action-btn {
+    min-width: 30px; /* 给予每个按钮足够的点击区域 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+/* ▲▲▲ 修复结束 ▲▲▲ */
+/* ▼▼▼ 【全新 | V2.3 豆瓣绿主题美化】 ▼▼▼ */
+
+/* 1. 定义豆瓣绿的颜色变量，并限定其只在豆瓣相关屏幕内生效 */
+#douban-screen,
+#douban-post-detail-screen {
+    --douban-green: #007722;
+}
+
+/* 2. 将豆瓣绿应用到所有关键交互元素上 */
+
+/* a. 详情页底部的“发送”按钮 */
+#douban-post-detail-screen #douban-send-comment-btn {
+    background-color: var(--douban-green);
+    transition: background-color 0.2s; /* 添加平滑的过渡效果 */
+}
+#douban-post-detail-screen #douban-send-comment-btn:hover {
+    background-color: #005511; /* 鼠标悬停时颜色加深 */
+}
+
+/* b. 详情页底部的“羽毛笔”按钮 */
+#douban-post-detail-screen .douban-feather-btn {
+    background-color: #f0f2f5;
+    color: var(--douban-green); /* 图标颜色设为豆瓣绿 */
+}
+#douban-post-detail-screen .douban-feather-btn:hover {
+    background-color: #e2e6ea;
+}
 
 
+/* c. 详情页顶部的“返回”箭头 */
+#douban-post-detail-screen .header .back-btn {
+    color: var(--douban-green);
+}
+
+/* d. 豆瓣小组主页和详情页顶部的所有“操作按钮”（如刷新、角色选择等） */
+#douban-screen .header .action-btn,
+#douban-post-detail-screen .header .action-btn {
+    color: var(--douban-green);
+}
+
+/* e. 帖子作者信息下的“来自小组”文字 */
+.douban-group-name {
+    color: var(--douban-green) !important; /* 使用 !important 强制覆盖旧样式 */
+    font-weight: 500;
+}
+
+/* ▲▲▲ 美化代码粘贴结束 ▲▲▲ */
     </style>
 </head>
 <body>
@@ -8381,7 +8720,12 @@
     <span class="label">Cphone</span>
 </div>
 <!-- ▲▲▲ 粘贴结束 ▲▲▲ -->
-    
+<!-- ▼▼▼ 在这里粘贴下面的新代码 ▼▼▼ -->
+<div class="desktop-app-icon" onclick="showScreen('douban-screen')">
+    <div class="icon-bg-desktop"><img id="icon-img-douban" src="https://i.postimg.cc/Pq2xJN1g/IMG-7301.jpg" alt="豆瓣"></div>
+    <span class="label">豆瓣</span>
+</div>
+<!-- ▲▲▲ 粘贴结束 ▲▲▲ -->    
     </div>
 </div>
 
@@ -8411,23 +8755,20 @@
         </div>
         <div id="char-app-grid">
             <div class="app-row">
-                <!-- 【图标修复】已将所有失效链接替换为可靠链接 -->
-                <div class="app-icon" onclick="openCharApp('qq')"><div class="icon-bg"><img src="https://i.postimg.cc/MTC3Tkw8/IMG-6436.jpg"></div><span class="label">QQ</span></div>
-                <div class="app-icon" onclick="openCharApp('album')"><div class="icon-bg"><img src="https://i.postimg.cc/HWf1JKzn/IMG-6435.jpg"></div><span class="label">相册</span></div>
-                <div class="app-icon" onclick="openCharApp('browser')"><div class="icon-bg"><img src="https://i.postimg.cc/KzC2gTq6/IMG-7276.jpg"></div><span class="label">浏览器</span></div>
-                <div class="app-icon" onclick="openCharApp('taobao')"><div class="icon-bg"><img src="https://i.postimg.cc/L6R7x16R/IMG-7278.jpg"></div><span class="label">淘宝</span></div>
+                <div class="app-icon" onclick="openCharApp('qq')"><div class="icon-bg"><img id="cphone-icon-img-qq" src=""></div><span class="label">QQ</span></div>
+                <div class="app-icon" onclick="openCharApp('album')"><div class="icon-bg"><img id="cphone-icon-img-album" src=""></div><span class="label">相册</span></div>
+                <div class="app-icon" onclick="openCharApp('browser')"><div class="icon-bg"><img id="cphone-icon-img-browser" src=""></div><span class="label">浏览器</span></div>
+                <div class="app-icon" onclick="openCharApp('taobao')"><div class="icon-bg"><img id="cphone-icon-img-taobao" src=""></div><span class="label">淘宝</span></div>
             </div>
             <div class="app-row">
-                <div class="app-icon" onclick="openCharApp('memo')"><div class="icon-bg"><img src="https://i.postimg.cc/J0b6Nym4/IMG-7279.jpg"></div><span class="label">备忘录</span></div>
-                <div class="app-icon" onclick="openCharApp('diary')"><div class="icon-bg"><img src="https://i.postimg.cc/DZ541sbt/IMG-7280.jpg"></div><span class="label">日记</span></div>
-                <div class="app-icon" onclick="openCharApp('amap')"><div class="icon-bg"><img src="https://i.postimg.cc/Jz2Tz0dw/IMG-7281.jpg"></div><span class="label">高德地图</span></div>
-                <div class="app-icon" onclick="openCharApp('usage')"><div class="icon-bg"><img src="https://i.postimg.cc/WbF8kzz9/IMG-7282.jpg"></div><span class="label">App记录</span></div>
+                <div class="app-icon" onclick="openCharApp('memo')"><div class="icon-bg"><img id="cphone-icon-img-memo" src=""></div><span class="label">备忘录</span></div>
+                <div class="app-icon" onclick="openCharApp('diary')"><div class="icon-bg"><img id="cphone-icon-img-diary" src=""></div><span class="label">日记</span></div>
+                <div class="app-icon" onclick="openCharApp('amap')"><div class="icon-bg"><img id="cphone-icon-img-amap" src=""></div><span class="label">高德地图</span></div>
+                <div class="app-icon" onclick="openCharApp('usage')"><div class="icon-bg"><img id="cphone-icon-img-usage" src=""></div><span class="label">App记录</span></div>
             </div>
             <div class="app-row">
-        <!-- ▼▼▼ 【核心新增】在这里粘贴网易云音乐的图标 ▼▼▼ -->
-        <div class="app-icon" onclick="openCharApp('music')"><div class="icon-bg"><img src="https://is1-ssl.mzstatic.com/image/thumb/Purple112/v4/64/9d/21/649d21e8-a151-6136-3914-256e54f15d9a/AppIcon-0-0-1x_U007emarketing-0-0-0-7-0-0-sRGB-0-0-0-GLES2_U002c0-512MB-85-220-0-0.png/1200x630wa.png"></div><span class="label">网易云</span></div>
-        <!-- ▲▲▲ 新增结束 ▲▲▲ -->
-                <div class="app-icon" onclick="switchToMyPhone()"><div class="icon-bg"><img src="https://i.postimg.cc/pXj9h20L/IMG-7275.jpg"></div><span class="label">Ephone</span></div>
+                <div class="app-icon" onclick="openCharApp('music')"><div class="icon-bg"><img id="cphone-icon-img-music" src=""></div><span class="label">网易云</span></div>
+                <div class="app-icon" onclick="switchToMyPhone()"><div class="icon-bg"><img id="cphone-icon-img-ephone" src=""></div><span class="label">Ephone</span></div>
             </div>
         </div>
     </div>
@@ -9322,21 +9663,31 @@
                 <span style="width: 30px;"></span>
             </div>
             <div class="form-container">
-                <!-- 壁纸设置部分 -->
+                <!-- EPhone 壁纸设置 -->
+                <label style="font-weight: 500; color: var(--text-secondary);">EPhone 主屏幕壁纸</label>
                 <div id="wallpaper-preview">点击下方上传</div>
                 <button class="form-button" onclick="document.getElementById('wallpaper-upload-input').click();">上传壁纸</button>
                 <input type="file" id="wallpaper-upload-input" accept="image/*">
-        <!-- ▼▼▼ 全局聊天背景设置 (按钮已美化) ▼▼▼ -->
-        <hr style="width: 80%; opacity: 0.3; margin: 30px 0;">
-        <label style="font-weight: 500; color: var(--text-secondary);">全局聊天背景 (所有聊天默认)</label>
-        <div id="global-bg-preview" class="wallpaper-preview" style="height: 160px; width: 90px;">点击下方上传</div>
-        <div class="bg-upload-container">
-            <button class="form-button-secondary" onclick="document.getElementById('global-bg-input').click()">上传全局背景</button>
-            <button id="remove-global-bg-btn" class="form-button-secondary">移除全局背景</button>
-        </div>
-        <input type="file" id="global-bg-input" accept="image/*" style="display: none;">
-        <!-- ▲▲▲ 修改结束 ▲▲▲ -->
-                <!-- 夜间模式开关 -->
+                
+                <!-- 【【【全新：CPhone 壁纸设置】】】 -->
+                <hr style="width: 80%; opacity: 0.3; margin: 30px 0;">
+                <label style="font-weight: 500; color: var(--text-secondary);">CPhone 角色手机壁纸</label>
+                <div id="cphone-wallpaper-preview">点击下方上传</div>
+                <button class="form-button" onclick="document.getElementById('cphone-wallpaper-upload-input').click();">上传CPhone壁纸</button>
+                <input type="file" id="cphone-wallpaper-upload-input" accept="image/*" hidden>
+
+                <!-- 全局聊天背景设置 -->
+                <hr style="width: 80%; opacity: 0.3; margin: 30px 0;">
+                <label style="font-weight: 500; color: var(--text-secondary);">全局聊天背景 (所有聊天默认)</label>
+                <div id="global-bg-preview" class="wallpaper-preview" style="height: 160px; width: 90px;">点击下方上传</div>
+                <div class="bg-upload-container">
+                    <button class="form-button-secondary" onclick="document.getElementById('global-bg-input').click()">上传全局背景</button>
+                    <button id="remove-global-bg-btn" class="form-button-secondary">移除全局背景</button>
+                </div>
+                <input type="file" id="global-bg-input" accept="image/*" style="display: none;">
+                
+                <!-- 其他设置 -->
+                <hr style="width: 80%; opacity: 0.3; margin: 30px 0;">
                 <div class="form-group" style="display: flex; justify-content: space-between; align-items: center;">
                     <label for="theme-toggle-switch" style="margin-bottom: 0;">夜间模式</label>
                     <label class="toggle-switch">
@@ -9344,71 +9695,64 @@
                         <span class="slider"></span>
                     </label>
                 </div>
-<!-- ▼▼▼ 在这里粘贴下面的新代码 ▼▼▼ -->
-<div class="form-group" style="display: flex; justify-content: space-between; align-items: center;">
-    <label for="status-bar-toggle-switch" style="margin-bottom: 0;">显示顶部状态栏</label>
-    <label class="toggle-switch">
-        <input type="checkbox" id="status-bar-toggle-switch">
-        <span class="slider"></span>
-    </label>
-</div>
-<!-- ▲▲▲ 粘贴结束 ▲▲▲ -->
-<!-- ▼▼▼ 请将这整块【全新代码】，粘贴到“App 图标设置”模块的前面 (那条 <hr> 标签之前) ▼▼▼ -->
-<hr style="width: 80%; opacity: 0.3; margin: 30px 0;">
-<div style="width:100%; text-align: left; margin-bottom: 15px;">
-    <label style="font-weight: 500; color: var(--text-secondary);">消息提示音</label>
-</div>
-<div class="form-group" style="width:100%;">
-    <label for="notification-sound-url-input">提示音文件 URL (.mp3, .wav, .ogg)</label>
-    <div style="display: flex; gap: 10px; align-items: center; margin-top: 8px;">
-        <input type="text" id="notification-sound-url-input" placeholder="留空则使用默认提示音" style="flex-grow: 1;">
-        <button id="test-sound-btn" class="form-button-secondary" style="margin-top: 0; padding: 12px;">▶</button>
-        <button id="reset-sound-btn" class="form-button-secondary" style="margin-top: 0; padding: 12px;">重置</button>
-    </div>
-</div>
-<!-- ▲▲▲ 粘贴结束 ▲▲▲ -->
-                <!-- App 图标设置区域 -->
+                <div class="form-group" style="display: flex; justify-content: space-between; align-items: center;">
+                    <label for="status-bar-toggle-switch" style="margin-bottom: 0;">显示顶部状态栏</label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="status-bar-toggle-switch">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                
+                <!-- 提示音设置 -->
                 <hr style="width: 80%; opacity: 0.3; margin: 30px 0;">
                 <div style="width:100%; text-align: left; margin-bottom: 15px;">
-                    <label style="font-weight: 500; color: var(--text-secondary);">App 图标设置</label>
+                    <label style="font-weight: 500; color: var(--text-secondary);">消息提示音</label>
                 </div>
-                <div id="icon-settings-grid">
-                    <!-- 图标设置项将由JS动态生成在这里 -->
+                <div class="form-group" style="width:100%;">
+                    <label for="notification-sound-url-input">提示音文件 URL (.mp3, .wav, .ogg)</label>
+                    <div style="display: flex; gap: 10px; align-items: center; margin-top: 8px;">
+                        <input type="text" id="notification-sound-url-input" placeholder="留空则使用默认提示音" style="flex-grow: 1;">
+                        <button id="test-sound-btn" class="form-button-secondary" style="margin-top: 0; padding: 12px;">▶</button>
+                        <button id="reset-sound-btn" class="form-button-secondary" style="margin-top: 0; padding: 12px;">重置</button>
+                    </div>
                 </div>
-                <!-- 【【【这就是补上的、缺失的全局CSS输入框！】】】 -->
-<!-- ▼▼▼ 在这里粘贴下面的新代码 ▼▼▼ -->
-<!-- 【【【全新：全局CSS预设管理】】】 -->
-<h3 style="margin-top:0; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; width:100%; text-align: left;">CSS 预设管理</h3>
-<div class="form-group" style="width:100%;">
-    <label for="css-preset-select">选择或切换预设</label>
-    <div style="display: flex; gap: 10px; align-items: center;">
-        <select id="css-preset-select" style="flex-grow: 1;"></select>
-        <button id="save-css-preset-btn" class="form-button-secondary" style="margin-top: 0; padding: 12px;">保存</button>
-        <button id="delete-css-preset-btn" class="form-button-secondary" style="margin-top: 0; padding: 12px; background-color: #ffebee; color: #d32f2f; border-color: #ffcdd2;">删除</button>
-    </div>
-</div>
-<!-- ▲▲▲ 粘贴结束 ▲▲▲ -->
+
+                <!-- EPhone 图标设置 -->
                 <hr style="width: 80%; opacity: 0.3; margin: 30px 0;">
+                <div style="width:100%; text-align: left; margin-bottom: 15px;">
+                    <label style="font-weight: 500; color: var(--text-secondary);">EPhone App 图标设置</label>
+                </div>
+                <div id="icon-settings-grid"></div>
+
+                <!-- 【【【全新：CPhone 图标设置】】】 -->
+                <hr style="width: 80%; opacity: 0.3; margin: 30px 0;">
+                <div style="width:100%; text-align: left; margin-bottom: 15px;">
+                    <label style="font-weight: 500; color: var(--text-secondary);">CPhone App 图标设置</label>
+                </div>
+                <div id="cphone-icon-settings-grid"></div>
+
+                <!-- CSS 预设 -->
+                <hr style="width: 80%; opacity: 0.3; margin: 30px 0;">
+                <h3 style="margin-top:0; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; width:100%; text-align: left;">CSS 预设管理</h3>
+                <div class="form-group" style="width:100%;">
+                    <label for="css-preset-select">选择或切换预设</label>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <select id="css-preset-select" style="flex-grow: 1;"></select>
+                        <button id="save-css-preset-btn" class="form-button-secondary" style="margin-top: 0; padding: 12px;">保存</button>
+                        <button id="delete-css-preset-btn" class="form-button-secondary" style="margin-top: 0; padding: 12px; background-color: #ffebee; color: #d32f2f; border-color: #ffcdd2;">删除</button>
+                    </div>
+                </div>
                 <div class="form-group" style="width:100%;">
                     <label for="global-css-input"> 全局美化样式 (CSS) <button id="reset-global-css-btn" type="button" style="background: none; border: 1px solid #ccc; color: #555; font-size: 12px; padding: 2px 8px; border-radius: 5px; cursor: pointer; margin-left: 10px;">重置</button>
                     </label>
-                    <textarea id="global-css-input" rows="6" style="width: 100%; margin-top: 8px; font-family: monospace; font-size: 16px; resize: vertical;" placeholder="/* 示例：将所有顶部栏变为粉色 */
-.header, .qzone-header {
-  background-color: rgba(255, 192, 203, 0.8) !important;
-  color: #a35c7b !important;
-    /* 使用 env(safe-area-inset-top) 自动获取顶部安全距离 */
-    padding-top: calc(15px + env(safe-area-inset-top));
-}
-
-/* 示例：让动态区的背景也变粉 */
-#qzone-screen .qzone-content {
-    background-color: #fff0f5 !important;
-}"></textarea>
+                    <textarea id="global-css-input" rows="6" style="width: 100%; margin-top: 8px; font-family: monospace; font-size: 16px; resize: vertical;" placeholder="/* 在此输入自定义CSS */"></textarea>
                 </div>
+                
                 <!-- 保存按钮 -->
                 <button class="form-button" id="save-wallpaper-btn" style="margin-top: 30px;">保存所有外观设置</button>
             </div>
         </div>
+
         <!-- ▲▲▲ 替换结束 ▲▲▲ -->
         <!-- ▼▼▼ 【全新】分享链接功能 HTML ▼▼▼ -->
         <div id="browser-screen" class="screen">
@@ -9583,6 +9927,86 @@
             </div>
         </div>
         <!-- ▲▲▲ 新HTML粘贴结束 ▲▲▲ -->
+<!-- ▼▼▼ 【全新】豆瓣小组功能页面 ▼▼▼ -->
+<div id="douban-screen" class="screen">
+<div class="header">
+    <span class="back-btn" onclick="showScreen('home-screen')">‹</span>
+    <span>豆瓣小组</span>
+    <div class="header-actions">
+        <!-- 【核心新增】“选择角色”按钮 -->
+        <span class="action-btn" id="douban-cast-select-btn" title="选择参与角色">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+        </span>
+        <span class="action-btn" id="regenerate-douban-btn" title="重新生成内容">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 11A8.1 8.1 0 0 0 4.5 9M4 5v4h4"></path>
+                <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"></path>
+            </svg>
+        </span>
+    </div>
+</div>
+    <div id="douban-posts-list" class="list-container">
+        <!-- AI生成的帖子将在这里显示 -->
+    </div>
+</div>
+<!-- ▲▲▲ 新增HTML结束 ▲▲▲ -->
+<!-- ▼▼▼ 【V2.0 | 最终修复版】豆瓣帖子详情页 (全屏版) ▼▼▼ -->
+<div id="douban-post-detail-screen" class="screen">
+    <div class="header">
+        <span class="back-btn" id="douban-detail-back-btn">‹</span>
+        <span id="douban-post-detail-title">帖子详情</span>
+        <span style="width: 30px;"></span> <!-- 占位 -->
+    </div>
+
+    <!-- 可滚动的内容容器 -->
+    <div id="douban-detail-content-wrapper" class="list-container">
+        
+        <!-- 【【【核心修复区域】】】 -->
+        <div id="douban-post-detail-body">
+            <!-- 帖子头部 -->
+            <div class="douban-post-header">
+                <img id="douban-detail-avatar" class="douban-post-avatar">
+                <div class="douban-author-info">
+                    <div id="douban-detail-author" class="douban-author-name"></div>
+                    <div id="douban-detail-group" class="douban-group-name"></div>
+                </div>
+            </div>
+            <!-- 帖子标题 -->
+            <h2 id="douban-detail-post-title" class="douban-post-title"></h2>
+            <!-- 帖子正文 -->
+            <div id="douban-detail-content" class="douban-detail-content"></div>
+        </div>
+        
+        <div class="douban-comments-section">
+            <h4 style="margin: 0 0 10px 0; padding: 0 15px;">回应</h4>
+            <!-- 这就是JS要找的评论列表容器 -->
+            <div id="douban-detail-comments-list" style="padding: 0 15px;">
+                <!-- 评论列表将由JS填充在这里 -->
+            </div>
+        </div>
+    </div>
+
+<div id="douban-comment-footer" class="post-footer">
+    <div class="comment-section">
+        <img id="douban-my-comment-avatar" src="" class="comment-avatar">
+        <input type="text" id="douban-comment-input" class="comment-input" placeholder="写回应...">
+    </div>
+    <!-- 【核心修改】将钢笔SVG替换为真正的羽毛笔SVG -->
+    <button id="douban-wait-reply-btn" class="douban-feather-btn" title="让AI继续讨论">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path>
+            <line x1="16" y1="8" x2="2" y2="22"></line>
+            <line x1="17.5" y1="15" x2="9" y2="15"></line>
+        </svg>
+    </button>
+    <button id="douban-send-comment-btn" class="comment-send-btn">发送</button>
+</div>
+<!-- ▲▲▲ 替换结束 ▲▲▲ -->
         <!-- ▼▼▼ 【全新】购物功能相关页面与弹窗 (V4.0 - 仿淘宝终极版) ▼▼▼ -->
         <div id="shopping-screen" class="screen">
             <div class="header">
@@ -9735,11 +10159,43 @@
             </div>
         </div>
         <div class="form-group" id="my-group-nickname-group"><label for="my-group-nickname-input">我的群昵称</label><input type="text" id="my-group-nickname-input"></div>
+<!-- ▼▼▼ 在这里粘贴下面的新代码 ▼▼▼ -->
+<div class="form-group" id="single-char-background-activity-group">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <label for="char-background-activity-switch" style="margin-bottom: 0;">
+            启用独立后台活动
+            <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;">
+                允许该角色在后台独立发消息或动态。需同时开启API设置中的总开关。
+            </p>
+        </label>
+        <label class="toggle-switch">
+            <input type="checkbox" id="char-background-activity-switch">
+            <span class="slider"></span>
+        </label>
+    </div>
+</div>
+<!-- ▲▲▲ 新增HTML结束 ▲▲▲ -->
         <div class="form-group" id="ai-cooldown-group">
             <label for="ai-action-cooldown-input"> 独立行动冷却 (分钟) <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;"> AI在后台主动发消息或动态的最小间隔。 </p>
             </label>
             <input type="number" id="ai-action-cooldown-input" min="1" value="10" style="width: 80px; text-align: center;">
         </div>
+<!-- ▼▼▼ 在这里粘贴下面的新代码 ▼▼▼ -->
+<div class="form-group" id="group-background-activity-group">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <label for="group-background-activity-switch" style="margin-bottom: 0;">
+            启用群内后台活动
+            <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;">
+                允许AI成员在该群聊中独立行动。需同时开启API设置中的总开关。
+            </p>
+        </label>
+        <label class="toggle-switch">
+            <input type="checkbox" id="group-background-activity-switch">
+            <span class="slider"></span>
+        </label>
+    </div>
+</div>
+<!-- ▲▲▲ 新增HTML结束 ▲▲▲ -->
         <div class="form-group" id="group-cooldown-group">
             <label for="group-action-cooldown-input"> 群聊行动冷却 (分钟) <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;"> AI在后台主动在群内行动的最小间隔。 </p>
             </label>
@@ -10906,7 +11362,7 @@ let editingDiaryId = null;
         let currentQzoneReplyContext = null; // 用于存储回复上下文 { postId, replyToName, replyToDisplayName }
         // ▲▲▲ 新增代码结束 ▲▲▲
         let activePostId = null; // <-- 新增：用于存储当前操作的动态ID
-        
+        let activeDoubanPostId = null;
                 let photoViewerState = {
                     isOpen: false,
                     photos: [], // 存储当前相册的所有照片URL
@@ -10932,18 +11388,33 @@ const DEFAULT_NOTIFICATION_SOUND = 'https://www.myinstants.com/media/sounds/noti
         let originalChatMessagesPaddingTop = null; // 用于存储消息区的原始顶部内边距
         
         // ▲▲▲ 新增代码结束 ▲▲▲
-        // ▼▼▼ 【请用这个新版本】替换旧的 DEFAULT_APP_ICONS 常量 ▼▼▼
+// ▼▼▼ 【请用这个 V2 版本】替换旧的 DEFAULT_APP_ICONS 常量 ▼▼▼
         const DEFAULT_APP_ICONS = {
-            'world-book': 'https://i.postimg.cc/HWf1JKzn/IMG-6435.jpg',
             'qq': 'https://i.postimg.cc/MTC3Tkw8/IMG-6436.jpg',
-            // ▼▼▼ 在这里添加新的一行 ▼▼▼
-            'renderer': 'https://s3plus.meituan.net/opapisdk/op_ticket_885190757_1756312261242_qdqqd_g0eriz.jpeg',
-            // ▲▲▲ 添加结束 ▲▲▲
-            'api-settings': 'https://i.postimg.cc/MK8rJ8t7/IMG-6438.jpg',
+            'world-book': 'https://i.postimg.cc/HWf1JKzn/IMG-6435.jpg',
             'wallpaper': 'https://i.postimg.cc/T1j03pQr/IMG-6440.jpg',
-            'font': 'https://i.postimg.cc/pXxk1JXk/IMG-6442.jpg'
+            'renderer': 'https://s3plus.meituan.net/opapisdk/op_ticket_885190757_1756312261242_qdqqd_g0eriz.jpeg',
+            'api-settings': 'https://i.postimg.cc/MK8rJ8t7/IMG-6438.jpg',
+            'font': 'https://i.postimg.cc/pXxk1JXk/IMG-6442.jpg',
+            // 【核心新增】将角色手机(Cphone)和豆瓣也加入管理列表
+            'char-phone': 'https://i.postimg.cc/pXj9h20L/IMG-7275.jpg',
+            'douban': 'https://i.postimg.cc/Pq2xJN1g/IMG-7301.jpg'
         };
         // ▲▲▲ 替换结束 ▲▲▲
+        // ▼▼▼ 【全新】这是为CPhone图标设置新增的常量 ▼▼▼
+        const DEFAULT_CPHONE_ICONS = {
+            'qq': 'https://i.postimg.cc/MTC3Tkw8/IMG-6436.jpg',
+            'album': 'https://i.postimg.cc/HWf1JKzn/IMG-6435.jpg',
+            'browser': 'https://i.postimg.cc/KzC2gTq6/IMG-7276.jpg',
+            'taobao': 'https://i.postimg.cc/L6R7x16R/IMG-7278.jpg',
+            'memo': 'https://i.postimg.cc/J0b6Nym4/IMG-7279.jpg',
+            'diary': 'https://i.postimg.cc/DZ541sbt/IMG-7280.jpg',
+            'amap': 'https://i.postimg.cc/Jz2Tz0dw/IMG-7281.jpg',
+            'usage': 'https://i.postimg.cc/WbF8kzz9/IMG-7282.jpg',
+            'music': 'https://is1-ssl.mzstatic.com/image/thumb/Purple112/v4/64/9d/21/649d21e8-a151-6136-3914-256e54f15d9a/AppIcon-0-0-1x_U007emarketing-0-0-0-7-0-0-sRGB-0-0-0-GLES2_U002c0-512MB-85-220-0-0.png/1200x630wa.png',
+            'ephone': 'https://i.postimg.cc/pXj9h20L/IMG-7275.jpg'
+        };
+        // ▲▲▲ 新增代码结束 ▲▲▲
         let repostTargetId = null; // 用于存储当前要转发的动态ID
                 const STICKER_REGEX = /^(https:\/\/i\.postimg\.cc\/.+|https:\/\/files\.catbox\.moe\/.+|data:image)/;
                 const MESSAGE_RENDER_WINDOW = 50;
@@ -11616,7 +12087,8 @@ const DEFAULT_NOTIFICATION_SOUND = 'https://www.myinstants.com/media/sounds/noti
                 // ===================================================================
         
         // ▼▼▼ 【请用这个 V30 版本】完整替换旧的 db.version(...) 代码块 ▼▼▼
-        db.version(31).stores({ 
+        db.version(32).stores({ 
+            doubanPosts: '++id, timestamp',
             chats: '&id, isGroup, groupId, isPinned, memos, diary, appUsageLog',
             apiConfig: '&id', 
             globalSettings: '&id', 
@@ -11676,6 +12148,7 @@ const DEFAULT_NOTIFICATION_SOUND = 'https://www.myinstants.com/media/sounds/noti
                     if (screenId === 'api-settings-screen') window.renderApiSettingsProxy();
                     if (screenId === 'wallpaper-screen') window.renderWallpaperScreenProxy();
                     if (screenId === 'world-book-screen') window.renderWorldBookScreenProxy();
+                     if (screenId === 'douban-screen') renderDoubanScreen();
                     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
                     const screenToShow = document.getElementById(screenId);
                     if (screenToShow) screenToShow.classList.add('active');
@@ -13046,10 +13519,9 @@ if (data.worldBooks && Array.isArray(data.worldBooks)) {
                     alert('已恢复默认字体。');
                 }
         
-// ▼▼▼ 【最终修复版】请用这个【已彻底修复数据迁移和语法错误】的版本，完整替换旧的 loadAllDataFromDB 函数 ▼▼▼
 async function loadAllDataFromDB() {
     const [
-        chatsArr, apiConfig, globalSettings, userStickers, worldBooks,
+        chatsArr, apiConfig, loadedGlobalSettings, userStickers, worldBooks,
         musicLib, personaPresets, qzoneSettings, initialFavorites,
         allMemories
     ] = await Promise.all([
@@ -13059,6 +13531,34 @@ async function loadAllDataFromDB() {
         db.memories.toArray()
     ]);
 
+    // 1. 【核心修复】首先定义一个包含所有最新默认值的完整设置对象
+    const defaultGlobalSettings = {
+        id: 'main',
+        showStatusBar: false,
+        wallpaper: 'linear-gradient(135deg, #89f7fe, #66a6ff)',
+        fontUrl: '',
+        enableBackgroundActivity: false,
+        backgroundActivityInterval: 60,
+        blockCooldownHours: 1,
+        appIcons: { ...DEFAULT_APP_ICONS },
+        cphoneWallpaper: 'linear-gradient(135deg, #f6d365, #fda085)',
+        cphoneAppIcons: { ...DEFAULT_CPHONE_ICONS }, // <-- 确保CPhone图标有默认值
+        globalCss: '',
+        notificationSoundUrl: '',
+        widgetData: {},
+        globalChatBackground: ''
+    };
+
+    // 2. 【核心修复】将加载的设置覆盖到默认值上，而不是直接替换
+    // 这样可以确保即使用户有旧的存档，所有新增的设置项（如cphoneAppIcons）也能被正确初始化
+    state.globalSettings = { ...defaultGlobalSettings, ...(loadedGlobalSettings || {}) };
+
+    // 3. 【核心修复】为嵌套的对象（如图标设置）也进行一次深度合并，确保万无一失
+    state.globalSettings.appIcons = { ...defaultGlobalSettings.appIcons, ...(state.globalSettings.appIcons || {}) };
+    state.globalSettings.cphoneAppIcons = { ...defaultGlobalSettings.cphoneAppIcons, ...(state.globalSettings.cphoneAppIcons || {}) };
+
+
+    // --- (后续所有的数据处理逻辑保持不变) ---
     chatsArr.forEach(chat => {
         if (!chat.settings.lyricsPosition) {
             chat.settings.lyricsPosition = { vertical: 'top', horizontal: 'center', offset: 10 };
@@ -13073,14 +13573,19 @@ async function loadAllDataFromDB() {
 
     state.chats = chatsArr.reduce((acc, chat) => {
         if (typeof chat.unreadCount === 'undefined') chat.unreadCount = 0;
-        if (chat.isGroup && chat.members && chat.members.length > 0 && chat.members[0].name) {
-            chat.members.forEach(member => {
-                if (typeof member.originalName === 'undefined') {
-                    member.originalName = member.name;
-                    member.groupNickname = member.name;
-                    delete member.name;
-                }
-            });
+        if (chat.isGroup) {
+            if (typeof chat.settings.enableBackgroundActivity === 'undefined') {
+                chat.settings.enableBackgroundActivity = true;
+            }
+            if (chat.members && chat.members.length > 0 && chat.members[0].name) {
+                chat.members.forEach(member => {
+                    if (typeof member.originalName === 'undefined') {
+                        member.originalName = member.name;
+                        member.groupNickname = member.name;
+                        delete member.name;
+                    }
+                });
+            }
         }
         
         if (!chat.settings) chat.settings = {};
@@ -13124,6 +13629,12 @@ async function loadAllDataFromDB() {
         if (!chat.longTermMemory) chat.longTermMemory = [];
         if (!chat.lastMemorySummaryTimestamp) chat.lastMemorySummaryTimestamp = 0;
         if (!chat.isGroup) {
+            if (typeof chat.settings.enableBackgroundActivity === 'undefined') {
+                chat.settings.enableBackgroundActivity = true;
+            }
+            if (!chat.status) chat.status = { text: '在线', lastUpdate: Date.now(), isBusy: false };
+            if (!chat.relationship) chat.relationship = { status: 'friend', blockedTimestamp: null, applicationReason: '' };
+            if (!chat.settings || !chat.settings.aiAvatarLibrary) { if (!chat.settings) chat.settings = {}; chat.settings.aiAvatarLibrary = []; }
             if (typeof chat.settings.isOfflineMode === 'undefined') chat.settings.isOfflineMode = false;
             if (typeof chat.settings.offlineMinLength === 'undefined') chat.settings.offlineMinLength = 100;
             if (typeof chat.settings.offlineMaxLength === 'undefined') chat.settings.offlineMaxLength = 300;
@@ -13160,30 +13671,6 @@ async function loadAllDataFromDB() {
     }
 
     state.apiConfig = apiConfig || { id: 'main', proxyUrl: '', apiKey: '', model: '', secondaryProxyUrl: '', secondaryApiKey: '', secondaryModel: '' };
-// ▼▼▼ 【请用这个 V2 版本】替换旧的 state.globalSettings 初始化代码 ▼▼▼
-state.globalSettings = globalSettings || { 
-    id: 'main', 
-    showStatusBar: false, // <-- 新增这一行，默认关闭
-    wallpaper: 'linear-gradient(135deg, #89f7fe, #66a6ff)', 
-    fontUrl: '', 
-    enableBackgroundActivity: false, 
-    backgroundActivityInterval: 60, 
-    blockCooldownHours: 1, 
-    appIcons: { ...DEFAULT_APP_ICONS },
-    globalCss: '',
-    notificationSoundUrl: '',
-    widgetData: {},
-    globalChatBackground: '' // 【核心新增】全局聊天背景
-};
-// 确保即使从旧数据库加载，这个属性也存在
-if (!state.globalSettings.widgetData) {
-    state.globalSettings.widgetData = {};
-}
-// ▲▲▲ 替换结束 ▲▲▲
-    // 【【【这就是最关键的修复！】】】
-    // 下面这行代码确保了即使是从旧数据库加载的数据，也能拥有 appIcons 这个属性，避免了后续代码出错。
-    state.globalSettings.appIcons = { ...DEFAULT_APP_ICONS, ...(state.globalSettings.appIcons || {}) };
-    if (!state.globalSettings.globalCss) state.globalSettings.globalCss = '';
     state.userStickers = userStickers || [];
     state.worldBooks = worldBooks || [];
     musicState.playlist = musicLib?.playlist || [];
@@ -13191,7 +13678,6 @@ if (!state.globalSettings.widgetData) {
     state.qzoneSettings = qzoneSettings || { id: 'main', nickname: '{{user}}', avatar: 'https://files.catbox.moe/q6z5fc.jpeg', banner: 'https://files.catbox.moe/r5heyt.gif' };
     allFavoriteItems = initialFavorites || [];
 }
-// ▲▲▲ 替换结束 ▲▲▲
         
                 async function saveGlobalPlaylist() { await db.musicLibrary.put({ id: 'main', playlist: musicState.playlist }); }
         
@@ -13862,9 +14348,11 @@ if (!state.globalSettings.widgetData) {
             }
         }
         
-        // ▼▼▼ 用这个【新版本】替换旧的 renderWallpaperScreen 函数 ▼▼▼
+// ▼▼▼ 【请用这个已更新的版本】替换旧的 renderWallpaperScreen 函数 ▼▼▼
         function renderWallpaperScreen() { 
-            loadCssPresetsDropdown(); // <-- 新增这一行
+            loadCssPresetsDropdown();
+            
+            // EPhone 壁纸预览
             const preview = document.getElementById('wallpaper-preview'); 
             const bg = newWallpaperBase64 || state.globalSettings.wallpaper; 
             if (bg && bg.startsWith('data:image')) { 
@@ -13874,26 +14362,41 @@ if (!state.globalSettings.widgetData) {
                 preview.style.backgroundImage = bg; 
                 preview.textContent = '当前为渐变色'; 
             }
-    // ▼▼▼ 【核心新增】渲染全局聊天背景 ▼▼▼
-    const globalBgPreview = document.getElementById('global-bg-preview');
-    const globalBg = state.globalSettings.globalChatBackground;
-    if (globalBg) {
-        globalBgPreview.style.backgroundImage = `url(${globalBg})`;
-        globalBgPreview.textContent = '';
-        document.getElementById('remove-global-bg-btn').style.display = 'inline-block';
-    } else {
-        globalBgPreview.style.backgroundImage = 'none';
-        globalBgPreview.textContent = '点击下方上传';
-        document.getElementById('remove-global-bg-btn').style.display = 'none';
-    }
-    // ▲▲▲ 新增结束 ▲▲▲
 
-    renderIconSettings();
-    document.getElementById('global-css-input').value = state.globalSettings.globalCss || '';
-    document.getElementById('notification-sound-url-input').value = state.globalSettings.notificationSoundUrl || '';
-    document.getElementById('status-bar-toggle-switch').checked = state.globalSettings.showStatusBar || false;
-}
-// ▲▲▲ 替换结束 ▲▲▲
+            // 【核心新增】渲染CPhone的壁纸预览
+            const cphonePreview = document.getElementById('cphone-wallpaper-preview');
+            const cphoneBg = state.globalSettings.cphoneWallpaper;
+            if (cphoneBg && cphoneBg.startsWith('data:image')) {
+                cphonePreview.style.backgroundImage = `url(${cphoneBg})`;
+                cphonePreview.textContent = '';
+            } else if (cphoneBg) {
+                cphonePreview.style.backgroundImage = cphoneBg;
+                cphonePreview.textContent = '当前为渐变色';
+            }
+
+            // 全局聊天背景预览
+            const globalBgPreview = document.getElementById('global-bg-preview');
+            const globalBg = state.globalSettings.globalChatBackground;
+            if (globalBg) {
+                globalBgPreview.style.backgroundImage = `url(${globalBg})`;
+                globalBgPreview.textContent = '';
+                document.getElementById('remove-global-bg-btn').style.display = 'inline-block';
+            } else {
+                globalBgPreview.style.backgroundImage = 'none';
+                globalBgPreview.textContent = '点击下方上传';
+                document.getElementById('remove-global-bg-btn').style.display = 'none';
+            }
+
+            // 渲染 EPhone 和 CPhone 的图标设置
+            renderIconSettings();
+            renderCPhoneIconSettings(); // <-- 新增调用
+
+            // (其他逻辑保持不变)
+            document.getElementById('global-css-input').value = state.globalSettings.globalCss || '';
+            document.getElementById('notification-sound-url-input').value = state.globalSettings.notificationSoundUrl || '';
+            document.getElementById('status-bar-toggle-switch').checked = state.globalSettings.showStatusBar || false;
+        }
+        // ▲▲▲ 替换结束 ▲▲▲
                 window.renderWallpaperScreenProxy = renderWallpaperScreen;
         
                 function applyGlobalWallpaper() { const homeScreen = document.getElementById('home-screen'); const wallpaper = state.globalSettings.wallpaper; if (wallpaper && wallpaper.startsWith('data:image')) homeScreen.style.backgroundImage = `url(${wallpaper})`; else if (wallpaper) homeScreen.style.backgroundImage = wallpaper; }
@@ -17711,54 +18214,68 @@ async function deleteTrack(index) { if (index < 0 || index >= musicState.playlis
         }
         // ▲▲▲ 粘贴结束 ▲▲▲
         
-        // ▼▼▼ 【最终修复版】请用这个全新的函数，完整替换旧的 runBackgroundSimulationTick ▼▼▼
-        /**
-         * 这是模拟器的“心跳”，每次定时器触发时运行
-         */
-        function runBackgroundSimulationTick() {
-            console.log("模拟器心跳 Tick...");
-            if (!state.globalSettings.enableBackgroundActivity) {
-                stopBackgroundSimulation();
-                return;
+// ▼▼▼ 【最终修复版】请用这个全新的函数，完整替换旧的 runBackgroundSimulationTick ▼▼▼
+/**
+ * 这是模拟器的“心跳”，每次定时器触发时运行
+ */
+function runBackgroundSimulationTick() {
+    console.log("模拟器心跳 Tick...");
+    if (!state.globalSettings.enableBackgroundActivity) {
+        stopBackgroundSimulation();
+        return;
+    }
+
+    // --- 1. 处理所有单聊 ---
+    const allSingleChats = Object.values(state.chats).filter(chat => !chat.isGroup);
+    allSingleChats.forEach(chat => {
+        // 处理【被用户拉黑】的角色
+        if (chat.relationship?.status === 'blocked_by_user') {
+            const blockedTimestamp = chat.relationship.blockedTimestamp;
+            if (!blockedTimestamp) return;
+            const blockedDuration = Date.now() - blockedTimestamp;
+            const cooldownMilliseconds = (state.globalSettings.blockCooldownHours || 1) * 60 * 60 * 1000;
+            if (blockedDuration > cooldownMilliseconds) {
+                chat.relationship.status = 'pending_system_reflection';
+                triggerAiFriendApplication(chat.id);
             }
-        
-            // --- 1. 处理所有单聊 ---
-            const allSingleChats = Object.values(state.chats).filter(chat => !chat.isGroup);
-            allSingleChats.forEach(chat => {
-                // 【【【核心修改：已删除对 lastMessage.role === 'user' 的检查】】】
-                // 现在AI不再关心最后一条消息是谁发的了！
-        
-                // 处理【被用户拉黑】的角色
-                if (chat.relationship?.status === 'blocked_by_user') {
-                    const blockedTimestamp = chat.relationship.blockedTimestamp;
-                    if (!blockedTimestamp) return;
-                    const blockedDuration = Date.now() - blockedTimestamp;
-                    const cooldownMilliseconds = (state.globalSettings.blockCooldownHours || 1) * 60 * 60 * 1000;
-                    if (blockedDuration > cooldownMilliseconds) {
-                        chat.relationship.status = 'pending_system_reflection';
-                        triggerAiFriendApplication(chat.id);
-                    }
-                }
-                // 处理【好友关系】的正常后台活动
-                else if (chat.relationship?.status === 'friend' && chat.id !== state.activeChatId) {
-                    if (Math.random() < 0.20) { // 单聊保持20%的几率
-                        console.log(`角色 "${chat.name}" 被唤醒，准备独立行动...`);
-                        triggerInactiveAiAction(chat.id);
-                    }
-                }
-            });
-        
-            // --- 2. 【核心新增】处理所有群聊 ---
-            const allGroupChats = Object.values(state.chats).filter(chat => chat.isGroup);
-            allGroupChats.forEach(chat => {
-                // 确保不在当前打开的聊天窗口，且通过随机概率检查
-                if (chat.id !== state.activeChatId && Math.random() < 0.10) { // 群聊几率可以设低一些，比如10%，避免太吵
-                    console.log(`群聊 "${chat.name}" 被唤醒，准备独立行动...`);
-                    triggerGroupAiAction(chat.id); // 调用我们为群聊新建的函数！
-                }
-            });
         }
-        // ▲▲▲ 替换结束 ▲▲▲
+        // 处理【好友关系】的正常后台活动
+        else if (chat.relationship?.status === 'friend' && chat.id !== state.activeChatId) {
+            
+            // ★★★★★ 这就是本次修改的核心 ★★★★★
+            // 在执行任何操作前，先检查这个角色的独立开关是否开启
+            if (chat.settings.enableBackgroundActivity === false) {
+                // 如果开关是关闭的，就打印一条日志并直接跳过这个角色
+                console.log(`角色 "${chat.name}" 的独立后台活动开关已关闭，本次跳过。`);
+                return; // 使用 return 跳出 forEach 的本次循环
+            }
+            // ★★★★★ 修改结束 ★★★★★
+
+            // (后续的随机触发逻辑保持不变)
+            if (Math.random() < 0.20) { 
+                console.log(`角色 "${chat.name}" 被唤醒，准备独立行动...`);
+                triggerInactiveAiAction(chat.id);
+            }
+        }
+    });
+
+    // --- 2. 处理所有群聊 (逻辑保持不变) ---
+    const allGroupChats = Object.values(state.chats).filter(chat => chat.isGroup);
+    allGroupChats.forEach(chat => {
+    // 【核心新增】在所有判断之前，首先检查这个群聊的独立开关
+    if (chat.settings.enableBackgroundActivity === false) {
+        // 如果开关是关闭的，就打印一条日志并直接跳过这个群聊
+        console.log(`群聊 "${chat.name}" 的后台活动开关已关闭，本次跳过。`);
+        return; // 使用 return 跳出 forEach 的本次循环
+    }
+
+        if (chat.id !== state.activeChatId && Math.random() < 0.10) { 
+            console.log(`群聊 "${chat.name}" 被唤醒，准备独立行动...`);
+            triggerGroupAiAction(chat.id); 
+        }
+    });
+}
+// ▲▲▲ 替换结束 ▲▲▲
         
         // ▼▼▼ 【最终修复版】请用这个全新的函数，完整替换旧的 triggerInactiveAiAction ▼▼▼
         /**
@@ -22117,6 +22634,66 @@ async function endVideoCall() {
             });
         }
         // ▲▲▲ 新函数粘贴结束 ▲▲▲
+        // ▼▼▼ 【全新】这是为CPhone新增的所有功能函数，请完整粘贴 ▼▼▼
+
+        /**
+         * 【全新】将保存的CPhone壁纸应用到角色手机屏幕
+         */
+        function applyCPhoneWallpaper() {
+            const charPhoneScreen = document.getElementById('character-phone-screen');
+            const wallpaper = state.globalSettings.cphoneWallpaper;
+            if (wallpaper && wallpaper.startsWith('data:image')) {
+                charPhoneScreen.style.backgroundImage = `url(${wallpaper})`;
+            } else if (wallpaper) {
+                charPhoneScreen.style.backgroundImage = wallpaper;
+            }
+        }
+
+        /**
+         * 【全新】将保存的图标URL应用到CPhone的App图标上
+         */
+        function applyCPhoneAppIcons() {
+            if (!state.globalSettings.cphoneAppIcons) return;
+
+            for (const iconId in state.globalSettings.cphoneAppIcons) {
+                const imgElement = document.getElementById(`cphone-icon-img-${iconId}`);
+                if (imgElement) {
+                    imgElement.src = state.globalSettings.cphoneAppIcons[iconId];
+                }
+            }
+        }
+
+        /**
+         * 【全新】在外观设置页面渲染出所有CPhone App图标的设置项
+         */
+        function renderCPhoneIconSettings() {
+            const grid = document.getElementById('cphone-icon-settings-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            const cphoneAppLabels = {
+                'qq': 'QQ', 'album': '相册', 'browser': '浏览器', 'taobao': '淘宝',
+                'memo': '备忘录', 'diary': '日记', 'amap': '高德地图', 'usage': 'App记录',
+                'music': '网易云', 'ephone': 'Ephone'
+            };
+
+            for (const iconId in state.globalSettings.cphoneAppIcons) {
+                const iconUrl = state.globalSettings.cphoneAppIcons[iconId];
+                const labelText = cphoneAppLabels[iconId] || '未知App';
+
+                const item = document.createElement('div');
+                item.className = 'icon-setting-item';
+                item.dataset.iconId = iconId;
+
+                item.innerHTML = `
+                    <img class="icon-preview" src="${iconUrl}" alt="${labelText}">
+                    <button class="change-icon-btn">更换</button>
+                `;
+                grid.appendChild(item);
+            }
+        }
+
+        // ▲▲▲ 新增函数结束 ▲▲▲
         // ▼▼▼ 请将这两个【新函数】粘贴到JS功能函数定义区 ▼▼▼
         
         /**
@@ -22143,6 +22720,7 @@ async function endVideoCall() {
         
         // ▼▼▼ 在 renderIconSettings 函数内部 ▼▼▼
         const appLabels = {
+           'douban': '豆瓣小组',
             'world-book': '世界书',
             'qq': 'QQ',
             // ▼▼▼ 在这里添加新的一行 ▼▼▼
@@ -22156,7 +22734,7 @@ async function endVideoCall() {
         
             for (const iconId in state.globalSettings.appIcons) {
                 const iconUrl = state.globalSettings.appIcons[iconId];
-                const labelText = appLabels[iconId] || '未知App';
+                const labelText = appLabels[iconId] || 'Cphone';
         
                 const item = document.createElement('div');
                 item.className = 'icon-setting-item';
@@ -26569,7 +27147,7 @@ ${chat.settings.myPersona}
                 body: JSON.stringify({
                     model: model,
                     messages: [{ role: 'system', content: systemPrompt }, ...messagesForApi],
-                    temperature: 0.85,
+                    temperature: 0.8,
                 })
             });
 
@@ -27788,28 +28366,24 @@ function renderCharacterSelector() {
     });
 }
 
-/**
- * 切换到指定角色的手机界面
- * @param {string} characterId - 角色的ID
- */
-async function switchToCharacterPhone(characterId) {
-    activeCharacterId = characterId;
-    console.log(`已切换到角色 ${characterId} 的手机`);
-    
-    // 应用该角色的壁纸
-    const char = state.chats[characterId];
-    const charPhoneScreen = document.getElementById('character-phone-screen');
-    const wallpaper = char.settings.background || state.globalSettings.wallpaper;
-    if (wallpaper && wallpaper.startsWith('data:image')) {
-        charPhoneScreen.style.backgroundImage = `url(${wallpaper})`;
-    } else if (wallpaper) {
-        charPhoneScreen.style.backgroundImage = wallpaper;
-    }
-    
-    // 渲染并显示角色手机的主屏幕
-    renderCharHomeScreen();
-    showScreen('character-phone-screen');
-}
+        // ▼▼▼ 【请用这个已更新的版本】替换旧的 switchToCharacterPhone 函数 ▼▼▼
+        /**
+         * 切换到指定角色的手机界面
+         * @param {string} characterId - 角色的ID
+         */
+        async function switchToCharacterPhone(characterId) {
+            activeCharacterId = characterId;
+            console.log(`已切换到角色 ${characterId} 的手机`);
+            
+            // 【核心修改】调用新的应用函数来设置壁纸和图标
+            applyCPhoneWallpaper();
+            applyCPhoneAppIcons();
+            
+            // 渲染并显示角色手机的主屏幕
+            renderCharHomeScreen();
+            showScreen('character-phone-screen');
+        }
+        // ▲▲▲ 替换结束 ▲▲▲
 
 /**
  * 返回到用户自己的手机主屏幕
@@ -28282,7 +28856,7 @@ async function saveMemo(content) {
         
             const systemPrompt = `
 # 你的任务
-你是一个虚拟生活模拟器和故事作家。你的任务是扮演角色“${chat.name}”，并根据其人设、记忆和最近的互动，虚构出【3到5篇】TA最近可能会写的日记。
+你是一个虚拟生活模拟器和故事作家。你的任务是扮演角色“${chat.name}”，并根据其人设、记忆和最近的互动，虚构出【5到8篇】TA最近可能会写的日记。
 
 # 核心规则
 1.  **【【【沉浸感铁律】】】**: 每一篇日记都必须使用【第一人称视角 ("我")】来写，并且要充满角色的个人情感、思考和秘密。在日记中描述自己的行为或想法时，【绝对禁止】使用第三人称“他”或“她” (TA)。
@@ -28378,7 +28952,7 @@ ${recentHistoryWithUser}
             
             const systemPrompt = `
 # 你的任务
-你是一个虚拟生活模拟器和故事作家。你的任务是扮演角色“${chat.name}”，并根据其人设、记忆和最近的互动，虚构出【1篇】TA今天可能会写的日记。
+你是一个虚拟生活模拟器和故事作家。你的任务是扮演角色“${chat.name}”，并根据其人设、记忆和最近的互动，虚构出【5到8篇】TA今天可能会写的日记。
 
 # 核心规则
 1.  **【【【沉浸感铁律】】】**: 日记必须使用【第一人称视角 ("我")】来写，并且要充满角色的个人情感、思考和秘密。在日记中描述自己的行为或想法时，【绝对禁止】使用第三人称“他”或“她” (TA)。
@@ -28636,7 +29210,7 @@ async function renderCharSimulatedQQ() {
 1.  **【【【世界书优先】】】**: 如果下面的“世界观设定”中提到了任何具体的【群聊名称】或【群成员】，你【必须】为这个群聊生成一段对话。
 2.  **创造性与多样性**: 自由创造符合角色背景的NPC和群聊，对话内容要多样化，反映角色的生活。
 3.  **关联性**: 对话内容应巧妙地反映角色的长期记忆、世界观，以及与用户互动可能带来的心情变化。
-4.  **简洁性**: 每段对话的总长度应在4到8句之间。
+4.  **简洁性**: 每段对话的总长度应在8到15句之间。
 5.  **【【【格式铁律 (最高优先级)】】】**: 你的回复【必须且只能】是一个JSON数组。数组中的每个元素都代表一段对话，且【必须】是以下两种格式之一：
 
     **格式 A：私聊**
@@ -29005,7 +29579,7 @@ ${recentHistoryWithUser}
         
             const systemPrompt = `
 # 你的任务
-你是一个虚拟生活模拟器。你的任务是扮演角色“${chat.name}”，并根据其人设、记忆和最近的互动，虚构出【5到8条】TA最近的浏览器搜索/浏览记录。
+你是一个虚拟生活模拟器。你的任务是扮演角色“${chat.name}”，并根据其人设、记忆和最近的互动，虚构出【12到20条】TA最近的浏览器搜索/浏览记录。
 
 # 核心规则
 1.  **创造性与合理性**: 记录必须完全符合角色的性格、爱好、职业和生活环境。
@@ -29173,7 +29747,7 @@ function renderCharArticle(articleData) {
         
             const systemPrompt = `
 # 你的任务
-你是一个虚拟生活模拟器。你的任务是扮演角色“${chat.name}”，并根据其人设、记忆和最近的互动，虚构出TA最近的淘宝购物记录。
+你是一个虚拟生活模拟器。你的任务是扮演角色“${chat.name}”，并根据其人设、记忆和最近的互动，虚构出【12到20条】TA最近的淘宝购物记录。
 
 # 核心规则
 1.  **合理性**: 购买记录必须完全符合角色的性格、爱好和经济状况。
@@ -29336,7 +29910,7 @@ function renderCharWallet() {
         
             const systemPrompt = `
 # 你的任务
-你是一个虚拟生活模拟器。你的任务是扮演角色“${chat.name}”，并根据其人设、记忆和最近的互动，虚构出【7到9条】TA最近可能会写在手机备忘录里的内容。
+你是一个虚拟生活模拟器。你的任务是扮演角色“${chat.name}”，并根据其人设、记忆和最近的互动，虚构出【12到20条】TA最近可能会写在手机备忘录里的内容。
 
 # 核心规则
 1.  **创造性与合理性**: 备忘录内容必须完全符合角色的性格、爱好、职业和生活环境。可以是购物清单、待办事项、灵感片段、一些随笔和感悟、草稿等。
@@ -29444,7 +30018,7 @@ async function handleGenerateAmapHistory() {
 
     const systemPrompt = `
 # 你的任务
-你是一个虚拟生活模拟器。你的任务是扮演角色“${chat.name}”，并根据其人设、记忆和最近的互动，虚构出【9到12条】TA最近的“高德地图”出行足迹。
+你是一个虚拟生活模拟器。你的任务是扮演角色“${chat.name}”，并根据其人设、记忆和最近的互动，虚构出【12到20条】TA最近的“高德地图”出行足迹。
 
 # 核心规则
 1.  **创造性与合理性**: 足迹必须完全符合角色的性格、爱好、职业和生活环境。
@@ -30079,6 +30653,618 @@ function setupCharPlayerControls() {
     });
 }
 /* ▲▲▲ JS代码替换结束 ▲▲▲ */
+// ▼▼▼ 【全新 | V3.2 | 双重身份验证版】请用这个新版本替换旧的 renderDoubanScreen 函数 ▼▼▼
+/**
+ * 【总入口】渲染豆瓣小组屏幕
+ */
+async function renderDoubanScreen() {
+    const listEl = document.getElementById('douban-posts-list');
+    listEl.innerHTML = '';
+    
+    const posts = await db.doubanPosts.orderBy('timestamp').reverse().toArray();
+
+    if (posts.length === 0) {
+        listEl.innerHTML = '<p style="text-align:center; color: var(--text-secondary); padding: 50px 0;">这里空空如也，<br>点击右上角刷新按钮，看看大家都在聊什么吧！</p>';
+        return;
+    }
+
+    posts.forEach(post => {
+        let avatarUrl;
+        
+        // --- 核心修改：全新的“双重验证”头像查找逻辑 ---
+        // 1. 优先通过“身份证”(authorOriginalName)查找
+        const authorChatByOriginalName = post.authorOriginalName 
+            ? Object.values(state.chats).find(c => !c.isGroup && c.name === post.authorOriginalName) 
+            : null;
+
+        if (authorChatByOriginalName) {
+            // 如果通过“身份证”找到了，就用这个角色的真实头像
+            avatarUrl = authorChatByOriginalName.settings.aiAvatar;
+        } else {
+            // 2. 如果没有“身份证”，再尝试用“外号”(authorName)去花名册里找（兼容旧数据）
+            const authorChatByName = Object.values(state.chats).find(c => !c.isGroup && c.name === post.authorName);
+            if (authorChatByName) {
+                avatarUrl = authorChatByName.settings.aiAvatar;
+            } else if (post.authorAvatarPrompt) {
+                // 3. 如果都找不到，说明这是一个路人NPC，就用AI给的“头像咒语”去画一张新脸
+                avatarUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(post.authorAvatarPrompt)}`;
+            } else {
+                // 4. 如果连“头像咒语”都没有，才使用最终的丑陋占位图
+                avatarUrl = defaultAvatar;
+            }
+        }
+        // --- 修复结束 ---
+
+        const itemEl = document.createElement('div');
+        itemEl.className = 'douban-post-item';
+        itemEl.onclick = () => openDoubanPostDetail(post.id);
+
+        itemEl.innerHTML = `
+            <div class="douban-post-header">
+                <img src="${avatarUrl}" class="douban-post-avatar">
+                <div class="douban-author-info">
+                    <div class="douban-author-name">${post.authorName}</div>
+                    <div class="douban-group-name">来自 ${post.groupName}</div>
+                </div>
+            </div>
+            <div class="douban-post-title">${post.postTitle}</div>
+            <div class="douban-post-content">${post.content.replace(/\n/g, '<br>')}</div>
+            <div class="douban-post-footer">
+                 <div class="douban-post-actions">
+                    <span><svg viewBox="0 0 1024 1024"><path d="M170.666667 170.666667h128v682.666666h-128zM426.666667 170.666667h170.666666v682.666666h-170.666666zM725.333333 170.666667h128v682.666666h-128z"></path></svg> ${post.likesCount}</span>
+                    <span><svg viewBox="0 0 1024 1024"><path d="M853.333333 85.333333H170.666667c-46.933333 0-85.333333 38.4-85.333334 85.333334v512c0 46.933333 38.4 85.333333 85.333334 85.333333h512l170.666667 170.666667V170.666667c0-46.933333-38.4-85.333333-85.333334-85.333334z m-42.666666 554.666667H170.666667V170.666667h640v469.333333zM256 384h512v85.333333H256V384z m0-170.666667h512v85.333334H256v-85.333334z"></path></svg> ${post.commentsCount}</span>
+                </div>
+                <span class="douban-post-timestamp">${formatTimeAgo(post.timestamp)}</span>
+            </div>
+        `;
+        listEl.appendChild(itemEl);
+    });
+}
+// ▲▲▲ 替换结束 ▲▲▲
+
+async function handleGenerateDoubanPosts() {
+    const activeCharacterIds = state.globalSettings.doubanActiveCharacterIds || [];
+
+    if (activeCharacterIds.length === 0) {
+        await showCustomAlert("请先选择角色", "请点击右上角的“角色选择”按钮，选择至少一个参与豆瓣互动的角色。");
+        return;
+    }
+
+    await showCustomAlert("请稍候...", `正在为您选择的 ${activeCharacterIds.length} 位角色生成豆瓣动态...`);
+
+    const { proxyUrl, apiKey, model } = state.apiConfig;
+    if (!proxyUrl || !apiKey || !model) {
+        alert('请先在API设置中配置好API信息。');
+        return;
+    }
+
+    // --- 核心优化 1：收集所有角色的世界书ID并去重 ---
+    const allLinkedBookIds = new Set();
+    activeCharacterIds.forEach(charId => {
+        const c = state.chats[charId];
+        if (c && c.settings.linkedWorldBookIds) {
+            c.settings.linkedWorldBookIds.forEach(bookId => allLinkedBookIds.add(bookId));
+        }
+    });
+
+    // --- 核心优化 2：构建“统一”的世界观上下文，只读取一次 ---
+    let sharedWorldBookContext = '';
+    if (allLinkedBookIds.size > 0) {
+        sharedWorldBookContext += '\n\n# 统一世界观设定 (以下设定适用于所有参与角色)\n';
+        allLinkedBookIds.forEach(bookId => {
+            const book = state.worldBooks.find(wb => wb.id === bookId);
+            if (book) {
+                const enabledEntries = book.content
+                    .filter(e => e.enabled !== false)
+                    .map(e => `- ${e.content}`)
+                    .join('\n');
+                if (enabledEntries) {
+                    sharedWorldBookContext += `\n## 来自《${book.name}》:\n${enabledEntries}`;
+                }
+            }
+        });
+    }
+    
+    // (豆瓣设定和NPC角色的解析逻辑保持不变)
+    const doubanWorldBook = state.worldBooks.find(wb => wb.name === '豆瓣设定');
+    let doubanSettingContext = '';
+    let npcCharacters = [];
+    if (doubanWorldBook) {
+        doubanWorldBook.content.forEach(entry => {
+            if (entry.comment.includes('小组风格')) {
+                doubanSettingContext += `\n# 豆瓣社区风格设定 (来自世界书)\n${entry.content}`;
+            }
+            if (entry.comment.includes('NPC人设')) {
+                const lines = entry.content.split('\n');
+                lines.forEach(line => {
+                    const match = line.match(/- \*\*昵称\*\*:\s*(.*?)\s*\*\*人设\*\*:\s*(.*)/);
+                    if (match) {
+                        npcCharacters.push({ name: match[1].trim(), persona: match[2].trim() });
+                    }
+                });
+            }
+        });
+    }
+
+    // --- 核心优化 3：构建角色列表时，不再单独添加世界观 ---
+    let charactersContext = '';
+    activeCharacterIds.forEach(charId => {
+        const c = state.chats[charId];
+        if (c) {
+            // 注意：这里不再需要单独为每个角色获取 worldBookContent
+            charactersContext += `
+<character>
+  <name>${c.name}</name>
+  <persona>${c.settings.aiPersona}</persona>
+  <memory>${c.longTermMemory ? c.longTermMemory.map(m=>m.content).join(' ') : '无'}</memory>
+</character>
+`;
+        }
+    });
+    npcCharacters.forEach(npc => {
+        charactersContext += `
+<character>
+  <name>${npc.name}</name>
+  <persona>${npc.persona}</persona>
+</character>
+`;
+    });
+    const systemPrompt = `
+# 你的任务
+你是一个虚拟社区内容生成器。你的任务是根据下面提供的【统一角色列表】，虚构出【12到20篇】他们最近可能会在各种豆瓣小组中发布的帖子和评论。
+
+# 核心规则
+1.  **【身份 (最高优先级！)】**: 
+    -   \`authorName\`: 你可以为主要角色起一个符合情景的、临时的【发帖昵称】，也可以直接使用他们的本名。
+    -   \`authorOriginalName\`: 如果发帖者是【主要角色】，你【必须】在这里填上TA在角色列表里的【原始备注名】，这是程序的“身份证”。
+    -   如果发帖者是【路人NPC】，则【省略】\`authorOriginalName\` 字段。
+2.  **【作者平衡】**: 帖子的作者【必须】从下面的 \`<character>\` 列表中【均匀地、多样化地】选择。你【必须】确保帖子列表中【至少有 70% 的帖子是由路人NPC发布的】，以营造一个真实的社区氛围。
+    - "comments": 一个包含【7到12条】评论的数组。评论者可以是路人，也可以是角色列表中的其他角色，以体现互动性。
+3.  **【角色扮演】**: 帖子的作者和内容【必须】深度结合该角色的<persona>, <memory>, 和 <worldview>。
+4.  **【“豆瓣味”内容风格指南】**: 帖子风格必须多样化且充满生活气息！你需要生成包括但不限于：情感树洞、生活吐槽、吃瓜八卦、兴趣分享、无用良品等各种类型的帖子。
+5.  **【头像生成 (最高优先级！)】**:
+    -   为每一个【首次出现】的路人NPC（无论是发帖还是评论），你都【必须】为其添加一个 \`avatar_prompt\` 字段。
+    -   这个字段的内容是用于生成该NPC头像的、简洁的【英文】关键词。
+    -   不同的NPC【必须】有不同的头像指令，以确保他们的头像是独一无二的。
+6.  **【头像一致性 (至关重要！)】**:
+    -   如果一个路人NPC在同一个帖子中多次出现（例如，既是发帖人又是评论者，或多次评论），你【必须】为TA的所有出现都使用【完全相同】的 \`avatar_prompt\`。这至关重要！
+7.  **【格式 (最高优先级)】**: 你的回复【必须且只能】是一个JSON数组。数组中的每个元素都是一篇帖子，格式【必须】如下:
+    \`\`\`json
+    [
+      {
+        "groupName": "一个生动有趣的小组名称",
+        "postTitle": "一个引人注目的帖子标题",
+        "authorName": "发帖角色的【备注名】",
+        "authorOriginalName": "(仅当发帖者是主要角色时【必须】提供) TA的原始备注名",
+        "authorAvatarPrompt": "(仅当发帖者是路人NPC时【必须】提供) 一段用于生成该NPC头像的【英文】关键词。风格为 anime style, simple background",
+        "content": "帖子的详细正文，必须支持换行符\\n。",
+        "likesCount": 152,
+        "commentsCount": 38,
+        "comments": [
+            { "commenter": "路人甲", "text": "这是一个路人评论。", "avatar_prompt": "cute cat avatar, simple, flat" },
+            { "commenter": "另一个角色名", "commenterOriginalName": "(如果评论者是主要角色，必须提供其本名)", "text": "这是一个来自其他角色的互动评论。" }
+        ]
+      }
+    ]
+    \`\`\`
+    - **comments**: 
+        -   评论者可以是路人，也可以是角色列表中的其他角色。评论区【必须】体现出互动性。
+        -   【评论身份】: 如果评论者是【主要角色】，你【必须】为其添加 \`commenterOriginalName\` 字段，并填入其本名。如果是路人NPC，则省略此字段。
+
+# 供你参考的上下文
+${doubanSettingContext}
+${sharedWorldBookContext}
+
+# 统一角色列表 (主要角色 + 路人NPC)
+${charactersContext}
+
+现在，请严格遵守【作者平衡】和【评论身份】，开始生成这组生动、多样且充满“豆瓣味”的小组帖子。`;
+
+    try {
+        const messagesForApi = [{ role: 'user', content: "请根据角色列表，生成豆瓣小组帖子。" }];
+        let isGemini = proxyUrl.includes('generativelanguage');
+        let geminiConfig = toGeminiRequestData(model, apiKey, systemPrompt, messagesForApi);
+        
+        const response = isGemini 
+            ? await fetch(geminiConfig.url, geminiConfig.data) 
+            : await fetch(`${proxyUrl}/v1/chat/completions`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}`},
+                body: JSON.stringify({
+                    model: model,
+                    messages: [{role: 'system', content: systemPrompt}, ...messagesForApi],
+                    temperature: 1.0,
+                })
+            });
+
+        if (!response.ok) throw new Error(`API 错误: ${response.statusText}`);
+        
+        const data = await response.json();
+        const aiResponseContent = getGeminiResponseText(data);
+        // ▼▼▼ 【【【这就是最关键的修复！】】】 ▼▼▼
+        // 我们不再直接清理和解析，而是先用正则表达式“抠出”完整的JSON数组部分
+        const jsonMatch = aiResponseContent.match(/\[[\s\S]*\]/);
+        
+        if (!jsonMatch) {
+            // 如果连JSON数组的结构都找不到，就抛出错误
+            throw new Error(`AI返回的内容中未找到有效的JSON数组。原始返回: ${aiResponseContent}`);
+        }
+        
+        // 只解析我们成功“抠出”的部分，忽略所有多余的文字
+        const simulatedPosts = JSON.parse(jsonMatch[0]);
+        // ▲▲▲ 【【【修复结束】】】 ▲▲▲
+        await db.doubanPosts.clear();
+        await db.doubanPosts.bulkAdd(simulatedPosts.map(p => ({...p, timestamp: Date.now() - Math.random() * 100000})));
+        
+        await renderDoubanScreen();
+        
+    } catch (error) {
+        console.error("生成豆瓣帖子失败:", error);
+        await showCustomAlert("生成失败", `无法生成内容，请检查API配置或稍后再试。\n错误: ${error.message}`);
+    }
+}
+// ▲▲▲ 替换结束 ▲▲▲
+/**
+ * 【V3.5 | 最终头像统一修复版】打开并渲染指定的帖子详情页
+ * @param {number} postId - 帖子的ID
+ */
+async function openDoubanPostDetail(postId) {
+    showScreen('douban-post-detail-screen');
+    activeDoubanPostId = postId;
+    const post = await db.doubanPosts.get(postId);
+    if (!post) {
+        showScreen('douban-screen');
+        return;
+    }
+
+    document.getElementById('douban-post-detail-title').textContent = '帖子详情';
+
+    // (这部分渲染帖子作者信息的逻辑是正确的，我们先在这里获取到正确的作者头像)
+    let authorAvatar = defaultAvatar;
+    let authorDisplayName = post.authorName; 
+
+    const authorChatByOriginalName = post.authorOriginalName
+        ? Object.values(state.chats).find(c => !c.isGroup && c.originalName === post.authorOriginalName)
+        : null;
+
+    if (authorChatByOriginalName) {
+        authorAvatar = authorChatByOriginalName.settings.aiAvatar;
+    } else {
+        const authorChatByName = Object.values(state.chats).find(c => !c.isGroup && c.name === post.authorName);
+        if (authorChatByName) {
+            authorAvatar = authorChatByName.settings.aiAvatar;
+        } else if (post.authorAvatarPrompt) {
+            authorAvatar = `https://image.pollinations.ai/prompt/${encodeURIComponent(post.authorAvatarPrompt)}`;
+        }
+    }
+    
+    // (填充帖子正文部分的信息)
+    document.getElementById('douban-detail-avatar').src = authorAvatar;
+    document.getElementById('douban-detail-author').textContent = authorDisplayName;
+    document.getElementById('douban-detail-group').textContent = `来自 ${post.groupName}`;
+    document.getElementById('douban-detail-post-title').textContent = post.postTitle;
+    document.getElementById('douban-detail-content').innerHTML = post.content.replace(/\n/g, '<br>');
+    document.getElementById('douban-my-comment-avatar').src = state.qzoneSettings.avatar;
+    document.getElementById('douban-comment-input').value = '';
+
+    const commentsListEl = document.getElementById('douban-detail-comments-list');
+    commentsListEl.innerHTML = '';
+
+    // ▼▼▼ 【【【核心修复就在这里！】】】 ▼▼▼
+    if (post.comments && post.comments.length > 0) {
+        // 1. 【全新】创建一个Map来“记住”每个评论者的头像，确保一致性
+        const commenterAvatarMap = new Map();
+
+        post.comments.forEach(comment => {
+            let commenterAvatar = defaultAvatar; // 默认头像
+            const myNickname = state.qzoneSettings.nickname || '我';
+            const commenterName = comment.commenter; // 获取当前评论者的名字
+
+            // 2. 【智能查找】检查是否已经为这个评论者确定过头像了
+            if (commenterAvatarMap.has(commenterName)) {
+                // 如果已经记住了，直接使用记住的头像，跳过所有查找！
+                commenterAvatar = commenterAvatarMap.get(commenterName);
+            } else {
+                // 如果是第一次遇到这个评论者，就执行完整的查找逻辑
+                if (commenterName === myNickname) {
+                    commenterAvatar = state.qzoneSettings.avatar;
+                }
+                else if (commenterName === post.authorName) {
+                    commenterAvatar = authorAvatar;
+                }
+                else {
+                    const commenterChatByOriginalName = comment.commenterOriginalName
+                        ? Object.values(state.chats).find(c => !c.isGroup && c.originalName === comment.commenterOriginalName)
+                        : null;
+                    
+                    if (commenterChatByOriginalName) {
+                        commenterAvatar = commenterChatByOriginalName.settings.aiAvatar;
+                    } else {
+                        const commenterChatByName = Object.values(state.chats).find(c => !c.isGroup && c.name === commenterName);
+                        if (commenterChatByName) {
+                            commenterAvatar = commenterChatByName.settings.aiAvatar;
+                        } else if (comment.avatar_prompt) {
+                            commenterAvatar = `https://image.pollinations.ai/prompt/${encodeURIComponent(comment.avatar_prompt)}`;
+                        }
+                    }
+                }
+                // 3. 【关键】将找到的头像存入Map中，以便下次直接使用
+                commenterAvatarMap.set(commenterName, commenterAvatar);
+            }
+            
+            // (后续的HTML渲染逻辑保持不变)
+            const commentEl = document.createElement('div');
+            commentEl.className = 'douban-comment-item';
+            commentEl.innerHTML = `
+                <img src="${commenterAvatar}" class="douban-comment-avatar">
+                <div class="douban-comment-body">
+                    <div class="douban-comment-author">${commenterName}</div>
+                    <div class="douban-comment-text">${comment.text.replace(/\n/g, '<br>')}</div>
+                </div>
+            `;
+            commentsListEl.appendChild(commentEl);
+        });
+    } else {
+        commentsListEl.innerHTML = '<p style="color: var(--text-secondary); font-size: 13px;">还没有回应</p>';
+    }
+    // ▲▲▲ 【【【修复结束】】】 ▲▲▲
+    
+    const contentWrapper = document.getElementById('douban-detail-content-wrapper');
+    if(contentWrapper) contentWrapper.scrollTop = 0;
+}
+// ▲▲▲ 替换结束 ▲▲▲
+// ▼▼▼ 【全新 | AI互动增强版】请用这个新版本替换旧的 handleSendDoubanComment 函数 ▼▼▼
+/**
+ * 【全新】处理用户发送豆瓣评论的逻辑，并触发AI互动
+ */
+async function handleSendDoubanComment() {
+    if (!activeDoubanPostId) return;
+
+    const input = document.getElementById('douban-comment-input');
+    const commentText = input.value.trim();
+    if (!commentText) return;
+
+    const post = await db.doubanPosts.get(activeDoubanPostId);
+    if (!post) return;
+
+    if (!post.comments) {
+        post.comments = [];
+    }
+    
+    const myNickname = state.qzoneSettings.nickname || '我';
+    
+    post.comments.push({
+        commenter: myNickname,
+        text: commentText
+    });
+    post.commentsCount++;
+
+    await db.doubanPosts.put(post);
+    input.value = '';
+    
+    // 【核心修改1】发送评论后，立刻重新渲染详情页，保证您的新评论能显示出来
+    await openDoubanPostDetail(activeDoubanPostId);
+
+
+}
+// ▲▲▲ 替换结束 ▲▲▲
+// ▼▼▼ 【全新 | AI互动增强版】请用这个新版本替换旧的 handleDoubanWaitReply 函数 ▼▼▼
+/**
+ * 【全新 V4.2 | 头像记忆修复版】处理“等待回复”按钮的点击，主动触发AI进行评论并实时刷新UI
+ */
+async function handleDoubanWaitReply() {
+    if (!activeDoubanPostId) return;
+
+    const postId = activeDoubanPostId;
+    const post = await db.doubanPosts.get(postId);
+    if (!post) return;
+
+    const lastComment = post.comments && post.comments.slice(-1)[0];
+    if (!lastComment) {
+        alert("还没有任何评论，无法等待回复。");
+        return;
+    }
+
+    await showCustomAlert("请稍候...", "正在请求AI角色们加入讨论...");
+
+    try {
+        const { proxyUrl, apiKey, model } = state.apiConfig;
+        if (!proxyUrl || !apiKey || !model) {
+            throw new Error('API未配置，无法生成内容。');
+        }
+
+        const userNickname = state.qzoneSettings.nickname || '我';
+        
+        // ▼▼▼ 核心修改 ①：提取已有NPC的头像信息 ▼▼▼
+        const existingNpcs = new Map();
+        if (post.comments) {
+            post.comments.forEach(comment => {
+                const isMainCharacter = (state.globalSettings.doubanActiveCharacterIds || []).some(id => state.chats[id]?.name === comment.commenter);
+                // 如果是NPC (不是主要角色) 并且有头像指令，就记录下来
+                if (!isMainCharacter && comment.avatar_prompt) {
+                    existingNpcs.set(comment.commenter, comment.avatar_prompt);
+                }
+            });
+        }
+        
+        let existingNpcContext = "# 已有路人NPC头像指令 (必须遵守！)\n";
+        if (existingNpcs.size > 0) {
+            existingNpcContext += "如果以下任何一位NPC再次评论，你【必须】使用我们提供的、完全相同的`avatar_prompt`，以保持头像一致性。\n";
+            existingNpcs.forEach((prompt, name) => {
+                existingNpcContext += `- **${name}**: "${prompt}"\n`;
+            });
+        } else {
+            existingNpcContext += "（当前帖子还没有路人NPC发表评论。）\n";
+        }
+        // ▲▲▲ 修改结束 ▲▲▲
+
+        const doubanWorldBook = state.worldBooks.find(wb => wb.name === '豆瓣设定');
+        let npcCharacters = [];
+        if (doubanWorldBook) {
+            doubanWorldBook.content.forEach(entry => {
+                if (entry.comment.includes('NPC人设')) {
+                    const lines = entry.content.split('\n');
+                    lines.forEach(line => {
+                        const match = line.match(/- \*\*昵称\*\*:\s*(.*?)\s*\*\*人设\*\*:\s*(.*)/);
+                        if (match) {
+                            npcCharacters.push({ name: match[1].trim(), persona: match[2].trim() });
+                        }
+                    });
+                }
+            });
+        }
+        
+        let charactersContext = '';
+        const activeCharacterIds = state.globalSettings.doubanActiveCharacterIds || [];
+        activeCharacterIds.forEach(charId => {
+            const c = state.chats[charId];
+            if (c) {
+                charactersContext += `\n- ${c.name}: ${c.settings.aiPersona.substring(0,50)}...`;
+            }
+        });
+        npcCharacters.forEach(npc => {
+            charactersContext += `\n- ${npc.name}: ${npc.persona}`;
+        });
+
+        // ▼▼▼ 核心修改 ②：更新系统指令，加入新的规则和上下文 ▼▼▼
+        const systemPrompt = `
+# 你的任务
+你是一个虚拟社区的AI导演。下面的“帖子摘要”和“已有评论”来自于一个豆瓣小组的帖子。用户“${userNickname}”刚刚对最后一条评论点击了“等待回复”，TA希望看到更多角色参与讨论。
+你的任务是：根据所有角色的设定，选择【10到20位】最适合参与讨论的角色，让他们针对已有评论，发表【全新的、符合人设的】回应。
+
+# 核心规则
+1.  **【互动】**: 新生成的评论【必须】是针对【已有评论】的延续或回应，让讨论能继续下去。
+2.  **【头像一致性 (最高优先级！)】**: 你【必须】参考下面的“已有路人NPC头像指令”列表。如果一个已有的NPC再次发言，【必须】复用它旧的头像指令。只有在创造一个【全新的、从未出现过的】NPC时，才为其生成新的头像指令。
+3.  **【格式】**: 你的回复【必须且只能】是一个JSON数组，数组中的每个元素都代表一条新评论，格式【必须】如下:
+    \`\`\`json
+    [
+      { "commenter": "角色A的名字", "text": "角色A的新评论内容。", "avatar_prompt": "(可选)如果评论者是【全新的】NPC,提供头像指令" },
+      { "commenter": "角色B的名字", "text": "角色B对角色A或楼主的看法。" }
+    ]
+    \`\`\`
+
+# 上下文
+- **帖子标题**: 《${post.postTitle}》
+- **发帖人**: ${post.authorName}
+- **帖子内容摘要**: ${post.content.substring(0, 100)}...
+- **已有评论**:
+${post.comments.map(c => `- ${c.commenter}: ${c.text}`).join('\n')}
+
+${existingNpcContext}
+
+# 你的角色库 (你可以从中选择【任何角色】进行评论)
+${charactersContext}
+
+现在，请生成新的评论。`;
+        // ▲▲▲ 修改结束 ▲▲▲
+
+        const messagesForApi = [{ role: 'user', content: "请根据以上情景，生成新的评论。" }];
+        let isGemini = proxyUrl.includes('generativelanguage');
+        let geminiConfig = toGeminiRequestData(model, apiKey, systemPrompt, messagesForApi);
+        
+        const response = isGemini 
+            ? await fetch(geminiConfig.url, geminiConfig.data) 
+            : await fetch(`${proxyUrl}/v1/chat/completions`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}`},
+                body: JSON.stringify({
+                    model: model,
+                    messages: [{role: 'system', content: systemPrompt}, ...messagesForApi],
+                    temperature: 1.0,
+                })
+            });
+
+        if (!response.ok) throw new Error(`API 错误: ${response.statusText}`);
+        
+        const data = await response.json();
+        const aiResponseContent = getGeminiResponseText(data);
+        const cleanedJson = aiResponseContent.replace(/^```json\s*/, '').replace(/```$/, '');
+        const newComments = JSON.parse(cleanedJson);
+
+        if (Array.isArray(newComments) && newComments.length > 0) {
+            post.comments.push(...newComments);
+            post.commentsCount += newComments.length;
+            await db.doubanPosts.put(post);
+        }
+
+        await openDoubanPostDetail(postId);
+        
+        hideCustomModal();
+
+    } catch (error) {
+        console.error("等待回复失败:", error);
+        await showCustomAlert("操作失败", `无法获取AI回复，请检查API配置或稍后再试。\n错误: ${error.message}`);
+    }
+}
+// ▲▲▲ 替换结束 ▲▲▲
+// ▼▼▼ 【全新】请将这两个新函数，粘贴到 init() 函数的上方 ▼▼▼
+/**
+ * 【全新】打开豆瓣角色选择器弹窗
+ */
+async function openDoubanCastSelector() {
+    const modal = document.getElementById('douban-cast-modal');
+    const listEl = document.getElementById('douban-cast-list');
+    listEl.innerHTML = '';
+
+    const allCharacters = Object.values(state.chats).filter(c => !c.isGroup);
+    // 从全局设置中读取已保存的选择
+    const activeIds = new Set(state.globalSettings.doubanActiveCharacterIds || []);
+
+    if (allCharacters.length === 0) {
+        listEl.innerHTML = '<p style="text-align:center; color:#8a8a8a; padding: 50px 0;">还没有可以参与的角色。</p>';
+    } else {
+        allCharacters.forEach(char => {
+            const item = document.createElement('div');
+            item.className = 'contact-picker-item'; // 复用联系人选择器的样式
+            item.innerHTML = `
+                <input type="checkbox" class="douban-cast-checkbox" data-chat-id="${char.id}" ${activeIds.has(char.id) ? 'checked' : ''} style="margin-right: 15px;">
+                <img src="${char.settings.aiAvatar || defaultAvatar}" class="avatar">
+                <span class="name">${char.name}</span>
+            `;
+            listEl.appendChild(item);
+        });
+    }
+    modal.classList.add('visible');
+}
+
+/**
+ * 【全新】保存用户选择的豆瓣角色
+ */
+async function saveDoubanCastSelection() {
+    const selectedCheckboxes = document.querySelectorAll('#douban-cast-list .douban-cast-checkbox:checked');
+    const selectedIds = Array.from(selectedCheckboxes).map(cb => cb.dataset.chatId);
+
+    // 将选择保存到全局设置中
+    state.globalSettings.doubanActiveCharacterIds = selectedIds;
+    await db.globalSettings.put(state.globalSettings);
+
+    document.getElementById('douban-cast-modal').classList.remove('visible');
+    
+    // 【关键】保存后，立即使用新的角色阵容重新生成帖子！
+    await handleGenerateDoubanPosts();
+}
+// ▲▲▲ 新增函数结束 ▲▲▲
+
+// ▼▼▼ 在 init() 函数的事件监听器区域，粘贴下面这整块代码 ▼▼▼
+// 绑定豆瓣角色选择功能的按钮
+document.getElementById('douban-cast-select-btn').addEventListener('click', openDoubanCastSelector);
+document.getElementById('cancel-douban-cast-btn').addEventListener('click', () => {
+    document.getElementById('douban-cast-modal').classList.remove('visible');
+});
+document.getElementById('save-douban-cast-btn').addEventListener('click', saveDoubanCastSelection);
+// 使用事件委托，为列表项的点击添加切换选中状态的功能
+document.getElementById('douban-cast-list').addEventListener('click', (e) => {
+    const item = e.target.closest('.contact-picker-item');
+    if (item) {
+        const checkbox = item.querySelector('.douban-cast-checkbox');
+        if (checkbox && e.target !== checkbox) {
+            checkbox.checked = !checkbox.checked;
+        }
+    }
+});
+// ▲▲▲ 新增事件绑定结束 ▲▲▲
+
+
 
 
               // ===================================================================
@@ -30422,37 +31608,35 @@ function updateChatListItem(chatId) {
                     //chatInput.addEventListener('input', () => { chatInput.style.height = 'auto'; chatInput.style.height = (chatInput.scrollHeight) + 'px'; });
         
                     document.getElementById('wallpaper-upload-input').addEventListener('change', async (event) => { const file = event.target.files[0]; if(file) { const dataUrl = await new Promise((res, rej) => { const reader = new FileReader(); reader.onload = () => res(reader.result); reader.onerror = () => rej(reader.error); reader.readAsDataURL(file); }); newWallpaperBase64 = dataUrl; renderWallpaperScreen(); } });
-                    // ▼▼▼ 用这整块代码，替换旧的 save-wallpaper-btn 事件监听器 ▼▼▼
+        // ▼▼▼ 【请用这个已包含CPhone设置的最终版本】替换旧的 'save-wallpaper-btn' 事件监听器 ▼▼▼
         document.getElementById('save-wallpaper-btn').addEventListener('click', async () => {
-            let changesMade = false;
-        
-            // 保存壁纸
+            // 保存 EPhone 壁纸
             if (newWallpaperBase64) {
                 state.globalSettings.wallpaper = newWallpaperBase64;
-                changesMade = true;
             }
-            // ▼▼▼ 在这里粘贴新代码 ▼▼▼
+            
+            // 【核心新增】将 state 中临时的 CPhone 壁纸设置也一并保存
+            // (注意：cphoneWallpaper已经在上传时更新到state了, 这里只需确保它被存入数据库)
+
             state.globalSettings.globalCss = document.getElementById('global-css-input').value.trim();
-            // ▲▲▲ 新代码粘贴结束 ▲▲▲
-    // ▼▼▼ 在这里粘贴新代码 ▼▼▼
-    state.globalSettings.notificationSoundUrl = document.getElementById('notification-sound-url-input').value.trim();
-    // ▲▲▲ 新代码粘贴结束 ▲▲▲
-          state.globalSettings.showStatusBar = document.getElementById('status-bar-toggle-switch').checked; // <-- 新增这一行        
-            // 【核心修改】保存图标设置（它已经在内存中了，我们只需要把整个globalSettings存起来）
+            state.globalSettings.notificationSoundUrl = document.getElementById('notification-sound-url-input').value.trim();
+            state.globalSettings.showStatusBar = document.getElementById('status-bar-toggle-switch').checked;
+            
+            // 一次性保存所有全局设置 (包括了EPhone和CPhone的所有新旧设置)
             await db.globalSettings.put(state.globalSettings);
-            // ▼▼▼ 在这里粘贴另一行新代码 ▼▼▼
-            applyGlobalCss(state.globalSettings.globalCss);
-            // ▲▲▲ 新代码粘贴结束 ▲▲▲
-        
+            
             // 应用所有更改
-            if (changesMade) {
-                applyGlobalWallpaper();
-                newWallpaperBase64 = null;
-            }
-            applyAppIcons(); // 重新应用所有图标
-        
+            applyGlobalWallpaper();
+            applyCPhoneWallpaper(); // <-- 新增调用
+            newWallpaperBase64 = null; // 清空临时壁纸变量
+
+            applyAppIcons();
+            applyCPhoneAppIcons(); // <-- 新增调用
+            
+            applyGlobalCss(state.globalSettings.globalCss);
+            applyStatusBarVisibility();
+
             alert('外观设置已保存并应用！');
-        
             showScreen('home-screen');
         });
         // ▲▲▲ 替换结束 ▲▲▲
@@ -30845,40 +32029,56 @@ function updateChatListItem(chatId) {
                 removeBgBtn.style.display = 'none';
             }
             document.getElementById('lyrics-position-group').style.display = isGroup ? 'none' : 'block';
-            if (isGroup) {
-                document.getElementById('my-group-nickname-input').value = chat.settings.myNickname || '';
-                document.getElementById('group-avatar-preview').src = chat.settings.groupAvatar || defaultGroupAvatar;
-                document.getElementById('group-action-cooldown-input').value = chat.settings.actionCooldownMinutes || 10;
-                renderGroupMemberSettings(chat.members);
-            } else {
-                const offlineModeToggle = document.getElementById('offline-mode-toggle');
-                const offlineModeOptions = document.getElementById('offline-mode-options');
-                const offlineMinInput = document.getElementById('offline-min-length-input');
-                const offlineMaxInput = document.getElementById('offline-max-length-input');
-                offlineModeToggle.checked = chat.settings.isOfflineMode || false;
-                offlineModeOptions.style.display = offlineModeToggle.checked ? 'block' : 'none';
-                offlineMinInput.value = chat.settings.offlineMinLength || 100;
-                offlineMaxInput.value = chat.settings.offlineMaxLength || 300;
-                document.getElementById('ai-original-name-input').value = chat.originalName;
-                document.getElementById('ai-persona').value = chat.settings.aiPersona;
-                document.getElementById('ai-avatar-preview').src = chat.settings.aiAvatar || defaultAvatar;
-                document.getElementById('my-nickname-input').value = chat.settings.myNickname || '我';
-                document.getElementById('ai-action-cooldown-input').value = chat.settings.actionCooldownMinutes || 10;
-                const select = document.getElementById('assign-group-select');
-                select.innerHTML = '<option value="">未分组</option>';
-                const groups = await db.qzoneGroups.toArray();
-                groups.forEach(group => {
-                    const option = document.createElement('option');
-                    option.value = group.id;
-                    option.textContent = group.name;
-                    if (chat.groupId === group.id) option.selected = true;
-                    select.appendChild(option);
-                });
-                const lyricsPos = chat.settings.lyricsPosition || { vertical: 'top', horizontal: 'center', offset: 10 };
-                document.getElementById('lyrics-vertical-pos').value = lyricsPos.vertical;
-                document.getElementById('lyrics-horizontal-pos').value = lyricsPos.horizontal;
-                document.getElementById('lyrics-offset-input').value = lyricsPos.offset;
-            }
+// 【核心新增】根据是否为群聊，显示或隐藏对应的后台活动开关
+document.getElementById('single-char-background-activity-group').style.display = isGroup ? 'none' : 'block';
+document.getElementById('group-background-activity-group').style.display = isGroup ? 'block' : 'none';
+
+// (后续的赋值逻辑，请用下面这整块新代码完整替换)
+
+if (isGroup) {
+    // 【核心新增】读取并设置群聊开关的状态
+    document.getElementById('group-background-activity-switch').checked = chat.settings.enableBackgroundActivity;
+    document.getElementById('my-group-nickname-input').value = chat.settings.myNickname || '';
+    document.getElementById('group-avatar-preview').src = chat.settings.groupAvatar || defaultGroupAvatar;
+    document.getElementById('group-action-cooldown-input').value = chat.settings.actionCooldownMinutes || 10;
+    // 【核心新增】在群聊设置中，隐藏单聊的后台活动开关
+    document.getElementById('single-char-background-activity-group').style.display = 'none';
+    renderGroupMemberSettings(chat.members);
+} else {
+    // 【核心新增】在单聊设置中，显示并设置开关的当前状态
+    document.getElementById('single-char-background-activity-group').style.display = 'block';
+    document.getElementById('char-background-activity-switch').checked = chat.settings.enableBackgroundActivity;
+
+    // (其他单聊设置的读取逻辑保持不变)
+    const offlineModeToggle = document.getElementById('offline-mode-toggle');
+    const offlineModeOptions = document.getElementById('offline-mode-options');
+    const offlineMinInput = document.getElementById('offline-min-length-input');
+    const offlineMaxInput = document.getElementById('offline-max-length-input');
+    offlineModeToggle.checked = chat.settings.isOfflineMode || false;
+    offlineModeOptions.style.display = offlineModeToggle.checked ? 'block' : 'none';
+    offlineMinInput.value = chat.settings.offlineMinLength || 100;
+    offlineMaxInput.value = chat.settings.offlineMaxLength || 300;
+    document.getElementById('ai-original-name-input').value = chat.originalName;
+    document.getElementById('ai-persona').value = chat.settings.aiPersona;
+    document.getElementById('ai-avatar-preview').src = chat.settings.aiAvatar || defaultAvatar;
+    document.getElementById('my-nickname-input').value = chat.settings.myNickname || '我';
+    document.getElementById('ai-action-cooldown-input').value = chat.settings.actionCooldownMinutes || 10;
+    const select = document.getElementById('assign-group-select');
+    select.innerHTML = '<option value="">未分组</option>';
+    const groups = await db.qzoneGroups.toArray();
+    groups.forEach(group => {
+        const option = document.createElement('option');
+        option.value = group.id;
+        option.textContent = group.name;
+        if (chat.groupId === group.id) option.selected = true;
+        select.appendChild(option);
+    });
+    const lyricsPos = chat.settings.lyricsPosition || { vertical: 'top', horizontal: 'center', offset: 10 };
+    document.getElementById('lyrics-vertical-pos').value = lyricsPos.vertical;
+    document.getElementById('lyrics-horizontal-pos').value = lyricsPos.horizontal;
+    document.getElementById('lyrics-offset-input').value = lyricsPos.offset;
+}
+// ▲▲▲ 替换结束 ▲▲▲
             
             // --- 【【【核心修复从这里开始】】】 ---
             const worldBookCheckboxesContainer = document.getElementById('world-book-checkboxes-container');
@@ -31063,31 +32263,37 @@ function updateChatListItem(chatId) {
             delete chat.settings.linkedWorldBookCategoryIds; 
             // --- 【【【核心修改到这里结束】】】 ---
         
-            // --- （这部分与之前相同，保持不变） ---
-            if (chat.isGroup) {
-                chat.settings.myNickname = document.getElementById('my-group-nickname-input').value.trim();
-                chat.settings.groupAvatar = document.getElementById('group-avatar-preview').src;
-                chat.settings.actionCooldownMinutes = parseInt(document.getElementById('group-action-cooldown-input').value) || 10;
-            } else {
-                chat.settings.isOfflineMode = document.getElementById('offline-mode-toggle').checked;
-                chat.settings.offlineMinLength = parseInt(document.getElementById('offline-min-length-input').value) || 100;
-                chat.settings.offlineMaxLength = parseInt(document.getElementById('offline-max-length-input').value) || 300;
-                const newOriginalName = document.getElementById('ai-original-name-input').value.trim();
-                if (!newOriginalName) return alert('对方本名不能为空！');
-                chat.originalName = newOriginalName;
-                chat.settings.aiPersona = document.getElementById('ai-persona').value;
-                chat.settings.aiAvatar = document.getElementById('ai-avatar-preview').src;
-                chat.settings.myNickname = document.getElementById('my-nickname-input').value.trim() || '我';
-                chat.settings.actionCooldownMinutes = parseInt(document.getElementById('ai-action-cooldown-input').value) || 10;
+// ▼▼▼ 请用这个【新版本】替换旧的 if/else 逻辑 ▼▼▼
+if (chat.isGroup) {
+    // 【核心新增】保存群聊的后台活动开关状态
+    chat.settings.enableBackgroundActivity = document.getElementById('group-background-activity-switch').checked;
+    chat.settings.myNickname = document.getElementById('my-group-nickname-input').value.trim();
+    chat.settings.groupAvatar = document.getElementById('group-avatar-preview').src;
+    chat.settings.actionCooldownMinutes = parseInt(document.getElementById('group-action-cooldown-input').value) || 10;
+} else {
+    // 【核心新增】保存单个角色的后台活动开关状态
+    chat.settings.enableBackgroundActivity = document.getElementById('char-background-activity-switch').checked;
 
-                chat.settings.lyricsPosition = {
-                    vertical: document.getElementById('lyrics-vertical-pos').value,
-                    horizontal: document.getElementById('lyrics-horizontal-pos').value,
-                    offset: parseInt(document.getElementById('lyrics-offset-input').value) || 10
-                };
-                const selectedGroupId = document.getElementById('assign-group-select').value;
-                chat.groupId = selectedGroupId ? parseInt(selectedGroupId) : null;
-            }
+    // (其他单聊设置的保存逻辑保持不变)
+    chat.settings.isOfflineMode = document.getElementById('offline-mode-toggle').checked;
+    chat.settings.offlineMinLength = parseInt(document.getElementById('offline-min-length-input').value) || 100;
+    chat.settings.offlineMaxLength = parseInt(document.getElementById('offline-max-length-input').value) || 300;
+    const newOriginalName = document.getElementById('ai-original-name-input').value.trim();
+    if (!newOriginalName) return alert('对方本名不能为空！');
+    chat.originalName = newOriginalName;
+    chat.settings.aiPersona = document.getElementById('ai-persona').value;
+    chat.settings.aiAvatar = document.getElementById('ai-avatar-preview').src;
+    chat.settings.myNickname = document.getElementById('my-nickname-input').value.trim() || '我';
+    chat.settings.actionCooldownMinutes = parseInt(document.getElementById('ai-action-cooldown-input').value) || 10;
+    chat.settings.lyricsPosition = {
+        vertical: document.getElementById('lyrics-vertical-pos').value,
+        horizontal: document.getElementById('lyrics-horizontal-pos').value,
+        offset: parseInt(document.getElementById('lyrics-offset-input').value) || 10
+    };
+    const selectedGroupId = document.getElementById('assign-group-select').value;
+    chat.groupId = selectedGroupId ? parseInt(selectedGroupId) : null;
+}
+// ▲▲▲ 替换结束 ▲▲▲
             chat.settings.maxMemory = parseInt(document.getElementById('max-memory').value) || 10;
             chat.settings.linkedMemoryCount = parseInt(document.getElementById('linked-memory-count').value) || 10;
             const linkMemoryToggleChecked = document.getElementById('link-memory-toggle').checked;
@@ -34084,6 +35290,48 @@ document.getElementById('regenerate-char-amap-btn').addEventListener('click', ha
 document.getElementById('regenerate-char-usage-btn').addEventListener('click', handleGenerateAppUsage);
         document.getElementById('regenerate-char-music-btn').addEventListener('click', handleGenerateSimulatedMusic);
         document.getElementById('close-char-music-player-btn').addEventListener('click', closeCharMusicPlayer);
+document.getElementById('regenerate-douban-btn').addEventListener('click', handleGenerateDoubanPosts);
+document.getElementById('regenerate-douban-btn').addEventListener('click', handleGenerateDoubanPosts);
+document.getElementById('douban-detail-back-btn').addEventListener('click', () => showScreen('douban-screen'));
+document.getElementById('douban-send-comment-btn').addEventListener('click', handleSendDoubanComment);
+document.getElementById('douban-wait-reply-btn').addEventListener('click', handleDoubanWaitReply);
+        // 1. 为CPhone的壁纸上传输入框绑定事件
+        document.getElementById('cphone-wallpaper-upload-input').addEventListener('change', async (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const dataUrl = await new Promise((res) => {
+                    const reader = new FileReader();
+                    reader.onload = () => res(reader.result);
+                    reader.readAsDataURL(file);
+                });
+                // 直接更新 state 中的值，等待用户点击“保存”
+                state.globalSettings.cphoneWallpaper = dataUrl;
+                // 实时刷新预览
+                renderWallpaperScreen();
+            }
+        });
+        
+        // 2. 为CPhone的图标设置网格绑定事件委托
+        document.getElementById('cphone-icon-settings-grid').addEventListener('click', async (e) => {
+            if (e.target.classList.contains('change-icon-btn')) {
+                const item = e.target.closest('.icon-setting-item');
+                const iconId = item.dataset.iconId;
+                if (!iconId) return;
+
+                const currentUrl = state.globalSettings.cphoneAppIcons[iconId];
+                const newUrl = await showCustomPrompt(`更换CPhone“${item.querySelector('.icon-preview').alt}”图标`, '请输入新的图片URL', currentUrl, 'url');
+
+                if (newUrl && newUrl.trim().startsWith('http')) {
+                    // 更新 state 中的值，等待保存
+                    state.globalSettings.cphoneAppIcons[iconId] = newUrl.trim();
+                    // 实时更新预览
+                    item.querySelector('.icon-preview').src = newUrl.trim();
+                } else if (newUrl !== null) {
+                    alert("请输入一个有效的URL！");
+                }
+            }
+        });
+
 
 
                     showScreen('home-screen');
@@ -34270,7 +35518,24 @@ document.getElementById('regenerate-char-usage-btn').addEventListener('click', h
 </div>
 <!-- ▲▲▲ 替换结束 ▲▲▲ -->
 <audio id="char-audio-player" preload="auto"></audio>
+<!-- ▼▼▼ 【全新】豆瓣角色选择弹窗 ▼▼▼ -->
+<div id="douban-cast-modal" class="modal">
+    <div class="modal-content" style="height: 70%;">
+        <div class="modal-header">
+            <span>选择参与豆瓣的角色</span>
+        </div>
+        <div class="modal-body" id="douban-cast-list" style="padding: 0;">
+            <!-- 角色列表将由JS动态生成在这里 -->
+        </div>
+        <div class="modal-footer">
+            <button class="cancel" id="cancel-douban-cast-btn">取消</button>
+            <button class="save" id="save-douban-cast-btn">保存并刷新</button>
+        </div>
+    </div>
+</div>
+<!-- ▲▲▲ 新增HTML结束 ▲▲▲ -->
 </body>
 </html>
+
 
 
