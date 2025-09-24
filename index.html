@@ -8575,53 +8575,7 @@
     justify-content: center;
 }
 /* ▲▲▲ 修复结束 ▲▲▲ */
-/* ▼▼▼ 【全新 | V2.3 豆瓣绿主题美化】 ▼▼▼ */
 
-/* 1. 定义豆瓣绿的颜色变量，并限定其只在豆瓣相关屏幕内生效 */
-#douban-screen,
-#douban-post-detail-screen {
-    --douban-green: #007722;
-}
-
-/* 2. 将豆瓣绿应用到所有关键交互元素上 */
-
-/* a. 详情页底部的“发送”按钮 */
-#douban-post-detail-screen #douban-send-comment-btn {
-    background-color: var(--douban-green);
-    transition: background-color 0.2s; /* 添加平滑的过渡效果 */
-}
-#douban-post-detail-screen #douban-send-comment-btn:hover {
-    background-color: #005511; /* 鼠标悬停时颜色加深 */
-}
-
-/* b. 详情页底部的“羽毛笔”按钮 */
-#douban-post-detail-screen .douban-feather-btn {
-    background-color: #f0f2f5;
-    color: var(--douban-green); /* 图标颜色设为豆瓣绿 */
-}
-#douban-post-detail-screen .douban-feather-btn:hover {
-    background-color: #e2e6ea;
-}
-
-
-/* c. 详情页顶部的“返回”箭头 */
-#douban-post-detail-screen .header .back-btn {
-    color: var(--douban-green);
-}
-
-/* d. 豆瓣小组主页和详情页顶部的所有“操作按钮”（如刷新、角色选择等） */
-#douban-screen .header .action-btn,
-#douban-post-detail-screen .header .action-btn {
-    color: var(--douban-green);
-}
-
-/* e. 帖子作者信息下的“来自小组”文字 */
-.douban-group-name {
-    color: var(--douban-green) !important; /* 使用 !important 强制覆盖旧样式 */
-    font-weight: 500;
-}
-
-/* ▲▲▲ 美化代码粘贴结束 ▲▲▲ */
 
 
     </style>
@@ -35576,6 +35530,7 @@ document.getElementById('douban-wait-reply-btn').addEventListener('click', handl
 <!-- ▲▲▲ 新增HTML结束 ▲▲▲ -->
 </body>
 </html>
+
 
 
 
