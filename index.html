@@ -9704,7 +9704,12 @@
                     </label>
                     <textarea id="global-css-input" rows="6" style="width: 100%; margin-top: 8px; font-family: monospace; font-size: 16px; resize: vertical;" placeholder="/* 在此输入自定义CSS */"></textarea>
                 </div>
-                
+<!-- ▼▼▼ 在这里粘贴下面的新代码 ▼▼▼ -->
+
+<button class="form-button form-button-secondary" id="import-appearance-btn" style="margin-top: 10px;">导入外观 (JSON)</button>
+<input type="file" id="import-appearance-input" accept="application/json" hidden>
+
+<!-- ▲▲▲ 粘贴结束 ▲▲▲ -->                
                 <!-- 保存按钮 -->
                 <button class="form-button" id="save-wallpaper-btn" style="margin-top: 30px;">保存所有外观设置</button>
             </div>
@@ -30779,7 +30784,7 @@ async function handleGenerateDoubanPosts() {
     // ▲▲▲ 核心修改2：构建全新的、带有“用户档案”和“禁止扮演铁律”的系统指令 ▲▲▲
     const systemPrompt = `
 # 你的任务
-你是一个虚拟社区内容生成器。你的任务是根据下面提供的【统一角色列表】，虚构出【12到20篇】他们最近可能会在各种豆瓣小组中发布的帖子和评论。每篇帖子下方必须有【8到15条】评论。
+你是一个虚拟社区内容生成器。你的任务是根据下面提供的【统一角色列表】，虚构出【12到20篇】他们最近可能会在各种豆瓣小组中发布的帖子和评论。
 
 # 核心规则
 1.  **【时间感知】**:
@@ -31252,7 +31257,65 @@ document.getElementById('douban-cast-list').addEventListener('click', (e) => {
     }
 });
 // ▲▲▲ 新增事件绑定结束 ▲▲▲
+/* ▼▼▼ 【全新】这是导入外观设置的【全部核心JS代码】，请完整粘贴 ▼▼▼ */
 
+/**
+ * 【总入口】当用户选择了外观设置的JSON文件后，由此函数开始处理
+ * @param {File} file - 用户选择的 .json 备份文件
+ */
+async function importAppearanceSettings(file) {
+    if (!file) return;
+
+    // 1. 弹出确认框，防止用户误操作
+    const confirmed = await showCustomConfirm(
+        '导入外观设置',
+        '这将用文件中的设置覆盖当前的所有外观设置（包括壁纸、图标、字体、CSS等）。确定要继续吗？',
+        { confirmText: '确认导入' }
+    );
+
+    if (!confirmed) return;
+
+    try {
+        // 2. 读取并解析JSON文件
+        const text = await file.text();
+        const data = JSON.parse(text);
+
+        // 3. 验证文件有效性（检查是否包含关键的外观设置字段）
+        if (!data.wallpaper && !data.globalCss && !data.appIcons) {
+            throw new Error("文件格式不正确，缺少关键的外观设置项。");
+        }
+
+        // 4. 将导入的设置合并到当前的全局设置中
+        //    我们使用Object.assign来确保即使未来增加了新的设置项，旧的备份文件也不会导致它们丢失
+        Object.assign(state.globalSettings, data);
+
+        // 5. 将更新后的完整设置保存到数据库
+        await db.globalSettings.put(state.globalSettings);
+        
+        // 6. 立即应用所有新设置，让更改即时生效
+        applyGlobalWallpaper();
+        applyCPhoneWallpaper();
+        applyAppIcons();
+        applyCPhoneAppIcons();
+        applyGlobalCss(state.globalSettings.globalCss);
+        applyCustomFont(state.globalSettings.fontUrl);
+        applyStatusBarVisibility();
+        applyWidgetData();
+
+        // 7. 重新渲染外观设置页面，以显示最新的设置值
+        renderWallpaperScreen();
+        
+        // 8. 给出成功提示
+        await showCustomAlert('导入成功', '外观设置已成功导入并应用！');
+
+    } catch (error) {
+        // 如果过程中出现任何错误，则捕获并提示用户
+        console.error("导入外观设置时出错:", error);
+        await showCustomAlert('导入失败', `文件解析或应用失败: ${error.message}`);
+    }
+}
+
+/* ▲▲▲ 核心JS代码粘贴结束 ▲▲▲ */
 
 
 
@@ -35320,6 +35383,17 @@ document.getElementById('douban-wait-reply-btn').addEventListener('click', handl
                 }
             }
         });
+document.getElementById('import-appearance-btn').addEventListener('click', () => {
+    document.getElementById('import-appearance-input').click();
+});
+
+document.getElementById('import-appearance-input').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        importAppearanceSettings(file);
+    }
+    e.target.value = null; 
+});
 
 
 
@@ -35525,6 +35599,7 @@ document.getElementById('douban-wait-reply-btn').addEventListener('click', handl
 <!-- ▲▲▲ 新增HTML结束 ▲▲▲ -->
 </body>
 </html>
+
 
 
 
