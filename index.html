@@ -8622,6 +8622,8 @@
 }
 
 /* ▲▲▲ 美化代码粘贴结束 ▲▲▲ */
+
+
     </style>
 </head>
 <body>
@@ -9927,86 +9929,7 @@
             </div>
         </div>
         <!-- ▲▲▲ 新HTML粘贴结束 ▲▲▲ -->
-<!-- ▼▼▼ 【全新】豆瓣小组功能页面 ▼▼▼ -->
-<div id="douban-screen" class="screen">
-<div class="header">
-    <span class="back-btn" onclick="showScreen('home-screen')">‹</span>
-    <span>豆瓣小组</span>
-    <div class="header-actions">
-        <!-- 【核心新增】“选择角色”按钮 -->
-        <span class="action-btn" id="douban-cast-select-btn" title="选择参与角色">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                <circle cx="9" cy="7" r="4"></circle>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-            </svg>
-        </span>
-        <span class="action-btn" id="regenerate-douban-btn" title="重新生成内容">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M20 11A8.1 8.1 0 0 0 4.5 9M4 5v4h4"></path>
-                <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"></path>
-            </svg>
-        </span>
-    </div>
-</div>
-    <div id="douban-posts-list" class="list-container">
-        <!-- AI生成的帖子将在这里显示 -->
-    </div>
-</div>
-<!-- ▲▲▲ 新增HTML结束 ▲▲▲ -->
-<!-- ▼▼▼ 【V2.0 | 最终修复版】豆瓣帖子详情页 (全屏版) ▼▼▼ -->
-<div id="douban-post-detail-screen" class="screen">
-    <div class="header">
-        <span class="back-btn" id="douban-detail-back-btn">‹</span>
-        <span id="douban-post-detail-title">帖子详情</span>
-        <span style="width: 30px;"></span> <!-- 占位 -->
-    </div>
 
-    <!-- 可滚动的内容容器 -->
-    <div id="douban-detail-content-wrapper" class="list-container">
-        
-        <!-- 【【【核心修复区域】】】 -->
-        <div id="douban-post-detail-body">
-            <!-- 帖子头部 -->
-            <div class="douban-post-header">
-                <img id="douban-detail-avatar" class="douban-post-avatar">
-                <div class="douban-author-info">
-                    <div id="douban-detail-author" class="douban-author-name"></div>
-                    <div id="douban-detail-group" class="douban-group-name"></div>
-                </div>
-            </div>
-            <!-- 帖子标题 -->
-            <h2 id="douban-detail-post-title" class="douban-post-title"></h2>
-            <!-- 帖子正文 -->
-            <div id="douban-detail-content" class="douban-detail-content"></div>
-        </div>
-        
-        <div class="douban-comments-section">
-            <h4 style="margin: 0 0 10px 0; padding: 0 15px;">回应</h4>
-            <!-- 这就是JS要找的评论列表容器 -->
-            <div id="douban-detail-comments-list" style="padding: 0 15px;">
-                <!-- 评论列表将由JS填充在这里 -->
-            </div>
-        </div>
-    </div>
-
-<div id="douban-comment-footer" class="post-footer">
-    <div class="comment-section">
-        <img id="douban-my-comment-avatar" src="" class="comment-avatar">
-        <input type="text" id="douban-comment-input" class="comment-input" placeholder="写回应...">
-    </div>
-    <!-- 【核心修改】将钢笔SVG替换为真正的羽毛笔SVG -->
-    <button id="douban-wait-reply-btn" class="douban-feather-btn" title="让AI继续讨论">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path>
-            <line x1="16" y1="8" x2="2" y2="22"></line>
-            <line x1="17.5" y1="15" x2="9" y2="15"></line>
-        </svg>
-    </button>
-    <button id="douban-send-comment-btn" class="comment-send-btn">发送</button>
-</div>
-<!-- ▲▲▲ 替换结束 ▲▲▲ -->
         <!-- ▼▼▼ 【全新】购物功能相关页面与弹窗 (V4.0 - 仿淘宝终极版) ▼▼▼ -->
         <div id="shopping-screen" class="screen">
             <div class="header">
@@ -10130,6 +10053,86 @@
         <!-- ▲▲▲ 新增HTML结束 ▲▲▲ -->
     </div>
     </div>
+<!-- ▼▼▼ 【全新】豆瓣小组功能页面 ▼▼▼ -->
+<div id="douban-screen" class="screen">
+<div class="header">
+    <span class="back-btn" onclick="showScreen('home-screen')">‹</span>
+    <span>豆瓣小组</span>
+    <div class="header-actions">
+        <!-- 【核心新增】“选择角色”按钮 -->
+        <span class="action-btn" id="douban-cast-select-btn" title="选择参与角色">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+        </span>
+        <span class="action-btn" id="regenerate-douban-btn" title="重新生成内容">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 11A8.1 8.1 0 0 0 4.5 9M4 5v4h4"></path>
+                <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"></path>
+            </svg>
+        </span>
+    </div>
+</div>
+    <div id="douban-posts-list" class="list-container">
+        <!-- AI生成的帖子将在这里显示 -->
+    </div>
+</div>
+<!-- ▲▲▲ 新增HTML结束 ▲▲▲ -->
+<!-- ▼▼▼ 【V2.0 | 最终修复版】豆瓣帖子详情页 (全屏版) ▼▼▼ -->
+<div id="douban-post-detail-screen" class="screen">
+    <div class="header">
+        <span class="back-btn" id="douban-detail-back-btn">‹</span>
+        <span id="douban-post-detail-title">帖子详情</span>
+        <span style="width: 30px;"></span> <!-- 占位 -->
+    </div>
+
+    <!-- 可滚动的内容容器 -->
+    <div id="douban-detail-content-wrapper" class="list-container">
+        
+        <!-- 【【【核心修复区域】】】 -->
+        <div id="douban-post-detail-body">
+            <!-- 帖子头部 -->
+            <div class="douban-post-header">
+                <img id="douban-detail-avatar" class="douban-post-avatar">
+                <div class="douban-author-info">
+                    <div id="douban-detail-author" class="douban-author-name"></div>
+                    <div id="douban-detail-group" class="douban-group-name"></div>
+                </div>
+            </div>
+            <!-- 帖子标题 -->
+            <h2 id="douban-detail-post-title" class="douban-post-title"></h2>
+            <!-- 帖子正文 -->
+            <div id="douban-detail-content" class="douban-detail-content"></div>
+        </div>
+        
+        <div class="douban-comments-section">
+            <h4 style="margin: 0 0 10px 0; padding: 0 15px;">回应</h4>
+            <!-- 这就是JS要找的评论列表容器 -->
+            <div id="douban-detail-comments-list" style="padding: 0 15px;">
+                <!-- 评论列表将由JS填充在这里 -->
+            </div>
+        </div>
+    </div>
+
+<div id="douban-comment-footer" class="post-footer">
+    <div class="comment-section">
+        <img id="douban-my-comment-avatar" src="" class="comment-avatar">
+        <input type="text" id="douban-comment-input" class="comment-input" placeholder="写回应...">
+    </div>
+    <!-- 【核心修改】将钢笔SVG替换为真正的羽毛笔SVG -->
+    <button id="douban-wait-reply-btn" class="douban-feather-btn" title="让AI继续讨论">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path>
+            <line x1="16" y1="8" x2="2" y2="22"></line>
+            <line x1="17.5" y1="15" x2="9" y2="15"></line>
+        </svg>
+    </button>
+    <button id="douban-send-comment-btn" class="comment-send-btn">发送</button>
+</div>
+<!-- ▲▲▲ 替换结束 ▲▲▲ -->
     <input type="file" id="import-card-input" accept=".json,.png" style="display: none;">
 <!-- ▼▼▼ 【全新】聊天设置页面结构 ▼▼▼ -->
 <div id="chat-settings-screen" class="screen">
