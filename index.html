@@ -30726,6 +30726,7 @@ async function renderDoubanScreen() {
 }
 // ▲▲▲ 替换结束 ▲▲▲
 
+// ▼▼▼ 【请用这个全新版本】完整替换旧的 handleGenerateDoubanPosts 函数 ▼▼▼
 async function handleGenerateDoubanPosts() {
     const activeCharacterIds = state.globalSettings.doubanActiveCharacterIds || [];
 
@@ -30742,7 +30743,6 @@ async function handleGenerateDoubanPosts() {
         return;
     }
 
-    // --- 核心优化 1：收集所有角色的世界书ID并去重 ---
     const allLinkedBookIds = new Set();
     activeCharacterIds.forEach(charId => {
         const c = state.chats[charId];
@@ -30751,7 +30751,6 @@ async function handleGenerateDoubanPosts() {
         }
     });
 
-    // --- 核心优化 2：构建“统一”的世界观上下文，只读取一次 ---
     let sharedWorldBookContext = '';
     if (allLinkedBookIds.size > 0) {
         sharedWorldBookContext += '\n\n# 统一世界观设定 (以下设定适用于所有参与角色)\n';
@@ -30769,7 +30768,6 @@ async function handleGenerateDoubanPosts() {
         });
     }
     
-    // (豆瓣设定和NPC角色的解析逻辑保持不变)
     const doubanWorldBook = state.worldBooks.find(wb => wb.name === '豆瓣设定');
     let doubanSettingContext = '';
     let npcCharacters = [];
@@ -30790,17 +30788,29 @@ async function handleGenerateDoubanPosts() {
         });
     }
 
-    // --- 核心优化 3：构建角色列表时，不再单独添加世界观 ---
+    // ▲▲▲ 核心修改1：获取用户的昵称和人设 ▲▲▲
+    const userNickname = state.qzoneSettings.nickname || '我';
+    const userPersona = activeCharacterIds.length > 0 && state.chats[activeCharacterIds[0]] 
+        ? state.chats[activeCharacterIds[0]].settings.myPersona 
+        : '(未设置)';
+
     let charactersContext = '';
     activeCharacterIds.forEach(charId => {
         const c = state.chats[charId];
         if (c) {
-            // 注意：这里不再需要单独为每个角色获取 worldBookContent
+            const longTermMemory = c.longTermMemory && c.longTermMemory.length > 0
+                ? c.longTermMemory.map(m => m.content).join('; ')
+                : '无';
+            const recentHistory = c.history.slice(-10).map(msg => 
+                `${msg.role === 'user' ? userNickname : c.name}: ${String(msg.content).substring(0, 30)}...`
+            ).join('\n');
+
             charactersContext += `
 <character>
   <name>${c.name}</name>
   <persona>${c.settings.aiPersona}</persona>
-  <memory>${c.longTermMemory ? c.longTermMemory.map(m=>m.content).join(' ') : '无'}</memory>
+  <memory>${longTermMemory}</memory>
+  <recent_dialogue_with_user>${recentHistory}</recent_dialogue_with_user>
 </character>
 `;
         }
@@ -30813,31 +30823,42 @@ async function handleGenerateDoubanPosts() {
 </character>
 `;
     });
+    
+    const now = new Date();
+    const currentTimeString = now.toLocaleString('zh-CN', { dateStyle: 'full', timeStyle: 'short' });
+
+    // ▲▲▲ 核心修改2：构建全新的、带有“用户档案”和“禁止扮演铁律”的系统指令 ▲▲▲
     const systemPrompt = `
 # 你的任务
-你是一个虚拟社区内容生成器。你的任务是根据下面提供的【统一角色列表】，虚构出【12到20篇】他们最近可能会在各种豆瓣小组中发布的帖子和评论。
+你是一个虚拟社区内容生成器。你的任务是根据下面提供的【统一角色列表】，虚构出【12到20篇】他们最近可能会在各种豆瓣小组中发布的帖子和评论。每篇帖子下方必须有【8到15条】评论。
 
 # 核心规则
-1.  **【身份 (最高优先级！)】**: 
+1.  **【时间感知】**:
+    -   你【必须】意识到当前是 **${currentTimeString}**。
+    -   你的帖子和评论内容【必须】自然地体现出对【当前真实时间】的感知。
+2.  **【禁止扮演用户 (最最最高优先级！！！)】**:
+    -   用户的昵称是“${userNickname}”。
+    -   你【绝对不能】生成 authorName 或 commenter 字段为 “${userNickname}” 的帖子或评论。你的任务是扮演【除了用户以外】的所有角色。
+3.  **【身份 (最高优先级！)】**: 
     -   \`authorName\`: 你可以为主要角色起一个符合情景的、临时的【发帖昵称】，也可以直接使用他们的本名。
     -   \`authorOriginalName\`: 如果发帖者是【主要角色】，你【必须】在这里填上TA在角色列表里的【原始备注名】，这是程序的“身份证”。
     -   如果发帖者是【路人NPC】，则【省略】\`authorOriginalName\` 字段。
-2.  **【作者平衡】**: 帖子的作者【必须】从下面的 \`<character>\` 列表中【均匀地、多样化地】选择。你【必须】确保帖子列表中【至少有 70% 的帖子是由路人NPC发布的】，以营造一个真实的社区氛围。
+4.  **【作者平衡】**: 帖子的作者【必须】从下面的 \`<character>\` 列表中【均匀地、多样化地】选择。你【必须】确保帖子列表中【至少有 70% 的帖子是由路人NPC发布的】，以营造一个真实的社区氛围。
     - "comments": 一个包含【7到12条】评论的数组。评论者可以是路人，也可以是角色列表中的其他角色，以体现互动性。
-3.  **【角色扮演】**: 帖子的作者和内容【必须】深度结合该角色的<persona>, <memory>, 和 <worldview>。
-4.  **【“豆瓣味”内容风格指南】**: 帖子风格必须多样化且充满生活气息！你需要生成包括但不限于：情感树洞、生活吐槽、吃瓜八卦、兴趣分享、无用良品等各种类型的帖子。
-5.  **【头像生成 (最高优先级！)】**:
+5.  **【角色扮演】**: 帖子的作者和内容【必须】深度结合该角色的<persona>, <memory>, 和 <worldview>。
+6.  **【“豆瓣味”内容风格指南】**: 帖子风格必须多样化且充满生活气息！你需要生成包括但不限于：情感树洞、生活吐槽、吃瓜八卦、兴趣分享、无用良品等各种类型的帖子。
+7.  **【头像生成 (最高优先级！)】**:
     -   为每一个【首次出现】的路人NPC（无论是发帖还是评论），你都【必须】为其添加一个 \`avatar_prompt\` 字段。
     -   这个字段的内容是用于生成该NPC头像的、简洁的【英文】关键词。
     -   不同的NPC【必须】有不同的头像指令，以确保他们的头像是独一无二的。
-6.  **【头像一致性 (至关重要！)】**:
+8.  **【头像一致性 (至关重要！)】**:
     -   如果一个路人NPC在同一个帖子中多次出现（例如，既是发帖人又是评论者，或多次评论），你【必须】为TA的所有出现都使用【完全相同】的 \`avatar_prompt\`。这至关重要！
-7.  **【格式 (最高优先级)】**: 你的回复【必须且只能】是一个JSON数组。数组中的每个元素都是一篇帖子，格式【必须】如下:
+9.  **【格式 (最高优先级)】**: 你的回复【必须且只能】是一个JSON数组。数组中的每个元素都是一篇帖子，格式【必须】如下:
     \`\`\`json
     [
       {
         "groupName": "一个生动有趣的小组名称",
-        "postTitle": "一个引人注目的帖子标题",
+        "postTitle": "一个引人-注目的帖子标题",
         "authorName": "发帖角色的【备注名】",
         "authorOriginalName": "(仅当发帖者是主要角色时【必须】提供) TA的原始备注名",
         "authorAvatarPrompt": "(仅当发帖者是路人NPC时【必须】提供) 一段用于生成该NPC头像的【英文】关键词。风格为 anime style, simple background",
@@ -30859,10 +30880,17 @@ async function handleGenerateDoubanPosts() {
 ${doubanSettingContext}
 ${sharedWorldBookContext}
 
-# 统一角色列表 (主要角色 + 路人NPC)
+# 当前情景
+- **当前真实时间**: ${currentTimeString}
+
+# 【你的聊天对象（用户）的身份档案】
+- **昵称**: ${userNickname}
+- **人设**: ${userPersona}
+
+# 统一角色列表 (你扮演的角色 + 路人NPC)
 ${charactersContext}
 
-现在，请严格遵守【作者平衡】和【评论身份】，开始生成这组生动、多样且充满“豆瓣味”的小组帖子。`;
+现在，请严格遵守所有规则，特别是【时间感知】和【禁止扮演用户】的铁律，开始生成这组生动、多样且充满“豆瓣味”的小组帖子。`;
 
     try {
         const messagesForApi = [{ role: 'user', content: "请根据角色列表，生成豆瓣小组帖子。" }];
@@ -30885,18 +30913,13 @@ ${charactersContext}
         
         const data = await response.json();
         const aiResponseContent = getGeminiResponseText(data);
-        // ▼▼▼ 【【【这就是最关键的修复！】】】 ▼▼▼
-        // 我们不再直接清理和解析，而是先用正则表达式“抠出”完整的JSON数组部分
         const jsonMatch = aiResponseContent.match(/\[[\s\S]*\]/);
         
         if (!jsonMatch) {
-            // 如果连JSON数组的结构都找不到，就抛出错误
             throw new Error(`AI返回的内容中未找到有效的JSON数组。原始返回: ${aiResponseContent}`);
         }
         
-        // 只解析我们成功“抠出”的部分，忽略所有多余的文字
         const simulatedPosts = JSON.parse(jsonMatch[0]);
-        // ▲▲▲ 【【【修复结束】】】 ▲▲▲
         await db.doubanPosts.clear();
         await db.doubanPosts.bulkAdd(simulatedPosts.map(p => ({...p, timestamp: Date.now() - Math.random() * 100000})));
         
@@ -31052,10 +31075,7 @@ async function handleSendDoubanComment() {
 
 }
 // ▲▲▲ 替换结束 ▲▲▲
-// ▼▼▼ 【全新 | AI互动增强版】请用这个新版本替换旧的 handleDoubanWaitReply 函数 ▼▼▼
-/**
- * 【全新 V4.2 | 头像记忆修复版】处理“等待回复”按钮的点击，主动触发AI进行评论并实时刷新UI
- */
+// ▼▼▼ 【请用这个全新版本】完整替换旧的 handleDoubanWaitReply 函数 ▼▼▼
 async function handleDoubanWaitReply() {
     if (!activeDoubanPostId) return;
 
@@ -31078,13 +31098,12 @@ async function handleDoubanWaitReply() {
         }
 
         const userNickname = state.qzoneSettings.nickname || '我';
+        const userPersona = state.chats[Object.keys(state.chats)[0]]?.settings.myPersona || '(未设置)';
         
-        // ▼▼▼ 核心修改 ①：提取已有NPC的头像信息 ▼▼▼
         const existingNpcs = new Map();
         if (post.comments) {
             post.comments.forEach(comment => {
                 const isMainCharacter = (state.globalSettings.doubanActiveCharacterIds || []).some(id => state.chats[id]?.name === comment.commenter);
-                // 如果是NPC (不是主要角色) 并且有头像指令，就记录下来
                 if (!isMainCharacter && comment.avatar_prompt) {
                     existingNpcs.set(comment.commenter, comment.avatar_prompt);
                 }
@@ -31100,7 +31119,6 @@ async function handleDoubanWaitReply() {
         } else {
             existingNpcContext += "（当前帖子还没有路人NPC发表评论。）\n";
         }
-        // ▲▲▲ 修改结束 ▲▲▲
 
         const doubanWorldBook = state.worldBooks.find(wb => wb.name === '豆瓣设定');
         let npcCharacters = [];
@@ -31123,23 +31141,35 @@ async function handleDoubanWaitReply() {
         activeCharacterIds.forEach(charId => {
             const c = state.chats[charId];
             if (c) {
-                charactersContext += `\n- ${c.name}: ${c.settings.aiPersona.substring(0,50)}...`;
+                const longTermMemory = c.longTermMemory && c.longTermMemory.length > 0 ? c.longTermMemory.map(m => m.content).join('; ') : '无';
+                const recentHistory = c.history.slice(-10).map(msg => `${msg.role === 'user' ? userNickname : c.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
+                charactersContext += `\n- ${c.name}: ${c.settings.aiPersona.substring(0,50)}... [记忆: ${longTermMemory}] [最近对话: ${recentHistory}]`;
             }
         });
         npcCharacters.forEach(npc => {
             charactersContext += `\n- ${npc.name}: ${npc.persona}`;
         });
 
-        // ▼▼▼ 核心修改 ②：更新系统指令，加入新的规则和上下文 ▼▼▼
+        // ▲▲▲ 核心修改1：在这里也获取当前时间 ▲▲▲
+        const now = new Date();
+        const currentTimeString = now.toLocaleString('zh-CN', { dateStyle: 'full', timeStyle: 'short' });
+
+        // ▲▲▲ 核心修改2：更新系统指令，加入所有上下文信息 ▲▲▲
         const systemPrompt = `
 # 你的任务
 你是一个虚拟社区的AI导演。下面的“帖子摘要”和“已有评论”来自于一个豆瓣小组的帖子。用户“${userNickname}”刚刚对最后一条评论点击了“等待回复”，TA希望看到更多角色参与讨论。
 你的任务是：根据所有角色的设定，选择【10到20位】最适合参与讨论的角色，让他们针对已有评论，发表【全新的、符合人设的】回应。
 
 # 核心规则
-1.  **【互动】**: 新生成的评论【必须】是针对【已有评论】的延续或回应，让讨论能继续下去。
-2.  **【头像一致性 (最高优先级！)】**: 你【必须】参考下面的“已有路人NPC头像指令”列表。如果一个已有的NPC再次发言，【必须】复用它旧的头像指令。只有在创造一个【全新的、从未出现过的】NPC时，才为其生成新的头像指令。
-3.  **【格式】**: 你的回复【必须且只能】是一个JSON数组，数组中的每个元素都代表一条新评论，格式【必须】如下:
+1.  **【时间感知】**:
+    -   你【必须】意识到当前是 **${currentTimeString}**。
+    -   你的评论内容【必须】自然地体现出对【当前真实时间】的感知。
+2.  **【禁止扮演用户 (最最最高优先级！！！)】**:
+    -   用户的昵称是“${userNickname}”。
+    -   你【绝对不能】生成 commenter 字段为 “${userNickname}” 的评论。你的任务是扮演【除了用户以外】的所有角色。
+3.  **【互动】**: 新生成的评论【必须】是针对【已有评论】的延续或回应，让讨论能继续下去。
+4.  **【头像一致性 (最高优先级！)】**: 你【必须】参考下面的“已有路人NPC头像指令”列表。如果一个已有的NPC再次发言，【必须】复用它旧的头像指令。只有在创造一个【全新的、从未出现过的】NPC时，才为其生成新的头像指令。
+5.  **【格式】**: 你的回复【必须且只能】是一个JSON数组，数组中的每个元素都代表一条新评论，格式【必须】如下:
     \`\`\`json
     [
       { "commenter": "角色A的名字", "text": "角色A的新评论内容。", "avatar_prompt": "(可选)如果评论者是【全新的】NPC,提供头像指令" },
@@ -31156,11 +31186,17 @@ ${post.comments.map(c => `- ${c.commenter}: ${c.text}`).join('\n')}
 
 ${existingNpcContext}
 
-# 你的角色库 (你可以从中选择【任何角色】进行评论)
+# 当前情景
+- **当前真实时间**: ${currentTimeString}
+
+# 【你的聊天对象（用户）的人设】
+- **昵称**: ${userNickname}
+- **人设**: ${userPersona}
+
+# 你的角色库 (你可以从中选择【任何角色】进行评论，并参考他们的记忆和对话)
 ${charactersContext}
 
 现在，请生成新的评论。`;
-        // ▲▲▲ 修改结束 ▲▲▲
 
         const messagesForApi = [{ role: 'user', content: "请根据以上情景，生成新的评论。" }];
         let isGemini = proxyUrl.includes('generativelanguage');
