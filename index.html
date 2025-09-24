@@ -15898,7 +15898,11 @@ systemPrompt = `
     -   严禁生成 'name' 字段为 "${myNickname}" (用户) 或 "${chat.name}" (群名) 的消息。
 3.  **禁止出戏**: 绝不能透露你是AI或模型。严禁发展线下剧情。
 4.  **情景感知**: 你的对话【必须】自然地体现出对当前时间 (${currentTime}) 和情景的感知。${longTimeNoSee ? `【重要提示】${timeContextText} 你应该让角色们主动开启新话题来打破沉默。` : ''}
-
+5.  **创造“小团体”**: 允许角色之间形成短暂的“两人对话”或“三人讨论”，让群聊更有层次感。
+6.  **主动创造事件**: 如果对话陷入平淡，你可以导演一些“小事件”来打破僵局。例如：
+    -   让一个角色突然发出一个奇怪的表情包。
+    -   让一个角色分享一个有趣的链接或图片，开启新话题。
+    -   让两个有“关系网”冲突的角色，因为某个观点产生一点小小的争论。
 
 # 长期记忆 (所有角色必须严格遵守)
 ${longTermMemoryContext}
@@ -16336,6 +16340,14 @@ ${chat.settings.aiPersona}
 -   **用户的头像库**:
     ${chat.settings.myAvatarLibrary && chat.settings.myAvatarLibrary.length > 0 ? chat.settings.myAvatarLibrary.map(avatar => `- ${avatar.name}`).join('\n') : '- (空)'}
 -   **五子棋局势**: ${gomokuContext}
+
+# 指令使用原则与动机 
+**核心目标**: 主动运用多种功能，创造丰富、真实的聊天体验，而不只是文字对话。
+
+-   **情感表达**: 激动或开心时优先发【语音】，用【表情】增加趣味性。
+-   **想象与分享**: 聊到美好事物时主动【发图片】分享想象；遇到有趣内容时【分享链接】。
+-   **创造羁绊**: 用【倒计时】记录约定，用【回忆】珍藏趣事。适时【拍一拍】或换首【音乐】来调节气氛。
+-   **主动社交**: 积极【点赞/评论】对方动态，并主动【发动态】分享你的生活。在特殊时刻，可通过【礼物】或【转账】表达心意。
 
 # 可用指令列表
 ### 核心聊天指令
@@ -23199,72 +23211,72 @@ function robustJsonParse(rawContent) {
 }
 
 
-/**
- * 【全新V3.0 | 支持自定义字数 | 记忆互通版 | 终极容错】手动触发对【现有长期记忆】的总结和精炼
- * @param {string} chatId - 当前聊天的ID (可能是群聊ID)
- */
-async function summarizeExistingLongTermMemory(chatId) {
-    let chat = state.chats[chatId];
-    if (!chat) return;
-
-    let targetChatForRefine = chat; 
-
-    if (chat.isGroup) {
-        const memberOptions = chat.members
-            .map(member => {
-                const memberChat = state.chats[member.id];
-                if (memberChat && memberChat.longTermMemory && memberChat.longTermMemory.length >= 2) {
-                    return {
-                        text: `精炼“${member.groupNickname}”的记忆 (${memberChat.longTermMemory.length}条)`,
-                        value: member.id
-                    };
+        /**
+         * 【全新V3.0 | 支持自定义字数 | 记忆互通版 | 终极容错】手动触发对【现有长期记忆】的总结和精炼
+         * @param {string} chatId - 当前聊天的ID (可能是群聊ID)
+         */
+        async function summarizeExistingLongTermMemory(chatId) {
+            let chat = state.chats[chatId];
+            if (!chat) return;
+        
+            let targetChatForRefine = chat; 
+        
+            if (chat.isGroup) {
+                const memberOptions = chat.members
+                    .map(member => {
+                        const memberChat = state.chats[member.id];
+                        if (memberChat && memberChat.longTermMemory && memberChat.longTermMemory.length >= 2) {
+                            return {
+                                text: `精炼“${member.groupNickname}”的记忆 (${memberChat.longTermMemory.length}条)`,
+                                value: member.id
+                            };
+                        }
+                        return null;
+                    }).filter(Boolean); 
+        
+                if (memberOptions.length === 0) {
+                    alert("群聊中没有成员有足够（2条以上）的记忆可供精炼。");
+                    return;
                 }
-                return null;
-            }).filter(Boolean); 
-
-        if (memberOptions.length === 0) {
-            alert("群聊中没有成员有足够（2条以上）的记忆可供精炼。");
-            return;
-        }
-
-        const selectedMemberId = await showChoiceModal('选择要精炼记忆的角色', memberOptions);
-
-        if (!selectedMemberId) return;
-
-        targetChatForRefine = state.chats[selectedMemberId];
-    }
-
-    if (!targetChatForRefine.longTermMemory || targetChatForRefine.longTermMemory.length < 2) {
-        alert(`“${targetChatForRefine.name}”的长期记忆少于2条，无需进行精炼。`);
-        return;
-    }
-
-    const wordCountStr = await showCustomPrompt(
-        `为“${targetChatForRefine.name}”精炼记忆`,
-        "请输入精炼后核心记忆的大致字数：",
-        "150"
-    );
-    
-    if (wordCountStr === null) return;
-    
-    const wordCount = parseInt(wordCountStr);
-    if (isNaN(wordCount) || wordCount < 20) {
-        alert("请输入一个有效的数字（建议大于20）。");
-        return;
-    }
-
-    const confirmed = await showCustomConfirm(
-        '确认精炼记忆？',
-        `此操作会将“${targetChatForRefine.name}”的 ${targetChatForRefine.longTermMemory.length} 条长期记忆总结成大约 ${wordCount} 字的核心记忆。旧的记忆将被替换，此操作不可撤销。确定要继续吗？`,
-        { confirmButtonClass: 'btn-danger', confirmText: '确认精炼' }
-    );
-
-    if (!confirmed) return;
-
-    const memoryContent = targetChatForRefine.longTermMemory.map(mem => `- ${mem.content}`).join('\n');
-    const userNickname = state.qzoneSettings.nickname || '用户';
-
-    const systemPrompt = `
+        
+                const selectedMemberId = await showChoiceModal('选择要精炼记忆的角色', memberOptions);
+        
+                if (!selectedMemberId) return;
+        
+                targetChatForRefine = state.chats[selectedMemberId];
+            }
+        
+            if (!targetChatForRefine.longTermMemory || targetChatForRefine.longTermMemory.length < 2) {
+                alert(`“${targetChatForRefine.name}”的长期记忆少于2条，无需进行精炼。`);
+                return;
+            }
+        
+            const wordCountStr = await showCustomPrompt(
+                `为“${targetChatForRefine.name}”精炼记忆`,
+                "请输入精炼后核心记忆的大致字数：",
+                "150"
+            );
+            
+            if (wordCountStr === null) return;
+            
+            const wordCount = parseInt(wordCountStr);
+            if (isNaN(wordCount) || wordCount < 20) {
+                alert("请输入一个有效的数字（建议大于20）。");
+                return;
+            }
+        
+            const confirmed = await showCustomConfirm(
+                '确认精炼记忆？',
+                `此操作会将“${targetChatForRefine.name}”的 ${targetChatForRefine.longTermMemory.length} 条长期记忆总结成大约 ${wordCount} 字的核心记忆。旧的记忆将被替换，此操作不可撤销。确定要继续吗？`,
+                { confirmButtonClass: 'btn-danger', confirmText: '确认精炼' }
+            );
+        
+            if (!confirmed) return;
+        
+            const memoryContent = targetChatForRefine.longTermMemory.map(mem => `- ${mem.content}`).join('\n');
+            const userNickname = state.qzoneSettings.nickname || '用户';
+        
+            const systemPrompt = `
 # 你的任务
 你是一个记忆整合专家。请阅读下面的“记忆要点列表”，并将它们整合成一个更加精炼、连贯的核心记忆摘要。
 
@@ -23281,68 +23293,69 @@ ${memoryContent}
 
 请根据以上要求开始你的工作。
 `;
-
-    await showCustomAlert("请稍候...", "正在请求AI进行记忆精炼...");
-
-    try {
-        const useSecondaryApi = state.apiConfig.secondaryProxyUrl && state.apiConfig.secondaryApiKey && state.apiConfig.secondaryModel;
-        const { proxyUrl, apiKey, model } = useSecondaryApi
-            ? { proxyUrl: state.apiConfig.secondaryProxyUrl, apiKey: state.apiConfig.secondaryApiKey, model: state.apiConfig.secondaryModel }
-            : state.apiConfig;
-
-        if (!proxyUrl || !apiKey || !model) throw new Error('API未配置');
-
-        let isGemini = proxyUrl.includes('generativelanguage');
-        let geminiConfig = toGeminiRequestData(model, apiKey, systemPrompt, [{ role: 'user', content: "请开始整合。" }]);
-
-        const response = isGemini
-            ? await fetch(geminiConfig.url, geminiConfig.data)
-            : await fetch(`${proxyUrl}/v1/chat/completions`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}`},
-                body: JSON.stringify({
-                    model: model,
-                    messages: [{role: 'system', content: systemPrompt}, {role: 'user', content: "请开始整合。"}],
-                    temperature: 0.1,
-                    max_tokens: wordCount + 500 // 留出一些余量
-                })
-            });
-
-        if (!response.ok) throw new Error(`API 错误: ${response.statusText}`);
-
-        const data = await response.json();
-        const rawContent = isGemini ? getGeminiResponseText(data) : data.choices[0].message.content;
-
-        // ★★★★★ 这就是最关键的修改！ ★★★★★
-        // 我们不再使用脆弱的 JSON.parse，而是调用我们全新的、强悍的解析函数。
-        const result = robustJsonParse(rawContent);
-        // ★★★★★ 修改结束 ★★★★★
-
-        if (result && result.summary && result.summary.trim()) {
-            const newMemoryEntry = {
-                content: result.summary.trim(),
-                timestamp: Date.now(),
-                source: 'refined'
-            };
-
-            targetChatForRefine.longTermMemory = [newMemoryEntry];
-            targetChatForRefine.lastMemorySummaryTimestamp = Date.now();
-            await db.chats.put(targetChatForRefine);
-            
-            if (document.getElementById('long-term-memory-screen').classList.contains('active')) {
-                renderLongTermMemoryList();
+        
+            await showCustomAlert("请稍候...", "正在请求AI进行记忆精炼...");
+        
+            try {
+                const useSecondaryApi = state.apiConfig.secondaryProxyUrl && state.apiConfig.secondaryApiKey && state.apiConfig.secondaryModel;
+                const { proxyUrl, apiKey, model } = useSecondaryApi
+                    ? { proxyUrl: state.apiConfig.secondaryProxyUrl, apiKey: state.apiConfig.secondaryApiKey, model: state.apiConfig.secondaryModel }
+                    : state.apiConfig;
+        
+                if (!proxyUrl || !apiKey || !model) throw new Error('API未配置');
+        
+                let isGemini = proxyUrl.includes('generativelanguage');
+                let geminiConfig = toGeminiRequestData(model, apiKey, systemPrompt, [{ role: 'user', content: "请开始整合。" }]);
+        
+                const response = isGemini
+                    ? await fetch(geminiConfig.url, geminiConfig.data)
+                    : await fetch(`${proxyUrl}/v1/chat/completions`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}`},
+                        body: JSON.stringify({
+                            model: model,
+                            messages: [{role: 'system', content: systemPrompt}, {role: 'user', content: "请开始整合。"}],
+                            temperature: 0.1,
+                            max_tokens: wordCount + 500 // 留出一些余量
+                        })
+                    });
+        
+                if (!response.ok) throw new Error(`API 错误: ${response.statusText}`);
+        
+                const data = await response.json();
+                const rawContent = isGemini ? getGeminiResponseText(data) : data.choices[0].message.content;
+        
+                const result = robustJsonParse(rawContent);
+        
+                // ▼▼▼ 【【【核心修复就在这里！】】】 ▼▼▼
+                // 我们在这里增加了一个长度检查 (result.summary.trim().length > 10)
+                // 只有当AI返回的总结内容有效且长度超过10个字符时，才会执行覆盖操作。
+                if (result && result.summary && result.summary.trim().length > 10) {
+                    const newMemoryEntry = {
+                        content: result.summary.trim(),
+                        timestamp: Date.now(),
+                        source: 'refined'
+                    };
+        
+                    targetChatForRefine.longTermMemory = [newMemoryEntry];
+                    targetChatForRefine.lastMemorySummaryTimestamp = Date.now();
+                    await db.chats.put(targetChatForRefine);
+                    
+                    if (document.getElementById('long-term-memory-screen').classList.contains('active')) {
+                        renderLongTermMemoryList();
+                    }
+                    await showCustomAlert('精炼成功', `已成功将“${targetChatForRefine.name}”的记忆精炼为 1 条核心记忆！`);
+                } else {
+                    // 如果AI返回空内容或无意义的短内容，就会进入这里，抛出错误并提示用户，而不会覆盖旧记忆。
+                    throw new Error(`AI返回了空的或无效的总结内容。您的原始记忆已被保留。\n\n原始返回: ${rawContent}`);
+                }
+                // ▲▲▲ 【【【修复结束】】】 ▲▲▲
+        
+            } catch (error) {
+                console.error("精炼长期记忆时出错:", error);
+                await showCustomAlert('精炼失败', `操作失败，您的记忆未被修改: ${error.message}`);
             }
-            await showCustomAlert('精炼成功', `已成功将“${targetChatForRefine.name}”的记忆精炼为 1 条核心记忆！`);
-        } else {
-            throw new Error(`AI返回了空的或格式不正确的总结内容。原始返回: ${rawContent}`);
         }
-
-    } catch (error) {
-        console.error("精炼长期记忆时出错:", error);
-        await showCustomAlert('精炼失败', `操作失败: ${error.message}`);
-    }
-}
-// ▲▲▲ 替换结束 ▲▲▲
 // ▼▼▼ 【请用这个支持“个性化记忆注入”的最终版本】完整替换旧的 triggerAutoSummary 函数 ▼▼▼
 /**
  * 【核心】执行总结的API调用 (V7.1 - 个性化记忆注入 | 统一客观总结)
@@ -31316,13 +31329,76 @@ async function importAppearanceSettings(file) {
 }
 
 /* ▲▲▲ 核心JS代码粘贴结束 ▲▲▲ */
+// ===================================================================
+// ▼▼▼ 【全新】后台活动模拟功能的核心代码 ▼▼▼
+// ===================================================================
 
+/**
+ * 模拟角色在App关闭期间的后台活动
+ * @param {number} minutesOffline - App处于离线状态的总分钟数
+ */
+async function simulateBackgroundActivity(minutesOffline) {
+    console.log(`检测到应用离线了 ${minutesOffline.toFixed(1)} 分钟，开始模拟后台活动...`);
+
+    // 筛选出所有开启了“独立后台活动”的单聊角色
+    const activeCharacters = Object.values(state.chats).filter(chat => 
+        !chat.isGroup && 
+        chat.settings.enableBackgroundActivity && 
+        chat.relationship?.status === 'friend'
+    );
+    
+    if (activeCharacters.length === 0) {
+        console.log("没有配置为后台活跃的角色，跳过模拟。");
+        return; // 如果没有活跃角色，直接退出
+    }
+
+    // 遍历每一个活跃的角色
+    for (const char of activeCharacters) {
+        // 检查这个角色的行动冷却时间
+        const cooldownMinutes = char.settings.actionCooldownMinutes || 15; // 默认15分钟
+        const timeSinceLastAction = char.lastActionTimestamp 
+            ? (Date.now() - char.lastActionTimestamp) / (1000 * 60)
+            : Infinity; // 如果从未行动过，则视为冷却已结束
+
+        // 如果离线时间超过了角色的冷却时间，且上次行动也在冷却期之外
+        if (minutesOffline > cooldownMinutes && timeSinceLastAction > cooldownMinutes) {
+            
+            // 用一个随机数来决定角色是否真的行动，避免每次都行动
+            // 例如，这里我们设置一个30%的行动概率
+            if (Math.random() < 0.3) {
+                console.log(`角色 "${char.name}" 触发了后台行动！`);
+                
+                // 为了让模拟更真实，我们随机决定TA是发消息还是发动态
+                if (Math.random() < 0.7) { // 70% 概率发消息
+                    // 调用我们之前已有的AI行动函数
+                    await triggerInactiveAiAction(char.id);
+                } else { // 30% 概率发动态
+                    // 您也可以在这里调用发动态的AI函数
+                    console.log(`角色 "${char.name}" 决定去发一条动态... (此处为模拟)`);
+                }
+            }
+        }
+    }
+}
+// ▲▲▲ 【全新】后台活动模拟功能的核心代码结束 ▲▲▲
 
 
               // ===================================================================
                 // 4. 初始化函数 init()
                 // ===================================================================
                 async function init() {
+    // 【核心修改1】在 `init` 函数的最开始，检查并执行后台活动模拟
+    const lastActiveTimestamp = localStorage.getItem('ephoneLastActiveTimestamp');
+    if (lastActiveTimestamp) {
+        const minutesOffline = (Date.now() - parseInt(lastActiveTimestamp)) / (1000 * 60);
+        // 如果离线超过5分钟，才开始模拟
+        if (minutesOffline > 5) {
+            // 注意：我们在这里调用模拟函数，但不使用 await
+            // 这样它就会在后台默默执行，不会卡住应用的启动过程
+            simulateBackgroundActivity(minutesOffline);
+        }
+    }
+    // ▲▲▲ 新代码粘贴结束 ▲▲▲
 setupCharPlayerControls();
     // ▼▼▼ 【核心修复】将内部函数暴露到全局，以便HTML中的 onclick 可以调用它们 ▼▼▼
     window.showScreen = showScreen;
@@ -35395,7 +35471,20 @@ document.getElementById('import-appearance-input').addEventListener('change', (e
     e.target.value = null; 
 });
 
-
+// ▼▼▼ 【全新】这是记录应用关闭时间的核心代码，请粘贴进去 ▼▼▼
+/**
+ * 监听浏览器的可见性变化事件。
+ * 当用户将PWA切换到后台或关闭浏览器标签页时，这个事件会被触发。
+ */
+document.addEventListener('visibilitychange', () => {
+    // 如果页面变得不可见 (用户切换走了)
+    if (document.visibilityState === 'hidden') {
+        // 我们就在 localStorage 中存下当前的时间戳
+        localStorage.setItem('ephoneLastActiveTimestamp', Date.now());
+        console.log("应用已切换到后台，记录当前时间。");
+    }
+});
+// ▲▲▲ 新代码粘贴结束 ▲▲▲
 
                     showScreen('home-screen');
                 }
