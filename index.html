@@ -8588,8 +8588,69 @@
     gap: 15px; /* (可选) 在返回、导入、导出按钮之间增加一些间距 */
 }
 /* ▲▲▲ 新增CSS结束 ▲▲▲ */
+        /* ▼▼▼ 【全新】这是为“角色相册生图关闭”功能添加的样式 ▼▼▼ */
 
+        /* 1. 让相册格子成为 Flex 容器，这样我们才能方便地居中内部的文字 */
+        .char-photo-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px; /* 在文字周围留出一点内边距，避免贴边 */
+            box-sizing: border-box;
+        }
+        
+        /* 2. 照片描述文字本身的样式 */
+        .char-photo-description {
+            font-size: 13px;
+            color: var(--text-secondary); /* 使用次要文字颜色，看起来更柔和 */
+            text-align: center;
+            line-height: 1.5;
+        
+            /* 核心：这是一个实现“多行省略号”的技巧，防止过长的描述撑破布局 */
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 5; /* 最多显示5行 */
+            overflow: hidden;
+            word-break: break-all; /* 确保长单词或URL也能被截断 */
+        }
+        
+        /* ▲▲▲ 新增CSS结束 ▲▲▲ */
+        /* ▼▼▼ 【全新】这是为淘宝/浏览器生图关闭功能添加的样式 ▼▼▼ */
 
+        /* 1. 为淘宝商品卡片上的文字描述创建一个容器 */
+        .char-product-description-overlay {
+            width: 100%;
+            aspect-ratio: 1 / 1; /* 与图片保持相同的正方形比例，确保网格布局不乱 */
+            background-color: #f7f8fa; /* 柔和的背景色 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px; /* 内边距 */
+            box-sizing: border-box;
+            border-bottom: 1px solid #eee; /* 在描述和商品信息之间加一条分割线 */
+            border-radius: 8px 8px 0 0; /* 匹配图片的顶部圆角 */
+        }
+
+        /* 2. 描述文字本身的样式 (复用相册的样式，并让浏览器也使用) */
+        .char-product-description-overlay .char-photo-description,
+        .char-browser-image-description { 
+            font-size: 14px; /* 字体可以稍微大一点 */
+            color: var(--text-secondary);
+            text-align: center;
+            line-height: 1.6;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 6; /* 最多显示6行 */
+            overflow: hidden;
+            word-break: break-all;
+        }
+
+        /* 3. 为浏览器中的图片描述创建一个容器 */
+        .char-browser-image-description {
+            padding: 40px 20px; /* 上下留出更多空间 */
+        }
+
+        /* ▲▲▲ 新增CSS结束 ▲▲▲ */
     </style>
 </head>
 <body>
@@ -9177,6 +9238,20 @@
                     <label for="block-cooldown-input" style="margin-bottom: 0;"> AI被拉黑后冷静期 (小时) <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;"> 被拉黑超过这个时间后，AI才有几率重新申请好友。 </p>
                     </label>
                     <input type="number" id="block-cooldown-input" min="0.1" step="0.1" value="1" style="width: 80px; text-align: center;">
+                </div>
+                <hr style="margin: 30px 0; opacity: 0.3;">
+                <h3 style="border-bottom: 1px solid #eee; padding-bottom: 10px;">生图功能设置</h3>
+                <div class="form-group" style="display: flex; justify-content: space-between; align-items: center;">
+                    <label for="enable-ai-drawing-switch" style="margin-bottom: 0;">
+                        启用AI生图功能
+                        <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;">
+                            关闭后，所有需要AI生成的图片（动态、头像等）都将显示为占位图，以节省流量和API费用。
+                        </p>
+                    </label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="enable-ai-drawing-switch">
+                        <span class="slider"></span>
+                    </label>
                 </div>
                 <!-- 保存与导入导出 -->
                 <hr style="margin: 30px 0; opacity: 0.3;">
@@ -12523,10 +12598,10 @@ const DEFAULT_NOTIFICATION_SOUND = 'https://www.myinstants.com/media/sounds/noti
                 if (targetPost.type === 'shuoshuo') {
                     innerContentHtml = `<div class="post-content" style="margin-bottom: 10px;">${parseMarkdown(targetPost.content).replace(/\n/g, '<br>')}</div>`;
                 } else if (targetPost.type === 'image_post' && targetPost.imageUrl) {
-                        const postImageUrl = targetPost.image_prompt ? `https://image.pollinations.ai/prompt/${targetPost.image_prompt}` : (targetPost.imageUrl || 'https://i.postimg.cc/KYr2qRCK/1.jpg');
+                        const postImageUrl = state.globalSettings.enableAiDrawing && post.image_prompt ? `https://image.pollinations.ai/prompt/${post.image_prompt}` : 'https://i.postimg.cc/KYr2qRCK/1.jpg';
     innerContentHtml = publicTextHtml ? `${publicTextHtml}<div style="margin-top:10px;"><img src="${postImageUrl}" class="chat-image"></div>` : `<img src="${postImageUrl}" class="chat-image">`;
 } else if (targetPost.type === 'text_image') {
-    const postImageUrl = targetPost.image_prompt ? `https://image.pollinations.ai/prompt/${targetPost.image_prompt}` : 'https://i.postimg.cc/KYr2qRCK/1.jpg';
+    const postImageUrl = state.globalSettings.enableAiDrawing && targetPost.image_prompt ? `https://image.pollinations.ai/prompt/${targetPost.image_prompt}` : 'https://i.postimg.cc/KYr2qRCK/1.jpg';
     innerContentHtml = publicTextHtml ? `${publicTextHtml}<div style="margin-top:10px;"><img src="${postImageUrl}" class="chat-image" style="cursor: pointer;" data-hidden-text="${targetPost.hiddenContent}"></div>` : `<img src="${postImageUrl}" class="chat-image" style="cursor: pointer;" data-hidden-text="${targetPost.hiddenContent}">`;
                 }
                 return innerContentHtml;
@@ -13011,10 +13086,10 @@ const DEFAULT_NOTIFICATION_SOUND = 'https://www.myinstants.com/media/sounds/noti
                     if (post.type === 'shuoshuo') {
                         contentHtml = `<div class="post-content">${post.content.replace(/\n/g, '<br>')}</div>`;
                     } else if (post.type === 'image_post' && post.imageUrl) {
-    const postImageUrl = post.image_prompt ? `https://image.pollinations.ai/prompt/${post.image_prompt}` : (post.imageUrl || 'https://i.postimg.cc/KYr2qRCK/1.jpg');
+    const postImageUrl = state.globalSettings.enableAiDrawing && post.image_prompt ? `https://image.pollinations.ai/prompt/${post.image_prompt}` : 'https://i.postimg.cc/KYr2qRCK/1.jpg';
     contentHtml = publicTextHtml ? `${publicTextHtml}<div style="margin-top:10px;"><img src="${postImageUrl}" class="chat-image"></div>` : `<img src="${postImageUrl}" class="chat-image">`;
 } else if (post.type === 'text_image') {
-    const postImageUrl = post.image_prompt ? `https://image.pollinations.ai/prompt/${post.image_prompt}` : 'https://i.postimg.cc/KYr2qRCK/1.jpg';
+    const postImageUrl = state.globalSettings.enableAiDrawing && post.image_prompt ? `https://image.pollinations.ai/prompt/${post.image_prompt}` : 'https://i.postimg.cc/KYr2qRCK/1.jpg';
     contentHtml = publicTextHtml ? `${publicTextHtml}<div style="margin-top:10px;"><img src="${postImageUrl}" class="chat-image" style="cursor: pointer;" data-hidden-text="${post.hiddenContent}"></div>` : `<img src="${postImageUrl}" class="chat-image" style="cursor: pointer;" data-hidden-text="${post.hiddenContent}">`;
                     }
         
@@ -13536,7 +13611,8 @@ async function loadAllDataFromDB() {
         globalCss: '',
         notificationSoundUrl: '',
         widgetData: {},
-        globalChatBackground: ''
+        globalChatBackground: '',
+            enableAiDrawing: true
     };
 
     // 2. 【核心修复】将加载的设置覆盖到默认值上，而不是直接替换
@@ -13939,7 +14015,7 @@ async function loadAllDataFromDB() {
             document.getElementById('background-activity-switch').checked = state.globalSettings.enableBackgroundActivity || false;
             document.getElementById('background-interval-input').value = state.globalSettings.backgroundActivityInterval || 60;
             document.getElementById('block-cooldown-input').value = state.globalSettings.blockCooldownHours || 1;
-        
+            document.getElementById('enable-ai-drawing-switch').checked = state.globalSettings.enableAiDrawing;        
             // 2. 【核心新增】加载并渲染预设下拉菜单
             loadApiPresetsDropdown();
         }
@@ -15114,7 +15190,7 @@ async function loadAllDataFromDB() {
                     contentHtml = `<div class="link-share-card" style="cursor: pointer;" data-timestamp="${msg.timestamp}"><div class="title">${msg.payload.title}</div><div class="description">共 ${msg.payload.sharedHistory.length} 条消息</div><div class="footer"><svg class="footer-icon" ...>...</svg><span>聊天记录</span></div></div>`;
                 } else if (msg.type === 'location_share') {
                     bubble.classList.add('is-location-share', 'is-card-like');
-                    const imageUrl = msg.imageUrl;
+                    const imageUrl = state.globalSettings.enableAiDrawing && msg.image_prompt ? `https://image.pollinations.ai/prompt/${msg.image_prompt}` : 'https://i.postimg.cc/KYr2qRCK/1.jpg';
                     let mapAreaStyle = imageUrl ? `style="background-image: url('${imageUrl}');"` : '';
                     contentHtml = `<div class="location-share-card"><div class="card-text-area"><div class="card-text-primary">${msg.content}</div><div class="card-text-secondary">位置分享</div></div><div class="card-map-area" ${mapAreaStyle}><div class="card-pin-icon"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 11.5C11.1716 11.5 10.5 10.8284 10.5 10C10.5 9.17157 11.1716 8.5 12 8.5C12.8284 8.5 13.5 9.17157 13.5 10C13.5 10.8284 12.8284 11.5 12 11.5Z"></path><path d="M12 2C7.92134 2 4.5 5.42134 4.5 9.5C4.5 14.5312 11.2188 21.4375 11.5938 21.8125C11.7954 22.014 12.2046 22.014 12.4062 21.8125C12.7812 21.4375 19.5 14.5312 19.5 9.5C19.5 5.42134 16.0787 2 12 2ZM12 12.5C10.6193 12.5 9.5 11.3807 9.5 10C9.5 8.61929 10.6193 7.5 12 7.5C13.3807 7.5 14.5 8.61929 14.5 10C14.5 11.3807 13.3807 12.5 12 12.5Z"></path></svg></div></div></div>`;
                 } else if (msg.type === 'user_photo' || msg.type === 'ai_image') {
@@ -28494,8 +28570,9 @@ window.switchToCharScreen = switchToCharScreen;
                     break;
             }
         }
+        // ▼▼▼ 【V3.2 | 描述显示版】请用这个全新的函数，完整替换旧的 renderCharAlbum 函数 ▼▼▼
         /**
-         * 【全新 | V3.0 终极防空窗版】渲染角色相册
+         * 【全新 | V3.2 终极防空窗+生图开关+描述显示版】渲染角色相册
          */
         async function renderCharAlbum() {
             const gridEl = document.getElementById('char-album-grid');
@@ -28510,59 +28587,46 @@ window.switchToCharScreen = switchToCharScreen;
                 return;
             }
         
-            // 这是我们安全可靠的“备用图片”
-            const fallbackImageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent('a beautiful scenery, anime style, cinematic lighting')}`;
+            const fallbackImageUrl = `https://i.postimg.cc/KYr2qRCK/1.jpg`;
 
             photos.forEach(photo => {
                 const item = document.createElement('div');
                 item.className = 'char-photo-item';
                 item.dataset.description = photo.description;
-                // 先显示一个灰色占位背景
-                item.style.backgroundColor = '#e9ecef';
                 gridEl.appendChild(item);
 
-                // ▼▼▼ 核心修复就在这里！这是最终的、最强的防御逻辑 ▼▼▼
                 
-                let finalPrompt;
-                
-                // 1. 我们首先检查 photo.image_prompt 这个字段是否存在，并且是一个非空的字符串
-                if (photo.image_prompt && typeof photo.image_prompt === 'string' && photo.image_prompt.trim()) {
-                    // 2. 如果存在，我们再检查它是否包含任何非英文字符
+                // 1. 检查全局的生图开关是否开启
+                if (state.globalSettings.enableAiDrawing) {
+                    // --- 如果开关【开启】，执行原来的生图逻辑 ---
+                    item.style.backgroundColor = '#e9ecef';
                     const containsNonEnglish = /[^\x00-\x7F]/.test(photo.image_prompt);
+                    const isValidPrompt = photo.image_prompt && photo.image_prompt.trim() && !containsNonEnglish;
+                    const finalPrompt = isValidPrompt ? photo.image_prompt : 'a beautiful scenery, anime style, cinematic lighting';
+                    const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(finalPrompt)}`;
                     
-                    // 3. 只有当它不包含非英文字符时，我们才认为它是有效的
-                    if (!containsNonEnglish) {
-                        finalPrompt = photo.image_prompt;
-                    } else {
-                        // 如果包含中文，就记录一个警告，并准备使用备用指令
-                        console.warn('检测到无效的中文指令，已强制使用备用图片:', photo.image_prompt);
-                        finalPrompt = 'a beautiful scenery, anime style, cinematic lighting';
-                    }
+                    const img = new Image();
+                    img.onload = function() { item.style.backgroundImage = `url(${this.src})`; };
+                    img.onerror = function() { item.style.backgroundImage = `url(${fallbackImageUrl})`; };
+                    img.src = imageUrl;
+
                 } else {
-                    // 4. 如果 image_prompt 字段根本不存在，或者为空，我们直接使用备用指令
-                    console.warn('检测到缺失的 image_prompt，已强制使用备用图片。');
-                    finalPrompt = 'a beautiful scenery, anime style, cinematic lighting';
+                    // --- 如果开关【关闭】，则直接显示描述文字！ ---
+                    item.style.backgroundColor = '#f0f2f5'; // 给一个淡淡的背景色
+                    item.style.border = '1px solid #e0e0e0'; // 加一个细边框，更有卡片感
+                    
+                    // 创建一个新的 <p> 元素来存放描述
+                    const descriptionEl = document.createElement('p');
+                    descriptionEl.className = 'char-photo-description'; // 应用我们刚刚添加的CSS样式
+                    descriptionEl.textContent = photo.description || '(这张照片没有描述)'; // 显示描述，如果没有则显示提示
+                    
+                    // 将描述元素添加到格子里
+                    item.appendChild(descriptionEl);
                 }
-                
-                const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(finalPrompt)}`;
-
-                // --- 5. 图片加载检查器 (保持不变，作为第二层保险) ---
-                const img = new Image();
-                
-                img.onload = function() {
-                    item.style.backgroundImage = `url(${this.src})`;
-                };
-
-                img.onerror = function() {
-                    console.error('图片生成最终失败，已使用备用图片。失败的URL:', imageUrl);
-                    item.style.backgroundImage = `url(${fallbackImageUrl})`;
-                };
-                
-                img.src = imageUrl;
-                // --- 检查器工作结束 ---
-                // ▲▲▲ 修复结束 ▲▲▲
+       
             });
         }
+        // ▲▲▲ 替换结束 ▲▲▲
 
 /**
  * 【全新】动态生成并渲染角色的浏览器历史记录
@@ -28590,8 +28654,9 @@ function renderCharBrowserHistory() {
     }
 }
 
+        // ▼▼▼ 【V3.1 | 生图开关+描述显示版】请用这个全新的函数，完整替换旧的 renderCharTaobao ▼▼▼
         /**
-         * 【全新 | V3.0 无钱包版 | 最终修复】渲染角色的淘宝“购买记录”页面
+         * 【全新 | V3.1 无钱包版 | 最终修复】渲染角色的淘宝“购买记录”页面
          */
         function renderCharTaobao() {
             const gridEl = document.getElementById('char-product-grid');
@@ -28599,12 +28664,7 @@ function renderCharBrowserHistory() {
             if (!activeCharacterId) return;
 
             const char = state.chats[activeCharacterId];
-            
-            // ▼▼▼ 核心修复就在这里！▼▼▼
-            // 我们现在告诉代码，要去 simulatedTaobaoHistory 这个“包裹”里，
-            // 拿出名叫 purchases 的“购物清单”（数组）。
             const purchases = char.simulatedTaobaoHistory?.purchases || [];
-            // ▲▲▲ 修复结束 ▲▲▲
 
             if (purchases.length === 0) {
                 gridEl.innerHTML = '<p style="text-align:center; color: var(--text-secondary); padding: 50px 0;">TA最近好像什么都没买呢，<br>点击右上角刷新按钮生成一些记录吧！</p>';
@@ -28616,10 +28676,25 @@ function renderCharBrowserHistory() {
                 itemEl.className = 'char-product-item';
                 itemEl.dataset.reason = item.reason;
                 
-                const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(item.image_prompt || 'a random product')}`;
+                let imageOrTextHtml;
+
+
+                if (state.globalSettings.enableAiDrawing) {
+                    // 如果开关【开启】，则生成图片
+                    const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(item.image_prompt || 'a random product')}`;
+                    imageOrTextHtml = `<img src="${imageUrl}" class="product-image">`;
+                } else {
+                    // 如果开关【关闭】，则显示购买理由
+                    imageOrTextHtml = `
+                        <div class="char-product-description-overlay">
+                            <p class="char-photo-description">${item.reason || '(无购买理由)'}</p>
+                        </div>
+                    `;
+                }
+
 
                 itemEl.innerHTML = `
-                    <img src="${imageUrl}" class="product-image">
+                    ${imageOrTextHtml}
                     <div class="product-info">
                         <div class="product-name">${item.itemName}</div>
                         <div class="product-price">${(item.price || 0).toFixed(2)}</div>
@@ -28628,6 +28703,7 @@ function renderCharBrowserHistory() {
                 gridEl.appendChild(itemEl);
             });
         }
+        // ▲▲▲ 替换结束 ▲▲▲
 /**
  * 切换回角色手机的主屏幕
  */
@@ -29409,38 +29485,37 @@ function closeSimulatedTranscriptModal() {
 }
 
 // ▲▲▲ 全新JS代码粘贴结束 ▲▲▲
-        /**
-         * 【全新 | V3.0 AI指令强化版】当用户点击“重新生成”时，调用AI生成模拟相册内容
-         */
-        async function handleGenerateSimulatedAlbum() {
-            if (!activeCharacterId) return;
-            const chat = state.chats[activeCharacterId];
-        
-            if (!chat) {
-                await showCustomAlert("操作失败", "无法找到当前角色的数据。");
-                return;
-            }
-        
-            await showCustomAlert("请稍候...", `正在请求“${chat.name}”回忆TA的相册照片...`);
-        
-            const { proxyUrl, apiKey, model } = state.apiConfig;
-            if (!proxyUrl || !apiKey || !model) {
-                alert('请先在API设置中配置好API信息。');
-                return;
-            }
-        
-            // 【修复】定义一个更安全的用户显示名
-            const userDisplayNameForAI = (state.qzoneSettings.nickname === '{{user}}' || !state.qzoneSettings.nickname) ? '用户' : state.qzoneSettings.nickname;
-            
-            const longTermMemoryContext = chat.longTermMemory?.map(mem => `- ${mem.content}`).join('\n') || '无';
-            const recentHistoryWithUser = chat.history.slice(-5).map(msg => `${msg.role === 'user' ? userDisplayNameForAI : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
-            const worldBookContext = (chat.settings.linkedWorldBookIds || [])
-                .map(bookId => state.worldBooks.find(wb => wb.id === bookId))
-                .filter(Boolean)
-                .map(book => `\n## 世界书《${book.name}》设定:\n${book.content.filter(e => e.enabled).map(e => `- ${e.content}`).join('\n')}`)
-                .join('');
-        
-            const systemPrompt = `
+/**
+ * 【全新 | V3.0 AI指令强化版】当用户点击“重新生成”时，调用AI生成模拟相册内容
+ */
+async function handleGenerateSimulatedAlbum() {
+    if (!activeCharacterId) return;
+    const chat = state.chats[activeCharacterId];
+
+    if (!chat) {
+        await showCustomAlert("操作失败", "无法找到当前角色的数据。");
+        return;
+    }
+
+    await showCustomAlert("请稍候...", `正在请求“${chat.name}”回忆TA的相册照片...`);
+
+    const { proxyUrl, apiKey, model } = state.apiConfig;
+    if (!proxyUrl || !apiKey || !model) {
+        alert('请先在API设置中配置好API信息。');
+        return;
+    }
+
+    const userDisplayNameForAI = (state.qzoneSettings.nickname === '{{user}}' || !state.qzoneSettings.nickname) ? '用户' : state.qzoneSettings.nickname;
+    
+    const longTermMemoryContext = chat.longTermMemory?.map(mem => `- ${mem.content}`).join('\n') || '无';
+    const recentHistoryWithUser = chat.history.slice(-5).map(msg => `${msg.role === 'user' ? userDisplayNameForAI : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
+    const worldBookContext = (chat.settings.linkedWorldBookIds || [])
+        .map(bookId => state.worldBooks.find(wb => wb.id === bookId))
+        .filter(Boolean)
+        .map(book => `\n## 世界书《${book.name}》设定:\n${book.content.filter(e=>e.enabled).map(e => `- ${e.content}`).join('\n')}`)
+        .join('');
+
+    const systemPrompt = `
 # 你的任务
 你是一个虚拟生活模拟器。你的任务是扮演角色“${chat.name}”，并根据其人设、记忆和最近的互动，构思出【8到10张】TA最近可能会拍摄或珍藏在手机相册里的照片。
 
@@ -29468,46 +29543,67 @@ ${worldBookContext}
 ${recentHistoryWithUser}
 
 现在，请开始生成这组照片的描述和绘画指令。`;
-        
-            try {
-                const messagesForApi = [{ role: 'user', content: "请根据你的设定，生成你的相册内容。" }];
-                let isGemini = proxyUrl.includes('generativelanguage');
-                let geminiConfig = toGeminiRequestData(model, apiKey, systemPrompt, messagesForApi);
-                
-                const response = isGemini 
-                    ? await fetch(geminiConfig.url, geminiConfig.data) 
-                    : await fetch(`${proxyUrl}/v1/chat/completions`, {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}`},
-                        body: JSON.stringify({
-                            model: model,
-                            messages: [{role: 'system', content: systemPrompt}, ...messagesForApi],
-                            temperature: 0.9,
-                            response_format: { "type": "json_object" } 
-                        })
-                    });
 
-                if (!response.ok) throw new Error(`API 错误: ${response.statusText}`);
-                
-                const data = await response.json();
-                const aiResponseContent = getGeminiResponseText(data);
-                const cleanedJson = aiResponseContent.replace(/^```json\s*/, '').replace(/```$/, '');
-                
-                const simulatedAlbumData = JSON.parse(cleanedJson);
-                
-                chat.simulatedAlbum = simulatedAlbumData;
-                await db.chats.put(chat);
-                
-                await renderCharAlbum();
-                
-            } catch (error) {
-                console.error("生成模拟相册失败:", error);
-                await showCustomAlert("生成失败", `无法生成模拟相册，请检查API配置或稍后再试。\n错误: ${error.message}`);
-            }
+    try {
+        const messagesForApi = [{ role: 'user', content: "请根据你的设定，生成你的相册内容。" }];
+        let isGemini = proxyUrl.includes('generativelanguage');
+        let geminiConfig = toGeminiRequestData(model, apiKey, systemPrompt, messagesForApi);
+        
+        const response = isGemini 
+            ? await fetch(geminiConfig.url, geminiConfig.data) 
+            : await fetch(`${proxyUrl}/v1/chat/completions`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}`},
+                body: JSON.stringify({
+                    model: model,
+                    messages: [{role: 'system', content: systemPrompt}, ...messagesForApi],
+                    temperature: 0.9,
+                    response_format: { "type": "json_object" } 
+                })
+            });
+
+        if (!response.ok) throw new Error(`API 错误: ${response.statusText}`);
+        
+        const data = await response.json();
+        const aiResponseContent = getGeminiResponseText(data);
+        
+        // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+        //            这就是本次修复的核心所在！
+        // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+        // 1. 使用正则表达式从AI的完整回复中，智能地找到有效的JSON数组部分。
+        const jsonMatch = aiResponseContent.match(/(\[[\s\S]*\])/);
+
+        if (!jsonMatch || !jsonMatch[0]) {
+            // 如果连JSON数组的结构都找不到，就直接报错。
+            throw new Error(`AI返回的内容中未找到有效的JSON数组。原始返回: ${aiResponseContent}`);
         }
 
+        // 2. 只解析我们成功提取出的JSON字符串。
+        const cleanedJsonString = jsonMatch[0];
+        let simulatedAlbumData;
+        try {
+            simulatedAlbumData = JSON.parse(cleanedJsonString);
+        } catch (e) {
+            // 如果提取出的部分也不是有效的JSON，同样报错。
+            throw new Error(`解析AI返回的JSON时出错: ${e.message}\n\nAI原始返回内容:\n${aiResponseContent}`);
+        }
+        // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+
+        chat.simulatedAlbum = simulatedAlbumData;
+        await db.chats.put(chat);
+        
+        await renderCharAlbum();
+        
+    } catch (error) {
+        console.error("生成模拟相册失败:", error);
+        await showCustomAlert("生成失败", `无法生成模拟相册，请检查API配置或稍后再试。\n错误: ${error.message}`);
+    }
+}
+
+
+        // ▼▼▼ 【V3.3 | 逻辑终极修复版】请用这个全新的函数，完整替换旧的 renderCharAlbum 函数 ▼▼▼
         /**
-         * 【全新 | V3.0 终极防空窗版】渲染角色相册
+         * 【全新 | V3.2 终极防空窗+生图开关+描述显示版】渲染角色相册
          */
         async function renderCharAlbum() {
             const gridEl = document.getElementById('char-album-grid');
@@ -29522,57 +29618,50 @@ ${recentHistoryWithUser}
                 return;
             }
         
-            // 这是我们安全可靠的“备用图片”
-            const fallbackImageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent('a beautiful scenery, anime style, cinematic lighting')}`;
+            const fallbackImageUrl = `https://i.postimg.cc/KYr2qRCK/1.jpg`;
 
             photos.forEach(photo => {
                 const item = document.createElement('div');
                 item.className = 'char-photo-item';
                 item.dataset.description = photo.description;
-                // 先显示一个灰色占位背景
-                item.style.backgroundColor = '#e9ecef';
                 gridEl.appendChild(item);
 
-                // ▼▼▼ 核心修复就在这里！▼▼▼
-                // 1. 使用正则表达式检查 prompt 是否包含任何非英文字符
-                const containsNonEnglish = /[^\x00-\x7F]/.test(photo.image_prompt);
+                // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+                //            这就是本次修复的核心所在！
+                //  我们现在确保了两种情况的逻辑是完全独立的。
+                // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
                 
-                // 2. 我们的“有效性”检查现在变得更严格了：
-                //    - 必须存在
-                //    - 必须不是空字符串
-                //    - 必须不包含任何非英文字符
-                const isValidPrompt = photo.image_prompt && photo.image_prompt.trim() && !containsNonEnglish;
-                
-                // 3. 如果 prompt 有效，就使用它；否则，强制使用我们的备用 prompt
-                const finalPrompt = isValidPrompt ? photo.image_prompt : 'a beautiful scenery, anime style, cinematic lighting';
-                const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(finalPrompt)}`;
+                // 1. 检查全局的生图开关是否开启
+                if (state.globalSettings.enableAiDrawing) {
+                    // --- 如果开关【开启】，则只执行生图相关的逻辑 ---
+                    item.style.backgroundColor = '#e9ecef';
+                    const containsNonEnglish = /[^\x00-\x7F]/.test(photo.image_prompt);
+                    const isValidPrompt = photo.image_prompt && photo.image_prompt.trim() && !containsNonEnglish;
+                    const finalPrompt = isValidPrompt ? photo.image_prompt : 'a beautiful scenery, anime style, cinematic lighting';
+                    const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(finalPrompt)}`;
+                    
+                    const img = new Image();
+                    img.onload = function() { item.style.backgroundImage = `url(${this.src})`; };
+                    img.onerror = function() { item.style.backgroundImage = `url(${fallbackImageUrl})`; };
+                    img.src = imageUrl;
 
-                // --- 4. 这就是我们的“图片加载检查器” ---
-                const img = new Image(); // 在后台创建一个临时的<img>标签
-                
-                // a. 如果图片成功加载
-                img.onload = function() {
-                    // 就把这张成功的图片设置为背景
-                    item.style.backgroundImage = `url(${this.src})`;
-                };
-
-                // b. 如果图片加载失败（比如prompt错误，服务器返回404或损坏的图片）
-                img.onerror = function() {
-                    // 就立刻使用我们准备好的、绝对不会出错的“备用图片”
-                    console.warn('图片生成失败，已使用备用图片。失败的Prompt:', finalPrompt);
-                    item.style.backgroundImage = `url(${fallbackImageUrl})`;
-                };
-                
-                // c. 命令浏览器开始加载图片
-                img.src = imageUrl;
-                // --- 检查器工作结束 ---
-                // ▲▲▲ 修复结束 ▲▲▲
+                } else {
+                    // --- 如果开关【关闭】，则只执行显示文字描述的逻辑 ---
+                    item.style.backgroundColor = '#f0f2f5';
+                    item.style.border = '1px solid #e0e0e0';
+                    
+                    const descriptionEl = document.createElement('p');
+                    descriptionEl.className = 'char-photo-description';
+                    descriptionEl.textContent = photo.description || '(这张照片没有描述)';
+                    
+                    item.appendChild(descriptionEl);
+                }
             });
         }
-// ▼▼▼ 【全新V2.0】这是AI浏览器功能的【全部核心JS代码】，请完整粘贴 ▼▼▼
-
+        // ▲▲▲ 替换结束 ▲▲▲
+        // ▼▼▼ 【V2.2 | JSON解析终极修复版】请用这个全新的函数，完整替换旧的 handleGenerateBrowserHistory ▼▼▼
         /**
-         * 【全新 | V2.0 AI指令强化版】当用户点击“重新生成”时，调用AI生成模拟浏览器历史
+         * 【全新 | V2.1 AI指令强化版】当用户点击“重新生成”时，调用AI生成模拟浏览器历史
          */
         async function handleGenerateBrowserHistory() {
             if (!activeCharacterId) return;
@@ -29586,8 +29675,7 @@ ${recentHistoryWithUser}
                 alert('API未配置，无法生成内容。');
                 return;
             }
-
-            // 【修复】定义一个更安全的用户显示名
+            
             const userDisplayNameForAI = (state.qzoneSettings.nickname === '{{user}}' || !state.qzoneSettings.nickname) ? '用户' : state.qzoneSettings.nickname;
         
             const longTermMemoryContext = chat.longTermMemory?.map(mem => `- ${mem.content}`).join('\n') || '无';
@@ -29604,10 +29692,9 @@ ${recentHistoryWithUser}
 
 # 核心规则
 1.  **创造性与合理性**: 记录必须完全符合角色的性格、爱好、职业和生活环境。
-2.  **多样性**: 记录类型要丰富，可以是对知识的探索、对新闻的关注、对兴趣爱好的深入，或者在线购物、看视频等。
-3.  **格式铁律 (最高优先级)**: 你的回复【必须且只能】是一个JSON数组。数组中的每个元素都是一个对象，代表一条浏览记录，且【必须】是以下两种格式之一：
+2.  **多样性**: 记录类型要丰富，可以是帖子、文章、新闻、问答等。
+3.  **【【【格式铁律 (最高优先级)】】】**: 你的回复【必须且只能】是一个JSON数组。数组中的每个元素都代表一条浏览记录，并且【必须】使用以下格式:
 
-    **格式 A：纯文本帖子/文章**
     \`\`\`json
     {
       "type": "text",
@@ -29616,16 +29703,8 @@ ${recentHistoryWithUser}
       "content": "一篇200-400字的、详细的文章或帖子正文，支持换行符\\n。"
     }
     \`\`\`
-
-    **格式 B：图片生成**
-    \`\`\`json
-    {
-      "type": "image",
-      "title": "描述这张图片的标题或搜索词",
-      "url": "一个虚构的图片网站网址 (如 artstation.com/artwork/...")",
-      "image_prompt": "一段用于生成这张图片的、详细的【英文】关键词, 风格为动漫/插画/二次元等, 禁止真人"
-    }
-    \`\`\`
+    
+    **【【【绝对禁止】】】**: 你的回复中【绝对不能】包含 "type": "image" 的对象。所有记录都必须是文字内容。
 
 # 供你参考的上下文
 - **你的角色设定**: ${chat.settings.aiPersona}
@@ -29635,7 +29714,7 @@ ${worldBookContext}
 - **你最近和“${userDisplayNameForAI}”的对话摘要**:
 ${recentHistoryWithUser}
 
-现在，请开始生成这组浏览记录。`;
+现在，请开始生成这组【纯文本】的浏览记录。`;
         
             try {
                 const messagesForApi = [{ role: 'user', content: "请根据你的设定，生成你的浏览器记录。" }];
@@ -29659,9 +29738,28 @@ ${recentHistoryWithUser}
                 
                 const data = await response.json();
                 const aiResponseContent = getGeminiResponseText(data);
-                const cleanedJson = aiResponseContent.replace(/^```json\s*/, '').replace(/```$/, '');
                 
-                const simulatedHistory = JSON.parse(cleanedJson);
+                // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+                //            这就是本次修复的核心所在！
+                // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+                // 1. 使用正则表达式从AI的完整回复中，智能地找到有效的JSON数组部分。
+                const jsonMatch = aiResponseContent.match(/(\[[\s\S]*\])/);
+
+                if (!jsonMatch || !jsonMatch[0]) {
+                    // 如果连JSON数组的结构都找不到，就直接报错。
+                    throw new Error(`AI返回的内容中未找到有效的JSON数组。原始返回: ${aiResponseContent}`);
+                }
+
+                // 2. 只解析我们成功提取出的JSON字符串。
+                const cleanedJsonString = jsonMatch[0];
+                let simulatedHistory;
+                try {
+                    simulatedHistory = JSON.parse(cleanedJsonString);
+                } catch (e) {
+                    // 如果提取出的部分也不是有效的JSON，同样报错。
+                    throw new Error(`解析AI返回的JSON时出错: ${e.message}\n\nAI原始返回内容:\n${aiResponseContent}`);
+                }
+                // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
                 
                 chat.simulatedBrowserHistory = simulatedHistory;
                 await db.chats.put(chat);
@@ -29673,7 +29771,7 @@ ${recentHistoryWithUser}
                 await showCustomAlert("生成失败", `无法生成浏览记录，请检查API配置或稍后再试。\n错误: ${error.message}`);
             }
         }
-
+        // ▲▲▲ 替换结束 ▲▲▲
 /**
  * 【全新 | V2.0 动态数据版】渲染角色的浏览器历史记录列表
  */
@@ -29717,26 +29815,31 @@ function openCharArticle(index) {
     switchToCharScreen('char-browser-article-screen');
 }
 
-/**
- * 【全新】根据文章数据渲染文章查看页面
- * @param {object} articleData - 单条历史记录的数据对象
- */
-function renderCharArticle(articleData) {
-    const titleEl = document.getElementById('char-article-title');
-    const contentEl = document.getElementById('char-article-content');
-    
-    titleEl.textContent = articleData.title;
-    contentEl.innerHTML = ''; // 清空旧内容
+        /**
+         * 【全新】根据文章数据渲染文章查看页面
+         * @param {object} articleData - 单条历史记录的数据对象
+         */
+        function renderCharArticle(articleData) {
+            const titleEl = document.getElementById('char-article-title');
+            const contentEl = document.getElementById('char-article-content');
+            
+            titleEl.textContent = articleData.title;
+            contentEl.innerHTML = ''; 
 
-    if (articleData.type === 'image' && articleData.image_prompt) {
-        // 如果是图片类型，创建一个img标签并使用AI绘画URL
-        const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(articleData.image_prompt)}`;
-        contentEl.innerHTML = `<img src="${imageUrl}" style="max-width: 100%; border-radius: 8px;">`;
-    } else {
-        // 如果是文本类型，直接显示内容，并处理换行
-        contentEl.innerHTML = `<p>${(articleData.content || '内容加载失败...').replace(/\n/g, '</p><p>')}</p>`;
-    }
-}
+            // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+            //            这就是本次修改的核心所在！
+            // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+            // 我们不再检查生图开关，而是直接判断记录类型。
+            // 如果是图片类型，就显示标题作为内容。
+            if (articleData.type === 'image') {
+                contentEl.innerHTML = `<p class="char-browser-image-description">${articleData.title || '(无标题)'}</p>`;
+            } else {
+                // 如果是文本类型，正常显示内容。
+                contentEl.innerHTML = `<p>${(articleData.content || '内容加载失败...').replace(/\n/g, '</p><p>')}</p>`;
+            }
+            // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+        }
+        // ▲▲▲ 替换结束 ▲▲▲
 
 // ▲▲▲ 全新JS代码粘贴结束 ▲▲▲
         /**
@@ -32002,7 +32105,7 @@ function updateChatListItem(chatId) {
             state.globalSettings.enableBackgroundActivity = backgroundSwitch.checked;
             state.globalSettings.backgroundActivityInterval = parseInt(intervalInput.value) || 60;
             state.globalSettings.blockCooldownHours = parseFloat(cooldownInput.value) || 1;
-        
+            state.globalSettings.enableAiDrawing = document.getElementById('enable-ai-drawing-switch').checked;
             await db.globalSettings.put(state.globalSettings);
         
             stopBackgroundSimulation(); 
@@ -35708,6 +35811,60 @@ document.getElementById('import-world-book-input').addEventListener('change', (e
             }
             e.target.value = null;
         });
+        document.getElementById('enable-ai-drawing-switch').addEventListener('change', async (e) => {
+            const isEnabled = e.target.checked;
+            state.globalSettings.enableAiDrawing = isEnabled;
+            await db.globalSettings.put(state.globalSettings);
+
+            // 检查当前在哪个屏幕，并刷新它
+            const activeScreen = document.querySelector('.screen.active');
+            if (activeScreen) {
+                switch (activeScreen.id) {
+                    case 'chat-interface-screen':
+                        renderChatInterface(state.activeChatId);
+                        break;
+                    case 'chat-list-screen':
+                        // 刷新动态页
+                        if(document.getElementById('qzone-screen').classList.contains('active')) renderQzonePosts();
+                        // 刷新收藏页
+                        if(document.getElementById('favorites-view').classList.contains('active')) renderFavoritesScreen();
+                        break;
+                    case 'douban-screen':
+                        renderDoubanScreen();
+                        break;
+                    case 'douban-post-detail-screen':
+                        openDoubanPostDetail(activeDoubanPostId);
+                        break;
+                    // 角色手机内部的刷新
+                    case 'character-phone-screen':
+                        const activeCharScreen = document.querySelector('.char-screen.active');
+                        if (activeCharScreen) {
+                            switch(activeCharScreen.id) {
+                                case 'char-album-screen': renderCharAlbum(); break;
+                                case 'char-taobao-screen': renderCharTaobao(); break;
+                                case 'char-browser-article-screen': 
+                                    const char = state.chats[activeCharacterId];
+                                    const history = char.simulatedBrowserHistory || [];
+                                    const lastArticleIndex = history.length > 0 ? history.length - 1 : 0; // 简单示例，实际可能需要更精确的索引
+                                    renderCharArticle(history[lastArticleIndex]);
+                                    break;
+                                case 'char-usage-screen': renderCharAppUsage(); break;
+                                case 'char-qq-screen': renderCharSimulatedQQ(); break;
+                                case 'char-qq-conversation-screen': 
+                                    const convoIndex = document.querySelector('#char-chat-list .chat-list-item')?.dataset.conversationIndex || 0;
+                                    openCharSimulatedConversation(parseInt(convoIndex));
+                                    break;
+                            }
+                        }
+                        break;
+                }
+            }
+            showCustomAlert('设置已应用', `AI生图功能已${isEnabled ? '开启' : '关闭'}。`);
+        });
+
+
+
+
                     showScreen('home-screen');
                 }
         
