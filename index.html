@@ -5831,7 +5831,8 @@
             display: grid;
         }
         
-/* 8. 美化后的世界书卡片样式 */
+
+/* 8. 美化后的世界书卡片样式 (最终修复版) */
 .world-book-card {
     background-color: var(--secondary-bg);
     border-radius: 12px;
@@ -5841,8 +5842,13 @@
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     display: flex;
     flex-direction: column;
-    gap: 8px; /* 标题和内容的间距 */
-    word-break: break-all; /* <<< 核心修复：添加这一行 */
+    gap: 8px;
+    
+    /* 核心修复 1: 允许卡片在网格布局中正确地收缩，这是解决问题的关键 */
+    min-width: 0;
+
+    /* 核心修复 2: 强制对所有内容（包括中英文）进行换行，作为双重保险 */
+    word-break: break-all;
 }
         
         .world-book-card:hover {
@@ -35904,7 +35910,6 @@ document.getElementById('import-world-book-input').addEventListener('change', (e
 <!-- ▲▲▲ 新增HTML结束 ▲▲▲ -->
 </body>
 </html>
-
 
 
 
