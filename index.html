@@ -9031,6 +9031,22 @@
                 <span class="back-btn" onclick="showScreen('home-screen')">‹</span>
                 <span>世界书</span>
                 <div class="header-actions">
+                    <!-- ▼▼▼ 在这里粘贴下面的新代码 ▼▼▼ -->
+                    <span class="action-btn" id="import-world-book-btn" title="导入世界书">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                    </span>
+                    <span class="action-btn" id="export-world-book-btn" title="导出世界书">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                    </span>
+                    <!-- ▲▲▲ 新代码粘贴结束 ▲▲▲ -->
                     <!-- 【核心修改1】将文字按钮替换为SVG图标 -->
                     <span class="action-btn" id="manage-world-book-categories-btn" title="管理分类">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -10089,6 +10105,7 @@
     </div>
 
     <input type="file" id="import-card-input" accept=".json,.png" style="display: none;">
+   <input type="file" id="import-world-book-input" accept=".json" style="display: none;">
 <!-- ▼▼▼ 【全新】聊天设置页面结构 ▼▼▼ -->
 <div id="chat-settings-screen" class="screen">
     <!-- 1. 页面的头部，包含返回和保存按钮 -->
@@ -13305,8 +13322,10 @@ async function cleanupRedundantData() {
                     qzoneAlbums, qzonePhotos, favorites, qzoneGroups,
                     memories, worldBookCategories,
                     apiPresets, shoppingProducts, callRecords,
-                    // 【核心修复1：在这里添加缺失的变量】
-                    renderingRules 
+                    renderingRules,
+                    // ▼▼▼ 在这里添加新代码 ▼▼▼
+                    doubanPosts
+                    // ▲▲▲ 新代码粘贴结束 ▲▲▲
                 ] = await Promise.all([
                     db.chats.toArray(),
                     db.worldBooks.toArray(),
@@ -13326,8 +13345,10 @@ async function cleanupRedundantData() {
                     db.apiPresets.toArray(),
                     db.shoppingProducts.toArray(),
                     db.callRecords.toArray(),
-                    // 【核心修复2：在这里添加对新数据表的读取】
-                    db.renderingRules.toArray()
+                    db.renderingRules.toArray(),
+                    // ▼▼▼ 在这里添加新代码 ▼▼▼
+                    db.doubanPosts.toArray()
+                    // ▲▲▲ 新代码粘贴结束 ▲▲▲
                 ]);
         
                 Object.assign(backupData, {
@@ -13336,8 +13357,10 @@ async function cleanupRedundantData() {
                     qzoneAlbums, qzonePhotos, favorites, qzoneGroups,
                     memories, worldBookCategories,
                     apiPresets, shoppingProducts, callRecords,
-                    // 【核心修复3：将新数据添加到备份对象中】
-                    renderingRules
+                    renderingRules,
+                    // ▼▼▼ 在这里添加新代码 ▼▼▼
+                    doubanPosts
+                    // ▲▲▲ 新代码粘贴结束 ▲▲▲
                 });
                 
                 const blob = new Blob(
@@ -13360,7 +13383,6 @@ async function cleanupRedundantData() {
             }
         }
         
-        // ▼▼▼ 用这个【已包含 memories】的版本，完整替换旧的 importBackup 函数 ▼▼▼
         // ▼▼▼ 【这是导入函数修复版】 ▼▼▼
         async function importBackup(file) {
             if (!file) return;
@@ -13383,28 +13405,23 @@ async function cleanupRedundantData() {
                     }
         
                     if (Array.isArray(data.chats)) await db.chats.bulkPut(data.chats);
-// ▼▼▼ 【全新】世界书旧版本数据兼容代码 ▼▼▼
-if (data.worldBooks && Array.isArray(data.worldBooks)) {
-    console.log("正在检查世界书数据格式以确保兼容性...");
-    data.worldBooks.forEach(book => {
-        // 检查 content 字段是否是旧的字符串格式
-        if (typeof book.content === 'string') {
-            console.log(`检测到旧格式的世界书: "${book.name}"，正在自动迁移...`);
-            
-            // 将旧的字符串内容保存下来
-            const oldContentString = book.content;
-
-            // 【核心转换】将字符串替换为新的数组格式
-            book.content = [{
-                keys: [], // 默认为空关键词
-                comment: "从旧版本自动迁移的条目", // 添加一个备注
-                content: oldContentString, // 将旧的文本放入新结构中
-                enabled: true // 默认启用
-            }];
-        }
-    });
-}
-// ▲▲▲ 代码粘贴结束 ▲▲▲
+                    // ▼▼▼ 【全新】世界书旧版本数据兼容代码 ▼▼▼
+                    if (data.worldBooks && Array.isArray(data.worldBooks)) {
+                        console.log("正在检查世界书数据格式以确保兼容性...");
+                        data.worldBooks.forEach(book => {
+                            if (typeof book.content === 'string') {
+                                console.log(`检测到旧格式的世界书: "${book.name}"，正在自动迁移...`);
+                                const oldContentString = book.content;
+                                book.content = [{
+                                    keys: [], 
+                                    comment: "从旧版本自动迁移的条目",
+                                    content: oldContentString,
+                                    enabled: true 
+                                }];
+                            }
+                        });
+                    }
+                    // ▲▲▲ 代码粘贴结束 ▲▲▲
                     if (Array.isArray(data.worldBooks)) await db.worldBooks.bulkPut(data.worldBooks);
                     if (Array.isArray(data.worldBookCategories)) await db.worldBookCategories.bulkPut(data.worldBookCategories);
                     if (Array.isArray(data.userStickers)) await db.userStickers.bulkPut(data.userStickers);
@@ -13415,13 +13432,15 @@ if (data.worldBooks && Array.isArray(data.worldBooks)) {
                     if (Array.isArray(data.favorites)) await db.favorites.bulkPut(data.favorites);
                     if (Array.isArray(data.qzoneGroups)) await db.qzoneGroups.bulkPut(data.qzoneGroups);
                     if (Array.isArray(data.memories)) await db.memories.bulkPut(data.memories);
-                    
                     if (Array.isArray(data.apiPresets)) await db.apiPresets.bulkPut(data.apiPresets);
                     if (Array.isArray(data.shoppingProducts)) await db.shoppingProducts.bulkPut(data.shoppingProducts);
                     if (Array.isArray(data.callRecords)) await db.callRecords.bulkPut(data.callRecords);
-                    // 【核心修复：在这里添加对渲染规则数据的写入操作】
                     if (Array.isArray(data.renderingRules)) await db.renderingRules.bulkPut(data.renderingRules);
         
+                    // ▼▼▼ 在这里添加新代码 ▼▼▼
+                    if (Array.isArray(data.doubanPosts)) await db.doubanPosts.bulkPut(data.doubanPosts);
+                    // ▲▲▲ 新代码粘贴结束 ▲▲▲
+
                     if (data.apiConfig) await db.apiConfig.put(data.apiConfig);
                     if (data.globalSettings) await db.globalSettings.put(data.globalSettings);
                     if (data.musicLibrary) await db.musicLibrary.put(data.musicLibrary);
@@ -31405,6 +31424,168 @@ async function simulateBackgroundActivity(minutesOffline) {
                 // 4. 初始化函数 init()
                 // ===================================================================
                 async function init() {
+        /**
+         * 智能导入处理器：自动识别文件类型并调用相应的导入函数
+         * @param {File} file - 用户选择的 .json 文件
+         */
+        async function handleWorldBookImport(file) {
+            if (!file) return;
+        
+            try {
+                const text = await file.text();
+                const data = JSON.parse(text);
+        
+                // 检查是否是 EPhone 的备份文件
+                if (data.type === 'EPhoneWorldBookBackup') {
+                    console.log("检测到 EPhone 备份文件，执行标准导入...");
+                    await importWorldBooks(data); // 注意：我们将修改 importWorldBooks 来接收解析后的数据
+                } 
+                // 检查是否是 Tavern AI 的世界书文件
+                else if (data.entries && typeof data.entries === 'object') {
+                    console.log("检测到 Tavern AI 世界书文件，执行兼容导入...");
+                    await importTavernWorldBook(data, file.name);
+                } 
+                // 如果两种格式都不是
+                else {
+                    throw new Error("文件格式无法识别。请确保您选择的是有效的 EPhone 世界书备份或 Tavern AI 世界书文件。");
+                }
+        
+            } catch (error) {
+                console.error("导入世界书时出错:", error);
+                await showCustomAlert('导入失败', `文件解析或应用失败: ${error.message}`);
+            }
+        }
+        
+        /**
+         * 【兼容核心】从 Tavern AI 格式的数据创建一本新的世界书
+         * @param {object} tavernData - 从 Tavern AI .json 文件解析出的数据
+         * @param {string} fileName - 原始文件名，用于生成默认书名
+         */
+        async function importTavernWorldBook(tavernData, fileName) {
+            const bookNameSuggestion = fileName.replace(/\.json$/i, ''); // 从文件名中提取建议名称
+        
+            const newBookName = await showCustomPrompt(
+                "导入 Tavern AI 世界书", 
+                "请为这本设定集命名：",
+                bookNameSuggestion
+            );
+        
+            if (!newBookName || !newBookName.trim()) {
+                alert("导入已取消，因为未提供书名。");
+                return;
+            }
+        
+            const newEntries = Object.values(tavernData.entries).map(entry => {
+                // 将 Tavern 的数据结构转换为 EPhone 的格式
+                return {
+                    keys: entry.key || [],
+                    comment: entry.comment || '无备注',
+                    content: entry.content || '',
+                    enabled: !entry.disable // 注意：Tavern 的 disable 和 EPhone 的 enabled 逻辑是相反的
+                };
+            }).filter(entry => entry.content); // 过滤掉没有内容的条目
+        
+            if (newEntries.length === 0) {
+                alert("这个 Tavern AI 世界书中没有找到任何有效的条目。");
+                return;
+            }
+        
+            const newWorldBook = {
+                id: 'wb_' + Date.now(),
+                name: newBookName.trim(),
+                content: newEntries,
+                categoryId: null // 默认不分类
+            };
+        
+            await db.worldBooks.add(newWorldBook);
+            state.worldBooks.push(newWorldBook); // 更新内存
+            await renderWorldBookScreen(); // 刷新UI
+        
+            await showCustomAlert('导入成功！', `已成功从 Tavern AI 文件导入设定集《${newBookName}》。`);
+        }
+
+
+        async function exportWorldBooks() {
+            try {
+                const books = await db.worldBooks.toArray();
+                const categories = await db.worldBookCategories.toArray();
+        
+                if (books.length === 0 && categories.length === 0) {
+                    alert("没有可导出的世界书数据。");
+                    return;
+                }
+        
+                const backupData = {
+                    type: 'EPhoneWorldBookBackup', // 特殊标记，用于导入时验证
+                    version: 1,
+                    timestamp: Date.now(),
+                    books: books,
+                    categories: categories
+                };
+        
+                const blob = new Blob(
+                    [JSON.stringify(backupData, null, 2)], 
+                    { type: 'application/json' }
+                );
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `EPhone-WorldBooks-${new Date().toISOString().split('T')[0]}.json`;
+                link.click();
+                URL.revokeObjectURL(url);
+                
+                await showCustomAlert('导出成功', '所有世界书数据已成功导出！');
+        
+            } catch (error) {
+                console.error("导出世界书时出错:", error);
+                await showCustomAlert('导出失败', `发生了一个错误: ${error.message}`);
+            }
+        }
+        
+/**
+         * 【已更新】导入 EPhone 世界书备份数据，并覆盖现有数据
+         * @param {object} data - 从备份文件解析出的JSON数据
+         */
+        async function importWorldBooks(data) {
+            // 这个函数现在直接接收解析好的数据，不再需要读取文件
+            try {
+                if (data.type !== 'EPhoneWorldBookBackup' || !data.books) {
+                    throw new Error("文件格式不正确，这不是一个有效的世界书备份文件。");
+                }
+        
+                const confirmed = await showCustomConfirm(
+                    '导入世界书',
+                    '这将用文件中的数据【完全覆盖】您当前所有的世界书和分类。此操作不可撤销！',
+                    { confirmButtonClass: 'btn-danger', confirmText: '确认覆盖' }
+                );
+        
+                if (!confirmed) return;
+        
+                await db.transaction('rw', db.worldBooks, db.worldBookCategories, async () => {
+                    await db.worldBooks.clear();
+                    await db.worldBookCategories.clear();
+                    
+                    if (Array.isArray(data.books)) {
+                        await db.worldBooks.bulkPut(data.books);
+                    }
+                    if (Array.isArray(data.categories)) {
+                        await db.worldBookCategories.bulkPut(data.categories);
+                    }
+                });
+        
+                // 更新内存中的 state 并重新渲染
+                state.worldBooks = await db.worldBooks.toArray();
+                await renderWorldBookScreen();
+        
+                await showCustomAlert('导入成功', '世界书数据已成功恢复！');
+        
+            } catch (error) {
+                console.error("导入世界书时出错:", error);
+                await showCustomAlert('导入失败', `文件解析或应用失败: ${error.message}`);
+            }
+        }
+
+
     // 【核心修改1】在 `init` 函数的最开始，检查并执行后台活动模拟
     const lastActiveTimestamp = localStorage.getItem('ephoneLastActiveTimestamp');
     if (lastActiveTimestamp) {
@@ -35503,7 +35684,17 @@ document.addEventListener('visibilitychange', () => {
     }
 });
 // ▲▲▲ 新代码粘贴结束 ▲▲▲
-
+        document.getElementById('export-world-book-btn').addEventListener('click', exportWorldBooks);
+        document.getElementById('import-world-book-btn').addEventListener('click', () => {
+            document.getElementById('import-world-book-input').click();
+        });
+document.getElementById('import-world-book-input').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                handleWorldBookImport(file); // 【核心修改】现在调用新的智能处理器
+            }
+            e.target.value = null;
+        });
                     showScreen('home-screen');
                 }
         
