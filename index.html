@@ -9028,10 +9028,9 @@
         <!-- ▼▼▼ 【请用这个新版本】完整替换旧的 world-book-screen ▼▼▼ -->
         <div id="world-book-screen" class="screen">
             <div class="header">
-                <span class="back-btn" onclick="showScreen('home-screen')">‹</span>
-                <span>世界书</span>
+                <!-- 核心修改：将返回、导入、导出按钮组合在左侧 -->
                 <div class="header-actions">
-                    <!-- ▼▼▼ 在这里粘贴下面的新代码 ▼▼▼ -->
+                    <span class="back-btn" onclick="showScreen('home-screen')">‹</span>
                     <span class="action-btn" id="import-world-book-btn" title="导入世界书">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -9046,8 +9045,12 @@
                             <line x1="12" y1="15" x2="12" y2="3"></line>
                         </svg>
                     </span>
-                    <!-- ▲▲▲ 新代码粘贴结束 ▲▲▲ -->
-                    <!-- 【核心修改1】将文字按钮替换为SVG图标 -->
+                </div>
+                
+                <span>世界书</span>
+
+                <!-- 核心修改：右侧只保留管理和添加按钮 -->
+                <div class="header-actions">
                     <span class="action-btn" id="manage-world-book-categories-btn" title="管理分类">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -9060,6 +9063,10 @@
                     <span class="action-btn" id="add-world-book-btn">+</span>
                 </div>
             </div>
+            <!-- 下面的内容保持不变 -->
+            <div id="world-book-tabs"></div>
+            <div id="world-book-content-container"></div>
+        </div>
             <!-- 【核心修改2】全新的页签和内容区结构 -->
             <div id="world-book-tabs"></div>
             <div id="world-book-content-container"></div>
@@ -35897,6 +35904,7 @@ document.getElementById('import-world-book-input').addEventListener('change', (e
 <!-- ▲▲▲ 新增HTML结束 ▲▲▲ -->
 </body>
 </html>
+
 
 
 
