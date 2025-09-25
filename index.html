@@ -15194,10 +15194,16 @@ async function loadAllDataFromDB() {
                     let mapAreaStyle = imageUrl ? `style="background-image: url('${imageUrl}');"` : '';
                     contentHtml = `<div class="location-share-card"><div class="card-text-area"><div class="card-text-primary">${msg.content}</div><div class="card-text-secondary">位置分享</div></div><div class="card-map-area" ${mapAreaStyle}><div class="card-pin-icon"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 11.5C11.1716 11.5 10.5 10.8284 10.5 10C10.5 9.17157 11.1716 8.5 12 8.5C12.8284 8.5 13.5 9.17157 13.5 10C13.5 10.8284 12.8284 11.5 12 11.5Z"></path><path d="M12 2C7.92134 2 4.5 5.42134 4.5 9.5C4.5 14.5312 11.2188 21.4375 11.5938 21.8125C11.7954 22.014 12.2046 22.014 12.4062 21.8125C12.7812 21.4375 19.5 14.5312 19.5 9.5C19.5 5.42134 16.0787 2 12 2ZM12 12.5C10.6193 12.5 9.5 11.3807 9.5 10C9.5 8.61929 10.6193 7.5 12 7.5C13.3807 7.5 14.5 8.61929 14.5 10C14.5 11.3807 13.3807 12.5 12 12.5Z"></path></svg></div></div></div>`;
                 } else if (msg.type === 'user_photo' || msg.type === 'ai_image') {
-    bubble.classList.add('is-ai-image', 'is-card-like');
-    const altText = msg.type === 'user_photo' ? "用户描述的照片" : "AI生成的图片";
-    const imageUrl = msg.image_prompt ? `https://image.pollinations.ai/prompt/${msg.image_prompt}` : 'https://i.postimg.cc/KYr2qRCK/1.jpg';
-    contentHtml = `<img src="${imageUrl}" class="ai-generated-image" alt="${altText}" data-description="${msg.content}">`;
+                    bubble.classList.add('is-ai-image', 'is-card-like');
+                    const altText = msg.type === 'user_photo' ? "用户描述的照片" : "AI生成的图片";
+                    
+                    // 1. 在生成URL之前，加入对全局开关的判断
+                    const imageUrl = state.globalSettings.enableAiDrawing && msg.image_prompt 
+                        ? `https://image.pollinations.ai/prompt/${msg.image_prompt}` 
+                        : 'https://i.postimg.cc/KYr2qRCK/1.jpg'; // <-- 如果开关关闭，则使用占位图
+
+                    // 2. 将判断后的URL用于生成HTML
+                    contentHtml = `<img src="${imageUrl}" class="ai-generated-image" alt="${altText}" data-description="${msg.content}">`;
                 } else if (msg.type === 'voice_message') {
                     bubble.classList.add('is-voice-message', 'is-card-like');
                     bubble.dataset.voiceText = msg.content;
@@ -36067,6 +36073,7 @@ document.getElementById('import-world-book-input').addEventListener('change', (e
 <!-- ▲▲▲ 新增HTML结束 ▲▲▲ -->
 </body>
 </html>
+
 
 
 
