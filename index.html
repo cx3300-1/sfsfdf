@@ -260,7 +260,7 @@
             overflow-y: auto;
             overflow-x: hidden; /* 核心修正1: 强制禁止水平滚动/拖动 */
             padding: 10px 15px; /* 核心修正2: 将左右内边距增加到15px，提供更多呼吸空间 */
-            padding-top: 110px;
+            //padding-top: 110px;
             margin-top: -80px;
             display: flex;
             flex-direction: column;
@@ -5063,7 +5063,7 @@
         
         /* 2. 强制【头部】绝对定位，并“钉”在屏幕顶部 */
         #chat-interface-screen > .header {
-            position: absolute !important;
+            position: relative !important;
             top: 0;
             left: 0;
             right: 0; /* 使用 left/right 撑满宽度，比 width:100% 更可靠 */
@@ -5073,7 +5073,7 @@
         
         /* 3. 强制【输入框】也绝对定位，并“钉”在屏幕底部 */
         #chat-interface-screen #chat-input-area {
-            position: absolute !important;
+            position: relative !important;
             bottom: 0;
             left: 0;
             right: 0;
@@ -5100,8 +5100,8 @@
         
             /* 关键：使用内边距为顶部的“头部”和底部的“输入框”留出空间 */
             /* 这样内容就会在半透明的顶/底部之下滚动，效果美观且精准 */
-            padding-top: 150px !important;  /* 为头部预留约110px空间 */
-            padding-bottom: 150px !important; /* 为输入框预留约120px空间 */
+           // padding-top: 150px !important;  /* 为头部预留约110px空间 */
+          //  padding-bottom: 120px !important; /* 为输入框预留约120px空间 */
         }
         
         /* ▲▲▲ 替换结束 ▲▲▲ */
