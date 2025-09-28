@@ -11686,7 +11686,7 @@ const DEFAULT_NOTIFICATION_SOUND = 'https://www.myinstants.com/media/sounds/noti
         };
         // ▲▲▲ 新增代码结束 ▲▲▲
         let repostTargetId = null; // 用于存储当前要转发的动态ID
-                const STICKER_REGEX = /^(https:\/\/i\.postimg\.cc\/.+|https:\/\/files\.catbox\.moe\/.+|data:image)/;
+                const STICKER_REGEX = /^(https:\/\/i\.postimg\.cc\/.+|https:\/\/files\.catbox\.moe\/.+|https?:\/\/sharkpan\.xyz\/.+|data:image)/;
                 const MESSAGE_RENDER_WINDOW = 50;
                 let currentRenderedCount = 0;
                 let lastKnownBatteryLevel = 1;
@@ -13624,8 +13624,8 @@ async function cleanupRedundantData() {
                     apiPresets, shoppingProducts, callRecords,
                     renderingRules,
                     // ▼▼▼ 在这里添加新代码 ▼▼▼
-                    doubanPosts
-                    // ▲▲▲ 新代码粘贴结束 ▲▲▲
+                    doubanPosts,
+                    stickerCategories // <-- 【核心修复1】在这里添加
                 ] = await Promise.all([
                     db.chats.toArray(),
                     db.worldBooks.toArray(),
@@ -13647,8 +13647,8 @@ async function cleanupRedundantData() {
                     db.callRecords.toArray(),
                     db.renderingRules.toArray(),
                     // ▼▼▼ 在这里添加新代码 ▼▼▼
-                    db.doubanPosts.toArray()
-                    // ▲▲▲ 新代码粘贴结束 ▲▲▲
+                    db.doubanPosts.toArray(),
+                    db.stickerCategories.toArray() // <-- 【核心修复2】在这里添加
                 ]);
         
                 Object.assign(backupData, {
@@ -13659,8 +13659,8 @@ async function cleanupRedundantData() {
                     apiPresets, shoppingProducts, callRecords,
                     renderingRules,
                     // ▼▼▼ 在这里添加新代码 ▼▼▼
-                    doubanPosts
-                    // ▲▲▲ 新代码粘贴结束 ▲▲▲
+                    doubanPosts,
+                    stickerCategories // <-- 【核心修复3】在这里添加
                 });
                 
                 const blob = new Blob(
@@ -13740,7 +13740,7 @@ async function cleanupRedundantData() {
                     // ▼▼▼ 在这里添加新代码 ▼▼▼
                     if (Array.isArray(data.doubanPosts)) await db.doubanPosts.bulkPut(data.doubanPosts);
                     // ▲▲▲ 新代码粘贴结束 ▲▲▲
-
+                   if (Array.isArray(data.stickerCategories)) await db.stickerCategories.bulkPut(data.stickerCategories);
                     if (data.apiConfig) await db.apiConfig.put(data.apiConfig);
                     if (data.globalSettings) await db.globalSettings.put(data.globalSettings);
                     if (data.musicLibrary) await db.musicLibrary.put(data.musicLibrary);
