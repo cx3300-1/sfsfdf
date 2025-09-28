@@ -8764,6 +8764,77 @@
             padding-top: 40px; /* 与顶部留出一些距离 */
         }
         /* ▲▲▲ 新增CSS结束 ▲▲▲ */
+/* ▼▼▼ 【全新】聊天工具栏按钮排序功能样式 ▼▼▼ */
+.draggable-button-item {
+    padding: 8px 12px;
+    background-color: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    cursor: grab;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.2s, box-shadow 0.2s;
+    user-select: none;
+}
+.draggable-button-item:active {
+    cursor: grabbing;
+}
+.draggable-button-item svg {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2;
+}
+/* 当一个元素正在被拖动时应用的样式 */
+.draggable-button-item.dragging {
+    opacity: 0.5;
+    background-color: #e0e0e0;
+}
+/* 当拖动的元素悬停在另一个元素上方时，为那个元素应用的样式 */
+.draggable-button-item.drag-over {
+    background-color: #d0eaff;
+    box-shadow: 0 0 0 2px var(--accent-color);
+}
+/* ▲▲▲ 新增CSS结束 ▲▲▲ */
+/* ▼▼▼ 【全新 | 移动端兼容】为拖动过程添加的样式 ▼▼▼ */
+
+/* 当一个元素正在被拖动时应用的样式 */
+.draggable-button-item.dragging {
+    opacity: 0.5;
+    background-color: #e0e0e0;
+    /* 核心：让被拖动的元素“浮”起来，不会影响其他元素的布局 */
+    position: relative; 
+    z-index: 10;
+}
+
+/* 防止在手机上拖动时，意外选中页面上的文字 */
+#button-order-editor {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+/* ▲▲▲ 新增CSS结束 ▲▲▲ */
+/* ▼▼▼ 【全新】这是为弹窗内可滚动长文本添加的样式 ▼▼▼ */
+.scrollable-content-preview {
+    /* 核心1：设置一个最大高度。内容超出这个高度就会触发滚动。
+       35vh 表示视窗高度的35%，这是一个灵活的高度，能适应不同屏幕。*/
+    max-height: 35vh;
+    
+    /* 核心2：当内容垂直方向溢出时，自动显示滚动条。 */
+    overflow-y: auto;
+    
+    /* (可选) 美化样式，让它看起来更像一个代码/引用块 */
+    background-color: #f0f2f5;
+    padding: 10px 15px;
+    border-radius: 8px;
+    text-align: left;
+    white-space: pre-wrap; /* 保持文本中的换行 */
+    border: 1px solid var(--border-color);
+}
+/* ▲▲▲ 新增CSS结束 ▲▲▲ */
     </style>
 </head>
 <body>
@@ -9959,7 +10030,24 @@
                     <label style="font-weight: 500; color: var(--text-secondary);">EPhone App 图标设置</label>
                 </div>
                 <div id="icon-settings-grid"></div>
-
+<!-- ▼▼▼ 【全新】在这里粘贴聊天工具栏排序功能 ▼▼▼ -->
+<hr style="width: 80%; opacity: 0.3; margin: 30px 0;">
+<div class="form-group" style="width:100%;">
+    
+    <!-- 这里是修改后的样子 -->
+    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <label>聊天工具栏按钮排序</label>
+        <button id="reset-button-order-btn" title="恢复默认顺序" class="form-button-secondary" style="margin: 0; padding: 4px 12px; font-size: 13px;">重置顺序</button>
+    </div>
+    
+    <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;">
+        按住下方的按钮并拖动即可排序，设置会自动保存。
+    </p>
+    <div id="button-order-editor" style="display: flex; flex-wrap: wrap; gap: 10px; padding: 10px; background-color: #f0f2f5; border-radius: 8px; border: 1px solid var(--border-color);">
+        <!-- 按钮排序项将由 JavaScript 动态生成在这里 -->
+    </div>
+</div>
+<!-- ▲▲▲ 新增HTML结束 ▲▲▲ -->
                 <!-- 【【【全新：CPhone 图标设置】】】 -->
                 <hr style="width: 80%; opacity: 0.3; margin: 30px 0;">
                 <div style="width:100%; text-align: left; margin-bottom: 15px;">
@@ -13832,7 +13920,8 @@ async function loadAllDataFromDB() {
         notificationSoundUrl: '',
         widgetData: {},
         globalChatBackground: '',
-        enableAiDrawing: true
+        enableAiDrawing: true,
+    chatActionButtonsOrder: null
     };
     state.globalSettings = { ...defaultGlobalSettings, ...(loadedGlobalSettings || {}) };
     state.globalSettings.appIcons = { ...defaultGlobalSettings.appIcons, ...(state.globalSettings.appIcons || {}) };
@@ -14393,11 +14482,11 @@ async function loadAllDataFromDB() {
             if (avatarGroupEl) {
                 avatarGroupEl.style.cursor = 'pointer';
                 // 将 'click' 事件改为 'dblclick'
-                avatarGroupEl.addEventListener('dblclick', (e) => {
-                    e.stopPropagation();
-                    const nameToPat = chat.isGroup ? chat.name : chat.originalName;
-                    handleUserPat(chat.id, nameToPat);
-                });
+               avatarGroupEl.addEventListener('dblclick', (e) => { // <--- 把 'click' 改为 'dblclick'
+        e.stopPropagation();
+        const nameToPat = chat.isGroup ? chat.name : chat.originalName;
+        handleUserPat(chat.id, nameToPat);
+    });
             }
             // ▲▲▲ 修改结束 ▲▲▲
             
@@ -14442,6 +14531,7 @@ async function loadAllDataFromDB() {
         
         // ▼▼▼ 【最终修复版】请用这个全新的、更健壮的函数，完整替换旧的 renderChatInterface 函数 ▼▼▼
         async function renderChatInterface(chatId) { // <--- 关键修改1：将函数声明为 async
+        applyButtonOrder();
             cleanupWaimaiTimers();
             const chat = state.chats[chatId];
             if (!chat) return;
@@ -14669,6 +14759,8 @@ async function loadAllDataFromDB() {
             document.getElementById('global-css-input').value = state.globalSettings.globalCss || '';
             document.getElementById('notification-sound-url-input').value = state.globalSettings.notificationSoundUrl || '';
             document.getElementById('status-bar-toggle-switch').checked = state.globalSettings.showStatusBar || false;
+    renderButtonOrderEditor();
+    initializeButtonOrderEditor();
         }
         // ▲▲▲ 替换结束 ▲▲▲
                 window.renderWallpaperScreenProxy = renderWallpaperScreen;
@@ -23764,10 +23856,10 @@ ${memoryContent}
                     
                     // ▼▼▼ 核心修改2：不再立即保存，而是弹出新的确认框让用户审核 ▼▼▼
                     const userConfirmedReplacement = await showCustomConfirm(
-                        '精炼完成，请确认',
-                        `AI已将您的 ${originalMemoryCount} 条旧记忆总结为以下核心记忆：<br><br><p style="background-color:#f0f0f0; padding:10px; border-radius:8px; text-align: left; white-space: pre-wrap;">${result.summary.trim()}</p><br>是否用这条新记忆替换掉旧的记忆？`,
-                        { confirmText: '确认替换', cancelText: '保留旧的', confirmButtonClass: 'btn-danger' }
-                    );
+    '精炼完成，请确认',
+    `AI已将您的 ${originalMemoryCount} 条旧记忆总结为以下核心记忆：<br><br><div class="scrollable-content-preview">${result.summary.trim()}</div><br>是否用这条新记忆替换掉旧的记忆？`,
+    { confirmText: '确认替换', cancelText: '保留旧的', confirmButtonClass: 'btn-danger' }
+);
 
                     // ▼▼▼ 核心修改3：只有当用户明确点击“确认替换”后，才执行覆盖操作 ▼▼▼
                     if (userConfirmedReplacement) {
@@ -32732,6 +32824,187 @@ async function renderOfflinePresetSelector(chat) {
     }
 }
 // ▲▲▲ 新增函数结束 ▲▲▲
+// ▼▼▼ 【请用这个 V2.0 版本】替换旧的 renderButtonOrderEditor 函数 ▼▼▼
+/**
+ * 渲染按钮排序的设置界面 (V2.0 - 使用常量作为默认值)
+ */
+function renderButtonOrderEditor() {
+    const editor = document.getElementById('button-order-editor');
+    if (!editor) return;
+
+    editor.innerHTML = '';
+
+    // 【核心修改】
+    // 优先使用用户保存的顺序，如果不存在，则直接使用我们定义的默认顺序常量
+    let buttonOrder = state.globalSettings.chatActionButtonsOrder || DEFAULT_BUTTON_ORDER;
+    
+    buttonOrder.forEach(buttonId => {
+        const originalButton = document.getElementById(buttonId);
+        if (originalButton) {
+            const item = document.createElement('div');
+            item.className = 'draggable-button-item';
+            item.draggable = true;
+            item.dataset.buttonId = buttonId;
+            item.innerHTML = originalButton.innerHTML; 
+            editor.appendChild(item);
+        }
+    });
+}
+// ▲▲▲ 替换结束 ▲▲▲
+
+// ▼▼▼ 【最终修复版 | 兼容移动端触摸】请用这一整块全新的代码，完整替换旧的 initializeButtonOrderEditor 函数 ▼▼▼
+/**
+ * 【V2.0 | 移动端兼容版】初始化按钮排序编辑器的拖放事件
+ */
+function initializeButtonOrderEditor() {
+    const editor = document.getElementById('button-order-editor');
+    if (!editor) return;
+
+    let draggingItem = null; // 用于存储当前正在被拖动的元素
+
+    // 统一的事件处理函数
+    const handleDragStart = (e) => {
+        const target = e.target.closest('.draggable-button-item');
+        if (!target) return;
+        
+        draggingItem = target;
+        draggingItem.classList.add('dragging');
+
+        // 阻止默认行为，特别是在触摸设备上防止页面滚动
+        if (e.cancelable) e.preventDefault();
+    };
+
+    const handleDragMove = (e) => {
+        if (!draggingItem) return;
+
+        // 统一获取坐标
+        const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+        
+        const afterElement = getDragAfterElement(editor, clientX);
+        
+        if (afterElement == null) {
+            editor.appendChild(draggingItem);
+        } else {
+            editor.insertBefore(draggingItem, afterElement);
+        }
+    };
+
+    const handleDragEnd = () => {
+        if (!draggingItem) return;
+
+        draggingItem.classList.remove('dragging');
+        draggingItem = null;
+        
+        // 拖动结束后，保存新的顺序
+        saveButtonOrder();
+    };
+
+    // --- 绑定事件 ---
+    // 使用 mousedown 和 touchstart 来开始拖动
+    editor.addEventListener('mousedown', handleDragStart);
+    editor.addEventListener('touchstart', handleDragStart, { passive: false });
+
+    // 使用 mousemove 和 touchmove 来处理拖动过程
+    editor.addEventListener('mousemove', handleDragMove);
+    editor.addEventListener('touchmove', handleDragMove, { passive: false });
+
+    // 使用 mouseup, mouseleave 和 touchend 来结束拖动
+    editor.addEventListener('mouseup', handleDragEnd);
+    editor.addEventListener('mouseleave', handleDragEnd); // 防止鼠标移出区域时卡住
+    editor.addEventListener('touchend', handleDragEnd);
+}
+// ▲▲▲ 替换结束 ▲▲▲
+
+// ▼▼▼ 【最终修复版】请用这个全新的函数，完整替换旧的 getDragAfterElement ▼▼▼
+/**
+ * 【V2.0 | 水平修复版】辅助函数：计算拖动元素应该插入到哪个元素前面
+ * @param {HTMLElement} container - 拖放区域的容器
+ * @param {number} x - 鼠标当前的水平 (X) 坐标
+ * @returns {HTMLElement|null} - 应该被插入到其前面的那个元素
+ */
+function getDragAfterElement(container, x) {
+    // 1. 获取容器内所有可拖拽的、但不是正在被拖拽的元素
+    const draggableElements = [...container.querySelectorAll('.draggable-button-item:not(.dragging)')];
+
+    // 2. 使用 reduce 方法来找到最接近的那个元素
+    return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        // 3. 【核心修正】计算鼠标 X 坐标到元素中心的水平距离
+        const offset = x - box.left - box.width / 2;
+        
+        // 4. 我们要找的是：鼠标在它左边 (offset < 0)，并且是所有满足条件里最接近的那个 (offset > closest.offset)
+        if (offset < 0 && offset > closest.offset) {
+            return { offset: offset, element: child };
+        } else {
+            return closest;
+        }
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
+// ▲▲▲ 替换结束 ▲▲▲
+
+/**
+ * 保存用户自定义的按钮顺序到数据库
+ */
+async function saveButtonOrder() {
+    const editor = document.getElementById('button-order-editor');
+    const newOrder = Array.from(editor.querySelectorAll('.draggable-button-item')).map(item => item.dataset.buttonId);
+    
+    state.globalSettings.chatActionButtonsOrder = newOrder;
+    await db.globalSettings.put(state.globalSettings);
+
+    // (可选) 给用户一个保存成功的提示
+    // console.log("按钮顺序已保存:", newOrder);
+}
+
+/**
+ * 【核心】根据已保存的顺序，重新排列聊天界面底部的按钮
+ */
+function applyButtonOrder() {
+    const buttonOrder = state.globalSettings.chatActionButtonsOrder;
+    if (!buttonOrder || !Array.isArray(buttonOrder) || buttonOrder.length === 0) {
+        return; // 如果没有保存的顺序，则不执行任何操作
+    }
+
+    const container = document.getElementById('chat-input-actions-top');
+    if (!container) return;
+
+    // 按照保存的顺序，依次将按钮重新追加到容器末尾
+    buttonOrder.forEach(buttonId => {
+        const button = document.getElementById(buttonId);
+        if (button) {
+            container.appendChild(button);
+        }
+    });
+}
+
+// ▲▲▲ 全新JS代码粘贴结束 ▲▲▲
+// ▼▼▼ 【全新】定义默认的按钮顺序常量 ▼▼▼
+const DEFAULT_BUTTON_ORDER = [
+    'open-sticker-panel-btn', 'send-photo-btn', 'upload-image-btn', 
+    'transfer-btn', 'voice-message-btn', 'send-waimai-request-btn', 
+    'video-call-btn', 'group-video-call-btn', 'send-poll-btn', 
+    'share-link-btn', 'share-location-btn', 'gomoku-btn', 
+    'open-shopping-btn', 'pat-btn', 'edit-last-response-btn', 
+    'regenerate-btn', 'propel-btn', 'show-announcement-board-btn'
+];
+// ▲▲▲ 新增代码结束 ▲▲▲
+// ▼▼▼ 【全新】重置按钮顺序的核心功能函数 ▼▼▼
+async function resetButtonOrder() {
+    // 1. 在用户的全局设置中，将自定义顺序清除 (设为 null)
+    state.globalSettings.chatActionButtonsOrder = null;
+    await db.globalSettings.put(state.globalSettings);
+
+    // 2. 重新渲染排序编辑器，它会自动恢复到默认顺序
+    renderButtonOrderEditor();
+
+    // 3. 应用默认顺序到真实的聊天界面
+    applyButtonOrder();
+
+    // 4. 给用户一个成功的提示
+    await showCustomAlert("成功", "按钮顺序已恢复为默认设置！");
+}
+// ▲▲▲ 新增代码结束 ▲▲▲
+
 
 
               // ===================================================================
@@ -37158,7 +37431,7 @@ document.querySelector('#avatar-frame-modal .modal-body').addEventListener('clic
 
         document.getElementById('import-preset-input').addEventListener('change', handlePresetImport);
         // ▲▲▲ 新增事件绑定结束 ▲▲▲
-
+document.getElementById('reset-button-order-btn').addEventListener('click', resetButtonOrder);
 
 
 
