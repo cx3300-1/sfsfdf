@@ -23819,15 +23819,31 @@ async function triggerAutoSummary(chatId, force = false) {
     }
 
     const userNickname = state.qzoneSettings.nickname || '用户';
-    const formattedHistory = messagesToSummarize.map(msg => {
-        let sender;
-        if (msg.role === 'user') {
-            sender = userNickname;
-        } else {
-            sender = chat.isGroup ? getDisplayNameInGroup(chat, msg.senderName) : (msg.senderName || chat.originalName);
-        }
-        return `${sender}: ${String(msg.content)}`;
-    }).join('\n');
+            const formattedHistory = messagesToSummarize.map(msg => {
+            let sender;
+            if (msg.role === 'user') {
+                sender = userNickname;
+            } else {
+                sender = chat.isGroup ? getDisplayNameInGroup(chat, msg.senderName) : (msg.senderName || chat.originalName);
+            }
+
+            // --- ▼▼▼ 核心修复就在这里！ ▼▼▼ ---
+            let contentToSummarize = '';
+            // 1. 检查消息类型是否是“线下模式”
+            if (msg.type === 'offline_text') {
+                // 2. 如果是，就智能地拼接对话和描写
+                const dialogue = msg.dialogue ? `「${msg.dialogue}」` : '';
+                const description = msg.description ? `(${msg.description})` : '';
+                contentToSummarize = `${dialogue} ${description}`.trim();
+            } else {
+                // 3. 如果是其他任何类型的消息，则保持原有的处理方式
+                contentToSummarize = String(msg.content);
+            }
+            // 4. 返回拼接好的完整消息
+            return `${sender}: ${contentToSummarize}`;
+            // --- ▲▲▲ 修复结束 ▲▲▲ ---
+
+        }).join('\n');
 
     let systemPrompt;
 
@@ -32281,60 +32297,86 @@ async function handleDeleteCustomFrame(frameId) {
 let currentPage = 0;
 const totalPages = 2;
 
-function setupHomeScreenPagination() {
-    const pagesContainer = document.getElementById('home-screen-pages-container');
-    const pages = document.getElementById('home-screen-pages');
-    const dots = document.querySelectorAll('.pagination-dot');
-    let startX = 0;
-    let currentX = 0;
-    let isDragging = false;
+        // ▼▼▼ 【最终修复版】请用这一整块代码，完整替换旧的 setupHomeScreenPagination 函数 ▼▼▼
+        function setupHomeScreenPagination() {
+            const pagesContainer = document.getElementById('home-screen-pages-container');
+            const pages = document.getElementById('home-screen-pages');
+            const dots = document.querySelectorAll('.pagination-dot');
+            let startX = 0, startY = 0; // 同时记录Y轴坐标
+            let currentX = 0;
+            let isDragging = false;
+            let isClick = true; // 【核心】增加一个标志位，用于判断是点击还是滑动
 
-    const updatePagination = () => {
-        pages.style.transform = `translateX(-${currentPage * (100 / totalPages)}%)`;
-        dots.forEach((dot, index) => {
-            dot.classList.toggle('active', index === currentPage);
-        });
-    };
+            const updatePagination = () => {
+                pages.style.transform = `translateX(-${currentPage * (100 / totalPages)}%)`;
+                dots.forEach((dot, index) => {
+                    dot.classList.toggle('active', index === currentPage);
+                });
+            };
 
-    const onDragStart = (e) => {
-        isDragging = true;
-        startX = e.type.includes('mouse') ? e.pageX : e.touches[0].pageX;
-        pages.style.transition = 'none'; // 拖动时移除动画
-    };
+            const onDragStart = (e) => {
+                isDragging = true;
+                isClick = true; // 每次开始触摸时，都先假设它是一个点击
+                startX = e.type.includes('mouse') ? e.pageX : e.touches[0].pageX;
+                startY = e.type.includes('mouse') ? e.pageY : e.touches[0].pageY;
+                pages.style.transition = 'none';
+            };
 
-    const onDragMove = (e) => {
-        if (!isDragging) return;
-        currentX = e.type.includes('mouse') ? e.pageX : e.touches[0].pageX;
-        const diffX = currentX - startX;
-        pages.style.transform = `translateX(calc(-${currentPage * (100 / totalPages)}% + ${diffX}px))`;
-    };
+            const onDragMove = (e) => {
+                if (!isDragging) return;
+                
+                const currentY = e.type.includes('mouse') ? e.pageY : e.touches[0].pageY;
+                currentX = e.type.includes('mouse') ? e.pageX : e.touches[0].pageX;
+                const diffX = currentX - startX;
+                const diffY = currentY - startY;
 
-    const onDragEnd = () => {
-        if (!isDragging) return;
-        isDragging = false;
-        pages.style.transition = 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)'; // 恢复动画
-        const diffX = currentX - startX;
+                // 【核心】如果手指移动距离超过10像素，就判定为滑动，而不是点击
+                if (isClick && (Math.abs(diffX) > 10 || Math.abs(diffY) > 10)) {
+                    isClick = false;
+                }
 
-        // 阈值判断，滑动超过屏幕宽度的1/4就翻页
-        if (Math.abs(diffX) > pagesContainer.offsetWidth / 4) {
-            if (diffX > 0 && currentPage > 0) {
-                currentPage--;
-            } else if (diffX < 0 && currentPage < totalPages - 1) {
-                currentPage++;
-            }
+                // 只在水平滑动时移动页面，避免影响垂直滚动
+                if (Math.abs(diffX) > Math.abs(diffY)) {
+                     if(e.cancelable) e.preventDefault();
+                     pages.style.transform = `translateX(calc(-${currentPage * (100 / totalPages)}% + ${diffX}px))`;
+                }
+            };
+
+            const onDragEnd = (e) => {
+                if (!isDragging) return;
+                isDragging = false;
+                pages.style.transition = 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+
+                // 【核心】如果判定为点击，则不执行翻页逻辑，直接返回！
+                if (isClick) {
+                    updatePagination(); // 让页面弹回原位
+                    // 因为没有阻止事件，所以浏览器会继续处理这个“点击”，触发App图标的onclick
+                    return; 
+                }
+
+                // 如果是滑动，才执行下面的翻页判断
+                const diffX = currentX - startX;
+                if (Math.abs(diffX) > pagesContainer.offsetWidth / 4) {
+                    if (diffX > 0 && currentPage > 0) {
+                        currentPage--;
+                    } else if (diffX < 0 && currentPage < totalPages - 1) {
+                        currentPage++;
+                    }
+                }
+                updatePagination();
+            };
+
+            pagesContainer.addEventListener('mousedown', onDragStart);
+            pagesContainer.addEventListener('mousemove', onDragMove);
+            pagesContainer.addEventListener('mouseup', onDragEnd);
+            pagesContainer.addEventListener('mouseleave', onDragEnd);
+
+            // 【核心】修改 passive 为 false，以允许 e.preventDefault() 生效
+            pagesContainer.addEventListener('touchstart', onDragStart, { passive: false });
+            pagesContainer.addEventListener('touchmove', onDragMove, { passive: false });
+            pagesContainer.addEventListener('touchend', onDragEnd);
         }
-        updatePagination();
-    };
-
-    pagesContainer.addEventListener('mousedown', onDragStart);
-    pagesContainer.addEventListener('mousemove', onDragMove);
-    pagesContainer.addEventListener('mouseup', onDragEnd);
-    pagesContainer.addEventListener('mouseleave', onDragEnd);
-
-    pagesContainer.addEventListener('touchstart', onDragStart, { passive: true });
-    pagesContainer.addEventListener('touchmove', onDragMove, { passive: true });
-    pagesContainer.addEventListener('touchend', onDragEnd);
-}
+        // ▲▲▲ 替换结束 ▲▲▲
 
 // --- 2. “预设”App 核心功能 ---
 let editingPresetId = null;
