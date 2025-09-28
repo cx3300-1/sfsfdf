@@ -6272,6 +6272,11 @@
     gap: 30px;
     width: fit-content;
     flex-shrink: 0;
+    /* ▼▼▼ 核心修改 ▼▼▼ */
+    /* 我们为Dock栏增加一个底部外边距，
+       这个边距由20px的基础间距和底部的安全距离组成，
+       能将它从屏幕底部完美地抬起。 */
+    margin-bottom: calc(20px + env(safe-area-inset-bottom));
 }
 .desktop-app-icon {
     display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; text-align: center;
@@ -8651,6 +8656,114 @@
         }
 
         /* ▲▲▲ 新增CSS结束 ▲▲▲ */
+/* ▼▼▼ 【全新】这是为角色淘宝订单状态添加的样式 ▼▼▼ */
+.char-product-status {
+    font-size: 12px;
+    color: #8a8a8a; /* 使用柔和的灰色 */
+    background-color: #f0f2f5; /* 给一个淡淡的背景 */
+    padding: 3px 8px;
+    border-radius: 10px;
+}
+/* ▲▲▲ 新增CSS结束 ▲▲▲ *
+/* 1. 搜索屏幕的背景色 */
+#search-history-screen {
+    background-color: #f0f2f5;
+}
+#phone-screen.dark-mode #search-history-screen {
+    background-color: #000000;
+}
+
+/* 2. 搜索结果列表，确保可以滚动 */
+#search-results-list {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+/* 3. 日期分隔符的样式 */
+.date-separator {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 12px;
+    padding: 10px 0;
+    font-weight: 500;
+}
+
+/* 4. 夜间模式下的输入框适配 */
+#phone-screen.dark-mode #search-bar input {
+    background-color: #1c1c1e;
+    color: #ffffff;
+    border-color: #38383a;
+}
+/* ▲▲▲ 新增CSS结束 ▲▲▲ */
+/* ▼▼▼ 【全新】主屏幕分页功能样式 ▼▼▼ */
+
+        /* 1. 让主屏幕成为Flex容器，但方向改为水平，为翻页做准备 */
+        #home-screen {
+            flex-direction: column;
+            padding: 0; /* 移除旧的内边距，由内部页面自己控制 */
+        }
+
+        /* 2. 页面容器，负责横向排列所有页面 */
+        #home-screen-pages-container {
+            flex-grow: 1; /* 占据除了Dock栏外的所有空间 */
+            width: 100%;
+            overflow: hidden; /* 隐藏横向滚动条 */
+            position: relative;
+        }
+
+        #home-screen-pages {
+            display: flex;
+            width: 200%; /* 假设有两页，宽度设为200% */
+            height: 100%;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* 平滑的翻页动画 */
+        }
+
+        /* 3. 单个页面的样式 */
+        .home-screen-page {
+            width: 50%; /* 每页占据一半宽度 */
+            height: 100%;
+            padding: 20px;
+            padding-top: calc(20px + env(safe-area-inset-top));
+            padding-bottom: 0; /* 底部由分页指示器控制 */
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* 4. 分页指示器 (小圆点) */
+        #home-screen-pagination {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 0;
+             /* 适配iPhone底部安全区 */
+            padding-bottom: calc(10px + env(safe-area-inset-bottom) / 2);
+            flex-shrink: 0;
+        }
+
+        .pagination-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .pagination-dot.active {
+            background-color: white;
+            transform: scale(1.1);
+        }
+        
+        /* 5. 第二页的App网格容器 */
+        #page-2-app-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr; /* 每行4个图标 */
+            gap: 20px;
+            width: 100%;
+            padding-top: 40px; /* 与顶部留出一些距离 */
+        }
+        /* ▲▲▲ 新增CSS结束 ▲▲▲ */
     </style>
 </head>
 <body>
@@ -8673,67 +8786,82 @@
 <!-- ▼▼▼ 步骤 1：用这整块新代码，完整替换掉您现有的 <div id="home-screen" ...> ... </div> ▼▼▼ -->
 
 <div id="home-screen" class="screen active">
-    <!-- 核心修改：将个人资料和中间布局包裹在一个容器中 -->
-    <div id="main-content-area">
-        <!-- 个人资料组件 -->
-        <div id="profile-widget">
-            <!-- 【核心修复1】更换为一张可以正常显示的背景图 -->
-            <img id="profile-banner-img" src="https://i.imgur.com/1n3a43H.jpeg" class="editable-image">
-            <div class="profile-avatar-container">
-                <!-- 【核心修复2】更换为一张可以正常显示的头像 -->
-                <img id="profile-avatar-img" src="https://i.postimg.cc/y8xWzCqj/anime-boy.jpg" class="editable-image">
-            </div>
-            <div class="profile-info">
-                <p id="profile-username" class="editable-text">@ insonneve 🪦</p>
-                <p id="profile-sub-username" class="editable-text">@ insonneve</p>
-                <p id="profile-bio" class="editable-text">你好像过得很好 迫不及待的抹去我存在的痕迹</p>
-                <p id="profile-location" class="editable-text">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"></path></svg>
-                    <span>北海道</span>
-                </p>
-            </div>
-        </div>
 
-        <!-- 中间布局网格 -->
-        <div id="desktop-layout">
-            <!-- 左侧小组件列 -->
-            <div id="desktop-widget-column">
-                <div class="desktop-widget text-only">
-                    <p id="widget-text-1" class="editable-text">Be fearless in pursuit of happiness</p>
+    <!-- 1. 页面滑动容器 -->
+    <div id="home-screen-pages-container">
+        <div id="home-screen-pages">
+            <!-- 页面 1: 保持您原有的布局 -->
+            <div class="home-screen-page">
+                <div id="main-content-area">
+                    <div id="profile-widget">
+                        <img id="profile-banner-img" src="https://i.imgur.com/1n3a43H.jpeg" class="editable-image">
+                        <div class="profile-avatar-container">
+                            <img id="profile-avatar-img" src="https://i.postimg.cc/y8xWzCqj/anime-boy.jpg" class="editable-image">
+                        </div>
+                        <div class="profile-info">
+                            <p id="profile-username" class="editable-text">@ insonneve 🪦</p>
+                            <p id="profile-sub-username" class="editable-text">@ insonneve</p>
+                            <p id="profile-bio" class="editable-text">你好像过得很好 迫不及待的抹去我存在的痕迹</p>
+                            <p id="profile-location" class="editable-text">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5-2.5-1.12 2.5-2.5 2.5z"></path></svg>
+                                <span>北海道</span>
+                            </p>
+                        </div>
+                    </div>
+                    <div id="desktop-layout">
+                        <div id="desktop-widget-column">
+                            <div class="desktop-widget text-only">
+                                <p id="widget-text-1" class="editable-text">Be fearless in pursuit of happiness</p>
+                            </div>
+                            <div class="desktop-widget icon-left">
+                                <img id="widget-avatar-1" src="https://i.imgur.com/1n3a43H.jpeg" class="editable-image">
+                                <span id="widget-text-2" class="editable-text">Dare to be different</span>
+                            </div>
+                            <div class="desktop-widget icon-right">
+                                <span id="widget-text-3" class="editable-text">* Keep your spirit free</span>
+                                <img id="widget-avatar-2" src="https://i.imgur.com/5A0tE9a.jpeg" class="editable-image">
+                            </div>
+                        </div>
+                        <div id="desktop-app-container">
+                            <div class="desktop-app-icon" onclick="showScreen('chat-list-screen')">
+                                <div class="icon-bg-desktop"><img id="icon-img-qq" src="https://i.postimg.cc/MTC3Tkw8/IMG-6436.jpg" alt="QQ"></div>
+                                <span class="label">QQ</span>
+                            </div>
+                            <div class="desktop-app-icon" onclick="showScreen('world-book-screen')">
+                                <div class="icon-bg-desktop"><img id="icon-img-world-book" src="https://i.postimg.cc/HWf1JKzn/IMG-6435.jpg" alt="世界书"></div>
+                                <span class="label">世界书</span>
+                            </div>
+                            <div class="desktop-app-icon" onclick="showScreen('wallpaper-screen')">
+                                <div class="icon-bg-desktop"><img id="icon-img-wallpaper" src="https://i.postimg.cc/T1j03pQr/IMG-6440.jpg" alt="外观设置"></div>
+                                <span class="label">外观设置</span>
+                            </div>
+                            <div class="desktop-app-icon" onclick="openRenderingRulesScreen()">
+                                <div class="icon-bg-desktop"><img id="icon-img-renderer" src="https://s3plus.meituan.net/opapisdk/op_ticket_885190757_1756312261242_qdqqd_g0eriz.jpeg" alt="渲染器"></div>
+                                <span class="label">渲染器</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="desktop-widget icon-left">
-                    <img id="widget-avatar-1" src="https://i.imgur.com/1n3a43H.jpeg" class="editable-image">
-                    <span id="widget-text-2" class="editable-text">Dare to be different</span>
-                </div>
-                <div class="desktop-widget icon-right">
-                    <span id="widget-text-3" class="editable-text">* Keep your spirit free</span>
-                    <img id="widget-avatar-2" src="https://i.imgur.com/5A0tE9a.jpeg" class="editable-image">
-                </div>
-                
             </div>
-            <!-- 右侧App图标容器 -->
-            <div id="desktop-app-container">
-                <div class="desktop-app-icon" onclick="showScreen('chat-list-screen')">
-                    <div class="icon-bg-desktop"><img id="icon-img-qq" src="https://i.postimg.cc/MTC3Tkw8/IMG-6436.jpg" alt="QQ"></div>
-                    <span class="label">QQ</span>
-                </div>
-                <div class="desktop-app-icon" onclick="showScreen('world-book-screen')">
-                    <div class="icon-bg-desktop"><img id="icon-img-world-book" src="https://i.postimg.cc/HWf1JKzn/IMG-6435.jpg" alt="世界书"></div>
-                    <span class="label">世界书</span>
-                </div>
-                <div class="desktop-app-icon" onclick="showScreen('wallpaper-screen')">
-                    <div class="icon-bg-desktop"><img id="icon-img-wallpaper" src="https://i.postimg.cc/T1j03pQr/IMG-6440.jpg" alt="外观设置"></div>
-                    <span class="label">外观设置</span>
-                </div>
-                <div class="desktop-app-icon" onclick="openRenderingRulesScreen()">
-                    <div class="icon-bg-desktop"><img id="icon-img-renderer" src="https://s3plus.meituan.net/opapisdk/op_ticket_885190757_1756312261242_qdqqd_g0eriz.jpeg" alt="渲染器"></div>
-                    <span class="label">渲染器</span>
+            <!-- 页面 2: 放置新App图标的地方 -->
+            <div class="home-screen-page">
+                <div id="page-2-app-container">
+                    <div class="desktop-app-icon" onclick="openPresetScreen()">
+                        <div class="icon-bg-desktop"><img id="icon-img-preset" src="https://s3plus.meituan.net/opapisdk/op_ticket_885190757_1758510900942_qdqqd_djw0z2.jpeg" alt="预设"></div>
+                        <span class="label">预设</span>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 底部 Dock 应用 -->
+    <!-- 2. 分页指示器 -->
+    <div id="home-screen-pagination">
+        <div class="pagination-dot active"></div>
+        <div class="pagination-dot"></div>
+    </div>
+
+    <!-- 3. 底部 Dock (已为您补全所有文字) -->
     <div id="desktop-dock">
         <div class="desktop-app-icon" onclick="showScreen('api-settings-screen')">
             <div class="icon-bg-desktop"><img id="icon-img-api-settings" src="https://i.postimg.cc/MK8rJ8t7/IMG-6438.jpg" alt="API设置"></div>
@@ -8743,18 +8871,14 @@
             <div class="icon-bg-desktop"><img id="icon-img-font" src="https://i.postimg.cc/pXxk1JXk/IMG-6442.jpg" alt="字体"></div>
             <span class="label">字体</span>
         </div>
-<!-- ▼▼▼ 在这里粘贴下面的新代码 ▼▼▼ -->
-<div class="desktop-app-icon" onclick="openCharacterSelector()">
-    <div class="icon-bg-desktop"><img id="icon-img-char-phone" src="https://i.postimg.cc/pXj9h20L/IMG-7275.jpg" alt="角色手机"></div>
-    <span class="label">Cphone</span>
-</div>
-<!-- ▲▲▲ 粘贴结束 ▲▲▲ -->
-<!-- ▼▼▼ 在这里粘贴下面的新代码 ▼▼▼ -->
-<div class="desktop-app-icon" onclick="showScreen('douban-screen')">
-    <div class="icon-bg-desktop"><img id="icon-img-douban" src="https://i.postimg.cc/Pq2xJN1g/IMG-7301.jpg" alt="豆瓣"></div>
-    <span class="label">豆瓣</span>
-</div>
-<!-- ▲▲▲ 粘贴结束 ▲▲▲ -->    
+        <div class="desktop-app-icon" onclick="openCharacterSelector()">
+            <div class="icon-bg-desktop"><img id="icon-img-char-phone" src="https://i.postimg.cc/pXj9h20L/IMG-7275.jpg" alt="角色手机"></div>
+            <span class="label">角色手机</span>
+        </div>
+        <div class="desktop-app-icon" onclick="showScreen('douban-screen')">
+            <div class="icon-bg-desktop"><img id="icon-img-douban" src="https://i.postimg.cc/Pq2xJN1g/IMG-7301.jpg" alt="豆瓣"></div>
+            <span class="label">豆瓣</span>
+        </div>
     </div>
 </div>
 
@@ -9167,7 +9291,58 @@
             </div>
         </div>
         <!-- ▲▲▲ 粘贴结束 ▲▲▲ -->
-        <!-- ▲▲▲ 替换结束 ▲▲▲ -->
+<!-- ▼▼▼ 【全新】这是“预设”App的所有HTML屏幕，请粘贴到 world-book-editor-screen 之后 ▼▼▼ -->
+<div id="preset-screen" class="screen">
+    <div class="header">
+        <span class="back-btn" onclick="showScreen('home-screen')">‹</span>
+        <span>预设</span>
+        <div class="header-actions">
+ <span class="action-btn" id="import-preset-btn" title="导入预设文件">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                </span>
+            <span class="action-btn" id="manage-preset-categories-btn" title="管理分类">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                </svg>
+            </span>
+            <span class="action-btn" id="add-preset-btn">+</span>
+        </div>
+    </div>
+    <div id="preset-tabs"></div>
+    <div id="preset-content-container"></div>
+</div>
+
+<div id="preset-editor-screen" class="screen">
+    <div class="header">
+        <span class="back-btn" onclick="showScreen('preset-screen')">‹</span>
+        <span id="preset-editor-title">编辑预设</span>
+        <span class="save-btn" id="save-preset-btn">保存</span>
+    </div>
+    <div class="form-container">
+        <div class="form-group">
+            <label for="preset-name-input">预设名称</label>
+            <input type="text" id="preset-name-input" placeholder="请输入预设的名称...">
+        </div>
+        <div class="form-group">
+            <label for="preset-category-select">分类</label>
+            <select id="preset-category-select"></select>
+        </div>
+        <div class="form-group" style="flex-grow: 1; display: flex; flex-direction: column;">
+            <label>内容条目</label>
+            <div id="preset-entries-container" style="display: flex; flex-direction: column; gap: 15px; overflow-y: auto; padding: 5px; flex-grow: 1;">
+            </div>
+        </div>
+        <button id="add-preset-entry-btn" class="form-button form-button-secondary"> [+] 添加新条目 </button>
+    </div>
+</div>
+<!-- ▲▲▲ 新增HTML结束 ▲▲▲ -->
         <!-- ▼▼▼ 用下面这段代码，完整替换掉你原来的 id="api-settings-screen" 的 div ▼▼▼ -->
         <div id="api-settings-screen" class="screen">
             <div class="header">
@@ -10222,6 +10397,7 @@
             </div>
         </div>
         <div class="form-group" id="my-group-nickname-group"><label for="my-group-nickname-input">我的群昵称</label><input type="text" id="my-group-nickname-input"></div>
+        <button class="form-button form-button-secondary" id="search-history-btn" style="margin-top: 10px;">搜索聊天记录</button>
 <!-- ▼▼▼ 在这里粘贴下面的新代码 ▼▼▼ -->
 <div class="form-group" id="single-char-background-activity-group">
     <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -10327,6 +10503,10 @@
                     <input type="number" id="offline-max-length-input" value="300" style="width: 80px; text-align: center;">
                     <span>字</span>
                 </div>
+    <div class="form-group" style="margin-top: 15px; margin-bottom: 0;">
+        <label for="offline-preset-select">文风预设 (将影响AI的描写风格)</label>
+        <select id="offline-preset-select" style="width: 100%; margin-top: 5px;"></select>
+    </div>
             </div>
         </div>
         <div class="form-group" id="linked-memory-group">
@@ -10466,6 +10646,31 @@
     </div>
 </div>
 <!-- ▲▲▲ 替换结束 ▲▲▲ -->
+<!-- ▼▼▼ 【全新】这是聊天记录搜索功能的HTML代码 ▼▼▼ -->
+<div id="search-history-screen" class="screen">
+    <div class="header">
+        <span class="back-btn" id="search-history-back-btn">‹</span>
+        <span>搜索聊天记录</span>
+        <span style="width: 30px;"></span>
+    </div>
+    <!-- 搜索条件输入区 -->
+    <div id="search-bar" style="padding: 10px 15px; border-bottom: 1px solid var(--border-color); background-color: var(--secondary-bg); flex-shrink: 0;">
+        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+            <input type="search" id="keyword-search-input" placeholder="输入关键词..." style="flex-grow: 1; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 16px;">
+            <input type="date" id="date-search-input" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 16px;">
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button id="execute-search-btn" class="form-button" style="margin-top: 0; flex-grow: 1;">搜索</button>
+            <button id="clear-search-btn" class="form-button form-button-secondary" style="margin-top: 0; flex-grow: 1;">重置</button>
+        </div>
+    </div>
+    <!-- 搜索结果显示区 -->
+ 
+    <div id="chat-search-results-list" class="list-container" style="padding: 15px; display: flex; flex-direction: column; gap: 15px;">
+        <!-- 聊天记录的搜索结果将在这里显示 -->
+    </div>
+</div>
+<!-- ▲▲▲ 新增HTML结束 ▲▲▲ -->
     <div id="persona-library-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header"><span>我的人设库</span><button id="add-persona-preset-btn" class="action-button">添加</button></div>
@@ -11461,7 +11666,9 @@ const DEFAULT_NOTIFICATION_SOUND = 'https://www.myinstants.com/media/sounds/noti
             'font': 'https://i.postimg.cc/pXxk1JXk/IMG-6442.jpg',
             // 【核心新增】将角色手机(Cphone)和豆瓣也加入管理列表
             'char-phone': 'https://i.postimg.cc/pXj9h20L/IMG-7275.jpg',
-            'douban': 'https://i.postimg.cc/Pq2xJN1g/IMG-7301.jpg'
+            'douban': 'https://i.postimg.cc/Pq2xJN1g/IMG-7301.jpg',
+    // 【【【核心新增：在这里为“预设”App注册一个唯一的ID和默认图标】】】
+    'preset': 'https://s3plus.meituan.net/opapisdk/op_ticket_885190757_1758510900942_qdqqd_djw0z2.jpeg'
         };
         // ▲▲▲ 替换结束 ▲▲▲
         // ▼▼▼ 【全新】这是为CPhone图标设置新增的常量 ▼▼▼
@@ -12150,7 +12357,7 @@ const DEFAULT_NOTIFICATION_SOUND = 'https://www.myinstants.com/media/sounds/noti
                 // ===================================================================
         
         // ▼▼▼ 【请用这个 V30 版本】完整替换旧的 db.version(...) 代码块 ▼▼▼
-        db.version(32).stores({ 
+        db.version(34).stores({ 
             doubanPosts: '++id, timestamp',
             chats: '&id, isGroup, groupId, isPinned, memos, diary, appUsageLog',
             apiConfig: '&id', 
@@ -12174,7 +12381,12 @@ const DEFAULT_NOTIFICATION_SOUND = 'https://www.myinstants.com/media/sounds/noti
             // 【【【核心新增】】】
             appearancePresets: '++id, name, type',
             // 【【【核心新增】】】
-            stickerCategories: '++id, name' // 新增的表情分类表
+            stickerCategories: '++id, name',
+            // 【【【核心新增】】】
+            customAvatarFrames: '++id, name',
+            // 【【【核心新增】】】
+            presets: '&id, name, categoryId', // 新增：预设主表
+            presetCategories: '++id, name' 
         }).upgrade(tx => {
             // 这个升级函数会自动处理数据迁移
             return tx.table('worldBooks').toCollection().modify(book => {
@@ -13584,19 +13796,27 @@ async function cleanupRedundantData() {
                     alert('已恢复默认字体。');
                 }
         
+// ▼▼▼ 【请用这个已更新的版本】替换旧的 loadAllDataFromDB 函数 ▼▼▼
 async function loadAllDataFromDB() {
     const [
         chatsArr, apiConfig, loadedGlobalSettings, userStickers, worldBooks,
         musicLib, personaPresets, qzoneSettings, initialFavorites,
-        allMemories
+        allMemories,
+        // 【核心新增】在这里加载所有预设
+        allPresets
     ] = await Promise.all([
         db.chats.toArray(), db.apiConfig.get('main'), db.globalSettings.get('main'),
         db.userStickers.toArray(), db.worldBooks.toArray(), db.musicLibrary.get('main'),
         db.personaPresets.toArray(), db.qzoneSettings.get('main'), db.favorites.orderBy('timestamp').reverse().toArray(),
-        db.memories.toArray()
+        db.memories.toArray(),
+        // 【核心新增】从数据库读取 presets 表
+        db.presets.toArray()
     ]);
 
-    // 1. 【核心修复】首先定义一个包含所有最新默认值的完整设置对象
+    // 【核心新增】将加载的预设保存到全局 state 中
+    state.presets = allPresets || [];
+
+    // --- (后续所有的数据处理逻辑保持不变) ---
     const defaultGlobalSettings = {
         id: 'main',
         showStatusBar: false,
@@ -13607,24 +13827,17 @@ async function loadAllDataFromDB() {
         blockCooldownHours: 1,
         appIcons: { ...DEFAULT_APP_ICONS },
         cphoneWallpaper: 'linear-gradient(135deg, #f6d365, #fda085)',
-        cphoneAppIcons: { ...DEFAULT_CPHONE_ICONS }, // <-- 确保CPhone图标有默认值
+        cphoneAppIcons: { ...DEFAULT_CPHONE_ICONS },
         globalCss: '',
         notificationSoundUrl: '',
         widgetData: {},
         globalChatBackground: '',
-            enableAiDrawing: true
+        enableAiDrawing: true
     };
-
-    // 2. 【核心修复】将加载的设置覆盖到默认值上，而不是直接替换
-    // 这样可以确保即使用户有旧的存档，所有新增的设置项（如cphoneAppIcons）也能被正确初始化
     state.globalSettings = { ...defaultGlobalSettings, ...(loadedGlobalSettings || {}) };
-
-    // 3. 【核心修复】为嵌套的对象（如图标设置）也进行一次深度合并，确保万无一失
     state.globalSettings.appIcons = { ...defaultGlobalSettings.appIcons, ...(state.globalSettings.appIcons || {}) };
     state.globalSettings.cphoneAppIcons = { ...defaultGlobalSettings.cphoneAppIcons, ...(state.globalSettings.cphoneAppIcons || {}) };
 
-
-    // --- (后续所有的数据处理逻辑保持不变) ---
     chatsArr.forEach(chat => {
         if (!chat.settings.lyricsPosition) {
             chat.settings.lyricsPosition = { vertical: 'top', horizontal: 'center', offset: 10 };
@@ -13636,7 +13849,6 @@ async function loadAllDataFromDB() {
             chat.originalName = chat.name;
         }
     });
-
     state.chats = chatsArr.reduce((acc, chat) => {
         if (typeof chat.unreadCount === 'undefined') chat.unreadCount = 0;
         if (chat.isGroup) {
@@ -13653,7 +13865,6 @@ async function loadAllDataFromDB() {
                 });
             }
         }
-        
         if (!chat.settings) chat.settings = {};
         if (typeof chat.settings.actionCooldownMinutes === 'undefined') {
             chat.settings.actionCooldownMinutes = 10;
@@ -13713,12 +13924,10 @@ async function loadAllDataFromDB() {
         acc[chat.id] = chat;
         return acc;
     }, {});
-
     const memoriesToUpdate = [];
     allMemories.forEach(memory => {
         if (memory.type === 'ai_generated' && memory.authorName && !memory.authorId) {
             const foundChat = chatsArr.find(c => !c.isGroup && c.originalName === memory.authorName);
-            
             if (foundChat) {
                 memory.authorId = foundChat.id;
                 memoriesToUpdate.push(memory);
@@ -13731,11 +13940,9 @@ async function loadAllDataFromDB() {
             }
         }
     });
-
     if (memoriesToUpdate.length > 0) {
         await db.memories.bulkPut(memoriesToUpdate);
     }
-
     state.apiConfig = apiConfig || { id: 'main', proxyUrl: '', apiKey: '', model: '', secondaryProxyUrl: '', secondaryApiKey: '', secondaryModel: '' };
     state.userStickers = userStickers || [];
     state.worldBooks = worldBooks || [];
@@ -13744,6 +13951,7 @@ async function loadAllDataFromDB() {
     state.qzoneSettings = qzoneSettings || { id: 'main', nickname: '{{user}}', avatar: 'https://files.catbox.moe/q6z5fc.jpeg', banner: 'https://files.catbox.moe/r5heyt.gif' };
     allFavoriteItems = initialFavorites || [];
 }
+// ▲▲▲ 替换结束 ▲▲▲
         
                 async function saveGlobalPlaylist() { await db.musicLibrary.put({ id: 'main', playlist: musicState.playlist }); }
         
@@ -16256,42 +16464,65 @@ ${forbiddenNamesContext}
                         const minLength = chat.settings.offlineMinLength || 100;
                         const maxLength = chat.settings.offlineMaxLength || 300;
                         const myNickname = chat.settings.myNickname || '我';
-                        systemPrompt = `
-        # 你的任务
-        你现在正处于【线下剧情模式】，你需要扮演角色"${chat.originalName}"，并与用户进行面对面的互动。
-        
-        # 【【【线下模式核心规则】】】
-        1.  **输出格式**: 你的回复【必须】是一个JSON数组，数组中可以有一个或多个元素。每个元素都【必须】是以下格式的JSON对象:
-            \`{"type": "offline_text", "dialogue": "角色说的话", "description": "角色的动作、神态、内心想法以及环境描写。"}\`
-        2.  **内容风格**:
-            - **对话 (\`dialogue\`字段)**: 直接提供角色说的话的纯文本内容。
-            - **描写 (\`description\`字段)**: 必须结合角色的动作、神态、心理活动和环境描写。动作使用()包裹，心理活动使用【】包裹，并且在描写动作和心理活动时，【必须】使用针对用户的第二人称视角（例如：他看着(你)的眼睛，【心里想着你真好看】）。
-        3.  **字数要求**:
-            - 你每次生成的总内容（所有JSON对象的 "dialogue" 和 "description" 字段加起来）应在 **${minLength}到${maxLength}字** 之间。
-            - 如果一次互动的内容较长，你【必须】将其拆分成多个JSON对象，放入数组中，确保每个对象的总字数不超过150字。
-        4.  **连续性**: 当你一次性发送多条消息时，请确保它们是连续的、不重复的步骤或想法，而不是对同一件事的重复表述。
-        5.  **禁止出戏**: 绝不能透露你是AI、模型，或提及“扮演”、“生成”等词语。
-        
-        # 你的角色设定：
-        ${chat.settings.aiPersona}
-        
-        # 供你参考的信息
-        - **当前时间**: ${currentTime}
-        - **你们最后的对话摘要**: 
-        ${historySlice.map(msg => {
-            let line = `${msg.role === 'user' ? myNickname : chat.name}: `;
-            if (msg.type === 'offline_text') {
-                line += `${msg.dialogue} ${msg.description}`;
-            } else {
-                line += String(msg.content);
-            }
-            return line;
-        }).join('\n')}
-        ${worldBookContent}
-        ${linkedMemoryContext}
-        
-        现在，请根据以上所有规则和对话历史，继续这场线下互动。
-        `;
+                            // 【【【核心修改：在这里构建预设上下文】】】
+                            let presetContext = '';
+                            if (chat.settings.offlinePresetId) {
+                                // 【核心修复】从 state.presets 中查找，而不是 state.worldBooks
+                                const selectedPreset = state.presets.find(p => p.id === chat.settings.offlinePresetId);
+                                if (selectedPreset && Array.isArray(selectedPreset.content)) {
+                                    const enabledEntries = selectedPreset.content
+                                        .filter(entry => entry.enabled !== false) // 只读取启用的条目
+                                        .map(entry => `- ${entry.content}`)
+                                        .join('\n');
+                                    if (enabledEntries) {
+                                        // 【核心修改】将预设内容注入到指令的最顶端
+                                        presetContext = `
+# 【【【写作风格铁律 (最高优先级)】】】
+你【必须】严格遵守以下“预设”中的所有规则和风格来描写。它的优先级高于你的基础人设。
+---
+${enabledEntries}
+---
+`;
+                                    }
+                                }
+                            }
+                            
+                                    systemPrompt = `
+            # 你的任务
+            你现在正处于【线下剧情模式】，你需要扮演角色"${chat.originalName}"，并与用户进行面对面的互动。
+            
+            ${presetContext}
+
+            # 【【【线下模式核心规则】】】
+            1.  **【【【格式铁律 (最高优先级)】】】**: 你的回复【必须】是一个JSON数组，但数组中【永远只能包含一个】元素。
+                \`[{"type": "offline_text", "dialogue": "角色说的话", "description": "角色的动作、神态、内心想法以及环境描写。"}]\`
+            2.  **【【【内容合并铁律】】】**: 如果一次互动的内容较长，你【必须】将所有的对话和描写都合并到这【一个JSON对象】的 "dialogue" 和 "description" 字段中。你可以善用换行符\\n来组织和分隔内容。
+            3.  **内容风格**:
+                - **对话 (\`dialogue\`字段)**: 直接提供角色说的话的纯文本内容。
+                - **描写 (\`description\`字段)**: 必须结合角色的动作、神态、心理活动和环境描写。动作使用()包裹，心理活动使用【】包裹，并且在描写动作和心理活动时，【必须】使用针对用户的第二人称视角（例如：他看着你的眼睛，【心里想着你真好看】）。
+            4.  **字数要求**: 你每次生成的总内容应在 **${minLength}到${maxLength}字** 之间。
+            5.  **禁止出戏**: 绝不能透露你是AI、模型，或提及“扮演”、“生成”等词语。
+            
+            # 你的角色设定：
+            ${chat.settings.aiPersona}
+            
+            # 供你参考的信息
+            - **当前时间**: ${currentTime}
+            - **你们最后的对话摘要**: 
+            ${historySlice.map(msg => {
+                let line = `${msg.role === 'user' ? myNickname : chat.name}: `;
+                if (msg.type === 'offline_text') {
+                    line += `${msg.dialogue} ${msg.description}`;
+                } else {
+                    line += String(msg.content);
+                }
+                return line;
+            }).join('\n')}
+            ${worldBookContent}
+            ${linkedMemoryContext}
+            
+            现在，请根据以上所有规则和对话历史，继续这场线下互动。
+            `;
                         messagesPayload = historySlice.map(msg => {
                             if (msg.isHidden) return null;
                             let contentStr = '';
@@ -16706,6 +16937,43 @@ messagesPayload = historySlice.map(msg => {
                 lastResponseTimestamps = [];
                 chat.history = chat.history.filter(msg => !msg.isTemporary);
                 const messagesArray = parseAiResponse(aiResponseContent);
+// ▼▼▼ 【全新】线下模式消息合并逻辑 ▼▼▼
+        let consolidatedMessages = [];
+        if (chat.settings.isOfflineMode) {
+            let offlineBuffer = { dialogue: [], description: [] };
+            
+            for (const msgData of messagesArray) {
+                // 将所有线下模式的消息内容暂存到缓冲区
+                if (msgData.type === 'offline_text') {
+                    if (msgData.dialogue) offlineBuffer.dialogue.push(msgData.dialogue);
+                    if (msgData.description) offlineBuffer.description.push(msgData.description);
+                } else {
+                    // 如果遇到非线下模式的消息，则先处理并清空缓冲区，然后将该消息加入
+                    if (offlineBuffer.dialogue.length > 0 || offlineBuffer.description.length > 0) {
+                        consolidatedMessages.push({
+                            type: 'offline_text',
+                            dialogue: offlineBuffer.dialogue.join('\n'),
+                            description: offlineBuffer.description.join('\n')
+                        });
+                        offlineBuffer = { dialogue: [], description: [] };
+                    }
+                    consolidatedMessages.push(msgData);
+                }
+            }
+            
+            // 循环结束后，处理缓冲区中剩余的任何内容
+            if (offlineBuffer.dialogue.length > 0 || offlineBuffer.description.length > 0) {
+                consolidatedMessages.push({
+                    type: 'offline_text',
+                    dialogue: offlineBuffer.dialogue.join('\n'),
+                    description: offlineBuffer.description.join('\n')
+                });
+            }
+        } else {
+            // 如果不是线下模式，则直接使用原始数组
+            consolidatedMessages = messagesArray;
+        }
+        // ▲▲▲ 合并逻辑结束 ▲▲▲
 // ▼▼▼ 【全新】智能识图优化功能，请将此代码块粘贴到指定位置 ▼▼▼
 
 // 1. 检查触发条件：最后一条用户消息是【尚未处理过】的图片
@@ -16750,7 +17018,7 @@ if (lastUserMessage &&
                 let newMessagesToRender = []; 
                 let notificationShown = false;
         
-                for (const msgData of messagesArray) {
+                for (const msgData of consolidatedMessages) {
                     
                     if (chat.isGroup && msgData.name && msgData.name === chat.name) {
                         console.error(`AI幻觉已被拦截！试图使用群名 ("${chat.name}") 作为角色名。消息内容:`, msgData);
@@ -17954,7 +18222,7 @@ async function addSongFromLocal(event) {
 }
 // ▲▲▲ 替换结束 ▲▲▲
 
-// ▼▼▼ 【请用这个已修复的版本】完整替换旧的 playSong 函数 ▼▼▼
+// ▼▼▼ 【请用这个已修复自动播放问题的全新版本】完整替换旧的 playSong 函数 ▼▼▼
 async function playSong(index) {
     if (index < 0 || index >= musicState.playlist.length) return;
 
@@ -17982,7 +18250,6 @@ async function playSong(index) {
         }
     }
     
-    // 【核心修复4】优先处理 ArrayBuffer，并根据 fileType 创建 Blob
     if (track.isLocal && track.src instanceof ArrayBuffer) {
         const blob = new Blob([track.src], { type: track.fileType || 'audio/mpeg' });
         audioPlayer.src = URL.createObjectURL(blob);
@@ -17999,7 +18266,19 @@ async function playSong(index) {
     const playPromise = audioPlayer.play();
     if (playPromise !== undefined) {
         playPromise.catch(error => {
-            if (error.name !== 'AbortError') console.error('Playback error:', error);
+            // --- ★★★★★ 这就是本次修复的核心！ ★★★★★ ---
+            // 捕获浏览器因自动播放策略而抛出的 "NotAllowedError" 错误
+            if (error.name === 'NotAllowedError') {
+                console.warn('Autoplay was prevented by the browser.');
+                // 确保播放器状态为暂停
+                audioPlayer.pause();
+                // 弹窗告知用户，并引导他们手动点击播放
+                showCustomAlert("播放已暂停", "由于浏览器安全限制，AI切换的歌曲无法自动播放。请手动点击播放按钮 ▶ 继续欣赏。");
+            } else if (error.name !== 'AbortError') {
+                // 对于其他非预期的播放错误，在控制台记录下来
+                console.error('Playback error:', error);
+            }
+            // --- ★★★★★ 修复结束 ★★★★★ ---
         });
     }
     updatePlaylistUI();
@@ -22836,18 +23115,18 @@ async function endVideoCall() {
             if (!grid) return;
             grid.innerHTML = '';
         
-        // ▼▼▼ 在 renderIconSettings 函数内部 ▼▼▼
-        const appLabels = {
-           'douban': '豆瓣小组',
-            'world-book': '世界书',
-            'qq': 'QQ',
-            // ▼▼▼ 在这里添加新的一行 ▼▼▼
-            'renderer': '渲染器',
-            // ▲▲▲ 添加结束 ▲▲▲
-            'api-settings': 'API设置',
-            'wallpaper': '外观设置', // 修正：这里的标签应该是“外观设置”
-            'font': '字体'
-        };
+    const appLabels = {
+       'qq': 'QQ',
+       'world-book': '世界书',
+       'wallpaper': '外观设置',
+       'renderer': '渲染器',
+       'api-settings': 'API设置',
+       'font': '字体',
+       'char-phone': '角色手机',
+       'douban': '豆瓣小组',
+       // 【【【核心新增：在这里为“预设”App添加对应的中文名】】】
+       'preset': '预设'
+    };
         // ▲▲▲ 替换结束 ▲▲▲
         
             for (const iconId in state.globalSettings.appIcons) {
@@ -23359,8 +23638,9 @@ function robustJsonParse(rawContent) {
 }
 
 
+        // ▼▼▼ 【请用这个全新的、增加了“用户确认”安全机制的版本】完整替换旧函数 ▼▼▼
         /**
-         * 【全新V3.0 | 支持自定义字数 | 记忆互通版 | 终极容错】手动触发对【现有长期记忆】的总结和精炼
+         * 【全新V3.0 | 支持自定义字数 | 记忆互通版 | 终极容错 | 用户确认】手动触发对【现有长期记忆】的总结和精炼
          * @param {string} chatId - 当前聊天的ID (可能是群聊ID)
          */
         async function summarizeExistingLongTermMemory(chatId) {
@@ -23399,6 +23679,9 @@ function robustJsonParse(rawContent) {
                 return;
             }
         
+            // ▼▼▼ 核心修改1：在这里获取原始记忆的数量，用于后续提示 ▼▼▼
+            const originalMemoryCount = targetChatForRefine.longTermMemory.length;
+
             const wordCountStr = await showCustomPrompt(
                 `为“${targetChatForRefine.name}”精炼记忆`,
                 "请输入精炼后核心记忆的大致字数：",
@@ -23415,7 +23698,7 @@ function robustJsonParse(rawContent) {
         
             const confirmed = await showCustomConfirm(
                 '确认精炼记忆？',
-                `此操作会将“${targetChatForRefine.name}”的 ${targetChatForRefine.longTermMemory.length} 条长期记忆总结成大约 ${wordCount} 字的核心记忆。旧的记忆将被替换，此操作不可撤销。确定要继续吗？`,
+                `此操作会将“${targetChatForRefine.name}”的 ${originalMemoryCount} 条长期记忆总结成大约 ${wordCount} 字的核心记忆。旧的记忆将被替换，此操作不可撤销。确定要继续吗？`,
                 { confirmButtonClass: 'btn-danger', confirmText: '确认精炼' }
             );
         
@@ -23475,35 +23758,46 @@ ${memoryContent}
         
                 const result = robustJsonParse(rawContent);
         
-                // ▼▼▼ 【【【核心修复就在这里！】】】 ▼▼▼
-                // 我们在这里增加了一个长度检查 (result.summary.trim().length > 10)
-                // 只有当AI返回的总结内容有效且长度超过10个字符时，才会执行覆盖操作。
                 if (result && result.summary && result.summary.trim().length > 10) {
-                    const newMemoryEntry = {
-                        content: result.summary.trim(),
-                        timestamp: Date.now(),
-                        source: 'refined'
-                    };
-        
-                    targetChatForRefine.longTermMemory = [newMemoryEntry];
-                    targetChatForRefine.lastMemorySummaryTimestamp = Date.now();
-                    await db.chats.put(targetChatForRefine);
                     
-                    if (document.getElementById('long-term-memory-screen').classList.contains('active')) {
-                        renderLongTermMemoryList();
+                    // ▼▼▼ 核心修改2：不再立即保存，而是弹出新的确认框让用户审核 ▼▼▼
+                    const userConfirmedReplacement = await showCustomConfirm(
+                        '精炼完成，请确认',
+                        `AI已将您的 ${originalMemoryCount} 条旧记忆总结为以下核心记忆：<br><br><p style="background-color:#f0f0f0; padding:10px; border-radius:8px; text-align: left; white-space: pre-wrap;">${result.summary.trim()}</p><br>是否用这条新记忆替换掉旧的记忆？`,
+                        { confirmText: '确认替换', cancelText: '保留旧的', confirmButtonClass: 'btn-danger' }
+                    );
+
+                    // ▼▼▼ 核心修改3：只有当用户明确点击“确认替换”后，才执行覆盖操作 ▼▼▼
+                    if (userConfirmedReplacement) {
+                        const newMemoryEntry = {
+                            content: result.summary.trim(),
+                            timestamp: Date.now(),
+                            source: 'refined'
+                        };
+            
+                        targetChatForRefine.longTermMemory = [newMemoryEntry];
+                        targetChatForRefine.lastMemorySummaryTimestamp = Date.now();
+                        await db.chats.put(targetChatForRefine);
+                        
+                        if (document.getElementById('long-term-memory-screen').classList.contains('active')) {
+                            renderLongTermMemoryList();
+                        }
+                        await showCustomAlert('精炼成功', `已成功将“${targetChatForRefine.name}”的记忆精炼为 1 条核心记忆！`);
+                    } else {
+                        // ▼▼▼ 核心修改4：如果用户取消，给出明确提示 ▼▼▼
+                        await showCustomAlert('操作已取消', '您的旧有记忆已被完整保留，未作任何修改。');
                     }
-                    await showCustomAlert('精炼成功', `已成功将“${targetChatForRefine.name}”的记忆精炼为 1 条核心记忆！`);
+                    
                 } else {
-                    // 如果AI返回空内容或无意义的短内容，就会进入这里，抛出错误并提示用户，而不会覆盖旧记忆。
                     throw new Error(`AI返回了空的或无效的总结内容。您的原始记忆已被保留。\n\n原始返回: ${rawContent}`);
                 }
-                // ▲▲▲ 【【【修复结束】】】 ▲▲▲
         
             } catch (error) {
                 console.error("精炼长期记忆时出错:", error);
                 await showCustomAlert('精炼失败', `操作失败，您的记忆未被修改: ${error.message}`);
             }
         }
+        // ▲▲▲ 替换结束 ▲▲▲
 // ▼▼▼ 【请用这个支持“个性化记忆注入”的最终版本】完整替换旧的 triggerAutoSummary 函数 ▼▼▼
 /**
  * 【核心】执行总结的API调用 (V7.1 - 个性化记忆注入 | 统一客观总结)
@@ -28677,7 +28971,7 @@ function renderCharBrowserHistory() {
     }
 }
 
-        // ▼▼▼ 【V3.1 | 生图开关+描述显示版】请用这个全新的函数，完整替换旧的 renderCharTaobao ▼▼▼
+        // ▼▼▼ 【V3.1 | 生图开关+描述显示+状态显示版】请用这个全新的函数，完整替换旧的 renderCharTaobao ▼▼▼
         /**
          * 【全新 | V3.1 无钱包版 | 最终修复】渲染角色的淘宝“购买记录”页面
          */
@@ -28700,14 +28994,10 @@ function renderCharBrowserHistory() {
                 itemEl.dataset.reason = item.reason;
                 
                 let imageOrTextHtml;
-
-
                 if (state.globalSettings.enableAiDrawing) {
-                    // 如果开关【开启】，则生成图片
                     const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(item.image_prompt || 'a random product')}`;
                     imageOrTextHtml = `<img src="${imageUrl}" class="product-image">`;
                 } else {
-                    // 如果开关【关闭】，则显示购买理由
                     imageOrTextHtml = `
                         <div class="char-product-description-overlay">
                             <p class="char-photo-description">${item.reason || '(无购买理由)'}</p>
@@ -28715,18 +29005,21 @@ function renderCharBrowserHistory() {
                     `;
                 }
 
-
+                // ▼▼▼ 核心修改：在这里添加了 item.status 的显示 ▼▼▼
                 itemEl.innerHTML = `
                     ${imageOrTextHtml}
                     <div class="product-info">
                         <div class="product-name">${item.itemName}</div>
-                        <div class="product-price">${(item.price || 0).toFixed(2)}</div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+                            <div class="product-price">${(item.price || 0).toFixed(2)}</div>
+                            <div class="char-product-status">${item.status}</div>
+                        </div>
                     </div>
                 `;
+                // ▲▲▲ 修改结束 ▲▲▲
                 gridEl.appendChild(itemEl);
             });
         }
-        // ▲▲▲ 替换结束 ▲▲▲
 /**
  * 切换回角色手机的主屏幕
  */
@@ -28945,43 +29238,51 @@ async function saveMemo(content) {
 
 
 
-// ▼▼▼ 【V2.0 | AI生成版】请用这一整块代码，替换所有旧的日记功能函数 ▼▼▼
+        // ▼▼▼ 【V2.0 | AI生成版】请用这一整块代码，替换所有旧的日记功能函数 ▼▼▼
 
-        /**
-         * 【V3.0 | AI指令强化版】当用户点击“重新生成”时，调用AI生成模拟相册内容
-         */
-        async function handleGenerateSimulatedDiaries() {
-            if (!activeCharacterId) return;
-            const chat = state.chats[activeCharacterId];
-            if (!chat) return;
-        
-            await showCustomAlert("请稍候...", `正在请求“${chat.name}”翻开TA的日记本...`);
-        
-            const { proxyUrl, apiKey, model } = state.apiConfig;
-            if (!proxyUrl || !apiKey || !model) {
-                alert('请先在API设置中配置好API信息。');
-                return;
-            }
-        
-            // 【修复】定义一个更安全的用户显示名，避免传递"{{user}}"
-            const userDisplayNameForAI = (state.qzoneSettings.nickname === '{{user}}' || !state.qzoneSettings.nickname) ? '用户' : state.qzoneSettings.nickname;
+/**
+ * 【全新 | V3.0 AI指令强化版】当用户点击“重新生成”时，调用AI生成模拟相册内容
+ */
+async function handleGenerateSimulatedDiaries() {
+    if (!activeCharacterId) return;
+    const chat = state.chats[activeCharacterId];
+    if (!chat) return;
 
-            const longTermMemoryContext = chat.longTermMemory?.map(mem => `- ${mem.content}`).join('\n') || '无';
-            const recentHistoryWithUser = chat.history.slice(-5).map(msg => `${msg.role === 'user' ? userDisplayNameForAI : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
-            const worldBookContext = (chat.settings.linkedWorldBookIds || [])
-                .map(bookId => state.worldBooks.find(wb => wb.id === bookId))
-                .filter(Boolean)
-                .map(book => `\n## 世界书《${book.name}》设定:\n${book.content.filter(e=>e.enabled).map(e => `- ${e.content}`).join('\n')}`)
-                .join('');
-        
-            const systemPrompt = `
+    await showCustomAlert("请稍候...", `正在请求“${chat.name}”翻开TA的日记本...`);
+
+    const { proxyUrl, apiKey, model } = state.apiConfig;
+    if (!proxyUrl || !apiKey || !model) {
+        alert('请先在API设置中配置好API信息。');
+        return;
+    }
+
+    const userDisplayNameForAI = (state.qzoneSettings.nickname === '{{user}}' || !state.qzoneSettings.nickname) ? '用户' : state.qzoneSettings.nickname;
+
+    const longTermMemoryContext = chat.longTermMemory?.map(mem => `- ${mem.content}`).join('\n') || '无';
+    const recentHistoryWithUser = chat.history.slice(-5).map(msg => `${msg.role === 'user' ? userDisplayNameForAI : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
+    const worldBookContext = (chat.settings.linkedWorldBookIds || [])
+        .map(bookId => state.worldBooks.find(wb => wb.id === bookId))
+        .filter(Boolean)
+        .map(book => `\n## 世界书《${book.name}》设定:\n${book.content.filter(e=>e.enabled).map(e => `- ${e.content}`).join('\n')}`)
+        .join('');
+
+    // ▼▼▼ 核心修改1：强化AI指令 ▼▼▼
+    const systemPrompt = `
 # 你的任务
 你是一个虚拟生活模拟器和故事作家。你的任务是扮演角色“${chat.name}”，并根据其人设、记忆和最近的互动，虚构出【5到8篇】TA最近可能会写的日记。
 
 # 核心规则
-1.  **【【【沉浸感铁律】】】**: 每一篇日记都必须使用【第一人称视角 ("我")】来写，并且要充满角色的个人情感、思考和秘密。在日记中描述自己的行为或想法时，【绝对禁止】使用第三人称“他”或“她” (TA)。
-2.  **【【【长度铁律】】】**: 每一篇日记的正文长度【必须不少于300字】。
-3.  **【【【格式铁律 (最高优先级)】】】**: 你的回复【必须且只能】是一个JSON数组。数组中的每个元素都是一个对象，代表一篇日记，格式【必须】如下:
+1.  **【时间 (最高优先级)】**:
+    -   今天的日期是 **${new Date().toLocaleDateString('zh-CN')}**。
+    -   你生成的【所有】日记的标题日期，【必须】是今天或今天以前的日期。
+    -   【绝对禁止】生成任何未来的日期！
+2.  **【沉浸感】**: 每一篇日记都必须使用【第一人称视角 ("我")】来写，并且要充满角色的个人情感、思考和秘密。在日记中描述自己的行为或想法时，【绝对禁止】使用第三人称“他”或“她” (TA)。
+3.  **【长度】**: 每一篇日记的正文长度【必须不少于300字】。
+4.  **【格式铁律 (最高优先级)】**: 
+    - 你的回复【必须且只能】是一个JSON数组格式的字符串。
+    - 你的回复必须以 \`[\` 开始，并以 \`]\` 结束。
+    - 【绝对禁止】在JSON数组前后添加任何多余的文字、解释、或 markdown 标记 (如 \`\`\`json)。
+    - 数组中的每个元素都是一个对象，代表一篇日记，格式【必须】如下:
     \`\`\`json
     [
       {
@@ -28990,7 +29291,8 @@ async function saveMemo(content) {
       }
     ]
     \`\`\`
-4.  **【【【日记专属Markdown语法 (必须使用！)】】】**:
+5.  **【占位符替换 (最高优先级)】**: 在你的日记内容中，【绝对不能】出现 "{{user}}" 这个占位符。你【必须】使用 “${userDisplayNameForAI}” 来指代你的聊天对象（用户）。
+6.  **【日记专属Markdown语法 (必须使用！)】**:
     -   \`**加粗文字**\`: 用于强调。
     -   \`~~划掉的文字~~\`: 用于表示改变主意或自我否定。
     -   \`!h{黄色高亮}\`: 用于标记关键词或重要信息。
@@ -29009,46 +29311,62 @@ ${worldBookContext}
 ${recentHistoryWithUser}
 
 现在，请开始撰写这组充满真情实感、并熟练运用了Markdown语法的日记。`;
+    // ▲▲▲ 修改结束 ▲▲▲
+
+    try {
+        const messagesForApi = [{ role: 'user', content: "请根据你的设定，生成你的日记内容。" }];
+        let isGemini = proxyUrl.includes('generativelanguage');
+        let geminiConfig = toGeminiRequestData(model, apiKey, systemPrompt, messagesForApi);
         
-            try {
-                const messagesForApi = [{ role: 'user', content: "请根据你的设定，生成你的日记内容。" }];
-                let isGemini = proxyUrl.includes('generativelanguage');
-                let geminiConfig = toGeminiRequestData(model, apiKey, systemPrompt, messagesForApi);
-                
-                const response = isGemini 
-                    ? await fetch(geminiConfig.url, geminiConfig.data) 
-                    : await fetch(`${proxyUrl}/v1/chat/completions`, {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}`},
-                        body: JSON.stringify({
-                            model: model,
-                            messages: [{role: 'system', content: systemPrompt}, ...messagesForApi],
-                            temperature: 0.95,
-                        })
-                    });
+        // ▼▼▼ 核心修改2：移除不兼容的 response_format 参数 ▼▼▼
+        const response = isGemini 
+            ? await fetch(geminiConfig.url, geminiConfig.data) 
+            : await fetch(`${proxyUrl}/v1/chat/completions`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}`},
+                body: JSON.stringify({
+                    model: model,
+                    messages: [{role: 'system', content: systemPrompt}, ...messagesForApi],
+                    temperature: 0.95,
+                    // response_format: { "type": "json_object" } <-- 此行已被删除
+                })
+            });
+        // ▲▲▲ 修改结束 ▲▲▲
+
+        if (!response.ok) throw new Error(`API 错误: ${response.statusText}`);
         
-                if (!response.ok) throw new Error(`API 错误: ${response.statusText}`);
-                
-                const data = await response.json();
-                const aiResponseContent = getGeminiResponseText(data);
-                const cleanedJson = aiResponseContent.replace(/^```json\s*/, '').replace(/```$/, '');
-                const simulatedDiaries = JSON.parse(cleanedJson);
-                
-                chat.diary = simulatedDiaries.map(entry => ({
-                    id: Date.now() + Math.random(),
-                    title: entry.title,
-                    content: entry.content,
-                    timestamp: Date.now()
-                }));
-                
-                await db.chats.put(chat);
-                await renderCharDiaryList();
-                
-            } catch (error) {
-                console.error("生成模拟日记失败:", error);
-                await showCustomAlert("生成失败", `无法生成日记，请检查API配置或稍后再试。\n错误: ${error.message}`);
-            }
+        const data = await response.json();
+        const aiResponseContent = getGeminiResponseText(data);
+        
+        // ▼▼▼ 核心修改3：使用更强大的容错解析逻辑 ▼▼▼
+        const jsonMatch = aiResponseContent.match(/(\[[\s\S]*\])/);
+        if (!jsonMatch || !jsonMatch[0]) {
+            throw new Error(`AI返回的内容中未找到有效的JSON数组。原始返回: ${aiResponseContent}`);
         }
+        const cleanedJsonString = jsonMatch[0];
+        let simulatedDiaries;
+        try {
+            simulatedDiaries = JSON.parse(cleanedJsonString);
+        } catch (e) {
+            throw new Error(`解析AI返回的JSON时出错: ${e.message}\n\nAI原始返回内容:\n${aiResponseContent}`);
+        }
+        // ▲▲▲ 修改结束 ▲▲▲
+        
+        chat.diary = simulatedDiaries.map(entry => ({
+            id: Date.now() + Math.random(),
+            title: entry.title,
+            content: entry.content,
+            timestamp: Date.now()
+        }));
+        
+        await db.chats.put(chat);
+        await renderCharDiaryList();
+        
+    } catch (error) {
+        console.error("生成模拟日记失败:", error);
+        await showCustomAlert("生成失败", `无法生成日记，请检查API配置或稍后再试。\n错误: ${error.message}`);
+    }
+}
 
         /**
          * 【全新】当用户点击“+”时，触发AI撰写一篇新日记并追加到末尾
@@ -29063,21 +29381,25 @@ ${recentHistoryWithUser}
             const { proxyUrl, apiKey, model } = state.apiConfig;
             if (!proxyUrl || !apiKey || !model) return;
 
-            // 【修复】定义一个更安全的用户显示名
             const userDisplayNameForAI = (state.qzoneSettings.nickname === '{{user}}' || !state.qzoneSettings.nickname) ? '用户' : state.qzoneSettings.nickname;
 
             const longTermMemoryContext = chat.longTermMemory?.map(mem => `- ${mem.content}`).join('\n') || '无';
             const recentHistoryWithUser = chat.history.slice(-5).map(msg => `${msg.role === 'user' ? userDisplayNameForAI : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
             const worldBookContext = (chat.settings.linkedWorldBookIds || []).map(bookId=>state.worldBooks.find(wb=>wb.id===bookId)).filter(Boolean).map(book=>`\n## 世界书《${book.name}》设定:\n${book.content.filter(e=>e.enabled).map(e=>`- ${e.content}`).join('\n')}`).join('');
             
+            // ▼▼▼ 核心修复1：在这里也添加“时间铁律” ▼▼▼
             const systemPrompt = `
 # 你的任务
-你是一个虚拟生活模拟器和故事作家。你的任务是扮演角色“${chat.name}”，并根据其人设、记忆和最近的互动，虚构出【5到8篇】TA今天可能会写的日记。
+你是一个虚拟生活模拟器和故事作家。你的任务是扮演角色“${chat.name}”，并根据其人设、记忆和最近的互动，虚构出【1篇】TA今天可能会写的日记。
 
 # 核心规则
-1.  **【【【沉浸感铁律】】】**: 日记必须使用【第一人称视角 ("我")】来写，并且要充满角色的个人情感、思考和秘密。在日记中描述自己的行为或想法时，【绝对禁止】使用第三人称“他”或“她” (TA)。
-2.  **【【【长度铁律】】】**: 日记的正文长度【必须不少于300字】。
-3.  **【【【格式铁律 (最高优先级)】】】**: 你的回复【必须且只能】是一个JSON数组，且数组中【只包含一个】对象，格式【必须】如下:
+1.  **【【【时间铁律 (最高优先级)】】】**:
+    -   今天的日期是 **${new Date().toLocaleDateString('zh-CN')}**。
+    -   你生成的日记标题日期【必须】是今天或今天以前的日期。
+    -   【绝对禁止】生成任何未来的日期！
+2.  **【【【沉浸感铁律】】】**: 日记必须使用【第一人称视角 ("我")】来写，并且要充满角色的个人情感、思考和秘密。在日记中描述自己的行为或想法时，【绝对禁止】使用第三人称“他”或“她” (TA)。
+3.  **【【【长度铁律】】】**: 日记的正文长度【必须不少于300字】。
+4.  **【【【格式铁律 (最高优先级)】】】**: 你的回复【必须且只能】是一个JSON数组，且数组中【只包含一个】对象，格式【必须】如下:
     \`\`\`json
     [
       {
@@ -29086,7 +29408,7 @@ ${recentHistoryWithUser}
       }
     ]
     \`\`\`
-4.  **【【【日记专属Markdown语法 (必须使用！)】】】**:
+5.  **【【【日记专属Markdown语法 (必须使用！)】】】**:
     -   \`**加粗文字**\`: 用于强调。
     -   \`~~划掉的文字~~\`: 用于表示改变主意或自我否定。
     -   \`!h{黄色高亮}\`: 用于标记关键词或重要信息。
@@ -29122,8 +29444,20 @@ ${recentHistoryWithUser}
                 if (!response.ok) throw new Error(`API 错误: ${response.statusText}`);
                 const data = await response.json();
                 const aiResponseContent = getGeminiResponseText(data);
-                const cleanedJson = aiResponseContent.replace(/^```json\s*/, '').replace(/```$/, '');
-                const newDiaryEntry = JSON.parse(cleanedJson)[0];
+                
+                // ▼▼▼ 核心修复2：在这里也使用终极容错解析方案 ▼▼▼
+                const jsonMatch = aiResponseContent.match(/(\[[\s\S]*\])/);
+                if (!jsonMatch || !jsonMatch[0]) {
+                    throw new Error(`AI返回的内容中未找到有效的JSON数组。原始返回: ${aiResponseContent}`);
+                }
+                const cleanedJsonString = jsonMatch[0];
+                let newDiaryEntry;
+                try {
+                    newDiaryEntry = JSON.parse(cleanedJsonString)[0];
+                } catch (e) {
+                    throw new Error(`解析AI返回的JSON时出错: ${e.message}\n\nAI原始返回内容:\n${aiResponseContent}`);
+                }
+                // ▲▲▲ 修复结束 ▲▲▲
                 
                 if (!chat.diary) chat.diary = [];
                 
@@ -29143,73 +29477,73 @@ ${recentHistoryWithUser}
             }
         }
 
-/**
- * 【全新 | V2.0】渲染角色手机的日记列表
- */
-function renderCharDiaryList() {
-    const listEl = document.getElementById('char-diary-list');
-    listEl.innerHTML = '';
-    const char = state.chats[activeCharacterId];
-    const diaries = (char.diary || []).slice().reverse();
+        /**
+         * 【全新 | V2.0】渲染角色手机的日记列表
+         */
+        function renderCharDiaryList() {
+            const listEl = document.getElementById('char-diary-list');
+            listEl.innerHTML = '';
+            const char = state.chats[activeCharacterId];
+            const diaries = (char.diary || []).slice().reverse();
 
-    if (diaries.length === 0) {
-        listEl.innerHTML = '<p style="text-align:center; color: var(--text-secondary); padding: 50px 0;">日记本还是空的。</p>';
-        return;
-    }
+            if (diaries.length === 0) {
+                listEl.innerHTML = '<p style="text-align:center; color: var(--text-secondary); padding: 50px 0;">日记本还是空的。</p>';
+                return;
+            }
 
-    diaries.forEach(entry => {
-        const item = document.createElement('div');
-        item.className = 'list-item';
-        item.innerHTML = `
-            <div class="item-title">${entry.title}</div>
-            <div class="item-content">${new Date(entry.timestamp).toLocaleDateString()}</div>
-        `;
-        item.addEventListener('click', () => viewDiary(entry.id));
-        addLongPressListener(item, () => deleteDiary(entry.id));
-        listEl.appendChild(item);
-    });
-}
+            diaries.forEach(entry => {
+                const item = document.createElement('div');
+                item.className = 'list-item';
+                item.innerHTML = `
+                    <div class="item-title">${entry.title}</div>
+                    <div class="item-content">${new Date(entry.timestamp).toLocaleDateString()}</div>
+                `;
+                item.addEventListener('click', () => viewDiary(entry.id));
+                addLongPressListener(item, () => deleteDiary(entry.id));
+                listEl.appendChild(item);
+            });
+        }
 
-/**
- * 【全新】点击日记列表项时，打开详情页面查看
- * @param {number} diaryId - 要查看的日记的ID
- */
-async function viewDiary(diaryId) {
-    const char = state.chats[activeCharacterId];
-    if (!char || !char.diary) return;
+        /**
+         * 【全新】点击日记列表项时，打开详情页面查看
+         * @param {number} diaryId - 要查看的日记的ID
+         */
+        async function viewDiary(diaryId) {
+            const char = state.chats[activeCharacterId];
+            if (!char || !char.diary) return;
 
-    const entry = char.diary.find(d => d.id === diaryId);
-    if (entry) {
-        const titleEl = document.getElementById('char-diary-detail-title');
-        const contentEl = document.getElementById('char-diary-detail-content');
+            const entry = char.diary.find(d => d.id === diaryId);
+            if (entry) {
+                const titleEl = document.getElementById('char-diary-detail-title');
+                const contentEl = document.getElementById('char-diary-detail-content');
 
-        titleEl.textContent = entry.title;
-        const formattedContent = parseMarkdown(entry.content)
-            .split('\n')
-            .map(p => `<p>${p || '&nbsp;'}</p>`)
-            .join('');
-            
-        contentEl.innerHTML = formattedContent;
+                titleEl.textContent = entry.title;
+                const formattedContent = parseMarkdown(entry.content)
+                    .split('\n')
+                    .map(p => `<p>${p || '&nbsp;'}</p>`)
+                    .join('');
+                    
+                contentEl.innerHTML = formattedContent;
 
-        switchToCharScreen('char-diary-detail-screen');
-    }
-}
+                switchToCharScreen('char-diary-detail-screen');
+            }
+        }
 
-/**
- * 【全新】删除一篇日记
- * @param {number} diaryId - 要删除的日记的ID
- */
-async function deleteDiary(diaryId) {
-    const confirmed = await showCustomConfirm('删除日记', '确定要删除这篇日记吗？', { confirmButtonClass: 'btn-danger' });
-    if (confirmed) {
-        const char = state.chats[activeCharacterId];
-        char.diary = char.diary.filter(d => d.id !== diaryId);
-        await db.chats.put(char);
-        renderCharDiaryList();
-    }
-}
+        /**
+         * 【全新】删除一篇日记
+         * @param {number} diaryId - 要删除的日记的ID
+         */
+        async function deleteDiary(diaryId) {
+            const confirmed = await showCustomConfirm('删除日记', '确定要删除这篇日记吗？', { confirmButtonClass: 'btn-danger' });
+            if (confirmed) {
+                const char = state.chats[activeCharacterId];
+                char.diary = char.diary.filter(d => d.id !== diaryId);
+                await db.chats.put(char);
+                renderCharDiaryList();
+            }
+        }
 
-// ▲▲▲ 替换结束 ▲▲▲
+        // ▲▲▲ 替换结束 ▲▲▲
 
 /**
  * 【全新 V2.0 | 支持群聊】渲染角色手机的QQ界面
@@ -29271,67 +29605,67 @@ async function renderCharSimulatedQQ() {
     });
 }
 
-// ▼▼▼ 【最终修复版】请用这整块代码，完整替换旧的 handleGenerateSimulatedQQ 函数 ▼▼▼
-        /**
-         * 【全新 | V2.2 AI绘图版】当用户点击“重新生成”时，调用AI生成模拟对话
-         */
-        async function handleGenerateSimulatedQQ() {
-            if (!activeCharacterId) return;
-            const chat = state.chats[activeCharacterId];
-        
-            if (!chat) {
-                console.error("无法生成模拟对话，因为找不到当前角色 (activeCharacterId: " + activeCharacterId + ")");
-                await showCustomAlert("操作失败", "无法找到当前角色的数据，请尝试返回并重新选择角色。");
-                return;
-            }
-        
-            await showCustomAlert("请稍候...", `正在根据“${chat.name}”的记忆和人设，生成最近的社交动态...`);
-        
-            const { proxyUrl, apiKey, model } = state.apiConfig;
-            if (!proxyUrl || !apiKey || !model) {
-                alert('请先在API设置中配置好API信息。');
-                return;
-            }
-            
-            // 【修复】定义一个更安全的用户显示名，避免传递"{{user}}"
-            const userDisplayNameForAI = (state.qzoneSettings.nickname === '{{user}}' || !state.qzoneSettings.nickname) ? '用户' : state.qzoneSettings.nickname;
-        
-            let worldBookContext = '';
-            if (chat.settings.linkedWorldBookIds && chat.settings.linkedWorldBookIds.length > 0) {
-                const linkedContents = chat.settings.linkedWorldBookIds
-                    .map(bookId => state.worldBooks.find(wb => wb.id === bookId))
-                    .filter(Boolean)
-                    // ▼▼▼ 【【【核心修复就在这里！】】】 ▼▼▼
-                    // 之前的错误是 `world.name`，正确的应该是 `book.name`
-                    .map(book => `\n## 世界书《${book.name}》设定:\n${book.content.filter(e => e.enabled).map(e => `- ${e.content}`).join('\n')}`)
-                    // ▲▲▲ 修复结束 ▲▲▲
-                    .join('');
-                if (linkedContents) {
-                    worldBookContext = `\n\n# 世界观设定 (必须严格遵守)\n${linkedContents}`;
-                }
-            }
-        
-            const longTermMemoryContext = chat.longTermMemory && chat.longTermMemory.length > 0
-                ? `# 你的长期记忆 (已发生的事实)\n${chat.longTermMemory.map(mem => `- ${mem.content}`).join('\n')}`
-                : '';
-            
-            const recentHistoryWithUser = chat.history.slice(-10).map(msg => {
-                const sender = msg.role === 'user' ? userDisplayNameForAI : chat.name;
-                return `${sender}: ${String(msg.content).substring(0, 50)}...`;
-            }).join('\n');
-        
-            const characterOriginalName = chat.originalName || chat.name;
-        
-            const systemPrompt = `
+/**
+ * 【全新 | V2.2 AI绘图版】当用户点击“重新生成”时，调用AI生成模拟对话
+ */
+async function handleGenerateSimulatedQQ() {
+    if (!activeCharacterId) return;
+    const chat = state.chats[activeCharacterId];
+
+    if (!chat) {
+        console.error("无法生成模拟对话，因为找不到当前角色 (activeCharacterId: " + activeCharacterId + ")");
+        await showCustomAlert("操作失败", "无法找到当前角色的数据，请尝试返回并重新选择角色。");
+        return;
+    }
+
+    await showCustomAlert("请稍候...", `正在根据“${chat.name}”的记忆和人设，生成最近的社交动态...`);
+
+    const { proxyUrl, apiKey, model } = state.apiConfig;
+    if (!proxyUrl || !apiKey || !model) {
+        alert('请先在API设置中配置好API信息。');
+        return;
+    }
+    
+    const userDisplayNameForAI = (state.qzoneSettings.nickname === '{{user}}' || !state.qzoneSettings.nickname) ? '用户' : state.qzoneSettings.nickname;
+
+    let worldBookContext = '';
+    if (chat.settings.linkedWorldBookIds && chat.settings.linkedWorldBookIds.length > 0) {
+        const linkedContents = chat.settings.linkedWorldBookIds
+            .map(bookId => state.worldBooks.find(wb => wb.id === bookId))
+            .filter(Boolean)
+            .map(book => `\n## 世界书《${book.name}》设定:\n${book.content.filter(e => e.enabled).map(e => `- ${e.content}`).join('\n')}`)
+            .join('');
+        if (linkedContents) {
+            worldBookContext = `\n\n# 世界观设定 (必须严格遵守)\n${linkedContents}`;
+        }
+    }
+
+    const longTermMemoryContext = chat.longTermMemory && chat.longTermMemory.length > 0
+        ? `# 你的长期记忆 (已发生的事实)\n${chat.longTermMemory.map(mem => `- ${mem.content}`).join('\n')}`
+        : '';
+    
+    const recentHistoryWithUser = chat.history.slice(-10).map(msg => {
+        const sender = msg.role === 'user' ? userDisplayNameForAI : chat.name;
+        return `${sender}: ${String(msg.content).substring(0, 50)}...`;
+    }).join('\n');
+
+    const characterOriginalName = chat.originalName || chat.name;
+
+    // ▼▼▼ 核心修改1：强化AI指令，确保在没有强制JSON模式下也能稳定输出 ▼▼▼
+    const systemPrompt = `
 # 你的任务
 你是一个虚拟社交生活模拟器。你的任务是扮演角色“${chat.name}”，并根据其人设、记忆和最近的互动，虚构出【5到7段】TA最近可能发生的QQ聊天记录。这些记录可以包括【私聊】和【群聊】。
 
 # 核心规则
-1.  **【【【世界书优先】】】**: 如果下面的“世界观设定”中提到了任何具体的【群聊名称】或【群成员】，你【必须】为这个群聊生成一段对话。
+1.  **【世界书优先】**: 如果下面的“世界观设定”中提到了任何具体的【群聊名称】或【群成员】，你【必须】为这个群聊生成一段对话。
 2.  **创造性与多样性**: 自由创造符合角色背景的NPC和群聊，对话内容要多样化，反映角色的生活。
 3.  **关联性**: 对话内容应巧妙地反映角色的长期记忆、世界观，以及与用户互动可能带来的心情变化。
 4.  **简洁性**: 每段对话的总长度应在8到15句之间。
-5.  **【【【格式铁律 (最高优先级)】】】**: 你的回复【必须且只能】是一个JSON数组。数组中的每个元素都代表一段对话，且【必须】是以下两种格式之一：
+5.  **【格式铁律 (最高优先级)】**: 
+    - 你的回复【必须且只能】是一个JSON数组格式的字符串。
+    - 你的回复必须以 \`[\` 开始，并以 \`]\` 结束。
+    - 【绝对禁止】在JSON数组前后添加任何多余的文字、解释、或 markdown 标记 (如 \`\`\`json)。
+    - 数组中的每个元素都代表一段对话，且【必须】是以下两种格式之一：
 
     **格式 A：私聊**
     \`\`\`json
@@ -29374,43 +29708,59 @@ ${worldBookContext}
 ${recentHistoryWithUser}
 
 现在，请开始生成模拟聊天记录。`;
+    // ▲▲▲ 修改结束 ▲▲▲
+
+    try {
+        const messagesForApi = [{ role: 'user', content: "请根据你的设定，生成模拟聊天记录。" }];
+        let isGemini = proxyUrl.includes('generativelanguage');
+        let geminiConfig = toGeminiRequestData(model, apiKey, systemPrompt, messagesForApi);
         
-            try {
-                const messagesForApi = [{ role: 'user', content: "请根据你的设定，生成模拟聊天记录。" }];
-                let isGemini = proxyUrl.includes('generativelanguage');
-                let geminiConfig = toGeminiRequestData(model, apiKey, systemPrompt, messagesForApi);
-                
-                const response = isGemini 
-                    ? await fetch(geminiConfig.url, geminiConfig.data) 
-                    : await fetch(`${proxyUrl}/v1/chat/completions`, {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}`},
-                        body: JSON.stringify({
-                            model: model,
-                            messages: [{role: 'system', content: systemPrompt}, ...messagesForApi],
-                            temperature: 0.9,
-                            response_format: { "type": "json_object" } 
-                        })
-                    });
+        // ▼▼▼ 核心修改2：移除不兼容的 response_format 参数 ▼▼▼
+        const response = isGemini 
+            ? await fetch(geminiConfig.url, geminiConfig.data) 
+            : await fetch(`${proxyUrl}/v1/chat/completions`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}`},
+                body: JSON.stringify({
+                    model: model,
+                    messages: [{role: 'system', content: systemPrompt}, ...messagesForApi],
+                    temperature: 0.9
+                    // response_format: { "type": "json_object" }  <-- 这行已被删除
+                })
+            });
+        // ▲▲▲ 修改结束 ▲▲▲
+
+        if (!response.ok) throw new Error(`API 错误: ${response.statusText}`);
         
-                if (!response.ok) throw new Error(`API 错误: ${response.statusText}`);
-                
-                const data = await response.json();
-                const aiResponseContent = getGeminiResponseText(data);
-                const cleanedJson = aiResponseContent.replace(/^```json\s*/, '').replace(/```$/, '');
-                
-                const simulatedConversations = JSON.parse(cleanedJson);
-                chat.simulatedConversations = simulatedConversations;
-                await db.chats.put(chat);
-                
-                await renderCharSimulatedQQ();
-                
-            } catch (error) {
-                console.error("生成模拟聊天失败:", error);
-                await showCustomAlert("生成失败", `无法生成模拟聊天记录，请检查API配置或稍后再试。\n错误: ${error.message}`);
-            }
+        const data = await response.json();
+        const aiResponseContent = getGeminiResponseText(data);
+        
+        // ▼▼▼ 核心修改3：使用更强大的容错解析逻辑 ▼▼▼
+        const jsonMatch = aiResponseContent.match(/(\[[\s\S]*\])/);
+
+        if (!jsonMatch || !jsonMatch[0]) {
+            throw new Error(`AI返回的内容中未找到有效的JSON数组。原始返回: ${aiResponseContent}`);
         }
-// ▲▲▲ 替换结束 ▲▲▲
+
+        const cleanedJsonString = jsonMatch[0];
+        let simulatedConversations;
+        try {
+            simulatedConversations = JSON.parse(cleanedJsonString);
+        } catch (e) {
+            throw new Error(`解析AI返回的JSON时出错: ${e.message}\n\nAI原始返回内容:\n${aiResponseContent}`);
+        }
+        // ▲▲▲ 修改结束 ▲▲▲
+        
+        chat.simulatedConversations = simulatedConversations;
+        await db.chats.put(chat);
+        
+        await renderCharSimulatedQQ();
+        
+    } catch (error) {
+        console.error("生成模拟聊天失败:", error);
+        await showCustomAlert("生成失败", `无法生成模拟聊天记录，请检查API配置或稍后再试。\n错误: ${error.message}`);
+    }
+}
 
 /**
  * 【全新 | V3.0 页面版 | 支持群聊】打开并显示指定的模拟聊天记录
@@ -29538,6 +29888,7 @@ async function handleGenerateSimulatedAlbum() {
         .map(book => `\n## 世界书《${book.name}》设定:\n${book.content.filter(e=>e.enabled).map(e => `- ${e.content}`).join('\n')}`)
         .join('');
 
+    // ▼▼▼ 核心修改1：强化AI指令 ▼▼▼
     const systemPrompt = `
 # 你的任务
 你是一个虚拟生活模拟器。你的任务是扮演角色“${chat.name}”，并根据其人设、记忆和最近的互动，构思出【8到10张】TA最近可能会拍摄或珍藏在手机相册里的照片。
@@ -29545,7 +29896,11 @@ async function handleGenerateSimulatedAlbum() {
 # 核心规则
 1.  **创造性与合理性**: 照片内容必须完全符合角色的性格、爱好、职业和生活环境。
 2.  **多样性**: 照片主题要丰富，可以包括自拍、风景、食物、宠物、朋友合影、工作场景等。
-3.  **格式铁律 (最高优先级)**: 你的回复【必须且只能】是一个JSON数组。数组中的每个元素都是一个对象，代表一张照片，格式【必须】如下:
+3.  **格式铁律 (最高优先级)**: 
+    - 你的回复【必须且只能】是一个JSON数组格式的字符串。
+    - 你的回复必须以 \`[\` 开始，并以 \`]\` 结束。
+    - 【绝对禁止】在JSON数组前后添加任何多余的文字、解释、或 markdown 标记 (如 \`\`\`json)。
+    - 数组中的每个元素都是一个对象，代表一张照片，格式【必须】如下:
     \`\`\`json
     [
       {
@@ -29554,9 +29909,9 @@ async function handleGenerateSimulatedAlbum() {
       }
     ]
     \`\`\`
-    - **【【【image_prompt 绝对禁止】】】**: 绝对禁止包含任何中文字符、句子、特殊符号、或任何可能涉及敏感（NSFW）、暴力、血腥、政治的内容！也禁止真人！
-    - **【【【image_prompt 必须是】】】**: 必须是纯英文的、用逗号分隔的【关键词组合】 (e.g., "1boy, solo, basketball jersey, in locker room, smiling, selfie")。
-    - **【【【画风指令】】】**: 在 prompt 的末尾，总是加上画风指令，例如： \`best quality, masterpiece, anime style, cinematic lighting\`
+    - **【image_prompt 绝对禁止】**: 绝对禁止包含任何中文字符、句子、特殊符号、或任何可能涉及敏感（NSFW）、暴力、血腥、政治的内容！也禁止真人！
+    - **【image_prompt 必须是】**: 必须是纯英文的、用逗号分隔的【关键词组合】 (e.g., "1boy, solo, basketball jersey, in locker room, smiling, selfie")。
+    - **【画风指令】**: 在 prompt 的末尾，总是加上画风指令，例如： \`best quality, masterpiece, anime style, cinematic lighting\`
 
 # 供你参考的上下文
 - **你的角色设定**: ${chat.settings.aiPersona}
@@ -29566,12 +29921,14 @@ ${worldBookContext}
 ${recentHistoryWithUser}
 
 现在，请开始生成这组照片的描述和绘画指令。`;
+    // ▲▲▲ 修改结束 ▲▲▲
 
     try {
         const messagesForApi = [{ role: 'user', content: "请根据你的设定，生成你的相册内容。" }];
         let isGemini = proxyUrl.includes('generativelanguage');
         let geminiConfig = toGeminiRequestData(model, apiKey, systemPrompt, messagesForApi);
         
+        // ▼▼▼ 核心修改2：移除不兼容的 response_format 参数 ▼▼▼
         const response = isGemini 
             ? await fetch(geminiConfig.url, geminiConfig.data) 
             : await fetch(`${proxyUrl}/v1/chat/completions`, {
@@ -29580,38 +29937,31 @@ ${recentHistoryWithUser}
                 body: JSON.stringify({
                     model: model,
                     messages: [{role: 'system', content: systemPrompt}, ...messagesForApi],
-                    temperature: 0.9,
-                    response_format: { "type": "json_object" } 
+                    temperature: 0.9
+                    // response_format: { "type": "json_object" }  <-- 此行已被删除
                 })
             });
+        // ▲▲▲ 修改结束 ▲▲▲
 
         if (!response.ok) throw new Error(`API 错误: ${response.statusText}`);
         
         const data = await response.json();
         const aiResponseContent = getGeminiResponseText(data);
         
-        // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
-        //            这就是本次修复的核心所在！
-        // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
-        // 1. 使用正则表达式从AI的完整回复中，智能地找到有效的JSON数组部分。
+        // ▼▼▼ 核心修改3：使用更强大的容错解析逻辑 ▼▼▼
         const jsonMatch = aiResponseContent.match(/(\[[\s\S]*\])/);
-
         if (!jsonMatch || !jsonMatch[0]) {
-            // 如果连JSON数组的结构都找不到，就直接报错。
             throw new Error(`AI返回的内容中未找到有效的JSON数组。原始返回: ${aiResponseContent}`);
         }
-
-        // 2. 只解析我们成功提取出的JSON字符串。
         const cleanedJsonString = jsonMatch[0];
         let simulatedAlbumData;
         try {
             simulatedAlbumData = JSON.parse(cleanedJsonString);
         } catch (e) {
-            // 如果提取出的部分也不是有效的JSON，同样报错。
             throw new Error(`解析AI返回的JSON时出错: ${e.message}\n\nAI原始返回内容:\n${aiResponseContent}`);
         }
-        // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
-
+        // ▲▲▲ 修改结束 ▲▲▲
+        
         chat.simulatedAlbum = simulatedAlbumData;
         await db.chats.put(chat);
         
@@ -29682,52 +30032,57 @@ ${recentHistoryWithUser}
             });
         }
         // ▲▲▲ 替换结束 ▲▲▲
-        // ▼▼▼ 【V2.2 | JSON解析终极修复版】请用这个全新的函数，完整替换旧的 handleGenerateBrowserHistory ▼▼▼
-        /**
-         * 【全新 | V2.1 AI指令强化版】当用户点击“重新生成”时，调用AI生成模拟浏览器历史
-         */
-        async function handleGenerateBrowserHistory() {
-            if (!activeCharacterId) return;
-            const chat = state.chats[activeCharacterId];
-            if (!chat) return;
-        
-            await showCustomAlert("请稍候...", `正在模拟“${chat.name}”的网上冲浪足迹...`);
-        
-            const { proxyUrl, apiKey, model } = state.apiConfig;
-            if (!proxyUrl || !apiKey || !model) {
-                alert('API未配置，无法生成内容。');
-                return;
-            }
-            
-            const userDisplayNameForAI = (state.qzoneSettings.nickname === '{{user}}' || !state.qzoneSettings.nickname) ? '用户' : state.qzoneSettings.nickname;
-        
-            const longTermMemoryContext = chat.longTermMemory?.map(mem => `- ${mem.content}`).join('\n') || '无';
-            const recentHistoryWithUser = chat.history.slice(-5).map(msg => `${msg.role === 'user' ? userDisplayNameForAI : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
-            const worldBookContext = (chat.settings.linkedWorldBookIds || [])
-                .map(bookId => state.worldBooks.find(wb => wb.id === bookId))
-                .filter(Boolean)
-                .map(book => `\n## 世界书《${book.name}》设定:\n${book.content.filter(e => e.enabled).map(e => `- ${e.content}`).join('\n')}`)
-                .join('');
-        
-            const systemPrompt = `
+/**
+ * 【全新 | V2.2 | JSON解析终极修复版】当用户点击“重新生成”时，调用AI生成模拟浏览器历史
+ */
+async function handleGenerateBrowserHistory() {
+    if (!activeCharacterId) return;
+    const chat = state.chats[activeCharacterId];
+    if (!chat) return;
+
+    await showCustomAlert("请稍候...", `正在模拟“${chat.name}”的网上冲浪足迹...`);
+
+    const { proxyUrl, apiKey, model } = state.apiConfig;
+    if (!proxyUrl || !apiKey || !model) {
+        alert('API未配置，无法生成内容。');
+        return;
+    }
+    
+    const userDisplayNameForAI = (state.qzoneSettings.nickname === '{{user}}' || !state.qzoneSettings.nickname) ? '用户' : state.qzoneSettings.nickname;
+
+    const longTermMemoryContext = chat.longTermMemory?.map(mem => `- ${mem.content}`).join('\n') || '无';
+    const recentHistoryWithUser = chat.history.slice(-5).map(msg => `${msg.role === 'user' ? userDisplayNameForAI : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
+    const worldBookContext = (chat.settings.linkedWorldBookIds || [])
+        .map(bookId => state.worldBooks.find(wb => wb.id === bookId))
+        .filter(Boolean)
+        .map(book => `\n## 世界书《${book.name}》设定:\n${book.content.filter(e => e.enabled).map(e => `- ${e.content}`).join('\n')}`)
+        .join('');
+
+    // ▼▼▼ 核心修改1：强化AI指令 ▼▼▼
+    const systemPrompt = `
 # 你的任务
-你是一个虚拟生活模拟器。你的任务是扮演角色“${chat.name}”，并根据其人设、记忆和最近的互动，虚构出【12到20条】TA最近的浏览器搜索/浏览记录。
+你是一个虚拟生活模拟器。你的任务是扮演角色“${chat.name}”，并根据其人设、记忆和最近的互动，虚构出【10到20条】TA最近的浏览器搜索/浏览记录。
 
 # 核心规则
 1.  **创造性与合理性**: 记录必须完全符合角色的性格、爱好、职业和生活环境。
 2.  **多样性**: 记录类型要丰富，可以是帖子、文章、新闻、问答等。
-3.  **【【【格式铁律 (最高优先级)】】】**: 你的回复【必须且只能】是一个JSON数组。数组中的每个元素都代表一条浏览记录，并且【必须】使用以下格式:
-
+3.  **【格式 (最高优先级)】**: 
+    - 你的回复【必须且只能】是一个JSON数组格式的字符串。
+    - 你的回复必须以 \`[\` 开始，并以 \`]\` 结束。
+    - 【绝对禁止】在JSON数组前后添加任何多余的文字、解释、或 markdown 标记 (如 \`\`\`json)。
+    - 数组中的每个元素都代表一条浏览记录，并且【必须】使用以下格式:
     \`\`\`json
-    {
-      "type": "text",
-      "title": "一个引人注目的文章或搜索标题",
-      "url": "一个虚构的、看起来很真实的网址",
-      "content": "一篇200-400字的、详细的文章或帖子正文，支持换行符\\n。"
-    }
+    [
+      {
+        "type": "text",
+        "title": "一个引人注目的文章或搜索标题",
+        "url": "一个虚构的、看起来很真实的网址",
+        "content": "一篇200-400字的、详细的文章或帖子正文，支持换行符\\n。"
+      }
+    ]
     \`\`\`
     
-    **【【【绝对禁止】】】**: 你的回复中【绝对不能】包含 "type": "image" 的对象。所有记录都必须是文字内容。
+    **【绝对禁止】**: 你的回复中【绝对不能】包含 "type": "image" 的对象。所有记录都必须是文字内容。
 
 # 供你参考的上下文
 - **你的角色设定**: ${chat.settings.aiPersona}
@@ -29738,62 +30093,57 @@ ${worldBookContext}
 ${recentHistoryWithUser}
 
 现在，请开始生成这组【纯文本】的浏览记录。`;
-        
-            try {
-                const messagesForApi = [{ role: 'user', content: "请根据你的设定，生成你的浏览器记录。" }];
-                let isGemini = proxyUrl.includes('generativelanguage');
-                let geminiConfig = toGeminiRequestData(model, apiKey, systemPrompt, messagesForApi);
-                
-                const response = isGemini 
-                    ? await fetch(geminiConfig.url, geminiConfig.data) 
-                    : await fetch(`${proxyUrl}/v1/chat/completions`, {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}`},
-                        body: JSON.stringify({
-                            model: model,
-                            messages: [{role: 'system', content: systemPrompt}, ...messagesForApi],
-                            temperature: 0.9,
-                            response_format: { "type": "json_object" } 
-                        })
-                    });
-        
-                if (!response.ok) throw new Error(`API 错误: ${response.statusText}`);
-                
-                const data = await response.json();
-                const aiResponseContent = getGeminiResponseText(data);
-                
-                // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
-                //            这就是本次修复的核心所在！
-                // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
-                // 1. 使用正则表达式从AI的完整回复中，智能地找到有效的JSON数组部分。
-                const jsonMatch = aiResponseContent.match(/(\[[\s\S]*\])/);
+    // ▲▲▲ 修改结束 ▲▲▲
 
-                if (!jsonMatch || !jsonMatch[0]) {
-                    // 如果连JSON数组的结构都找不到，就直接报错。
-                    throw new Error(`AI返回的内容中未找到有效的JSON数组。原始返回: ${aiResponseContent}`);
-                }
+    try {
+        const messagesForApi = [{ role: 'user', content: "请根据你的设定，生成你的浏览器记录。" }];
+        let isGemini = proxyUrl.includes('generativelanguage');
+        let geminiConfig = toGeminiRequestData(model, apiKey, systemPrompt, messagesForApi);
+        
+        // ▼▼▼ 核心修改2：移除不兼容的 response_format 参数 ▼▼▼
+        const response = isGemini 
+            ? await fetch(geminiConfig.url, geminiConfig.data) 
+            : await fetch(`${proxyUrl}/v1/chat/completions`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}`},
+                body: JSON.stringify({
+                    model: model,
+                    messages: [{role: 'system', content: systemPrompt}, ...messagesForApi],
+                    temperature: 0.9
+                    // response_format: { "type": "json_object" } <-- 此行已被删除
+                })
+            });
+        // ▲▲▲ 修改结束 ▲▲▲
 
-                // 2. 只解析我们成功提取出的JSON字符串。
-                const cleanedJsonString = jsonMatch[0];
-                let simulatedHistory;
-                try {
-                    simulatedHistory = JSON.parse(cleanedJsonString);
-                } catch (e) {
-                    // 如果提取出的部分也不是有效的JSON，同样报错。
-                    throw new Error(`解析AI返回的JSON时出错: ${e.message}\n\nAI原始返回内容:\n${aiResponseContent}`);
-                }
-                // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
-                
-                chat.simulatedBrowserHistory = simulatedHistory;
-                await db.chats.put(chat);
-                
-                await renderCharBrowserHistory();
-                
-            } catch (error) {
-                console.error("生成模拟浏览器历史失败:", error);
-                await showCustomAlert("生成失败", `无法生成浏览记录，请检查API配置或稍后再试。\n错误: ${error.message}`);
-            }
+        if (!response.ok) throw new Error(`API 错误: ${response.statusText}`);
+        
+        const data = await response.json();
+        const aiResponseContent = getGeminiResponseText(data);
+        
+        // ▼▼▼ 核心修改3：使用更强大的容错解析逻辑 ▼▼▼
+        const jsonMatch = aiResponseContent.match(/(\[[\s\S]*\])/);
+        if (!jsonMatch || !jsonMatch[0]) {
+            throw new Error(`AI返回的内容中未找到有效的JSON数组。原始返回: ${aiResponseContent}`);
         }
+        const cleanedJsonString = jsonMatch[0];
+        let simulatedHistory;
+        try {
+            simulatedHistory = JSON.parse(cleanedJsonString);
+        } catch (e) {
+            throw new Error(`解析AI返回的JSON时出错: ${e.message}\n\nAI原始返回内容:\n${aiResponseContent}`);
+        }
+        // ▲▲▲ 修改结束 ▲▲▲
+        
+        chat.simulatedBrowserHistory = simulatedHistory;
+        await db.chats.put(chat);
+        
+        await renderCharBrowserHistory();
+        
+    } catch (error) {
+        console.error("生成模拟浏览器历史失败:", error);
+        await showCustomAlert("生成失败", `无法生成浏览记录，请检查API配置或稍后再试。\n错误: ${error.message}`);
+    }
+}
         // ▲▲▲ 替换结束 ▲▲▲
 /**
  * 【全新 | V2.0 动态数据版】渲染角色的浏览器历史记录列表
@@ -29849,9 +30199,7 @@ function openCharArticle(index) {
             titleEl.textContent = articleData.title;
             contentEl.innerHTML = ''; 
 
-            // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
-            //            这就是本次修改的核心所在！
-            // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+
             // 我们不再检查生图开关，而是直接判断记录类型。
             // 如果是图片类型，就显示标题作为内容。
             if (articleData.type === 'image') {
@@ -29865,40 +30213,40 @@ function openCharArticle(index) {
         // ▲▲▲ 替换结束 ▲▲▲
 
 // ▲▲▲ 全新JS代码粘贴结束 ▲▲▲
-        /**
-         * 【全新 | V3.0 无钱包版 | 最终修复】当用户点击“重新生成”时，调用AI生成模拟淘宝记录
-         */
-        async function handleGenerateTaobaoHistory() {
-            if (!activeCharacterId) return;
-            const chat = state.chats[activeCharacterId];
-            if (!chat) return;
-        
-            await showCustomAlert("请稍候...", `正在模拟“${chat.name}”的购物习惯...`);
-        
-            const { proxyUrl, apiKey, model } = state.apiConfig;
-            if (!proxyUrl || !apiKey || !model) {
-                alert('API未配置，无法生成内容。');
-                return;
-            }
+/**
+ * 【全新 | V3.2 | 终极网络与逻辑修复版】请用这个全新的函数，完整替换旧的 handleGenerateTaobaoHistory 函数
+ */
+async function handleGenerateTaobaoHistory() {
+    if (!activeCharacterId) return;
+    const chat = state.chats[activeCharacterId];
+    if (!chat) return;
 
-            // 【修复】定义一个更安全的用户显示名
-            const userDisplayNameForAI = (state.qzoneSettings.nickname === '{{user}}' || !state.qzoneSettings.nickname) ? '用户' : state.qzoneSettings.nickname;
-        
-            const longTermMemoryContext = chat.longTermMemory?.map(mem => `- ${mem.content}`).join('\n') || '无';
-            const recentHistoryWithUser = chat.history.slice(-5).map(msg => `${msg.role === 'user' ? userDisplayNameForAI : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
-            const worldBookContext = (chat.settings.linkedWorldBookIds || [])
-                .map(bookId => state.worldBooks.find(wb => wb.id === bookId))
-                .filter(Boolean)
-                .map(book => `\n## 世界书《${book.name}》设定:\n${book.content.filter(e => e.enabled).map(e => `- ${e.content}`).join('\n')}`)
-                .join('');
-        
-            const systemPrompt = `
+    await showCustomAlert("请稍候...", `正在模拟“${chat.name}”的购物习惯...`);
+
+    const { proxyUrl, apiKey, model } = state.apiConfig;
+    if (!proxyUrl || !apiKey || !model) {
+        alert('请先在API设置中配置好API信息。');
+        return;
+    }
+
+    const userDisplayNameForAI = (state.qzoneSettings.nickname === '{{user}}' || !state.qzoneSettings.nickname) ? '用户' : state.qzoneSettings.nickname;
+
+    const longTermMemoryContext = chat.longTermMemory?.map(mem => `- ${mem.content}`).join('\n') || '无';
+    const recentHistoryWithUser = chat.history.slice(-5).map(msg => `${msg.role === 'user' ? userDisplayNameForAI : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
+    const worldBookContext = (chat.settings.linkedWorldBookIds || [])
+        .map(bookId => state.worldBooks.find(wb => wb.id === bookId))
+        .filter(Boolean)
+        .map(book => `\n## 世界书《${book.name}》设定:\n${book.content.filter(e => e.enabled).map(e => `- ${e.content}`).join('\n')}`)
+        .join('');
+
+    // ▼▼▼ 核心修改1：强化AI指令，确保在没有强制JSON模式下也能稳定输出 ▼▼▼
+    const systemPrompt = `
 # 你的任务
 你是一个虚拟生活模拟器。你的任务是扮演角色“${chat.name}”，并根据其人设、记忆和最近的互动，虚构出【12到20条】TA最近的淘宝购物记录。
 
 # 核心规则
 1.  **合理性**: 购买记录必须完全符合角色的性格、爱好和经济状况。
-2.  **格式铁律 (最高优先级)**: 你的回复【必须且只能】是一个【单一的JSON对象】，格式【必须】如下:
+2.  **格式铁律 (最高优先级)**: 你的回复【必须且只能】是一个【单一的JSON对象】。你的回复必须以 \`{\` 开始，并以 \`}\` 结束。【绝对禁止】在JSON对象前后添加任何多余的文字、解释或 markdown 标记 (如 \`\`\`json)。
     \`\`\`json
     {
       "purchases": [
@@ -29924,42 +30272,58 @@ ${worldBookContext}
 ${recentHistoryWithUser}
 
 现在，请生成包含购买记录的JSON对象。`;
+    // ▲▲▲ 修改结束 ▲▲▲
+
+    try {
+        const messagesForApi = [{ role: 'user', content: "请根据你的设定，生成你的淘宝购买记录。" }];
         
-            try {
-                const messagesForApi = [{ role: 'user', content: "请根据你的设定，生成你的淘宝购买记录。" }];
-                let isGemini = proxyUrl.includes('generativelanguage');
-                let geminiConfig = toGeminiRequestData(model, apiKey, systemPrompt, messagesForApi);
-                
-                const response = isGemini 
-                    ? await fetch(geminiConfig.url, geminiConfig.data) 
-                    : await fetch(`${proxyUrl}/v1/chat/completions`, {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}`},
-                        body: JSON.stringify({
-                            model: model,
-                            messages: [{role: 'system', content: systemPrompt}, ...messagesForApi],
-                            temperature: 0.9,
-                            response_format: { "type": "json_object" } 
-                        })
-                    });
+        let isGemini = proxyUrl.includes('generativelanguage.googleapis.com');
+        let geminiConfig = toGeminiRequestData(model, apiKey, systemPrompt, messagesForApi);
         
-                if (!response.ok) throw new Error(`API 错误: ${response.statusText}`);
-                
-                const data = await response.json();
-                const aiResponseContent = getGeminiResponseText(data);
-                const cleanedJson = aiResponseContent.replace(/^```json\s*/, '').replace(/```$/, '');
-                
-                const simulatedTaobaoData = JSON.parse(cleanedJson);
-                chat.simulatedTaobaoHistory = simulatedTaobaoData;
-                await db.chats.put(chat);
-                
-                await renderCharTaobao();
-                
-            } catch (error) {
-                console.error("生成模拟淘宝记录失败:", error);
-                await showCustomAlert("生成失败", `无法生成购物记录，请检查API配置或稍后再试。\n错误: ${error.message}`);
-            }
+        // ▼▼▼ 核心修改2：移除不兼容的 response_format 参数 ▼▼▼
+        const response = isGemini 
+            ? await fetch(geminiConfig.url, geminiConfig.data) 
+            : await fetch(`${proxyUrl}/v1/chat/completions`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}`},
+                body: JSON.stringify({
+                    model: model,
+                    messages: [{role: 'system', content: systemPrompt}, ...messagesForApi],
+                    temperature: 0.9
+                    // response_format: { "type": "json_object" }  <-- 这行已被删除
+                })
+            });
+        // ▲▲▲ 修改结束 ▲▲▲
+
+        if (!response.ok) throw new Error(`API 错误: ${response.statusText}`);
+        
+        const data = await response.json();
+        const aiResponseContent = getGeminiResponseText(data);
+        
+        // ▼▼▼ 核心修改3：使用更强大的容错解析逻辑 ▼▼▼
+        const jsonMatch = aiResponseContent.match(/({[\s\S]*})/);
+        if (!jsonMatch || !jsonMatch[0]) {
+            throw new Error(`AI返回的内容中未找到有效的JSON对象。原始返回: ${aiResponseContent}`);
         }
+        const cleanedJsonString = jsonMatch[0];
+        let simulatedTaobaoData;
+        try {
+            simulatedTaobaoData = JSON.parse(cleanedJsonString);
+        } catch (e) {
+            throw new Error(`解析AI返回的JSON时出错: ${e.message}\n\nAI原始返回内容:\n${aiResponseContent}`);
+        }
+        // ▲▲▲ 修改结束 ▲▲▲
+        
+        chat.simulatedTaobaoHistory = simulatedTaobaoData;
+        await db.chats.put(chat);
+        
+        await renderCharTaobao();
+        
+    } catch (error) {
+        console.error("生成模拟淘宝记录失败:", error);
+        await showCustomAlert("生成失败", `无法生成购物记录，请检查API配置或稍后再试。\n错误: ${error.message}`);
+    }
+}
 
 /**
  * 【全新】打开并渲染角色的钱包页面
@@ -30028,40 +30392,45 @@ function renderCharWallet() {
     });
 }
 // ▲▲▲ 全新JS代码粘贴结束 ▲▲▲
-        /**
-         * 【V3.0 | 最终修复版】当用户点击“重新生成”时，调用AI生成模拟备忘录
-         */
-        async function handleGenerateSimulatedMemos() {
-            if (!activeCharacterId) return;
-            const chat = state.chats[activeCharacterId];
-            if (!chat) return;
-        
-            await showCustomAlert("请稍候...", `正在请求“${chat.name}”分享TA的备忘录...`);
-        
-            const { proxyUrl, apiKey, model } = state.apiConfig;
-            if (!proxyUrl || !apiKey || !model) {
-                alert('请先在API设置中配置好API信息。');
-                return;
-            }
+        // ▼▼▼ 【V3.0 | 最终修复版】请用这个全新的函数，完整替换旧的 handleGenerateSimulatedMemos 函数 ▼▼▼
+/**
+ * 【V3.0 | 最终修复版】当用户点击“重新生成”时，调用AI生成模拟备忘录
+ */
+async function handleGenerateSimulatedMemos() {
+    if (!activeCharacterId) return;
+    const chat = state.chats[activeCharacterId];
+    if (!chat) return;
 
-            // 【修复】定义一个更安全的用户显示名
-            const userDisplayNameForAI = (state.qzoneSettings.nickname === '{{user}}' || !state.qzoneSettings.nickname) ? '用户' : state.qzoneSettings.nickname;
-        
-            const longTermMemoryContext = chat.longTermMemory?.map(mem => `- ${mem.content}`).join('\n') || '无';
-            const recentHistoryWithUser = chat.history.slice(-5).map(msg => `${msg.role === 'user' ? userDisplayNameForAI : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
-            const worldBookContext = (chat.settings.linkedWorldBookIds || [])
-                .map(bookId => state.worldBooks.find(wb => wb.id === bookId))
-                .filter(Boolean)
-                .map(book => `\n## 世界书《${book.name}》设定:\n${book.content.filter(e => e.enabled).map(e => `- ${e.content}`).join('\n')}`)
-                .join('');
-        
-            const systemPrompt = `
+    await showCustomAlert("请稍候...", `正在请求“${chat.name}”分享TA的备忘录...`);
+
+    const { proxyUrl, apiKey, model } = state.apiConfig;
+    if (!proxyUrl || !apiKey || !model) {
+        alert('请先在API设置中配置好API信息。');
+        return;
+    }
+
+    const userDisplayNameForAI = (state.qzoneSettings.nickname === '{{user}}' || !state.qzoneSettings.nickname) ? '用户' : state.qzoneSettings.nickname;
+
+    const longTermMemoryContext = chat.longTermMemory?.map(mem => `- ${mem.content}`).join('\n') || '无';
+    const recentHistoryWithUser = chat.history.slice(-5).map(msg => `${msg.role === 'user' ? userDisplayNameForAI : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
+    const worldBookContext = (chat.settings.linkedWorldBookIds || [])
+        .map(bookId => state.worldBooks.find(wb => wb.id === bookId))
+        .filter(Boolean)
+        .map(book => `\n## 世界书《${book.name}》设定:\n${book.content.filter(e => e.enabled).map(e => `- ${e.content}`).join('\n')}`)
+        .join('');
+
+    // ▼▼▼ 核心修改1：强化AI指令 ▼▼▼
+    const systemPrompt = `
 # 你的任务
 你是一个虚拟生活模拟器。你的任务是扮演角色“${chat.name}”，并根据其人设、记忆和最近的互动，虚构出【12到20条】TA最近可能会写在手机备忘录里的内容。
 
 # 核心规则
 1.  **创造性与合理性**: 备忘录内容必须完全符合角色的性格、爱好、职业和生活环境。可以是购物清单、待办事项、灵感片段、一些随笔和感悟、草稿等。
-2.  **格式铁律 (最高优先级)**: 你的回复【必须且只能】是一个JSON数组。数组中的每个元素都是一个对象，代表一条备忘录，格式【必须】如下:
+2.  **格式铁律 (最高优先级)**: 
+    - 你的回复【必须且只能】是一个JSON数组格式的字符串。
+    - 你的回复必须以 \`[\` 开始，并以 \`]\` 结束。
+    - 【绝对禁止】在JSON数组前后添加任何多余的文字、解释、或 markdown 标记 (如 \`\`\`json)。
+    - 数组中的每个元素都是一个对象，代表一条备忘录，格式【必须】如下:
     \`\`\`json
     [
       {
@@ -30080,63 +30449,73 @@ ${worldBookContext}
 ${recentHistoryWithUser}
 
 现在，请开始生成这组备忘录。`;
-        
-            try {
-                const messagesForApi = [{ role: 'user', content: "请根据你的设定，生成你的备忘录内容。" }];
-                let isGemini = proxyUrl.includes('generativelanguage');
-                let geminiConfig = toGeminiRequestData(model, apiKey, systemPrompt, messagesForApi);
-                
-                const response = isGemini 
-                    ? await fetch(geminiConfig.url, geminiConfig.data) 
-                    : await fetch(`${proxyUrl}/v1/chat/completions`, {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}`},
-                        body: JSON.stringify({
-                            model: model,
-                            messages: [{role: 'system', content: systemPrompt}, ...messagesForApi],
-                            temperature: 0.9
-                        })
-                    });
-        
-                if (!response.ok) {
-                     const errorData = await response.json().catch(() => null);
-                     const errorMessage = errorData?.error?.message || response.statusText;
-                     throw new Error(`API 错误: ${response.status} - ${errorMessage}`);
-                }
-                
-                const data = await response.json();
-                const aiResponseContent = getGeminiResponseText(data);
-                const cleanedJson = aiResponseContent.replace(/^```json\s*/, '').replace(/```$/, '');
-                
-                let simulatedMemos;
-                try {
-                    simulatedMemos = JSON.parse(cleanedJson);
-                } catch(e) {
-                    throw new Error(`AI返回了非法的JSON格式，无法解析。原始返回: ${aiResponseContent}`);
-                }
-                
-                if (!Array.isArray(simulatedMemos)) {
-                    throw new Error(`AI返回的数据不是一个数组。原始返回: ${JSON.stringify(simulatedMemos)}`);
-                }
+    // ▲▲▲ 修改结束 ▲▲▲
 
-                chat.memos = simulatedMemos.map(memo => ({
-                    id: Date.now() + Math.random(),
-                    title: memo.title,
-                    content: memo.content
-                }));
-                
-                await db.chats.put(chat);
-                await renderCharMemoList();
-                
-            } catch (error) {
-                console.error("生成模拟备忘录失败:", error);
-                await showCustomAlert("生成失败", `无法生成备忘录，请检查API配置或稍后再试。\n错误: ${error.message}`);
-            }
+    try {
+        const messagesForApi = [{ role: 'user', content: "请根据你的设定，生成你的备忘录内容。" }];
+        let isGemini = proxyUrl.includes('generativelanguage');
+        let geminiConfig = toGeminiRequestData(model, apiKey, systemPrompt, messagesForApi);
+        
+        // ▼▼▼ 核心修改2：移除不兼容的 response_format 参数 ▼▼▼
+        const response = isGemini 
+            ? await fetch(geminiConfig.url, geminiConfig.data) 
+            : await fetch(`${proxyUrl}/v1/chat/completions`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}`},
+                body: JSON.stringify({
+                    model: model,
+                    messages: [{role: 'system', content: systemPrompt}, ...messagesForApi],
+                    temperature: 0.9
+                    // 同样移除 response_format
+                })
+            });
+        // ▲▲▲ 修改结束 ▲▲▲
+
+        if (!response.ok) {
+             const errorData = await response.json().catch(() => null);
+             const errorMessage = errorData?.error?.message || response.statusText;
+             throw new Error(`API 错误: ${response.status} - ${errorMessage}`);
         }
-// ▼▼▼ 【全新V2.0】这是角色手机高德地图功能的【全部核心JS代码】，请完整粘贴 ▼▼▼
+        
+        const data = await response.json();
+        const aiResponseContent = getGeminiResponseText(data);
+        
+        // ▼▼▼ 核心修改3：使用更强大的容错解析逻辑 ▼▼▼
+        const jsonMatch = aiResponseContent.match(/(\[[\s\S]*\])/);
+        if (!jsonMatch || !jsonMatch[0]) {
+            throw new Error(`AI返回的内容中未找到有效的JSON数组。原始返回: ${aiResponseContent}`);
+        }
+        const cleanedJsonString = jsonMatch[0];
+        let simulatedMemos;
+        try {
+            simulatedMemos = JSON.parse(cleanedJsonString);
+        } catch (e) {
+            throw new Error(`解析AI返回的JSON时出错: ${e.message}\n\nAI原始返回内容:\n${aiResponseContent}`);
+        }
+        // ▲▲▲ 修改结束 ▲▲▲
+        
+        if (!Array.isArray(simulatedMemos)) {
+            throw new Error(`AI返回的数据不是一个数组。原始返回: ${JSON.stringify(simulatedMemos)}`);
+        }
 
+        chat.memos = simulatedMemos.map(memo => ({
+            id: Date.now() + Math.random(),
+            title: memo.title,
+            content: memo.content
+        }));
+        
+        await db.chats.put(chat);
+        await renderCharMemoList();
+        
+    } catch (error) {
+        console.error("生成模拟备忘录失败:", error);
+        await showCustomAlert("生成失败", `无法生成备忘录，请检查API配置或稍后再试。\n错误: ${error.message}`);
+    }
+}
+        // ▲▲▲ 替换结束 ▲▲▲
+        // ▼▼▼ 【全新V2.0 | 最终修复版】请用这个全新的函数，完整替换旧的 handleGenerateAmapHistory 函数 ▼▼▼
 /**
- * 【全新 | 总入口】当用户点击“重新生成”时，调用AI生成模拟足迹
+ * 【全新 | V2.0 最终修复版】当用户点击“重新生成”时，调用AI生成模拟足迹
  */
 async function handleGenerateAmapHistory() {
     if (!activeCharacterId) return;
@@ -30151,10 +30530,7 @@ async function handleGenerateAmapHistory() {
         return;
     }
     
-    // 【修复】定义一个更安全的用户显示名，避免传递"{{user}}"
     const userDisplayNameForAI = (state.qzoneSettings.nickname === '{{user}}' || !state.qzoneSettings.nickname) ? '用户' : state.qzoneSettings.nickname;
-
-    // (上下文构建逻辑保持不变)
     const longTermMemoryContext = chat.longTermMemory?.map(mem => `- ${mem.content}`).join('\n') || '无';
     const recentHistoryWithUser = chat.history.slice(-5).map(msg => `${msg.role === 'user' ? userDisplayNameForAI : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
     const worldBookContext = (chat.settings.linkedWorldBookIds || [])
@@ -30163,26 +30539,38 @@ async function handleGenerateAmapHistory() {
         .map(book => `\n## 世界书《${book.name}》设定:\n${book.content.filter(e => e.enabled).map(e => `- ${e.content}`).join('\n')}`)
         .join('');
 
+    // ▼▼▼ 核心修改1：强化AI指令 ▼▼▼
     const systemPrompt = `
 # 你的任务
 你是一个虚拟生活模拟器。你的任务是扮演角色“${chat.name}”，并根据其人设、记忆和最近的互动，虚构出【12到20条】TA最近的“高德地图”出行足迹。
 
 # 核心规则
-1.  **创造性与合理性**: 足迹必须完全符合角色的性格、爱好、职业和生活环境。
-2.  **多样性**: 地点类型要丰富，可以包括餐厅、商场、公园、公司、朋友家等。
-3.  **格式铁律 (最高优先级)**: 你的回复【必须且只能】是一个JSON数组。数组中的每个元素都是一个对象，代表一条足迹，格式【必须】如下:
+1.  **【时间 (最高优先级)】**:
+    -   今天的日期是 **${new Date().toISOString()}**。
+    -   你生成的【所有】足迹的 \`timestamp\` 字段，【必须】是今天或今天以前的日期。
+    -   【绝对禁止】生成任何未来的日期！
+    -   请生成一个看起来像是过去几周内的、时间【从新到旧】排列的足迹列表。
+2.  **创造性与合理性**: 足迹必须完全符合角色的性格、爱好、职业和生活环境。
+3.  **多样性**: 地点类型要丰富，可以包括餐厅、商场、公园、公司、朋友家等。
+4.  **【格式铁律 (最高优先级)】**: 
+    - 你的回复【必须且只能】是一个JSON数组格式的字符串。
+    - 你的回复必须以 \`[\` 开始，并以 \`]\` 结束。
+    - 【绝对禁止】在JSON数组前后添加任何多余的文字、解释、或 markdown 标记 (如 \`\`\`json)。
+    - 数组中的每个元素都是一个对象，代表一条足迹，格式【必须】如下:
     \`\`\`json
     [
       {
         "locationName": "一个具体、生动的地点名称",
         "address": "一个虚构但看起来很真实的详细地址",
         "comment": "这是角色对这次出行或这个地点的内心独白或评论，必须使用第一人称“我”来写。",
-        "image_prompt": "(可选)一段用于生成这张地点照片的、详细的【英文】关键词, 风格为 realistic photo, high quality"
+        "image_prompt": "(可选)一段用于生成这张地点照片的、详细的【英文】关键词, 风格为 realistic photo, high quality",
+        "timestamp": "符合 ISO 8601 格式的日期时间字符串 (例如: '2025-09-25T18:30:00Z')"
       }
     ]
     \`\`\`
     - **重要**: 大约有【三分之一】的足迹需要包含 \`image_prompt\` 字段来生成一张照片。
     - **图片**: image_prompt 生成的图片【绝对禁止包含真人】。如果地点是室内，可以生成空无一人的场景；如果是室外，可以只有风景或建筑。
+
 # 供你参考的上下文
 - **你的角色设定**: ${chat.settings.aiPersona}
 - **你的长期记忆**:
@@ -30192,12 +30580,14 @@ ${worldBookContext}
 ${recentHistoryWithUser}
 
 现在，请开始生成这组足迹记录。`;
+    // ▲▲▲ 修改结束 ▲▲▲
 
     try {
         const messagesForApi = [{ role: 'user', content: "请根据你的设定，生成你的高德地图足迹。" }];
         let isGemini = proxyUrl.includes('generativelanguage');
         let geminiConfig = toGeminiRequestData(model, apiKey, systemPrompt, messagesForApi);
         
+        // ▼▼▼ 核心修改2：移除不兼容的 response_format 参数 ▼▼▼
         const response = isGemini 
             ? await fetch(geminiConfig.url, geminiConfig.data) 
             : await fetch(`${proxyUrl}/v1/chat/completions`, {
@@ -30206,24 +30596,34 @@ ${recentHistoryWithUser}
                 body: JSON.stringify({
                     model: model,
                     messages: [{role: 'system', content: systemPrompt}, ...messagesForApi],
-                    temperature: 0.9,
-                    response_format: { "type": "json_object" } 
+                    temperature: 0.9
+                    // response_format: { "type": "json_object" } <-- 此行已被删除
                 })
             });
+        // ▲▲▲ 修改结束 ▲▲▲
 
         if (!response.ok) throw new Error(`API 错误: ${response.statusText}`);
         
         const data = await response.json();
         const aiResponseContent = getGeminiResponseText(data);
-        const cleanedJson = aiResponseContent.replace(/^```json\s*/, '').replace(/```$/, '');
         
-        const simulatedAmapData = JSON.parse(cleanedJson);
+        // ▼▼▼ 核心修改3：使用更强大的容错解析逻辑 ▼▼▼
+        const jsonMatch = aiResponseContent.match(/(\[[\s\S]*\])/);
+        if (!jsonMatch || !jsonMatch[0]) {
+            throw new Error(`AI返回的内容中未找到有效的JSON数组。原始返回: ${aiResponseContent}`);
+        }
+        const cleanedJsonString = jsonMatch[0];
+        let simulatedAmapData;
+        try {
+            simulatedAmapData = JSON.parse(cleanedJsonString);
+        } catch (e) {
+            throw new Error(`解析AI返回的JSON时出错: ${e.message}\n\nAI原始返回内容:\n${aiResponseContent}`);
+        }
+        // ▲▲▲ 修改结束 ▲▲▲
         
-        // 4. 将AI生成的足迹存入角色的数据中
         chat.simulatedAmapHistory = simulatedAmapData;
         await db.chats.put(chat);
         
-        // 5. 重新渲染足迹列表
         await renderCharAmap();
         
     } catch (error) {
@@ -30232,86 +30632,95 @@ ${recentHistoryWithUser}
     }
 }
 
-/**
- * 【全新】渲染角色的高德地图足迹列表
- */
-function renderCharAmap() {
-    const listEl = document.getElementById('char-amap-list');
-    listEl.innerHTML = '';
-    if (!activeCharacterId) return;
-
-    const char = state.chats[activeCharacterId];
-    const history = char.simulatedAmapHistory || [];
-
-    if (history.length === 0) {
-        listEl.innerHTML = '<p style="text-align:center; color: var(--text-secondary); padding: 50px 0;">这里还没有留下任何足迹，<br>点击右上角刷新按钮生成一些记录吧！</p>';
-        return;
-    }
-
-    history.forEach(item => {
-        const itemEl = document.createElement('div');
-        itemEl.className = 'char-amap-item';
-        
-        let photoHtml = '';
-        if (item.image_prompt) {
-            const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(item.image_prompt)}`;
-            photoHtml = `<div class="amap-item-photo" style="background-image: url('${imageUrl}')" data-comment="${item.comment}"></div>`;
-        }
-
-        itemEl.innerHTML = `
-            <div class="amap-item-header">
-                <div class="amap-item-icon">📍</div>
-                <div class="amap-item-info">
-                    <div class="amap-item-title">${item.locationName}</div>
-                    <div class="amap-item-address">${item.address}</div>
-                </div>
-            </div>
-            <div class="amap-item-body">
-                <div class="amap-item-comment">${item.comment.replace(/\n/g, '<br>')}</div>
-                ${photoHtml}
-            </div>
-            <div class="amap-item-footer">今天 ${String(Math.floor(Math.random() * 24)).padStart(2,'0')}:${String(Math.floor(Math.random() * 60)).padStart(2,'0')}</div>
-        `;
-        listEl.appendChild(itemEl);
-    });
-}
-
-// ▲▲▲ 全新JS代码粘贴结束 ▲▲▲
         /**
-         * 【全新 V3.0 | 支持AI绘图】当用户点击“重新生成”时，调用AI生成模拟App使用记录
+         * 【全新 | V2.0 最终修复版】渲染角色的高德地图足迹列表
          */
-        async function handleGenerateAppUsage() {
+        function renderCharAmap() {
+            const listEl = document.getElementById('char-amap-list');
+            listEl.innerHTML = '';
             if (!activeCharacterId) return;
-            const chat = state.chats[activeCharacterId];
-            if (!chat) return;
 
-            await showCustomAlert("请稍候...", `正在分析“${chat.name}”的手机使用习惯...`);
+            const char = state.chats[activeCharacterId];
+            const history = char.simulatedAmapHistory || [];
 
-            const { proxyUrl, apiKey, model } = state.apiConfig;
-            if (!proxyUrl || !apiKey || !model) {
-                alert('API未配置，无法生成内容。');
+            if (history.length === 0) {
+                listEl.innerHTML = '<p style="text-align:center; color: var(--text-secondary); padding: 50px 0;">这里还没有留下任何足迹，<br>点击右上角刷新按钮生成一些记录吧！</p>';
                 return;
             }
-            
-            const userDisplayNameForAI = (state.qzoneSettings.nickname === '{{user}}' || !state.qzoneSettings.nickname) ? '用户' : state.qzoneSettings.nickname;
 
-            const longTermMemoryContext = chat.longTermMemory?.map(mem => `- ${mem.content}`).join('\n') || '无';
-            const recentHistoryWithUser = chat.history.slice(-5).map(msg => `${msg.role === 'user' ? userDisplayNameForAI : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
-            const worldBookContext = (chat.settings.linkedWorldBookIds || [])
-                .map(bookId => state.worldBooks.find(wb => wb.id === bookId))
-                .filter(Boolean)
-                .map(book => `\n## 世界书《${book.name}》设定:\n${book.content.filter(e => e.enabled).map(e => `- ${e.content}`).join('\n')}`)
-                .join('');
+            // ▼▼▼ 核心修复3：在这里使用 AI 提供的时间戳 ▼▼▼
+            history.forEach(item => {
+                const itemEl = document.createElement('div');
+                itemEl.className = 'char-amap-item';
+                
+                let photoHtml = '';
+                if (item.image_prompt) {
+                    const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(item.image_prompt)}`;
+                    photoHtml = `<div class="amap-item-photo" style="background-image: url('${imageUrl}')" data-comment="${item.comment}"></div>`;
+                }
 
-            // ▼▼▼ 【核心修改：这是全新的、支持AI绘图的指令】 ▼▼▼
-            const systemPrompt = `
+                // 使用我们之前创建的 formatTimeAgo 函数来格式化时间
+                const timeAgo = item.timestamp ? formatTimeAgo(new Date(item.timestamp).getTime()) : '某个时间';
+
+                itemEl.innerHTML = `
+                    <div class="amap-item-header">
+                        <div class="amap-item-icon">📍</div>
+                        <div class="amap-item-info">
+                            <div class="amap-item-title">${item.locationName}</div>
+                            <div class="amap-item-address">${item.address}</div>
+                        </div>
+                    </div>
+                    <div class="amap-item-body">
+                        <div class="amap-item-comment">${item.comment.replace(/\n/g, '<br>')}</div>
+                        ${photoHtml}
+                    </div>
+                    <div class="amap-item-footer">${timeAgo}</div>
+                `;
+                listEl.appendChild(itemEl);
+            });
+            // ▲▲▲ 修复结束 ▲▲▲
+        }
+
+// ▲▲▲ 全新JS代码粘贴结束 ▲▲▲
+/**
+ * 【全新 V3.0 | 支持AI绘图】当用户点击“重新生成”时，调用AI生成模拟App使用记录
+ */
+async function handleGenerateAppUsage() {
+    if (!activeCharacterId) return;
+    const chat = state.chats[activeCharacterId];
+    if (!chat) return;
+
+    await showCustomAlert("请稍候...", `正在分析“${chat.name}”的手机使用习惯...`);
+
+    const { proxyUrl, apiKey, model } = state.apiConfig;
+    if (!proxyUrl || !apiKey || !model) {
+        alert('API未配置，无法生成内容。');
+        return;
+    }
+    
+    const userDisplayNameForAI = (state.qzoneSettings.nickname === '{{user}}' || !state.qzoneSettings.nickname) ? '用户' : state.qzoneSettings.nickname;
+
+    const longTermMemoryContext = chat.longTermMemory?.map(mem => `- ${mem.content}`).join('\n') || '无';
+    const recentHistoryWithUser = chat.history.slice(-5).map(msg => `${msg.role === 'user' ? userDisplayNameForAI : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
+    const worldBookContext = (chat.settings.linkedWorldBookIds || [])
+        .map(bookId => state.worldBooks.find(wb => wb.id === bookId))
+        .filter(Boolean)
+        .map(book => `\n## 世界书《${book.name}》设定:\n${book.content.filter(e => e.enabled).map(e => `- ${e.content}`).join('\n')}`)
+        .join('');
+
+    // ▼▼▼ 核心修改1：强化AI指令 ▼▼▼
+    const systemPrompt = `
 # 你的任务
 你是一个虚拟生活模拟器。你的任务是扮演角色“${chat.name}”，并根据其人设、记忆和最近的互动，虚构出TA最近一天的【手机App屏幕使用时间】记录，总共约20条。
 
 # 核心规则
 1.  **创造性与多样性**: 生成的App列表【不必局限于】角色手机主屏幕上已有的App。你可以自由地虚构TA可能使用的其他App，例如 Instagram, Twitter, 各种游戏 (如：原神, 王者荣耀), 视频App (如：抖音, YouTube), 学习或工作软件等，这能更好地体现角色的隐藏兴趣和生活习惯。
 2.  **合理性**: 使用时长和App类型必须完全符合角色的性格、爱好、职业和生活环境。
-3.  **格式铁律 (最高优先级)**: 你的回复【必须且只能】是一个JSON数组。数组中的每个元素都是一个对象，代表一个App的使用记录，格式【必须】如下:
+3.  **格式铁律 (最高优先级)**: 
+    - 你的回复【必须且只能】是一个JSON数组格式的字符串。
+    - 你的回复必须以 \`[\` 开始，并以 \`]\` 结束。
+    - 【绝对禁止】在JSON数组前后添加任何多余的文字、解释、或 markdown 标记 (如 \`\`\`json)。
+    - 数组中的每个元素都是一个对象，代表一个App的使用记录，格式【必须】如下:
     \`\`\`json
     [
       {
@@ -30332,44 +30741,46 @@ ${worldBookContext}
 ${recentHistoryWithUser}
 
 现在，请开始生成这组App使用记录。`;
-            // ▲▲▲ 修改结束 ▲▲▲
+    // ▲▲▲ 修改结束 ▲▲▲
 
-            try {
-                const messagesForApi = [{ role: 'user', content: "请根据你的设定，生成你的App使用记录。" }];
-                let isGemini = proxyUrl.includes('generativelanguage');
-                let geminiConfig = toGeminiRequestData(model, apiKey, systemPrompt, messagesForApi);
-                
-                const response = isGemini 
-                    ? await fetch(geminiConfig.url, geminiConfig.data) 
-                    : await fetch(`${proxyUrl}/v1/chat/completions`, {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}`},
-                        body: JSON.stringify({
-                            model: model,
-                            messages: [{role: 'system', content: systemPrompt}, ...messagesForApi],
-                            temperature: 0.9,
-                            response_format: { "type": "json_object" } 
-                        })
-                    });
+    try {
+        const messagesForApi = [{ role: 'user', content: "请根据你的设定，生成你的App使用记录。" }];
+        let isGemini = proxyUrl.includes('generativelanguage');
+        let geminiConfig = toGeminiRequestData(model, apiKey, systemPrompt, messagesForApi);
+        
+        // ▼▼▼ 核心修改2：移除不兼容的 response_format 参数 ▼▼▼
+        const response = isGemini 
+            ? await fetch(geminiConfig.url, geminiConfig.data) 
+            : await fetch(`${proxyUrl}/v1/chat/completions`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}`},
+                body: JSON.stringify({
+                    model: model,
+                    messages: [{role: 'system', content: systemPrompt}, ...messagesForApi],
+                    temperature: 0.9
+                    // response_format: { "type": "json_object" } <-- 此行已被删除
+                })
+            });
+        // ▲▲▲ 修改结束 ▲▲▲
 
-                if (!response.ok) throw new Error(`API 错误: ${response.statusText}`);
-                
-                const data = await response.json();
-                const aiResponseContent = getGeminiResponseText(data);
-                const cleanedJson = aiResponseContent.replace(/^```json\s*/, '').replace(/```$/, '');
-                
-                const simulatedUsageData = JSON.parse(cleanedJson);
-                
-                chat.simulatedAppUsage = simulatedUsageData;
-                await db.chats.put(chat);
-                
-                await renderCharAppUsage();
-                
-            } catch (error) {
-                console.error("生成模拟App使用记录失败:", error);
-                await showCustomAlert("生成失败", `无法生成记录，请检查API配置或稍后再试。\n错误: ${error.message}`);
-            }
-        }
+        if (!response.ok) throw new Error(`API 错误: ${response.statusText}`);
+        
+        const data = await response.json();
+        const aiResponseContent = getGeminiResponseText(data);
+        const cleanedJson = aiResponseContent.replace(/^```json\s*/, '').replace(/```$/, '');
+        
+        const simulatedUsageData = JSON.parse(cleanedJson);
+        
+        chat.simulatedAppUsage = simulatedUsageData;
+        await db.chats.put(chat);
+        
+        await renderCharAppUsage();
+        
+    } catch (error) {
+        console.error("生成模拟App使用记录失败:", error);
+        await showCustomAlert("生成失败", `无法生成记录，请检查API配置或稍后再试。\n错误: ${error.message}`);
+    }
+}
 
         /**
          * 【全新 V2.0 | AI绘图版】渲染角色的App使用记录列表
@@ -30417,33 +30828,34 @@ ${recentHistoryWithUser}
             });
         }
 // ▲▲▲ 全新JS代码粘贴结束 ▲▲▲
-        /**
-         * 【全新 V2.0 | 最终兼容版】当用户点击“重新生成”时，调用AI生成模拟歌单
-         */
-        async function handleGenerateSimulatedMusic() {
-            if (!activeCharacterId) return;
-            const chat = state.chats[activeCharacterId];
-            if (!chat) return;
+/**
+ * 【全新 V2.0 | 最终兼容版】当用户点击“重新生成”时，调用AI生成模拟歌单
+ */
+async function handleGenerateSimulatedMusic() {
+    if (!activeCharacterId) return;
+    const chat = state.chats[activeCharacterId];
+    if (!chat) return;
 
-            await showCustomAlert("请稍候...", `正在请求“${chat.name}”分享TA的私人歌单...`);
+    await showCustomAlert("请稍候...", `正在请求“${chat.name}”分享TA的私人歌单...`);
 
-            const { proxyUrl, apiKey, model } = state.apiConfig;
-            if (!proxyUrl || !apiKey || !model) {
-                alert('请先在API设置中配置好API信息。');
-                return;
-            }
-            
-            const userDisplayNameForAI = (state.qzoneSettings.nickname === '{{user}}' || !state.qzoneSettings.nickname) ? '用户' : state.qzoneSettings.nickname;
+    const { proxyUrl, apiKey, model } = state.apiConfig;
+    if (!proxyUrl || !apiKey || !model) {
+        alert('请先在API设置中配置好API信息。');
+        return;
+    }
+    
+    const userDisplayNameForAI = (state.qzoneSettings.nickname === '{{user}}' || !state.qzoneSettings.nickname) ? '用户' : state.qzoneSettings.nickname;
 
-            const longTermMemoryContext = chat.longTermMemory?.map(mem => `- ${mem.content}`).join('\n') || '无';
-            const recentHistoryWithUser = chat.history.slice(-5).map(msg => `${msg.role === 'user' ? userDisplayNameForAI : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
-            const worldBookContext = (chat.settings.linkedWorldBookIds || [])
-                .map(bookId => state.worldBooks.find(wb => wb.id === bookId))
-                .filter(Boolean)
-                .map(book => `\n## 世界书《${book.name}》设定:\n${book.content.filter(e => e.enabled).map(e => `- ${e.content}`).join('\n')}`)
-                .join('');
+    const longTermMemoryContext = chat.longTermMemory?.map(mem => `- ${mem.content}`).join('\n') || '无';
+    const recentHistoryWithUser = chat.history.slice(-5).map(msg => `${msg.role === 'user' ? userDisplayNameForAI : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
+    const worldBookContext = (chat.settings.linkedWorldBookIds || [])
+        .map(bookId => state.worldBooks.find(wb => wb.id === bookId))
+        .filter(Boolean)
+        .map(book => `\n## 世界书《${book.name}》设定:\n${book.content.filter(e => e.enabled).map(e => `- ${e.content}`).join('\n')}`)
+        .join('');
 
-            const systemPrompt = `
+    // ▼▼▼ 核心修改1：强化AI指令 ▼▼▼
+    const systemPrompt = `
 # 你的任务
 你是一个虚拟音乐品味模拟器。你的任务是扮演角色“${chat.name}”，并根据其人设、记忆和最近的互动，挑选出【14到18首】最能代表TA此刻心情或品味的歌曲。
 
@@ -30452,8 +30864,8 @@ ${recentHistoryWithUser}
 2.  **多样性**: 歌曲风格可以多样，但必须逻辑自洽。
 3.  **格式铁律 (最高优先级)**: 
     - 你的回复【必须且只能】是一个JSON数组格式的字符串。
-    - 【绝对禁止】在JSON数组前后添加任何多余的文字、解释、或 markdown 标记 (如 \`\`\`json)。
     - 你的回复必须以 \`[\` 开始，并以 \`]\` 结束。
+    - 【绝对禁止】在JSON数组前后添加任何多余的文字、解释、或 markdown 标记 (如 \`\`\`json)。
     - 数组中的每个元素都是一个对象，代表一首歌，格式【必须】如下:
     \`\`\`json
     [
@@ -30473,68 +30885,60 @@ ${worldBookContext}
 ${recentHistoryWithUser}
 
 现在，请生成这份歌单。`;
+    // ▲▲▲ 修改结束 ▲▲▲
 
-            try {
-                const messagesForApi = [{ role: 'user', content: "请根据你的设定，生成你的歌单。" }];
-                let isGemini = proxyUrl.includes('generativelanguage');
-                let geminiConfig = toGeminiRequestData(model, apiKey, systemPrompt, messagesForApi);
-                
-                const response = isGemini 
-                    ? await fetch(geminiConfig.url, geminiConfig.data) 
-                    : await fetch(`${proxyUrl}/v1/chat/completions`, {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}`},
-                        body: JSON.stringify({
-                            model: model,
-                            messages: [{role: 'system', content: systemPrompt}, ...messagesForApi],
-                            temperature: 1.0,
-                        })
-                    });
+    try {
+        const messagesForApi = [{ role: 'user', content: "请根据你的设定，生成你的歌单。" }];
+        let isGemini = proxyUrl.includes('generativelanguage');
+        let geminiConfig = toGeminiRequestData(model, apiKey, systemPrompt, messagesForApi);
+        
+        // ▼▼▼ 核心修改2：此函数之前没有 response_format，无需删除，但我们确保其他部分是健壮的 ▼▼▼
+        const response = isGemini 
+            ? await fetch(geminiConfig.url, geminiConfig.data) 
+            : await fetch(`${proxyUrl}/v1/chat/completions`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}`},
+                body: JSON.stringify({
+                    model: model,
+                    messages: [{role: 'system', content: systemPrompt}, ...messagesForApi],
+                    temperature: 1.0,
+                })
+            });
+        // ▲▲▲ 修改结束 ▲▲▲
 
-                if (!response.ok) throw new Error(`API 错误: ${response.statusText}`);
-                
-                const data = await response.json();
-                const aiResponseContent = getGeminiResponseText(data);
-                const cleanedJson = aiResponseContent.replace(/^```json\s*/, '').replace(/```$/, '');
-                const songPicks = JSON.parse(cleanedJson);
+        if (!response.ok) throw new Error(`API 错误: ${response.statusText}`);
+        
+        const data = await response.json();
+        const aiResponseContent = getGeminiResponseText(data);
+        const cleanedJson = aiResponseContent.replace(/^```json\s*/, '').replace(/```$/, '');
+        const songPicks = JSON.parse(cleanedJson);
 
-                await showCustomAlert("请稍候...", `歌单已生成，正在从网络获取 ${songPicks.length} 首歌曲的详细信息...`);
+        await showCustomAlert("请稍候...", `歌单已生成，正在从网络获取 ${songPicks.length} 首歌曲的详细信息...`);
 
-                // ▼▼▼ 核心修改就在这里 ▼▼▼
-                const songDetailPromises = songPicks.map(async (pick) => {
-                    // 1. 首先尝试网易云音乐
-                    let searchResults = await searchNeteaseMusic(pick.songName, pick.artistName);
-                    
-                    // 2. 如果网易云没有结果，则尝试QQ音乐作为备用
-                    if (!searchResults || searchResults.length === 0) {
-                        console.log(`网易云音乐未找到“${pick.songName}”，正在尝试QQ音乐作为备用源...`);
-                        searchResults = await searchTencentMusic(pick.songName);
-                    }
-
-                    // 3. 如果任何一个源找到了结果，就继续获取可播放链接
-                    if (searchResults.length > 0) {
-                        // getPlayableSongDetails 函数内部已经有备用源逻辑，非常稳健
-                        return getPlayableSongDetails(searchResults[0]);
-                    }
-                    
-                    // 4. 如果两个源都找不到，则返回null
-                    console.warn(`所有音乐源都未能找到歌曲：“${pick.songName} - ${pick.artistName}”`);
-                    return null;
-                });
-                // ▲▲▲ 修改结束 ▲▲▲
-
-                const fullSongObjects = (await Promise.all(songDetailPromises)).filter(Boolean);
-
-                chat.simulatedMusicPlaylist = fullSongObjects;
-                await db.chats.put(chat);
-                
-                await renderCharMusicScreen();
-                
-            } catch (error) {
-                console.error("生成模拟歌单失败:", error);
-                await showCustomAlert("生成失败", `无法生成歌单，请检查API配置或稍后再试。\n错误: ${error.message}`);
+        const songDetailPromises = songPicks.map(async (pick) => {
+            let searchResults = await searchNeteaseMusic(pick.songName, pick.artistName);
+            if (!searchResults || searchResults.length === 0) {
+                searchResults = await searchTencentMusic(pick.songName);
             }
-        }
+            if (searchResults.length > 0) {
+                return getPlayableSongDetails(searchResults[0]);
+            }
+            console.warn(`所有音乐源都未能找到歌曲：“${pick.songName} - ${pick.artistName}”`);
+            return null;
+        });
+
+        const fullSongObjects = (await Promise.all(songDetailPromises)).filter(Boolean);
+
+        chat.simulatedMusicPlaylist = fullSongObjects;
+        await db.chats.put(chat);
+        
+        await renderCharMusicScreen();
+        
+    } catch (error) {
+        console.error("生成模拟歌单失败:", error);
+        await showCustomAlert("生成失败", `无法生成歌单，请检查API配置或稍后再试。\n错误: ${error.message}`);
+    }
+}
 
 /**
  * 【全新】渲染角色的网易云音乐列表
@@ -30930,8 +31334,7 @@ async function handleGenerateDoubanPosts() {
             }
         });
     }
-
-    // ▲▲▲ 核心修改1：获取用户的昵称和人设 ▲▲▲
+    
     const userNickname = state.qzoneSettings.nickname || '我';
     const userPersona = activeCharacterIds.length > 0 && state.chats[activeCharacterIds[0]] 
         ? state.chats[activeCharacterIds[0]].settings.myPersona 
@@ -30941,9 +31344,7 @@ async function handleGenerateDoubanPosts() {
     activeCharacterIds.forEach(charId => {
         const c = state.chats[charId];
         if (c) {
-            const longTermMemory = c.longTermMemory && c.longTermMemory.length > 0
-                ? c.longTermMemory.map(m => m.content).join('; ')
-                : '无';
+            const longTermMemory = c.longTermMemory && c.longTermMemory.length > 0 ? c.longTermMemory.map(m => m.content).join('; ') : '无';
             const recentHistory = c.history.slice(-10).map(msg => 
                 `${msg.role === 'user' ? userNickname : c.name}: ${String(msg.content).substring(0, 30)}...`
             ).join('\n');
@@ -30970,7 +31371,6 @@ async function handleGenerateDoubanPosts() {
     const now = new Date();
     const currentTimeString = now.toLocaleString('zh-CN', { dateStyle: 'full', timeStyle: 'short' });
 
-    // ▲▲▲ 核心修改2：构建全新的、带有“用户档案”和“禁止扮演铁律”的系统指令 ▲▲▲
     const systemPrompt = `
 # 你的任务
 你是一个虚拟社区内容生成器。你的任务是根据下面提供的【统一角色列表】，虚构出【12到20篇】他们最近可能会在各种豆瓣小组中发布的帖子和评论。
@@ -30996,7 +31396,11 @@ async function handleGenerateDoubanPosts() {
     -   不同的NPC【必须】有不同的头像指令，以确保他们的头像是独一无二的。
 8.  **【头像一致性 (至关重要！)】**:
     -   如果一个路人NPC在同一个帖子中多次出现（例如，既是发帖人又是评论者，或多次评论），你【必须】为TA的所有出现都使用【完全相同】的 \`avatar_prompt\`。这至关重要！
-9.  **【格式 (最高优先级)】**: 你的回复【必须且只能】是一个JSON数组。数组中的每个元素都是一篇帖子，格式【必须】如下:
+9.  **【格式 (最高优先级)】**: 
+    - 你的回复【必须且只能】是一个JSON数组格式的字符串。
+    - 你的回复必须以 \`[\` 开始，并以 \`]\` 结束。
+    - 【绝对禁止】在JSON数组前后添加任何多余的文字、解释、或 markdown 标记 (如 \`\`\`json)。
+    - 数组中的每个元素都是一篇帖子，格式【必须】如下:
     \`\`\`json
     [
       {
@@ -31056,6 +31460,7 @@ ${charactersContext}
         
         const data = await response.json();
         const aiResponseContent = getGeminiResponseText(data);
+        
         const jsonMatch = aiResponseContent.match(/\[[\s\S]*\]/);
         
         if (!jsonMatch) {
@@ -31557,6 +31962,732 @@ async function simulateBackgroundActivity(minutesOffline) {
     }
 }
 // ▲▲▲ 【全新】后台活动模拟功能的核心代码结束 ▲▲▲
+/* ▼▼▼ 【全新】这是聊天记录搜索功能的【全部核心JS代码】，请完整粘贴 ▼▼▼ */
+
+/**
+ * 【总入口】打开聊天记录搜索屏幕
+ */
+function openSearchHistoryScreen() {
+    if (!state.activeChatId) return;
+    const chat = state.chats[state.activeChatId];
+    
+    // 清空上次的搜索条件和结果
+    document.getElementById('keyword-search-input').value = '';
+    document.getElementById('date-search-input').value = '';
+    // ★★★ 核心修改：指向新的ID ★★★
+    document.getElementById('chat-search-results-list').innerHTML = `<p style="text-align:center; color: var(--text-secondary);">输入关键词或选择日期进行搜索。</p>`;
+    
+    // 切换屏幕
+    showScreen('search-history-screen');
+}
+
+/**
+ * 【核心】执行搜索逻辑
+ */
+async function handleSearchHistory() {
+    const chat = state.chats[state.activeChatId];
+    if (!chat) return;
+
+    const keyword = document.getElementById('keyword-search-input').value.trim().toLowerCase();
+    const dateValue = document.getElementById('date-search-input').value;
+
+    if (!keyword && !dateValue) {
+        alert("请输入关键词或选择一个日期。");
+        return;
+    }
+
+    let results = chat.history.filter(msg => !msg.isHidden);
+
+    // 1. 按关键词筛选
+    if (keyword) {
+        results = results.filter(msg => {
+            let contentString = '';
+            // 智能提取不同类型消息的文本内容
+            if (typeof msg.content === 'string') {
+                contentString = msg.content;
+            } else if (msg.type === 'voice_message') {
+                contentString = msg.content;
+            } else if (msg.type === 'ai_image' || msg.type === 'user_photo') {
+                contentString = msg.content;
+            } else if (msg.type === 'offline_text') {
+                contentString = `${msg.dialogue || ''} ${msg.description || ''}`;
+            } else if (msg.quote) {
+                 contentString = msg.content;
+            }
+            return contentString.toLowerCase().includes(keyword);
+        });
+    }
+
+    // 2. 按日期筛选
+    if (dateValue) {
+        const selectedDate = new Date(dateValue);
+        const startOfDay = new Date(selectedDate.setHours(0, 0, 0, 0)).getTime();
+        const endOfDay = new Date(selectedDate.setHours(23, 59, 59, 999)).getTime();
+        
+        results = results.filter(msg => msg.timestamp >= startOfDay && msg.timestamp <= endOfDay);
+    }
+    
+    // 渲染搜索结果
+    await renderSearchResults(results);
+}
+
+
+/**
+ * 将搜索结果渲染到屏幕上
+ * @param {Array} results - 筛选后的消息对象数组
+ */
+async function renderSearchResults(results) {
+    // ★★★ 核心修改：指向新的ID ★★★
+    const listEl = document.getElementById('chat-search-results-list');
+    const chat = state.chats[state.activeChatId];
+    listEl.innerHTML = '';
+
+    if (results.length === 0) {
+        listEl.innerHTML = '<p style="text-align:center; color: var(--text-secondary);">未找到相关的聊天记录。</p>';
+        return;
+    }
+
+    let lastDateString = '';
+    for (const msg of results) {
+        const msgDate = new Date(msg.timestamp);
+        const currentDateString = msgDate.toLocaleDateString();
+
+        // 如果是新的一天，添加日期分隔符
+        if (currentDateString !== lastDateString) {
+            const dateSeparator = document.createElement('div');
+            dateSeparator.className = 'date-separator';
+            dateSeparator.textContent = `--- ${msgDate.getFullYear()}年${msgDate.getMonth() + 1}月${msgDate.getDate()}日 ---`;
+            listEl.appendChild(dateSeparator);
+            lastDateString = currentDateString;
+        }
+
+        // 复用现有的 createMessageElement 函数来创建消息气泡
+        const messageEl = await createMessageElement(msg, chat);
+        if (messageEl) {
+            // 为结果项添加点击事件，以便跳转
+            messageEl.style.cursor = 'pointer';
+            messageEl.addEventListener('click', () => jumpToOriginalMessage(msg.timestamp));
+            listEl.appendChild(messageEl);
+        }
+    }
+}
+
+/**
+ * 从搜索结果跳转回原始消息位置
+ * @param {number} timestamp - 目标消息的时间戳
+ */
+function jumpToOriginalMessage(timestamp) {
+    // 1. 切换回聊天界面
+    showScreen('chat-interface-screen');
+    
+    // 2. 延迟一小段时间，确保UI已切换完成
+    setTimeout(() => {
+        // 3. 调用我们之前已有的高亮滚动函数
+        scrollToOriginalMessage(timestamp);
+    }, 100);
+}
+
+
+/**
+ * 重置搜索过滤器并显示所有记录
+ */
+async function clearSearchFilters() {
+    document.getElementById('keyword-search-input').value = '';
+    document.getElementById('date-search-input').value = '';
+    // 重新渲染所有消息作为“重置”结果
+    await renderSearchResults(state.chats[state.activeChatId].history.filter(msg => !msg.isHidden));
+}
+
+/* ▲▲▲ 核心JS代码粘贴结束 ▲▲▲ */
+// ▼▼▼ 【全新V2.0 | 自定义头像框】这是所有头像框上传、管理功能的核心JS代码 ▼▼▼
+
+/**
+ * 【重构版】渲染头像框选择列表，现在会同时显示预设和用户自定义的头像框
+ * @param {boolean} isForMember - 是否是为群成员设置
+ * @param {string|null} memberAvatar - (可选) 群成员的头像URL
+ * @param {string|null} memberFrame - (可选) 群成员当前的头像框URL
+ */
+async function populateFrameGrids(isForMember = false, memberAvatar = null, memberFrame = null) {
+    const aiFrameGrid = document.getElementById('ai-frame-grid');
+    const myFrameGrid = document.getElementById('my-frame-grid');
+    const chat = state.chats[state.activeChatId];
+    aiFrameGrid.innerHTML = '';
+    myFrameGrid.innerHTML = '';
+
+    // 1. 【核心修改】从数据库获取用户自定义的头像框
+    const customFrames = await db.customAvatarFrames.toArray();
+    // 将预设和自定义的合并为一个列表
+    const allFrames = [...avatarFrames, ...customFrames];
+
+    document.querySelector('#avatar-frame-modal .frame-tabs').style.display = isForMember ? 'none' : 'flex';
+    document.getElementById('ai-frame-content').style.display = 'block';
+    document.getElementById('my-frame-content').style.display = 'none';
+    document.getElementById('ai-frame-tab').classList.add('active');
+    document.getElementById('my-frame-tab').classList.remove('active');
+
+    if (isForMember) {
+        allFrames.forEach(frame => {
+            const item = createFrameItem(frame, 'my', memberAvatar);
+            if (frame.url === memberFrame) {
+                item.classList.add('selected');
+            }
+            aiFrameGrid.appendChild(item);
+        });
+    } else {
+        const aiAvatarForPreview = chat.settings.aiAvatar || defaultAvatar;
+        const myAvatarForPreview = chat.settings.myAvatar || (chat.isGroup ? defaultMyGroupAvatar : defaultAvatar);
+        allFrames.forEach(frame => {
+            const aiItem = createFrameItem(frame, 'ai', aiAvatarForPreview);
+            if (frame.url === currentFrameSelection.ai) aiItem.classList.add('selected');
+            aiFrameGrid.appendChild(aiItem);
+
+            const myItem = createFrameItem(frame, 'my', myAvatarForPreview);
+            if (frame.url === currentFrameSelection.my) myItem.classList.add('selected');
+            myFrameGrid.appendChild(myItem);
+        });
+    }
+}
+
+/**
+ * 【升级版】创建单个头像框的预览DOM，为自定义框添加删除按钮
+ * @param {object} frame - 头像框对象 { id, url, name }
+ * @param {string} type - 'ai' 或 'my'
+ * @param {string} previewAvatarSrc - 用于预览的头像URL
+ * @returns {HTMLElement} - 创建好的DOM元素
+ */
+function createFrameItem(frame, type, previewAvatarSrc) {
+    const item = document.createElement('div');
+    item.className = 'frame-item';
+    item.dataset.frameUrl = frame.url;
+    item.title = frame.name;
+
+    // 【核心修改】检查
+    const isCustom = typeof frame.id === 'number';
+    const deleteButtonHtml = isCustom ? `<button class="delete-btn" data-id="${frame.id}" style="display:block;">×</button>` : '';
+
+    item.innerHTML = `
+        ${deleteButtonHtml}
+        <img src="${previewAvatarSrc}" class="preview-avatar">
+        ${frame.url ? `<img src="${frame.url}" class="preview-frame">` : ''}
+    `;
+    item.addEventListener('click', (e) => {
+        // 如果点击的是删除按钮，则不执行选择操作
+        if (e.target.classList.contains('delete-btn')) {
+            return;
+        }
+        currentFrameSelection[type] = frame.url;
+        const grid = type === 'ai' ? document.getElementById('ai-frame-grid') : document.getElementById('my-frame-grid');
+        grid.querySelectorAll('.frame-item').forEach(el => el.classList.remove('selected'));
+        item.classList.add('selected');
+    });
+    return item;
+}
+
+/**
+ * 【全新】处理本地上传单个头像框的逻辑
+ */
+async function handleUploadFrame() {
+    const fileInput = document.getElementById('custom-frame-upload-input');
+    
+    // 使用 Promise 优雅地处理文件选择
+    const file = await new Promise(resolve => {
+        const changeHandler = (e) => {
+            resolve(e.target.files[0] || null);
+            fileInput.removeEventListener('change', changeHandler);
+        };
+        fileInput.addEventListener('change', changeHandler, { once: true });
+        fileInput.click();
+    });
+
+    if (!file) return; // 用户取消了选择
+
+    const name = await showCustomPrompt("命名头像框", "请为这个新头像框起个名字");
+    if (!name || !name.trim()) return;
+
+    // 将图片文件转换为 Base64
+    const url = await new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.readAsDataURL(file);
+    });
+
+    // 存入数据库
+    await db.customAvatarFrames.add({ name: name.trim(), url });
+    // 刷新UI
+    populateFrameGrids(editingFrameForMember);
+}
+
+/**
+ * 【全新】处理批量导入头像框的逻辑
+ */
+async function handleBatchUploadFrames() {
+    const placeholder = `请按照以下格式粘贴，一行一个：\n\n头像框名字1: https://.../image1.png\n头像框名字2: https://.../image2.gif`;
+    const pastedText = await showCustomPrompt("批量导入头像框", "从完整链接批量导入", "", 'textarea', `<p style="font-size:12px;color:#888;">${placeholder}</p>`);
+
+    if (!pastedText || !pastedText.trim()) return;
+
+    const lines = pastedText.trim().split('\n');
+    const newFrames = [];
+    let errorCount = 0;
+
+    for (const line of lines) {
+        // 使用正则表达式匹配 "名字: URL" 格式，更健壮
+        const match = line.match(/^(.+?)[:：]\s*(https?:\/\/.+)$/);
+        if (match) {
+            newFrames.push({
+                name: match[1].trim(),
+                url: match[2].trim()
+            });
+        } else if (line.trim()) {
+            errorCount++;
+        }
+    }
+
+    if (newFrames.length > 0) {
+        await db.customAvatarFrames.bulkAdd(newFrames);
+        populateFrameGrids(editingFrameForMember);
+        await showCustomAlert("导入成功", `成功导入 ${newFrames.length} 个新头像框！`);
+    }
+
+    if (errorCount > 0) {
+        await showCustomAlert("部分失败", `有 ${errorCount} 行格式不正确，已被忽略。`);
+    }
+}
+
+/**
+ * 【全新】删除一个自定义头像框
+ * @param {number} frameId - 要删除的头像框的ID
+ */
+async function handleDeleteCustomFrame(frameId) {
+    const frame = await db.customAvatarFrames.get(frameId);
+    if (!frame) return;
+
+    const confirmed = await showCustomConfirm(
+        "确认删除",
+        `确定要删除头像框 “${frame.name}” 吗？`,
+        { confirmButtonClass: 'btn-danger' }
+    );
+
+    if (confirmed) {
+        await db.customAvatarFrames.delete(frameId);
+        populateFrameGrids(editingFrameForMember); // 刷新UI
+    }
+}
+
+// ▲▲▲ 全新JS代码粘贴结束 ▲▲▲
+// ▼▼▼ 【全新】这是主屏幕分页和“预设”App的【全部核心JS代码】，请完整粘贴 ▼▼▼
+
+// --- 1. 主屏幕分页功能 ---
+let currentPage = 0;
+const totalPages = 2;
+
+function setupHomeScreenPagination() {
+    const pagesContainer = document.getElementById('home-screen-pages-container');
+    const pages = document.getElementById('home-screen-pages');
+    const dots = document.querySelectorAll('.pagination-dot');
+    let startX = 0;
+    let currentX = 0;
+    let isDragging = false;
+
+    const updatePagination = () => {
+        pages.style.transform = `translateX(-${currentPage * (100 / totalPages)}%)`;
+        dots.forEach((dot, index) => {
+            dot.classList.toggle('active', index === currentPage);
+        });
+    };
+
+    const onDragStart = (e) => {
+        isDragging = true;
+        startX = e.type.includes('mouse') ? e.pageX : e.touches[0].pageX;
+        pages.style.transition = 'none'; // 拖动时移除动画
+    };
+
+    const onDragMove = (e) => {
+        if (!isDragging) return;
+        currentX = e.type.includes('mouse') ? e.pageX : e.touches[0].pageX;
+        const diffX = currentX - startX;
+        pages.style.transform = `translateX(calc(-${currentPage * (100 / totalPages)}% + ${diffX}px))`;
+    };
+
+    const onDragEnd = () => {
+        if (!isDragging) return;
+        isDragging = false;
+        pages.style.transition = 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)'; // 恢复动画
+        const diffX = currentX - startX;
+
+        // 阈值判断，滑动超过屏幕宽度的1/4就翻页
+        if (Math.abs(diffX) > pagesContainer.offsetWidth / 4) {
+            if (diffX > 0 && currentPage > 0) {
+                currentPage--;
+            } else if (diffX < 0 && currentPage < totalPages - 1) {
+                currentPage++;
+            }
+        }
+        updatePagination();
+    };
+
+    pagesContainer.addEventListener('mousedown', onDragStart);
+    pagesContainer.addEventListener('mousemove', onDragMove);
+    pagesContainer.addEventListener('mouseup', onDragEnd);
+    pagesContainer.addEventListener('mouseleave', onDragEnd);
+
+    pagesContainer.addEventListener('touchstart', onDragStart, { passive: true });
+    pagesContainer.addEventListener('touchmove', onDragMove, { passive: true });
+    pagesContainer.addEventListener('touchend', onDragEnd);
+}
+
+// --- 2. “预设”App 核心功能 ---
+let editingPresetId = null;
+
+async function openPresetScreen() {
+    await renderPresetScreen();
+    showScreen('preset-screen');
+}
+
+async function renderPresetScreen() {
+    const tabsContainer = document.getElementById('preset-tabs');
+    const contentContainer = document.getElementById('preset-content-container');
+    tabsContainer.innerHTML = '';
+    contentContainer.innerHTML = '';
+
+    const [presets, categories] = await Promise.all([
+        db.presets.toArray(),
+        db.presetCategories.orderBy('name').toArray()
+    ]);
+
+    if (presets.length === 0) {
+        contentContainer.innerHTML = '<p style="text-align:center; color: #8a8a8a; margin-top: 50px;">点击右上角 "+" 创建你的第一个预设</p>';
+        return;
+    }
+
+    // 创建“全部”页签
+    const allTab = document.createElement('button');
+    allTab.className = 'world-book-tab active';
+    allTab.textContent = '全部';
+    allTab.dataset.categoryId = 'all';
+    tabsContainer.appendChild(allTab);
+
+    const allPane = document.createElement('div');
+    allPane.className = 'world-book-category-pane active';
+    allPane.dataset.categoryId = 'all';
+    contentContainer.appendChild(allPane);
+    
+    // 创建分类页签
+    categories.forEach(category => {
+        const categoryTab = document.createElement('button');
+        categoryTab.className = 'world-book-tab';
+        categoryTab.textContent = category.name;
+        categoryTab.dataset.categoryId = String(category.id);
+        tabsContainer.appendChild(categoryTab);
+
+        const categoryPane = document.createElement('div');
+        categoryPane.className = 'world-book-category-pane';
+        categoryPane.dataset.categoryId = String(category.id);
+        contentContainer.appendChild(categoryPane);
+    });
+    
+    // 创建“未分类”页签
+    const hasUncategorized = presets.some(p => !p.categoryId);
+    if (hasUncategorized) {
+        const uncategorizedTab = document.createElement('button');
+        uncategorizedTab.className = 'world-book-tab';
+        uncategorizedTab.textContent = '未分类';
+        uncategorizedTab.dataset.categoryId = 'uncategorized';
+        tabsContainer.appendChild(uncategorizedTab);
+    
+        const uncategorizedPane = document.createElement('div');
+        uncategorizedPane.className = 'world-book-category-pane';
+        uncategorizedPane.dataset.categoryId = 'uncategorized';
+        contentContainer.appendChild(uncategorizedPane);
+    }
+    
+    // 填充预设卡片
+    presets.forEach(preset => {
+        let contentPreview = '暂无内容...';
+        if (Array.isArray(preset.content) && preset.content.length > 0) {
+            contentPreview = preset.content[0].comment || preset.content[0].content || '';
+        }
+        
+        const card = document.createElement('div');
+        card.className = 'world-book-card';
+        card.innerHTML = `
+            <div class="card-title">${preset.name}</div>
+            <div class="card-content-preview">${contentPreview}</div>
+        `;
+        
+        const cardClickHandler = () => openPresetEditor(preset.id);
+        const cardLongPressHandler = async () => { 
+            const confirmed = await showCustomConfirm('删除预设', `确定要删除《${preset.name}》吗？`, { confirmButtonClass: 'btn-danger' }); 
+            if (confirmed) { 
+                await db.presets.delete(preset.id);
+                renderPresetScreen(); 
+            } 
+        };
+
+        card.addEventListener('click', cardClickHandler);
+        addLongPressListener(card, cardLongPressHandler);
+
+        const clonedCardForAll = card.cloneNode(true);
+        clonedCardForAll.addEventListener('click', cardClickHandler);
+        addLongPressListener(clonedCardForAll, cardLongPressHandler);
+        allPane.appendChild(clonedCardForAll);
+        
+        const categoryKey = preset.categoryId ? String(preset.categoryId) : 'uncategorized';
+        const targetPane = contentContainer.querySelector(`.world-book-category-pane[data-category-id="${categoryKey}"]`);
+        if (targetPane) {
+            targetPane.appendChild(card);
+        }
+    });
+    
+    // 绑定页签点击事件
+    document.querySelectorAll('#preset-tabs .world-book-tab').forEach(tab => {
+        tab.addEventListener('click', () => switchPresetCategory(tab.dataset.categoryId));
+    });
+}
+
+function switchPresetCategory(categoryId) {
+    document.querySelectorAll('#preset-tabs .world-book-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.categoryId === categoryId);
+    });
+    document.querySelectorAll('#preset-content-container .world-book-category-pane').forEach(pane => {
+        pane.classList.toggle('active', pane.dataset.categoryId === categoryId);
+    });
+}
+
+async function openPresetEditor(presetId) {
+    showScreen('preset-editor-screen');
+    editingPresetId = presetId;
+    const [preset, categories] = await Promise.all([
+        db.presets.get(presetId),
+        db.presetCategories.toArray()
+    ]);
+    if (!preset) {
+        showScreen('preset-screen');
+        return;
+    }
+
+    document.getElementById('preset-editor-title').textContent = preset.name;
+    document.getElementById('preset-name-input').value = preset.name;
+
+    const selectEl = document.getElementById('preset-category-select');
+    selectEl.innerHTML = '<option value="">-- 未分类 --</option>';
+    categories.forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat.id;
+        option.textContent = cat.name;
+        if (preset.categoryId === cat.id) option.selected = true;
+        selectEl.appendChild(option);
+    });
+    
+    const entriesContainer = document.getElementById('preset-entries-container');
+    entriesContainer.innerHTML = ''; 
+    if (Array.isArray(preset.content) && preset.content.length > 0) {
+        preset.content.forEach(entry => {
+            const block = createPresetEntryBlock(entry);
+            entriesContainer.appendChild(block);
+        });
+    } else {
+        entriesContainer.innerHTML = '<p style="text-align:center; color: var(--text-secondary); margin-top: 20px;">还没有内容，点击下方按钮添加第一条吧！</p>';
+    }
+}
+
+function createPresetEntryBlock(entry = { keys: [], comment: '', content: '', enabled: true }) {
+    const block = document.createElement('div');
+    block.className = 'message-editor-block';
+    const isChecked = entry.enabled !== false ? 'checked' : '';
+
+    block.innerHTML = `
+        <div style="display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-bottom: 5px;">
+            <label class="toggle-switch" title="启用/禁用此条目">
+                <input type="checkbox" class="entry-enabled-switch" ${isChecked}>
+                <span class="slider"></span>
+            </label>
+            <button class="delete-block-btn" title="删除此条目">×</button>
+        </div>
+        <div class="form-group" style="margin-bottom: 10px;">
+            <label style="font-size: 0.8em;">备注 (可选)</label>
+            <input type="text" class="entry-comment-input" value="${entry.comment || ''}" placeholder="例如：关于角色的童年" style="padding: 8px;">
+        </div>
+        <div class="form-group" style="margin-bottom: 10px;">
+            <label style="font-size: 0.8em;">关键词 (用英文逗号,分隔)</label>
+            <input type="text" class="entry-keys-input" value="${(entry.keys || []).join(', ')}" placeholder="例如: key1, key2, key3" style="padding: 8px;">
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+            <label style="font-size: 0.8em;">内容</label>
+            <textarea class="entry-content-textarea" rows="5" style="width: 100%; font-size: 14px;">${entry.content || ''}</textarea>
+        </div>
+    `;
+    block.querySelector('.delete-block-btn').addEventListener('click', () => block.remove());
+    return block;
+}
+
+// --- 3. “预设”分类管理 (复用世界书的函数，修改函数名) ---
+async function openPresetCategoryManager() {
+    await renderPresetCategoriesInManager();
+    // 复用现有的弹窗，只修改内容
+    document.querySelector('#group-management-modal .modal-header span').textContent = '管理预设分类';
+    document.getElementById('add-new-group-btn').onclick = addNewPresetCategory;
+    document.getElementById('existing-groups-list').onclick = (e) => {
+        if (e.target.classList.contains('delete-group-btn')) {
+            deletePresetCategory(parseInt(e.target.dataset.id));
+        }
+    };
+    document.getElementById('close-group-manager-btn').onclick = () => {
+        document.getElementById('group-management-modal').classList.remove('visible');
+        renderPresetScreen(); // 关闭后刷新主列表
+    };
+    document.getElementById('group-management-modal').classList.add('visible');
+}
+
+async function renderPresetCategoriesInManager() {
+    const listEl = document.getElementById('existing-groups-list');
+    const categories = await db.presetCategories.toArray();
+    listEl.innerHTML = '';
+    if (categories.length === 0) {
+        listEl.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">还没有任何分类</p>';
+    }
+    categories.forEach(cat => {
+        const item = document.createElement('div');
+        item.className = 'existing-group-item';
+        item.innerHTML = `<span class="group-name">${cat.name}</span><span class="delete-group-btn" data-id="${cat.id}">×</span>`;
+        listEl.appendChild(item);
+    });
+}
+
+async function addNewPresetCategory() {
+    const input = document.getElementById('new-group-name-input');
+    const name = input.value.trim();
+    if (!name) return alert('分类名不能为空！');
+    const existing = await db.presetCategories.where('name').equals(name).first();
+    if (existing) return alert(`分类 "${name}" 已经存在了！`);
+    await db.presetCategories.add({ name });
+    input.value = '';
+    await renderPresetCategoriesInManager();
+}
+
+async function deletePresetCategory(categoryId) {
+    const confirmed = await showCustomConfirm('确认删除', '删除分类后，该分类下的所有预设将变为“未分类”。确定吗？', { confirmButtonClass: 'btn-danger' });
+    if (confirmed) {
+        await db.presetCategories.delete(categoryId);
+        await db.presets.where('categoryId').equals(categoryId).modify({ categoryId: null });
+        await renderPresetCategoriesInManager();
+    }
+}
+// ▲▲▲ 全新JS代码粘贴结束 ▲▲▲
+// ▼▼▼ 【全新】这是导入 Tavern 预设功能的【全部核心JS代码】，请完整粘贴 ▼▼▼
+
+/**
+ * 【总入口】当用户选择了预设文件后，由此函数开始处理
+ * @param {Event} event - 文件输入框的 change 事件
+ */
+async function handlePresetImport(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    try {
+        if (!file.name.endsWith('.json')) {
+            throw new Error("文件格式不支持。请选择 .json 格式的 Tavern 预设文件。");
+        }
+        
+        const text = await file.text();
+        const tavernData = JSON.parse(text);
+        
+        // 调用核心处理函数
+        await importTavernPresetFile(tavernData, file.name);
+
+    } catch (error) {
+        console.error("预设导入失败:", error);
+        await showCustomAlert("导入失败", `无法解析预设文件。\n错误: ${error.message}`);
+    } finally {
+        // 清空输入框，以便下次能选择同一个文件
+        event.target.value = null;
+    }
+}
+
+/**
+ * 【核心逻辑】从 Tavern 格式的数据创建一本新的“预设”
+ * @param {object} tavernData - 从 .json 文件解析出的数据
+ * @param {string} fileName - 原始文件名，用于生成默认名称
+ */
+async function importTavernPresetFile(tavernData, fileName) {
+    // 1. 验证文件内容是否有效
+    if (!tavernData || !Array.isArray(tavernData.prompts)) {
+        throw new Error("文件格式无法识别。未找到有效的 'prompts' 数组。");
+    }
+
+    // 2. 从文件名中提取建议名称
+    const presetNameSuggestion = fileName.replace(/\.json$/i, '');
+
+    const newPresetName = await showCustomPrompt(
+        "导入 Tavern 预设", 
+        "请为这组提示词预设命名：",
+        presetNameSuggestion
+    );
+
+    if (!newPresetName || !newPresetName.trim()) {
+        alert("导入已取消，因为未提供名称。");
+        return;
+    }
+
+    // 3. 将 Tavern 的 `prompts` 数组转换为我们“预设”App的 `content` 格式
+    const newEntries = tavernData.prompts.map(prompt => {
+        return {
+            keys: [], // Tavern 预设中没有直接对应的 'keys'，留空
+            comment: prompt.name || '无标题', // 使用 prompt 的 name 作为“备注”
+            content: prompt.content || '',   // 使用 prompt 的 content 作为“内容”
+            enabled: true // 默认启用
+        };
+    }).filter(entry => entry.content); // 过滤掉没有内容的条目
+
+    if (newEntries.length === 0) {
+        alert("这个预设文件中没有找到任何有效的提示词条目。");
+        return;
+    }
+
+    // 4. 创建并保存新的预设对象
+    const newPreset = {
+        id: 'preset_' + Date.now(),
+        name: newPresetName.trim(),
+        content: newEntries,
+        categoryId: null // 默认不分类
+    };
+
+    await db.presets.add(newPreset);
+    
+    // 5. 刷新UI
+    await renderPresetScreen();
+
+    await showCustomAlert('导入成功！', `已成功从文件导入预设《${newPresetName}》。`);
+}
+
+// ▲▲▲ 全新JS代码粘贴结束 ▲▲▲
+// ▼▼▼ 【全新】请将这个函数粘贴到JS功能函数定义区 ▼▼▼
+/**
+ * 【全新】在聊天设置中渲染线下模式的文风预设选择器
+ * @param {object} chat - 当前的聊天对象
+ */
+async function renderOfflinePresetSelector(chat) {
+    const selectEl = document.getElementById('offline-preset-select');
+    if (!selectEl) return;
+
+    // 1. 直接从 state 缓存中获取预设，无需再查数据库
+    const presets = state.presets || [];
+    
+    // 2. 清空并填充下拉列表
+    selectEl.innerHTML = '<option value="">-- 不使用预设 --</option>';
+    presets.forEach(preset => {
+        const option = document.createElement('option');
+        option.value = preset.id;
+        option.textContent = preset.name;
+        selectEl.appendChild(option);
+    });
+
+    // 3. 设置当前选中的值
+    if (chat.settings.offlinePresetId) {
+        selectEl.value = chat.settings.offlinePresetId;
+    }
+}
+// ▲▲▲ 新增函数结束 ▲▲▲
 
 
               // ===================================================================
@@ -32524,6 +33655,7 @@ if (isGroup) {
     offlineModeOptions.style.display = offlineModeToggle.checked ? 'block' : 'none';
     offlineMinInput.value = chat.settings.offlineMinLength || 100;
     offlineMaxInput.value = chat.settings.offlineMaxLength || 300;
+await renderOfflinePresetSelector(chat);
     document.getElementById('ai-original-name-input').value = chat.originalName;
     document.getElementById('ai-persona').value = chat.settings.aiPersona;
     document.getElementById('ai-avatar-preview').src = chat.settings.aiAvatar || defaultAvatar;
@@ -32744,6 +33876,7 @@ if (chat.isGroup) {
     chat.settings.isOfflineMode = document.getElementById('offline-mode-toggle').checked;
     chat.settings.offlineMinLength = parseInt(document.getElementById('offline-min-length-input').value) || 100;
     chat.settings.offlineMaxLength = parseInt(document.getElementById('offline-max-length-input').value) || 300;
+    chat.settings.offlinePresetId = document.getElementById('offline-preset-select').value || null;
     const newOriginalName = document.getElementById('ai-original-name-input').value.trim();
     if (!newOriginalName) return alert('对方本名不能为空！');
     chat.originalName = newOriginalName;
@@ -35884,6 +37017,103 @@ document.getElementById('import-world-book-input').addEventListener('change', (e
             }
             showCustomAlert('设置已应用', `AI生图功能已${isEnabled ? '开启' : '关闭'}。`);
         });
+// ▼▼▼ 【全新】聊天记录搜索功能事件绑定 ▼▼▼
+document.getElementById('search-history-btn').addEventListener('click', openSearchHistoryScreen);
+document.getElementById('search-history-back-btn').addEventListener('click', () => {
+    showScreen('chat-settings-screen');
+});
+document.getElementById('execute-search-btn').addEventListener('click', handleSearchHistory);
+document.getElementById('clear-search-btn').addEventListener('click', clearSearchFilters);
+// ▲▲▲ 新增事件绑定结束 ▲▲▲
+// ▼▼▼ 【全新】自定义头像框功能事件绑定 ▼▼▼
+
+// 绑定弹窗头部的“上传”和“批量”按钮
+document.getElementById('upload-custom-frame-btn').addEventListener('click', handleUploadFrame);
+document.getElementById('batch-import-frames-btn').addEventListener('click', handleBatchUploadFrames);
+
+// 使用事件委托，为整个弹窗内容区绑定点击事件，专门用于处理删除按钮
+document.querySelector('#avatar-frame-modal .modal-body').addEventListener('click', (e) => {
+    // 检查被点击的是否是删除按钮
+    if (e.target.classList.contains('delete-btn')) {
+        const frameId = parseInt(e.target.dataset.id);
+        if (!isNaN(frameId)) {
+            handleDeleteCustomFrame(frameId);
+        }
+    }
+});
+
+// ▲▲▲ 新增事件绑定结束 ▲▲▲
+        // ▼▼▼ 【全新】这是主屏幕分页和“预设”App的【全部事件监听器】，请完整粘贴 ▼▼▼
+
+        // 1. 初始化主屏幕分页功能
+        setupHomeScreenPagination();
+
+        // 2. 将“预设”App的全局调用函数暴露给 window，以便 onclick 可以找到它
+        window.openPresetScreen = openPresetScreen;
+
+        // 3. 绑定“预设”App内部的所有按钮事件
+        document.getElementById('add-preset-btn').addEventListener('click', async () => {
+            const name = await showCustomPrompt('创建新预设', '请输入预设名称');
+            if (name && name.trim()) {
+                const newPreset = { id: 'preset_' + Date.now(), name: name.trim(), content: [] };
+                await db.presets.add(newPreset);
+                await renderPresetScreen();
+                openPresetEditor(newPreset.id);
+            }
+        });
+
+        document.getElementById('manage-preset-categories-btn').addEventListener('click', openPresetCategoryManager);
+        
+        document.getElementById('add-preset-entry-btn').addEventListener('click', () => {
+            const container = document.getElementById('preset-entries-container');
+            if (container.querySelector('p')) {
+                container.innerHTML = '';
+            }
+            const newBlock = createPresetEntryBlock();
+            container.appendChild(newBlock);
+            newBlock.querySelector('.entry-content-textarea').focus();
+        });
+
+        document.getElementById('save-preset-btn').addEventListener('click', async () => {
+            if (!editingPresetId) return;
+            const preset = await db.presets.get(editingPresetId);
+            if (!preset) return;
+
+            const newName = document.getElementById('preset-name-input').value.trim();
+            if (!newName) { alert('预设名称不能为空！'); return; }
+            preset.name = newName;
+            preset.categoryId = parseInt(document.getElementById('preset-category-select').value) || null;
+
+            const entriesContainer = document.getElementById('preset-entries-container');
+            const entryBlocks = entriesContainer.querySelectorAll('.message-editor-block');
+            const newEntries = [];
+            entryBlocks.forEach(block => {
+                const content = block.querySelector('.entry-content-textarea').value.trim();
+                if (content) {
+                    newEntries.push({
+                        comment: block.querySelector('.entry-comment-input').value.trim(),
+                        keys: (block.querySelector('.entry-keys-input').value.trim() || '').split(',').map(k => k.trim()).filter(Boolean),
+                        content: content,
+                        enabled: block.querySelector('.entry-enabled-switch').checked
+                    });
+                }
+            });
+            preset.content = newEntries;
+
+            await db.presets.put(preset);
+            editingPresetId = null;
+            renderPresetScreen();
+            showScreen('preset-screen');
+        });
+
+        // ▲▲▲ 新增事件绑定结束 ▲▲▲
+        // ▼▼▼ 【全新】为“预设”App的导入功能绑定事件 ▼▼▼
+        document.getElementById('import-preset-btn').addEventListener('click', () => {
+            document.getElementById('import-preset-input').click();
+        });
+
+        document.getElementById('import-preset-input').addEventListener('change', handlePresetImport);
+        // ▲▲▲ 新增事件绑定结束 ▲▲▲
 
 
 
@@ -35898,10 +37128,16 @@ document.getElementById('import-world-book-input').addEventListener('change', (e
     <div id="qzone-sticker-panel">
         <div id="qzone-sticker-grid"></div>
     </div>
+    <!-- ▼▼▼ 【全新 V2.0 | 支持上传】请用这整块代码，完整替换旧的 avatar-frame-modal ▼▼▼ -->
     <div id="avatar-frame-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
                 <span>选择头像框</span>
+                <!-- 【核心新增】添加操作按钮 -->
+                <div class="header-actions">
+                    <button id="upload-custom-frame-btn" class="action-button">上传</button>
+                    <button id="batch-import-frames-btn" class="action-button">批量</button>
+                </div>
             </div>
             <div class="modal-body">
                 <div class="frame-tabs">
@@ -35923,6 +37159,9 @@ document.getElementById('import-world-book-input').addEventListener('change', (e
             </div>
         </div>
     </div>
+    <!-- 【核心新增】用于本地上传的隐藏文件输入框 -->
+    <input type="file" id="custom-frame-upload-input" accept="image/*" hidden>
+    <!-- ▲▲▲ 替换结束 ▲▲▲ -->
 
 <div id="character-profile-modal" class="modal">
     <div class="character-profile-content">
@@ -36088,9 +37327,11 @@ document.getElementById('import-world-book-input').addEventListener('change', (e
     </div>
 </div>
 <!-- ▲▲▲ 新增HTML结束 ▲▲▲ -->
+<!-- ▼▼▼ 【全新】这是为“预设”功能新增的文件导入输入框 ▼▼▼ -->
+<input type="file" id="import-preset-input" accept=".json" hidden>
+<!-- ▲▲▲ 新增HTML结束 ▲▲▲ -->
 </body>
 </html>
-
 
 
 
