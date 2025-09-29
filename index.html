@@ -13713,7 +13713,12 @@ async function cleanupRedundantData() {
                     renderingRules,
                     // ▼▼▼ 在这里添加新代码 ▼▼▼
                     doubanPosts,
-                    stickerCategories // <-- 【核心修复1】在这里添加
+                    stickerCategories,
+                    // ▼▼▼ 在这里添加新代码 ▼▼▼
+                    appearancePresets,
+                    // ▼▼▼ 在这里添加新代码 ▼▼▼
+                    presets,              // <-- 【本次新增修复】
+                    presetCategories
                 ] = await Promise.all([
                     db.chats.toArray(),
                     db.worldBooks.toArray(),
@@ -13736,7 +13741,12 @@ async function cleanupRedundantData() {
                     db.renderingRules.toArray(),
                     // ▼▼▼ 在这里添加新代码 ▼▼▼
                     db.doubanPosts.toArray(),
-                    db.stickerCategories.toArray() // <-- 【核心修复2】在这里添加
+                    db.stickerCategories.toArray(),
+                    // ▼▼▼ 在这里添加新代码 ▼▼▼
+                    db.appearancePresets.toArray(),
+                    // ▼▼▼ 在这里添加新代码 ▼▼▼
+                    db.presets.toArray(),             // <-- 【本次新增修复】
+                    db.presetCategories.toArray()
                 ]);
         
                 Object.assign(backupData, {
@@ -13748,7 +13758,12 @@ async function cleanupRedundantData() {
                     renderingRules,
                     // ▼▼▼ 在这里添加新代码 ▼▼▼
                     doubanPosts,
-                    stickerCategories // <-- 【核心修复3】在这里添加
+                    stickerCategories,
+                    // ▼▼▼ 在这里添加新代码 ▼▼▼
+                    appearancePresets,
+                    // ▼▼▼ 在这里添加新代码 ▼▼▼
+                    presets,              // <-- 【本次新增修复】
+                    presetCategories 
                 });
                 
                 const blob = new Blob(
@@ -13829,6 +13844,9 @@ async function cleanupRedundantData() {
                     if (Array.isArray(data.doubanPosts)) await db.doubanPosts.bulkPut(data.doubanPosts);
                     // ▲▲▲ 新代码粘贴结束 ▲▲▲
                    if (Array.isArray(data.stickerCategories)) await db.stickerCategories.bulkPut(data.stickerCategories);
+	   if (Array.isArray(data.appearancePresets)) await db.appearancePresets.bulkPut(data.appearancePresets);
+                    if (Array.isArray(data.presets)) await db.presets.bulkPut(data.presets);                         // <-- 【本次新增修复】
+                    if (Array.isArray(data.presetCategories)) await db.presetCategories.bulkPut(data.presetCategories);
                     if (data.apiConfig) await db.apiConfig.put(data.apiConfig);
                     if (data.globalSettings) await db.globalSettings.put(data.globalSettings);
                     if (data.musicLibrary) await db.musicLibrary.put(data.musicLibrary);
