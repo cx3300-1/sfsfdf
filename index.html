@@ -5284,24 +5284,24 @@
             border-color: #4a4a4e;
         }
         /* ▲▲▲ 新CSS粘贴结束 ▲▲▲ */
-        /* ▼▼▼ 【全新】线下模式消息样式 ▼▼▼ */
-        .offline-dialogue {
-            /* 对话部分可以保持默认样式，或者稍作强调 */
-            font-weight: 500;
-        }
-        .offline-description {
-            display: block; /* 确保描写另起一行或多行 */
-            color: var(--text-secondary);
-            font-style: italic;
-            margin-top: 4px; /* 和对话拉开一点距离 */
-            white-space: pre-wrap; /* 允许描写中的换行符生效 */
-            line-height: 1.6;
-        }
-        
-        #phone-screen.dark-mode .offline-description {
-            color: #a0a0a0; /* 夜间模式下使用更柔和的灰色 */
-        }
-        /* ▲▲▲ 新增CSS结束 ▲▲▲ */
+/* ▼▼▼ 【全新】线下模式消息样式 ▼▼▼ */
+.offline-dialogue {
+    /* 对话部分可以保持默认样式，或者稍作强调 */
+    font-weight: 500;
+}
+.offline-description {
+    display: block; /* 确保描写另起一行或多行 */
+    color: var(--text-secondary);
+    font-style: italic; /* 心理活动和动作描写使用斜体，以作区分 */
+    margin-top: 4px; /* 和对话拉开一点距离 */
+    white-space: pre-wrap; /* 允许描写中的换行符生效 */
+    line-height: 1.6;
+}
+
+#phone-screen.dark-mode .offline-description {
+    color: #a0a0a0; /* 夜间模式下使用更柔和的灰色 */
+}
+/* ▲▲▲ 新增CSS结束 ▲▲▲ */
         /* ▼▼▼ 【全新】引用跳转高亮效果 ▼▼▼ */
         
         /* 1. 为消息气泡的内容区添加一个平滑的背景色过渡效果 */
@@ -9410,7 +9410,7 @@
             <div id="preset-entries-container" style="display: flex; flex-direction: column; gap: 15px; overflow-y: auto; padding: 5px; flex-grow: 1;">
             </div>
         </div>
-        <button id="add-preset-entry-btn" class="form-button form-button-secondary"> [+] 添加新条目 </button>
+        <button type="button" id="add-preset-entry-btn" class="form-button form-button-secondary"> [+] 添加新条目 </button>
     </div>
 </div>
 <!-- ▲▲▲ 新增HTML结束 ▲▲▲ -->
@@ -15474,14 +15474,24 @@ async function loadAllDataFromDB() {
                 bubble.classList.add('is-raw-html'); 
             } else if (msg.type === 'offline_text' || msg.type === 'share_link' || msg.type === 'share_card' || msg.type === 'location_share' || msg.type === 'ai_image' || msg.type === 'user_photo' || msg.type === 'voice_message' || msg.type === 'transfer' || msg.type === 'waimai_request' || msg.type === 'red_packet' || msg.type === 'poll' || msg.type === 'gift') {
                 // (这部分是您已有的所有卡片渲染逻辑，保持不变)
-                if (msg.type === 'offline_text') {
-                    let dialogueText = msg.dialogue || '';
-                    if (dialogueText && !dialogueText.startsWith('「') && !dialogueText.endsWith('」')) {
-                        dialogueText = `「${parseMarkdown(dialogueText)}」`;
-                    }
-                    const dialogueHtml = dialogueText ? `<span class="offline-dialogue">${dialogueText}</span>` : '';
-                    const descriptionHtml = msg.description ? `<span class="offline-description">${parseMarkdown(msg.description).replace(/\n/g, '<br>')}</span>` : '';
-                    contentHtml = dialogueHtml + descriptionHtml;
+               if (msg.type === 'offline_text') {
+                    // 1. 【兼容旧数据】如果消息还是旧的 dialogue/description 格式，则先合并
+                    const combinedText = msg.content || `${msg.dialogue || ''} ${msg.description || ''}`.trim();
+
+                    // 2. 【核心渲染逻辑】使用正则表达式，以引号为界，将文本分割成“对话”和“描写”两部分
+                    const regex = /(「.*?」|“.*?”)/g;
+                    const parts = combinedText.split(regex).filter(part => part); 
+
+                    // 3. 遍历分割后的片段，为每一部分应用不同的样式
+                    contentHtml = parts.map(part => {
+                        // 如果片段以引号开头，说明它是对话
+                        if (part.startsWith('「') || part.startsWith('“')) {
+                            return `<span class="offline-dialogue">${parseMarkdown(part)}</span>`;
+                        } else {
+                            // 否则，它就是描写
+                            return `<span class="offline-description">${parseMarkdown(part.trim()).replace(/\n/g, '<br>')}</span>`;
+                        }
+                    }).join(''); // 最后将所有片段拼接成最终的HTML
                 } else if (msg.type === 'share_link') {
                     bubble.classList.add('is-link-share', 'is-card-like');
                     contentHtml = `<div class="link-share-card" data-timestamp="${msg.timestamp}"><div class="title">${msg.title || '无标题'}</div><div class="description">${msg.description || '点击查看详情...'}</div><div class="footer"><svg class="footer-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg><span>${msg.source_name || '链接分享'}</span></div></div>`;
@@ -16045,8 +16055,9 @@ async function loadAllDataFromDB() {
                         const worldBook = state.worldBooks.find(wb => wb.id === bookId);
                         if (!worldBook || !Array.isArray(worldBook.content)) return '';
                 
+                        // 【【【这就是过滤已关闭条目的核心代码！】】】
                         const formattedEntries = worldBook.content
-                            .filter(entry => entry.enabled !== false) 
+                            .filter(entry => entry.enabled !== false) // 只读取启用的条目
                             .map(entry => {
                                 let entryString = `\n### 条目: ${entry.comment || '无备注'}\n`;
                                 if (entry.keys.length > 0) {
@@ -16492,6 +16503,7 @@ ${forbiddenNamesContext}
         
                 } else {
                     const isOfflineMode = chat.settings.isOfflineMode;
+
 // ▼▼▼ 在这里粘贴修复代码 ▼▼▼
                 let linkedMemoryContext = '';
                 const memoryCount = chat.settings.linkedMemoryCount || 10;
@@ -16580,41 +16592,52 @@ ${enabledEntries}
                             }
                             
                                     systemPrompt = `
-            # 你的任务
-            你现在正处于【线下剧情模式】，你需要扮演角色"${chat.originalName}"，并与用户进行面对面的互动。
+# 你的任务
+你现在正处于【线下剧情模式】，你需要扮演角色"${chat.originalName}"，并与用户进行面对面的互动。你的任务是创作一段包含角色动作、神态、心理活动和对话的、连贯的叙事片段。
             
-            ${presetContext}
+           你必须严格遵守 ${presetContext}
 
-            # 【【【线下模式核心规则】】】
-            1.  **【【【格式铁律 (最高优先级)】】】**: 你的回复【必须】是一个JSON数组，但数组中【永远只能包含一个】元素。
-                \`[{"type": "offline_text", "dialogue": "角色说的话", "description": "角色的动作、神态、内心想法以及环境描写。"}]\`
-            2.  **【【【内容合并铁律】】】**: 如果一次互动的内容较长，你【必须】将所有的对话和描写都合并到这【一个JSON对象】的 "dialogue" 和 "description" 字段中。你可以善用换行符\\n来组织和分隔内容。
-            3.  **内容风格**:
-                - **对话 (\`dialogue\`字段)**: 直接提供角色说的话的纯文本内容。
-                - **描写 (\`description\`字段)**: 必须结合角色的动作、神态、心理活动和环境描写。动作使用()包裹，心理活动使用【】包裹，并且在描写动作和心理活动时，【必须】使用针对用户的第二人称视角（例如：他看着你的眼睛，【心里想着你真好看】）。
-            4.  **字数要求**: 你每次生成的总内容应在 **${minLength}到${maxLength}字** 之间。
-            5.  **禁止出戏**: 绝不能透露你是AI、模型，或提及“扮演”、“生成”等词语。
-            
-            # 你的角色设定：
-            ${chat.settings.aiPersona}
-            
-            # 供你参考的信息
-            - **当前时间**: ${currentTime}
-            - **你们最后的对话摘要**: 
-            ${historySlice.map(msg => {
-                let line = `${msg.role === 'user' ? myNickname : chat.name}: `;
-                if (msg.type === 'offline_text') {
-                    line += `${msg.dialogue} ${msg.description}`;
-                } else {
-                    line += String(msg.content);
-                }
-                return line;
-            }).join('\n')}
-            ${worldBookContent}
-            ${linkedMemoryContext}
-            
-            现在，请根据以上所有规则和对话历史，继续这场线下互动。
-            `;
+ # 【格式铁律 (最高优先级)】
+1.  **【格式】**: 你的回复【必须】是一个JSON数组，且数组中【永远只能包含一个】元素，格式如下:
+    \`[{"type": "offline_text", "content": "在这里写入你创作的、混合了对话和描写的完整段落。"}]\`
+2.  **【内容风格】**: 
+    -   在 \`content\` 字段中，角色的对话【必须】使用中文引号「」或“ ”包裹。
+    -   所有在引号之外的文字都将被视为动作/环境描写。
+    -   你可以自由地将对话穿插在描写的任何位置，实现自然分段。
+3.  **【禁止】**: 绝对禁止在 \`content\` 字段中出现 "dialogue" 或 "description" 这两个词。
+
+# 【其他核心规则】
+1.  **叙事视角**: 叙述人称【必须】严格遵循“预设”中的第一人称、第二人称或第三人称规定。
+2.  **字数要求**: 你生成的 \`content\` 总内容应在 **${minLength}到${maxLength}字** 之间。
+3.  **禁止出戏**: 绝不能透露你是AI、模型，或提及“扮演”、“生成”等词语。
+
+# 你的角色设定：
+你必须严格遵守${chat.settings.aiPersona}
+
+# 对话者的角色设定
+${chat.settings.myPersona}
+
+# 长期记忆 (你必须严格遵守的事实)
+${chat.longTermMemory && chat.longTermMemory.length > 0 ? chat.longTermMemory.map(mem => `- ${mem.content}`).join('\n') : '- (暂无)'}
+
+# 供你参考的信息
+- **当前时间**: ${currentTime}
+- **你们最后的对话摘要**: 
+${historySlice.map(msg => {
+    let line = `${msg.role === 'user' ? myNickname : chat.name}: `;
+    // 【兼容旧数据】如果历史记录是旧格式，也拼接起来
+    if (msg.type === 'offline_text') {
+        line += `「${msg.dialogue || ''}」 ${msg.description || ''}`;
+    } else {
+        line += String(msg.content);
+    }
+    return line;
+}).join('\n')}
+你必须严格遵守${worldBookContent}
+${linkedMemoryContext}
+
+现在，请根据以上所有规则和对话历史，继续这场线下互动。
+`;
                         messagesPayload = historySlice.map(msg => {
                             if (msg.isHidden) return null;
                             let contentStr = '';
@@ -16783,7 +16806,7 @@ systemPrompt = `
 ${chat.longTermMemory && chat.longTermMemory.length > 0 ? chat.longTermMemory.map(mem => `- ${mem.content}`).join('\n') : '- (暂无)'}
 
 # 你的角色设定
-${chat.settings.aiPersona}
+你必须严格遵守${chat.settings.aiPersona}
 
 # 关系与身份档案 (至关重要)
 -   **你的本名**: "${chat.originalName}" (核心身份，用于指令中的'name'字段)
@@ -16874,7 +16897,7 @@ ${postsContext}
 # 当前情景
 - **当前时间**: ${currentTime} (${timeOfDayGreeting})
 ${timeContext}
-${worldBookContent}
+你必须严格遵守${worldBookContent}
 ${linkedMemoryContext}
 # 当前音乐情景
 ${musicContext}
@@ -16891,7 +16914,7 @@ messagesPayload = historySlice.map(msg => {
     //            这就是本次修复的核心所在！
     // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
 
-    // 1. 检查是否是“线下模式”的消息
+    // 1. 检查消息类型是否是“线下模式”
     if (msg.type === 'offline_text') {
         const sender = msg.role === 'user' ? (chat.settings.myNickname || '我') : chat.name;
         let narrativeText = '';
@@ -16908,6 +16931,7 @@ messagesPayload = historySlice.map(msg => {
         // 3. 将“翻译”后的内容，包装成一个标准的、AI能理解的消息对象返回
         return { role: msg.role, content: `(Timestamp: ${msg.timestamp}) ${narrativeText}` };
     }
+
 
     // --- 对于所有其他线上模式的消息，保持原有的处理逻辑不变 ---
     if (msg.role === 'user') {
@@ -17031,43 +17055,48 @@ messagesPayload = historySlice.map(msg => {
                 lastResponseTimestamps = [];
                 chat.history = chat.history.filter(msg => !msg.isTemporary);
                 const messagesArray = parseAiResponse(aiResponseContent);
-// ▼▼▼ 【全新】线下模式消息合并逻辑 ▼▼▼
-        let consolidatedMessages = [];
-        if (chat.settings.isOfflineMode) {
-            let offlineBuffer = { dialogue: [], description: [] };
-            
-            for (const msgData of messagesArray) {
-                // 将所有线下模式的消息内容暂存到缓冲区
-                if (msgData.type === 'offline_text') {
-                    if (msgData.dialogue) offlineBuffer.dialogue.push(msgData.dialogue);
-                    if (msgData.description) offlineBuffer.description.push(msgData.description);
-                } else {
-                    // 如果遇到非线下模式的消息，则先处理并清空缓冲区，然后将该消息加入
-                    if (offlineBuffer.dialogue.length > 0 || offlineBuffer.description.length > 0) {
-                        consolidatedMessages.push({
-                            type: 'offline_text',
-                            dialogue: offlineBuffer.dialogue.join('\n'),
-                            description: offlineBuffer.description.join('\n')
-                        });
-                        offlineBuffer = { dialogue: [], description: [] };
-                    }
-                    consolidatedMessages.push(msgData);
-                }
-            }
-            
-            // 循环结束后，处理缓冲区中剩余的任何内容
-            if (offlineBuffer.dialogue.length > 0 || offlineBuffer.description.length > 0) {
-                consolidatedMessages.push({
-                    type: 'offline_text',
-                    dialogue: offlineBuffer.dialogue.join('\n'),
-                    description: offlineBuffer.description.join('\n')
-                });
+// ▼▼▼ 【V2.0 | 最终修复版】线下模式消息合并逻辑 ▼▼▼
+let consolidatedMessages = [];
+if (chat.settings.isOfflineMode) {
+    // 1. 创建一个更强大的缓冲区，能同时处理新旧两种格式
+    let offlineBuffer = { content: [], dialogue: [], description: [] };
+    
+    for (const msgData of messagesArray) {
+        if (msgData.type === 'offline_text') {
+            // 2. 智能判断格式并存入对应的缓冲区
+            if (msgData.content) {
+                offlineBuffer.content.push(msgData.content);
+            } else {
+                if (msgData.dialogue) offlineBuffer.dialogue.push(msgData.dialogue);
+                if (msgData.description) offlineBuffer.description.push(msgData.description);
             }
         } else {
-            // 如果不是线下模式，则直接使用原始数组
-            consolidatedMessages = messagesArray;
+            // (这部分逻辑与之前相同，保持不变)
+            if (offlineBuffer.content.length > 0 || offlineBuffer.dialogue.length > 0 || offlineBuffer.description.length > 0) {
+                if (offlineBuffer.content.length > 0) {
+                    consolidatedMessages.push({ type: 'offline_text', content: offlineBuffer.content.join('\n') });
+                }
+                if (offlineBuffer.dialogue.length > 0 || offlineBuffer.description.length > 0) {
+                    consolidatedMessages.push({ type: 'offline_text', dialogue: offlineBuffer.dialogue.join('\n'), description: offlineBuffer.description.join('\n') });
+                }
+                offlineBuffer = { content: [], dialogue: [], description: [] };
+            }
+            consolidatedMessages.push(msgData);
         }
-        // ▲▲▲ 合并逻辑结束 ▲▲▲
+    }
+    
+    // 3. 循环结束后，根据缓冲区的内容，构造正确格式的最终消息
+    if (offlineBuffer.content.length > 0) {
+        consolidatedMessages.push({ type: 'offline_text', content: offlineBuffer.content.join('\n') });
+    }
+    if (offlineBuffer.dialogue.length > 0 || offlineBuffer.description.length > 0) {
+        consolidatedMessages.push({ type: 'offline_text', dialogue: offlineBuffer.dialogue.join('\n'), description: offlineBuffer.description.join('\n') });
+    }
+
+} else {
+    consolidatedMessages = messagesArray;
+}
+// ▲▲▲ 修复结束 ▲▲▲
 // ▼▼▼ 【全新】智能识图优化功能，请将此代码块粘贴到指定位置 ▼▼▼
 
 // 1. 检查触发条件：最后一条用户消息是【尚未处理过】的图片
@@ -17978,13 +18007,7 @@ chat.history.push(aiClaimedMessage);
                             };
                             break;
                         case 'offline_text':
-                            aiMessage = {
-                                ...baseMessage,
-                                type: 'offline_text',
-                                dialogue: msgData.dialogue,
-                                description: msgData.description
-                            };
-                            break;
+        aiMessage = { ...baseMessage, ...msgData };
                         default:
                              console.warn("收到了未知的AI指令类型:", msgData.type);
                              break;
@@ -20257,8 +20280,13 @@ image_prompt: msgData.image_prompt // <-- 【核心修复】在这里补上缺�
                 } 
                 // 【【【核心修复2：专门处理线下模式的消息】】】
                 else if (message.type === 'offline_text') {
-                    fullMessageObject.dialogue = message.dialogue;
-                    fullMessageObject.description = message.description;
+                    // 如果是新格式，直接用content
+                    if (message.content) {
+                        fullMessageObject.content = message.content;
+                    } else { // 兼容旧格式
+                        fullMessageObject.dialogue = message.dialogue;
+                        fullMessageObject.description = message.description;
+                    }
                 }
                 initialContent = JSON.stringify(fullMessageObject, null, 2);
             } else if (typeof message.content === 'object') {
@@ -20310,8 +20338,12 @@ image_prompt: msgData.image_prompt // <-- 【核心修复】在这里补上缺�
             let textToCopy;
             // 【【【核心修复3：在这里也添加对 offline_text 的判断】】】
             if (message.type === 'offline_text') {
-                // 如果是线下模式，就将对话和描写组合成一个更易读的文本
-                textToCopy = `「${message.dialogue || ''}」\n${message.description || ''}`;
+                // 如果是新格式，直接复制content
+                if (message.content) {
+                    textToCopy = message.content;
+                } else { // 兼容旧格式
+                    textToCopy = `「${message.dialogue || ''}」\n${message.description || ''}`;
+                }
             } else if (typeof message.content === 'object') {
                 textToCopy = JSON.stringify(message.content);
             } else {
@@ -20371,6 +20403,7 @@ image_prompt: msgData.image_prompt // <-- 【核心修复】在这里补上缺�
             let newMessages = [];
         
             if (simpleContent !== null) {
+                // 这是处理“编辑消息”弹窗的逻辑
                 const rawContent = simpleContent.trim();
                 if (rawContent) {
                     const parsedResult = parseEditedContent(rawContent);
@@ -20382,15 +20415,19 @@ image_prompt: msgData.image_prompt // <-- 【核心修复】在这里补上缺�
                     
                     if (parsedResult.type && parsedResult.type !== 'text') newMessage.type = parsedResult.type;
                     
-                    // --- 【【【核心修复就在这里！】】】 ---
-                    // 当我们解析出这是一个线下模式的消息时，
-                    // 需要把 dialogue 和 description 字段也加到新消息对象上。
+                    // --- ▼▼▼ 核心修复点（与高级编辑器同步） ▼▼▼ ---
                     if (parsedResult.type === 'offline_text') {
-                        newMessage.dialogue = parsedResult.dialogue;
-                        newMessage.description = parsedResult.description;
-                        delete newMessage.content; // 同时删除多余的 content 字段
+                        if (parsedResult.content) {
+                            newMessage.content = parsedResult.content;
+                            delete newMessage.dialogue;
+                            delete newMessage.description;
+                        } else {
+                            newMessage.dialogue = parsedResult.dialogue;
+                            newMessage.description = parsedResult.description;
+                            delete newMessage.content;
+                        }
                     }
-                    // --- （其他类型的判断保持不变） ---
+                    // --- ▲▲▲ 修复结束 ▲▲▲ ---
                     else if (parsedResult.meaning) newMessage.meaning = parsedResult.meaning;
                     else if (parsedResult.amount) newMessage.amount = parsedResult.amount;
                     else if (parsedResult.note) newMessage.note = parsedResult.note;
@@ -20404,7 +20441,7 @@ image_prompt: msgData.image_prompt // <-- 【核心修复】在这里补上缺�
                     newMessages.push(newMessage);
                 }
             } else {
-                // ... (来自高级编辑器的逻辑保持不变) ...
+                // 这是处理“高级编辑器”的逻辑
                  const editorContainer = document.getElementById('message-editor-container');
                 const editorBlocks = editorContainer.querySelectorAll('.message-editor-block');
         
@@ -20422,12 +20459,19 @@ image_prompt: msgData.image_prompt // <-- 【核心修复】在这里补上缺�
                     
                     if (parsedResult.type && parsedResult.type !== 'text') newMessage.type = parsedResult.type;
                     
-                    // --- 【【【在这里也加上同样的修复！】】】 ---
+                    // --- ▼▼▼ 核心修复点（与普通编辑器同步） ▼▼▼ ---
                     if (parsedResult.type === 'offline_text') {
-                        newMessage.dialogue = parsedResult.dialogue;
-                        newMessage.description = parsedResult.description;
-                        delete newMessage.content;
+                        if (parsedResult.content) {
+                            newMessage.content = parsedResult.content;
+                            delete newMessage.dialogue;
+                            delete newMessage.description;
+                        } else {
+                            newMessage.dialogue = parsedResult.dialogue;
+                            newMessage.description = parsedResult.description;
+                            delete newMessage.content;
+                        }
                     }
+                    // --- ▲▲▲ 修复结束 ▲▲▲ ---
                     else if (parsedResult.meaning) newMessage.meaning = parsedResult.meaning;
                     else if (parsedResult.amount) newMessage.amount = parsedResult.amount;
                     else if (parsedResult.note) newMessage.note = parsedResult.note;
@@ -24840,10 +24884,7 @@ function updateMusicProgressBar() {
                         };
                         break;
                     case 'offline_text':
-                        aiMessage = {
-                            ...baseMessage, type: 'offline_text',
-                            dialogue: msgData.dialogue, description: msgData.description
-                        };
+                           aiMessage = { ...baseMessage, ...msgData };
                         break;
                     // ▼▼▼ 在这里粘贴新代码 ▼▼▼
                     case 'gomoku_move': {
@@ -32556,6 +32597,7 @@ async function renderPresetScreen() {
             const confirmed = await showCustomConfirm('删除预设', `确定要删除《${preset.name}》吗？`, { confirmButtonClass: 'btn-danger' }); 
             if (confirmed) { 
                 await db.presets.delete(preset.id);
+	state.presets = await db.presets.toArray();
                 renderPresetScreen(); 
             } 
         };
@@ -32638,7 +32680,7 @@ function createPresetEntryBlock(entry = { keys: [], comment: '', content: '', en
                 <input type="checkbox" class="entry-enabled-switch" ${isChecked}>
                 <span class="slider"></span>
             </label>
-            <button class="delete-block-btn" title="删除此条目">×</button>
+            <button type="button" class="delete-block-btn" title="删除此条目">×</button>
         </div>
         <div class="form-group" style="margin-bottom: 10px;">
             <label style="font-size: 0.8em;">备注 (可选)</label>
@@ -32706,6 +32748,11 @@ async function deletePresetCategory(categoryId) {
     if (confirmed) {
         await db.presetCategories.delete(categoryId);
         await db.presets.where('categoryId').equals(categoryId).modify({ categoryId: null });
+        
+        // ▼▼▼ 核心修复：在这里也同样从数据库重新加载最新的预设列表 ▼▼▼
+        state.presets = await db.presets.toArray();
+        // ▲▲▲ 修复结束 ▲▲▲
+
         await renderPresetCategoriesInManager();
     }
 }
@@ -32740,61 +32787,117 @@ async function handlePresetImport(event) {
     }
 }
 
-/**
- * 【核心逻辑】从 Tavern 格式的数据创建一本新的“预设”
- * @param {object} tavernData - 从 .json 文件解析出的数据
- * @param {string} fileName - 原始文件名，用于生成默认名称
- */
-async function importTavernPresetFile(tavernData, fileName) {
-    // 1. 验证文件内容是否有效
-    if (!tavernData || !Array.isArray(tavernData.prompts)) {
-        throw new Error("文件格式无法识别。未找到有效的 'prompts' 数组。");
-    }
+        /**
+         * 【V3.0 | 排序终极修复版】从 Tavern AI 格式的数据创建一本新的“预设”
+         * @param {object} tavernData - 从 .json 文件解析出的数据
+         * @param {string} fileName - 原始文件名，用于生成默认名称
+         */
+        async function importTavernPresetFile(tavernData, fileName) {
+            let newEntries = [];
 
-    // 2. 从文件名中提取建议名称
-    const presetNameSuggestion = fileName.replace(/\.json$/i, '');
+            // ▼▼▼ 修复代码从这里开始 ▼▼▼
 
-    const newPresetName = await showCustomPrompt(
-        "导入 Tavern 预设", 
-        "请为这组提示词预设命名：",
-        presetNameSuggestion
-    );
+            // 策略1：优先处理标准的、带有 `prompt_order` 排序列表的 Tavern/SillyTavern 预设格式
+            if (Array.isArray(tavernData.prompts) && Array.isArray(tavernData.prompt_order) && tavernData.prompt_order.length > 0) {
+                console.log("检测到 Tavern/SillyTavern 预设格式，将严格按照 prompt_order 排序。");
 
-    if (!newPresetName || !newPresetName.trim()) {
-        alert("导入已取消，因为未提供名称。");
-        return;
-    }
+                // 创建一个查找映射表，以便通过 identifier 快速找到 prompt 的详细数据
+                const promptsMap = new Map(tavernData.prompts.map(p => [p.identifier, p]));
 
-    // 3. 将 Tavern 的 `prompts` 数组转换为我们“预设”App的 `content` 格式
-    const newEntries = tavernData.prompts.map(prompt => {
-        return {
-            keys: [], // Tavern 预设中没有直接对应的 'keys'，留空
-            comment: prompt.name || '无标题', // 使用 prompt 的 name 作为“备注”
-            content: prompt.content || '',   // 使用 prompt 的 content 作为“内容”
-            enabled: true // 默认启用
-        };
-    }).filter(entry => entry.content); // 过滤掉没有内容的条目
+                // 自动选择最长的那个排序列表，这通常是用户自定义的那个
+                const orderArray = tavernData.prompt_order.reduce((acc, curr) => (
+                    (curr.order && curr.order.length > (acc.length || 0)) ? curr.order : acc
+                ), []);
 
-    if (newEntries.length === 0) {
-        alert("这个预设文件中没有找到任何有效的提示词条目。");
-        return;
-    }
+                if (orderArray && orderArray.length > 0) {
+                    newEntries = orderArray
+                        .map(orderItem => {
+                            // 根据排序列表中的 identifier，从映射表中找到对应的 prompt 数据
+                            const promptData = promptsMap.get(orderItem.identifier);
+                            if (promptData) {
+                                // 按照我们的格式重新组织数据
+                                return {
+                                    keys: [], // Tavern 预设中没有 keys 字段
+                                    comment: promptData.name || '无标题',
+                                    content: promptData.content || '',
+                                    // 【核心】同步启用/禁用状态
+                                    enabled: orderItem.enabled 
+                                };
+                            }
+                            return null;
+                        })
+                        .filter(Boolean); // 过滤掉可能存在的无效条目
+                }
+            }
+            // 策略2：兼容旧的、类似世界书的 "entries" 和 "order" 格式
+            else if (tavernData.entries && typeof tavernData.entries === 'object') {
+                console.log("检测到 'entries' 对象格式的预设，将尝试按顺序导入。");
+                if (Array.isArray(tavernData.order)) {
+                    console.log("检测到 'order' 字段，将按指定顺序导入条目。");
+                    newEntries = tavernData.order
+                        .map(key => tavernData.entries[key])
+                        .filter(Boolean)
+                        .map(entry => ({
+                            keys: entry.key || [],
+                            comment: entry.comment || '无备注',
+                            content: entry.content || '',
+                            enabled: !entry.disable // Tavern 的 disable 和我们的 enabled 逻辑相反
+                        }));
+                } else {
+                    console.warn("未在文件中找到 'order' 字段，条目可能无法按原始顺序导入。");
+                    newEntries = Object.values(tavernData.entries).map(entry => ({
+                        keys: entry.key || [],
+                        comment: entry.comment || '无备注',
+                        content: entry.content || '',
+                        enabled: !entry.disable
+                    }));
+                }
+            }
+            // 策略3：兼容最简单的、只包含 "prompts" 数组的格式
+            else if (Array.isArray(tavernData.prompts)) {
+                console.log("检测到简单的 'prompts' 数组格式，将按数组内顺序导入。");
+                newEntries = tavernData.prompts.map(prompt => ({
+                    keys: [],
+                    comment: prompt.name || '无标题',
+                    content: prompt.content || '',
+                    enabled: true // 默认启用
+                }));
+            }
+            // 策略4：如果所有格式都不匹配，则报错
+            else {
+                throw new Error("文件格式无法识别。未找到有效的 'prompts' 数组或 'entries' 对象。");
+            }
+            // ▲▲▲ 修复代码到这里结束 ▲▲▲
 
-    // 4. 创建并保存新的预设对象
-    const newPreset = {
-        id: 'preset_' + Date.now(),
-        name: newPresetName.trim(),
-        content: newEntries,
-        categoryId: null // 默认不分类
-    };
+            // 过滤掉没有内容的空条目
+            newEntries = newEntries.filter(entry => entry.content);
 
-    await db.presets.add(newPreset);
-    state.presets.push(newPreset); // 核心修复：将新预设也同步到内存中
-    // 5. 刷新UI
-    await renderPresetScreen();
+            if (newEntries.length === 0) {
+                alert("这个预设文件中没有找到任何有效的提示词条目。");
+                return;
+            }
 
-    await showCustomAlert('导入成功！', `已成功从文件导入预设《${newPresetName}》。`);
-}
+            // （后续的命名、保存和刷新逻辑保持不变）
+            const presetNameSuggestion = fileName.replace(/\.json$/i, '');
+            const newPresetName = await showCustomPrompt("导入 Tavern 预设", "请为这组提示词预设命名：", presetNameSuggestion);
+            if (!newPresetName || !newPresetName.trim()) {
+                alert("导入已取消，因为未提供名称。");
+                return;
+            }
+
+            const newPreset = {
+                id: 'preset_' + Date.now(),
+                name: newPresetName.trim(),
+                content: newEntries,
+                categoryId: null
+            };
+
+            await db.presets.add(newPreset);
+            state.presets.push(newPreset);
+
+            await renderPresetScreen();
+            await showCustomAlert('导入成功！', `已成功从文件导入预设《${newPresetName}》。`);
+        }
 
 // ▲▲▲ 全新JS代码粘贴结束 ▲▲▲
 // ▼▼▼ 【全新】请将这个函数粘贴到JS功能函数定义区 ▼▼▼
