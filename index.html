@@ -8876,6 +8876,21 @@
     background-color: #000000;
 }
 /* ▲▲▲ 新增CSS结束 ▲▲▲ */
+/* ▼▼▼ 【全新】预设编辑器内容折叠功能样式 ▼▼▼ */
+.entry-content-container {
+    display: none; /* 默认隐藏内容区域 */
+    margin-top: 8px; /* 和上方的标签拉开一点距离 */
+}
+.toggle-content-btn {
+    background: none;
+    border: 1px solid #ccc;
+    color: var(--text-secondary);
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+/* ▲▲▲ 新增CSS结束 ▲▲▲ */
     </style>
 </head>
 <body>
@@ -32642,6 +32657,9 @@ async function openPresetScreen() {
     showScreen('preset-screen');
 }
 
+/**
+ * 【全新 | 性能优化版】渲染预设列表，不再显示内容预览
+ */
 async function renderPresetScreen() {
     const tabsContainer = document.getElementById('preset-tabs');
     const contentContainer = document.getElementById('preset-content-container');
@@ -32653,12 +32671,14 @@ async function renderPresetScreen() {
         db.presetCategories.orderBy('name').toArray()
     ]);
 
+    state.presets = presets; // 确保内存数据同步
+
     if (presets.length === 0) {
         contentContainer.innerHTML = '<p style="text-align:center; color: #8a8a8a; margin-top: 50px;">点击右上角 "+" 创建你的第一个预设</p>';
         return;
     }
 
-    // 创建“全部”页签
+    // (创建页签的逻辑保持不变)
     const allTab = document.createElement('button');
     allTab.className = 'world-book-tab active';
     allTab.textContent = '全部';
@@ -32670,7 +32690,6 @@ async function renderPresetScreen() {
     allPane.dataset.categoryId = 'all';
     contentContainer.appendChild(allPane);
     
-    // 创建分类页签
     categories.forEach(category => {
         const categoryTab = document.createElement('button');
         categoryTab.className = 'world-book-tab';
@@ -32684,7 +32703,6 @@ async function renderPresetScreen() {
         contentContainer.appendChild(categoryPane);
     });
     
-    // 创建“未分类”页签
     const hasUncategorized = presets.some(p => !p.categoryId);
     if (hasUncategorized) {
         const uncategorizedTab = document.createElement('button');
@@ -32699,26 +32717,25 @@ async function renderPresetScreen() {
         contentContainer.appendChild(uncategorizedPane);
     }
     
-    // 填充预设卡片
+    // ▼▼▼ 【【【核心修改就在这里！】】】 ▼▼▼
     presets.forEach(preset => {
-        let contentPreview = '暂无内容...';
-        if (Array.isArray(preset.content) && preset.content.length > 0) {
-            contentPreview = preset.content[0].comment || preset.content[0].content || '';
-        }
+        // 我们不再读取任何具体内容，只显示这个预设包含了多少个条目
+        const contentPreview = `该预设包含 ${preset.content.length} 个条目。`;
         
         const card = document.createElement('div');
-        card.className = 'world-book-card';
+        card.className = 'world-book-card'; // 复用世界书的卡片样式
         card.innerHTML = `
             <div class="card-title">${preset.name}</div>
             <div class="card-content-preview">${contentPreview}</div>
         `;
         
+        // (事件绑定逻辑保持不变)
         const cardClickHandler = () => openPresetEditor(preset.id);
         const cardLongPressHandler = async () => { 
             const confirmed = await showCustomConfirm('删除预设', `确定要删除《${preset.name}》吗？`, { confirmButtonClass: 'btn-danger' }); 
             if (confirmed) { 
                 await db.presets.delete(preset.id);
-	state.presets = await db.presets.toArray();
+                state.presets = await db.presets.toArray();
                 renderPresetScreen(); 
             } 
         };
@@ -32737,12 +32754,14 @@ async function renderPresetScreen() {
             targetPane.appendChild(card);
         }
     });
+    // ▲▲▲ 【【【修改结束】】】 ▲▲▲
     
-    // 绑定页签点击事件
+    // (页签绑定逻辑保持不变)
     document.querySelectorAll('#preset-tabs .world-book-tab').forEach(tab => {
         tab.addEventListener('click', () => switchPresetCategory(tab.dataset.categoryId));
     });
 }
+
 
 function switchPresetCategory(categoryId) {
     document.querySelectorAll('#preset-tabs .world-book-tab').forEach(tab => {
@@ -32753,48 +32772,75 @@ function switchPresetCategory(categoryId) {
     });
 }
 
+/**
+ * 【最终修复版 | 兼容iOS/Safari】打开预设编辑器
+ * @param {string} presetId - 要编辑的预设的ID
+ */
 async function openPresetEditor(presetId) {
+    // 步骤 1: 立即开始切换屏幕，让动画先运行
     showScreen('preset-editor-screen');
     editingPresetId = presetId;
-    const [preset, categories] = await Promise.all([
-        db.presets.get(presetId),
-        db.presetCategories.toArray()
-    ]);
-    if (!preset) {
-        showScreen('preset-screen');
-        return;
-    }
 
-    document.getElementById('preset-editor-title').textContent = preset.name;
-    document.getElementById('preset-name-input').value = preset.name;
+    try {
+        // 步骤 2: 在后台异步获取所有需要的数据
+        const [preset, categories] = await Promise.all([
+            db.presets.get(presetId),
+            db.presetCategories.toArray()
+        ]);
 
-    const selectEl = document.getElementById('preset-category-select');
-    selectEl.innerHTML = '<option value="">-- 未分类 --</option>';
-    categories.forEach(cat => {
-        const option = document.createElement('option');
-        option.value = cat.id;
-        option.textContent = cat.name;
-        if (preset.categoryId === cat.id) option.selected = true;
-        selectEl.appendChild(option);
-    });
-    
-    const entriesContainer = document.getElementById('preset-entries-container');
-    entriesContainer.innerHTML = ''; 
-    if (Array.isArray(preset.content) && preset.content.length > 0) {
-        preset.content.forEach(entry => {
-            const block = createPresetEntryBlock(entry);
-            entriesContainer.appendChild(block);
-        });
-    } else {
-        entriesContainer.innerHTML = '<p style="text-align:center; color: var(--text-secondary); margin-top: 20px;">还没有内容，点击下方按钮添加第一条吧！</p>';
+        // 步骤 3: 检查获取到的数据是否有效
+        if (!preset) {
+            console.error("错误：尝试打开一个不存在的预设，ID:", presetId);
+            await showCustomAlert("加载失败", "找不到这个预设的详细信息。");
+            showScreen('preset-screen'); // 安全地返回列表页
+            return;
+        }
+
+        // 步骤 4: 【核心修复】使用一个微小的延迟 (setTimeout) 
+        // 这会给手机浏览器足够的时间来完成屏幕切换的动画，避免冲突
+        setTimeout(() => {
+            // 步骤 5: 现在可以安全地更新页面上的所有内容了
+            document.getElementById('preset-editor-title').textContent = preset.name;
+            document.getElementById('preset-name-input').value = preset.name;
+
+            const selectEl = document.getElementById('preset-category-select');
+            selectEl.innerHTML = '<option value="">-- 未分类 --</option>';
+            categories.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat.id;
+                option.textContent = cat.name;
+                if (preset.categoryId === cat.id) option.selected = true;
+                selectEl.appendChild(option);
+            });
+
+            const entriesContainer = document.getElementById('preset-entries-container');
+            entriesContainer.innerHTML = '';
+            if (Array.isArray(preset.content) && preset.content.length > 0) {
+                preset.content.forEach(entry => {
+                    const block = createPresetEntryBlock(entry);
+                    entriesContainer.appendChild(block);
+                });
+            } else {
+                entriesContainer.innerHTML = '<p style="text-align:center; color: var(--text-secondary); margin-top: 20px;">还没有内容，点击下方按钮添加第一条吧！</p>';
+            }
+        }, 50); // 延迟50毫秒，对于移动端已经足够
+
+    } catch (error) {
+        console.error("打开预设编辑器时发生严重错误:", error);
+        await showCustomAlert("加载失败", `加载预设详情时发生错误: ${error.message}`);
+        showScreen('preset-screen'); // 出错时也安全返回
     }
 }
 
+/**
+ * 【全新 | 支持内容折叠】创建单个预设条目的编辑块
+ */
 function createPresetEntryBlock(entry = { keys: [], comment: '', content: '', enabled: true }) {
     const block = document.createElement('div');
     block.className = 'message-editor-block';
     const isChecked = entry.enabled !== false ? 'checked' : '';
 
+    // ▼▼▼ 【【【核心修改就在这里！】】】 ▼▼▼
     block.innerHTML = `
         <div style="display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-bottom: 5px;">
             <label class="toggle-switch" title="启用/禁用此条目">
@@ -32805,18 +32851,38 @@ function createPresetEntryBlock(entry = { keys: [], comment: '', content: '', en
         </div>
         <div class="form-group" style="margin-bottom: 10px;">
             <label style="font-size: 0.8em;">备注 (可选)</label>
-            <input type="text" class="entry-comment-input" value="${entry.comment || ''}" placeholder="例如：关于角色的童年" style="padding: 8px;">
+            <input type="text" class="entry-comment-input" value="${entry.comment || ''}" placeholder="例如：角色核心设定" style="padding: 8px;">
         </div>
         <div class="form-group" style="margin-bottom: 10px;">
             <label style="font-size: 0.8em;">关键词 (用英文逗号,分隔)</label>
-            <input type="text" class="entry-keys-input" value="${(entry.keys || []).join(', ')}" placeholder="例如: key1, key2, key3" style="padding: 8px;">
+            <input type="text" class="entry-keys-input" value="${(entry.keys || []).join(', ')}" placeholder="例如: key1, key2" style="padding: 8px;">
         </div>
+        
+        <!-- 这里是全新的、带有“展开/收起”按钮的结构 -->
         <div class="form-group" style="margin-bottom: 0;">
-            <label style="font-size: 0.8em;">内容</label>
-            <textarea class="entry-content-textarea" rows="5" style="width: 100%; font-size: 14px;">${entry.content || ''}</textarea>
+            <label style="font-size: 0.8em; display: flex; justify-content: space-between; align-items: center;">
+                <span>内容 (点击右侧展开)</span>
+                <button type="button" class="toggle-content-btn">展开</button>
+            </label>
+            <div class="entry-content-container">
+                 <textarea class="entry-content-textarea" rows="8" style="width: 100%; font-size: 14px;">${entry.content || ''}</textarea>
+            </div>
         </div>
     `;
+    // ▲▲▲ 【【【修改结束】】】 ▲▲▲
+
+    // 绑定删除按钮事件
     block.querySelector('.delete-block-btn').addEventListener('click', () => block.remove());
+    
+    // 【全新】为“展开/收起”按钮绑定事件
+    const toggleBtn = block.querySelector('.toggle-content-btn');
+    const contentContainer = block.querySelector('.entry-content-container');
+    toggleBtn.addEventListener('click', () => {
+        const isHidden = contentContainer.style.display === 'none';
+        contentContainer.style.display = isHidden ? 'block' : 'none';
+        toggleBtn.textContent = isHidden ? '收起' : '展开';
+    });
+
     return block;
 }
 
@@ -34110,49 +34176,50 @@ function updateChatListItem(chatId) {
         });
         // ▲▲▲ 替换结束 ▲▲▲
                     document.getElementById('add-world-book-btn').addEventListener('click', async () => { const name = await showCustomPrompt('创建世界书', '请输入书名'); if (name && name.trim()) { const newBook = { id: 'wb_' + Date.now(), name: name.trim(), content: '' }; await db.worldBooks.add(newBook); state.worldBooks.push(newBook); renderWorldBookScreen(); openWorldBookEditor(newBook.id); } });
-        // ▼▼▼ 【请用这个新版本】替换旧的 save-world-book-btn 事件监听器 ▼▼▼
-        document.getElementById('save-world-book-btn').addEventListener('click', async () => {
-            if (!editingWorldBookId) return;
-            const book = state.worldBooks.find(wb => wb.id === editingWorldBookId);
-            if (!book) return;
-        
-            // 保存书名和分类（逻辑不变）
-            const newName = document.getElementById('world-book-name-input').value.trim();
-            if (!newName) { alert('书名不能为空！'); return; }
-            book.name = newName;
-            const categoryId = document.getElementById('world-book-category-select').value;
-            book.categoryId = categoryId ? parseInt(categoryId) : null;
-        
-            const entriesContainer = document.getElementById('world-book-entries-container');
-            const entryBlocks = entriesContainer.querySelectorAll('.message-editor-block');
-            const newEntries = [];
-        
-            entryBlocks.forEach(block => {
-                const keysInput = block.querySelector('.entry-keys-input').value.trim();
-                const content = block.querySelector('.entry-content-textarea').value.trim();
-                
-                // 【核心修改】获取开关的状态
-                const isEnabled = block.querySelector('.entry-enabled-switch').checked;
+// ▼▼▼ 【全新 | iOS 兼容版】请用这个新版本替换旧的 save-world-book-btn 事件监听器 ▼▼▼
+document.getElementById('save-world-book-btn').addEventListener('click', async () => {
+    if (!editingWorldBookId) return;
+    const book = state.worldBooks.find(wb => wb.id === editingWorldBookId);
+    if (!book) return;
 
-                if (content) {
-                    newEntries.push({
-                        comment: block.querySelector('.entry-comment-input').value.trim(),
-                        keys: keysInput ? keysInput.split(',').map(k => k.trim()).filter(k => k) : [],
-                        content: content,
-                        enabled: isEnabled // 【核心修改】保存开关状态
-                    });
-                }
+    // (这部分保存数据的逻辑保持不变)
+    const newName = document.getElementById('world-book-name-input').value.trim();
+    if (!newName) { alert('书名不能为空！'); return; }
+    book.name = newName;
+    const categoryId = document.getElementById('world-book-category-select').value;
+    book.categoryId = categoryId ? parseInt(categoryId) : null;
+
+    const entriesContainer = document.getElementById('world-book-entries-container');
+    const entryBlocks = entriesContainer.querySelectorAll('.message-editor-block');
+    const newEntries = [];
+
+    entryBlocks.forEach(block => {
+        const keysInput = block.querySelector('.entry-keys-input').value.trim();
+        const content = block.querySelector('.entry-content-textarea').value.trim();
+        const isEnabled = block.querySelector('.entry-enabled-switch').checked;
+        if (content) {
+            newEntries.push({
+                comment: block.querySelector('.entry-comment-input').value.trim(),
+                keys: keysInput ? keysInput.split(',').map(k => k.trim()).filter(k => k) : [],
+                content: content,
+                enabled: isEnabled
             });
-        
-            book.content = newEntries;
-        
-            await db.worldBooks.put(book);
-            document.getElementById('world-book-editor-title').textContent = newName;
-            editingWorldBookId = null;
-            renderWorldBookScreen();
-            showScreen('world-book-screen');
-        });
-        // ▲▲▲ 替换结束 ▲▲▲
+        }
+    });
+    book.content = newEntries;
+
+    // 1. 先将所有数据保存到数据库
+    await db.worldBooks.put(book);
+    document.getElementById('world-book-editor-title').textContent = newName;
+    editingWorldBookId = null;
+
+    // 2. 【核心修复】先切换到目标屏幕
+    showScreen('world-book-screen');
+    
+    // 3. 【核心修复】然后再异步地渲染内容
+    await renderWorldBookScreen();
+});
+// ▲▲▲ 替换结束 ▲▲▲
         // ▼▼▼ 【最终修复版】请用这整块代码，完整替换旧的 chat-messages 事件监听器 ▼▼▼
         document.getElementById('chat-messages').addEventListener('click', async (e) => {
             // 检查是否点击了 "查看详情" 按钮
@@ -37856,37 +37923,46 @@ document.querySelector('#avatar-frame-modal .modal-body').addEventListener('clic
             newBlock.querySelector('.entry-content-textarea').focus();
         });
 
-        document.getElementById('save-preset-btn').addEventListener('click', async () => {
-            if (!editingPresetId) return;
-            const preset = await db.presets.get(editingPresetId);
-            if (!preset) return;
+// ▼▼▼ 【全新 | iOS 兼容版】请用这个新版本替换旧的 save-preset-btn 事件监听器 ▼▼▼
+document.getElementById('save-preset-btn').addEventListener('click', async () => {
+    if (!editingPresetId) return;
+    const preset = await db.presets.get(editingPresetId);
+    if (!preset) return;
 
-            const newName = document.getElementById('preset-name-input').value.trim();
-            if (!newName) { alert('预设名称不能为空！'); return; }
-            preset.name = newName;
-            preset.categoryId = parseInt(document.getElementById('preset-category-select').value) || null;
+    // (这部分保存数据的逻辑保持不变)
+    const newName = document.getElementById('preset-name-input').value.trim();
+    if (!newName) { alert('预设名称不能为空！'); return; }
+    preset.name = newName;
+    preset.categoryId = parseInt(document.getElementById('preset-category-select').value) || null;
 
-            const entriesContainer = document.getElementById('preset-entries-container');
-            const entryBlocks = entriesContainer.querySelectorAll('.message-editor-block');
-            const newEntries = [];
-            entryBlocks.forEach(block => {
-                const content = block.querySelector('.entry-content-textarea').value.trim();
-                if (content) {
-                    newEntries.push({
-                        comment: block.querySelector('.entry-comment-input').value.trim(),
-                        keys: (block.querySelector('.entry-keys-input').value.trim() || '').split(',').map(k => k.trim()).filter(Boolean),
-                        content: content,
-                        enabled: block.querySelector('.entry-enabled-switch').checked
-                    });
-                }
+    const entriesContainer = document.getElementById('preset-entries-container');
+    const entryBlocks = entriesContainer.querySelectorAll('.message-editor-block');
+    const newEntries = [];
+    entryBlocks.forEach(block => {
+        const content = block.querySelector('.entry-content-textarea').value.trim();
+        if (content) {
+            newEntries.push({
+                comment: block.querySelector('.entry-comment-input').value.trim(),
+                keys: (block.querySelector('.entry-keys-input').value.trim() || '').split(',').map(k => k.trim()).filter(Boolean),
+                content: content,
+                enabled: block.querySelector('.entry-enabled-switch').checked
             });
-            preset.content = newEntries;
+        }
+    });
+    preset.content = newEntries;
 
-            await db.presets.put(preset);
-            editingPresetId = null;
-            renderPresetScreen();
-            showScreen('preset-screen');
-        });
+    // 1. 先将所有数据保存到数据库
+    await db.presets.put(preset);
+    editingPresetId = null;
+
+    // 2. 【核心修复】先切换到目标屏幕
+    showScreen('preset-screen');
+    
+    // 3. 【核心修复】然后再异步地、从容地渲染那个屏幕上的内容
+    // 这就给了浏览器足够的时间来处理屏幕切换动画，避免了崩溃
+    await renderPresetScreen();
+});
+// ▲▲▲ 替换结束 ▲▲▲
 
         // ▲▲▲ 新增事件绑定结束 ▲▲▲
         // ▼▼▼ 【全新】为“预设”App的导入功能绑定事件 ▼▼▼
