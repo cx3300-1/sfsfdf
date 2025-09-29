@@ -8835,6 +8835,47 @@
     border: 1px solid var(--border-color);
 }
 /* ▲▲▲ 新增CSS结束 ▲▲▲ */
+/* ▼▼▼ 【全新】高级数据清理向导样式 ▼▼▼ */
+.wizard-step {
+    display: none; /* 默认隐藏所有步骤 */
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+}
+
+.wizard-step.active {
+    display: flex; /* 只显示激活的步骤 */
+}
+
+/* 复用现有的列表项样式，为其添加一点内边距 */
+#data-clear-char-list .clear-posts-item,
+#data-clear-type-list .clear-posts-item {
+    padding: 12px 18px;
+}
+/* ▲▲▲ 新增CSS结束 ▲▲▲ */
+/* ▼▼▼ 【全新】为清理向导添加“全选”样式 ▼▼▼ */
+#data-clear-wizard-modal .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+#data-clear-wizard-modal .modal-header label {
+    font-size: 14px;
+    font-weight: normal;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+}
+/* ▲▲▲ 新增CSS结束 ▲▲▲ */
+/* ▼▼▼ 【全新】教程页面样式 ▼▼▼ */
+#tutorial-screen {
+    background-color: #f0f2f5;
+}
+#phone-screen.dark-mode #tutorial-screen {
+    background-color: #000000;
+}
+/* ▲▲▲ 新增CSS结束 ▲▲▲ */
     </style>
 </head>
 <body>
@@ -8921,6 +8962,10 @@
                         <div class="icon-bg-desktop"><img id="icon-img-preset" src="https://s3plus.meituan.net/opapisdk/op_ticket_885190757_1758510900942_qdqqd_djw0z2.jpeg" alt="预设"></div>
                         <span class="label">预设</span>
                     </div>
+<div class="desktop-app-icon" onclick="showScreen('tutorial-screen')">
+    <div class="icon-bg-desktop"><img id="icon-img-tutorial" src="https://i.postimg.cc/d10GjC4g/IMG-7302.jpg" alt="教程"></div>
+    <span class="label">教程</span>
+</div>
                 </div>
             </div>
         </div>
@@ -9389,7 +9434,19 @@
     <div id="preset-tabs"></div>
     <div id="preset-content-container"></div>
 </div>
-
+<!-- ▼▼▼ 【全新】这是教程页面，请粘贴到其他 .screen 的div旁边 ▼▼▼ -->
+<div id="tutorial-screen" class="screen">
+    <div class="header">
+        <span class="back-btn" onclick="showScreen('home-screen')">‹</span>
+        <span>教程</span>
+        <span style="width: 30px;"></span> <!-- 占位符，保持标题居中 -->
+    </div>
+    <div class="list-container" style="padding: 0; overflow: hidden;">
+        <!-- 这里会嵌入你的教程HTML文件 -->
+        <iframe id="tutorial-iframe" src="教程.html" style="width: 100%; height: 100%; border: none;"></iframe>
+    </div>
+</div>
+<!-- ▲▲▲ 新增HTML结束 ▲▲▲ -->
 <div id="preset-editor-screen" class="screen">
     <div class="header">
         <span class="back-btn" onclick="showScreen('preset-screen')">‹</span>
@@ -9507,11 +9564,53 @@
 <!-- ▼▼▼ 在这里粘贴下面的新按钮代码 ▼▼▼ -->
 <button class="form-button form-button-secondary" id="cleanup-data-btn" style="background-color: #ffebee; color: #c62828; border-color: #ef9a9a; margin-top: 10px;">清理冗余数据</button>
 <!-- ▲▲▲ 粘贴结束 ▲▲▲ -->
+<button class="form-button form-button-secondary" id="clear-specific-data-btn" style="background-color: #ffcdd2; color: #b71c1c; border-color: #ef9a9a; margin-top: 10px;">高级数据清理</button>
                 <input id="import-data-input" type="file" accept="application/json" hidden>
 
             </div>
         </div>
         <!-- ▲▲▲ 替换结束 ▲▲▲ -->
+<!-- 【【【全新 V2.0 | 支持全选】：高级数据清理向导模态框】】】 -->
+<div id="data-clear-wizard-modal" class="modal">
+    <div class="modal-content" style="height: 80%;">
+        <!-- 步骤 1: 选择角色 -->
+        <div id="data-clear-step-1" class="wizard-step">
+            <div class="modal-header">
+                <span>第一步：选择要清理的角色</span>
+                <!-- 核心新增：全选复选框 -->
+                <label>
+                    <input type="checkbox" id="select-all-chars-for-clear"> 全选
+                </label>
+            </div>
+            <div class="modal-body" id="data-clear-char-list" style="padding: 0;">
+                <!-- 角色列表将由JS动态生成 -->
+            </div>
+            <div class="modal-footer">
+                <button class="cancel" id="cancel-clear-wizard-btn-step1">取消</button>
+                <button class="save" id="go-to-clear-step2-btn">下一步</button>
+            </div>
+        </div>
+        <!-- 步骤 2: 选择数据类型 -->
+        <div id="data-clear-step-2" class="wizard-step" style="display: none;">
+            <div class="modal-header">
+                <span>第二步：选择要清理的数据类型</span>
+                <!-- 核心新增：全选复选框 -->
+                <label>
+                    <input type="checkbox" id="select-all-types-for-clear"> 全选
+                </label>
+            </div>
+            <div class="modal-body" id="data-clear-type-list" style="padding: 0;">
+                <!-- 数据类型列表将由JS动态生成 -->
+            </div>
+            <div class="modal-footer">
+                <button class="form-button-secondary" id="back-to-clear-step1-btn" style="width: 30%; margin:0;">上一步</button>
+                <button class="cancel" id="cancel-clear-wizard-btn-step2" style="width: 30%; margin:0;">取消</button>
+                <button class="save btn-danger" id="confirm-final-clear-btn" style="width: 30%; margin:0;">确认清理</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- ▲▲▲ 新增HTML结束 ▲▲▲ -->
         <!-- ▼▼▼ 用下面这段代码，完整替换掉你原来的 chat-list-screen ▼▼▼ -->
         <div id="chat-list-screen" class="screen">
             <!-- 主头部 (只在消息列表显示) -->
@@ -11756,7 +11855,9 @@ const DEFAULT_NOTIFICATION_SOUND = 'https://www.myinstants.com/media/sounds/noti
             'char-phone': 'https://i.postimg.cc/pXj9h20L/IMG-7275.jpg',
             'douban': 'https://i.postimg.cc/Pq2xJN1g/IMG-7301.jpg',
     // 【【【核心新增：在这里为“预设”App注册一个唯一的ID和默认图标】】】
-    'preset': 'https://s3plus.meituan.net/opapisdk/op_ticket_885190757_1758510900942_qdqqd_djw0z2.jpeg'
+    'preset': 'https://s3plus.meituan.net/opapisdk/op_ticket_885190757_1758510900942_qdqqd_djw0z2.jpeg',
+            // ▼▼▼ 在这里添加新的一行 ▼▼▼
+            'tutorial': 'https://i.postimg.cc/d10GjC4g/IMG-7302.jpg'
         };
         // ▲▲▲ 替换结束 ▲▲▲
         // ▼▼▼ 【全新】这是为CPhone图标设置新增的常量 ▼▼▼
@@ -23281,7 +23382,9 @@ async function endVideoCall() {
        'char-phone': '角色手机',
        'douban': '豆瓣小组',
        // 【【【核心新增：在这里为“预设”App添加对应的中文名】】】
-       'preset': '预设'
+       'preset': '预设',
+           // ▼▼▼ 在这里添加新的一行 ▼▼▼
+           'tutorial': '教程'
     };
         // ▲▲▲ 替换结束 ▲▲▲
         
@@ -31542,7 +31645,7 @@ async function handleGenerateDoubanPosts() {
 
     const systemPrompt = `
 # 你的任务
-你是一个虚拟社区内容生成器。你的任务是根据下面提供的【统一角色列表】，虚构出【8到15篇】他们最近可能会在各种豆瓣小组中发布的帖子和评论。
+你是一个虚拟社区内容生成器。你的任务是根据下面提供的【统一角色列表】，虚构出【12到20篇】他们最近可能会在各种豆瓣小组中发布的帖子和评论。
 
 # 核心规则
 1.  **【时间感知】**:
@@ -33145,7 +33248,228 @@ async function resetButtonOrder() {
             }, 300); // 300毫秒的延迟是一个比较安全的值
         });
     }
+// ▼▼▼ 【全新 V2.0 | 已修复】这是高级数据清理功能的【全部核心JS代码】，请完整粘贴 ▼▼▼
 
+let selectedCharsForClear = []; // 用于存储第一步选择的角色ID
+let selectedTypesForClear = []; // 用于存储第二步选择的数据类型
+
+/**
+ * 【总入口】打开高级数据清理向导
+ */
+function openDataClearWizard() {
+    const modal = document.getElementById('data-clear-wizard-modal');
+    selectedCharsForClear = [];
+    selectedTypesForClear = [];
+    
+    // 渲染第一步
+    renderClearWizardStep1();
+    
+    // 显示第一步，隐藏第二步
+    document.getElementById('data-clear-step-1').style.display = 'flex';
+    document.getElementById('data-clear-step-2').style.display = 'none';
+    
+    modal.classList.add('visible');
+}
+
+/**
+ * 渲染向导的第一步：角色选择列表
+ */
+function renderClearWizardStep1() {
+    const listEl = document.getElementById('data-clear-char-list');
+    listEl.innerHTML = '';
+
+    // 1. 添加“我自己”的选项
+    const userItem = document.createElement('div');
+    userItem.className = 'clear-posts-item';
+    userItem.dataset.charId = 'user';
+    userItem.innerHTML = `
+        <div class="checkbox"></div>
+        <span class="name">${state.qzoneSettings.nickname || '我'} (用户)</span>
+    `;
+    listEl.appendChild(userItem);
+
+    // 2. 添加所有AI角色的选项
+    Object.values(state.chats).forEach(chat => {
+        if (!chat.isGroup) {
+            const charItem = document.createElement('div');
+            charItem.className = 'clear-posts-item';
+            charItem.dataset.charId = chat.id;
+            charItem.innerHTML = `
+                <div class="checkbox"></div>
+                <span class="name">${chat.name} (角色)</span>
+            `;
+            listEl.appendChild(charItem);
+        }
+    });
+}
+
+/**
+ * 【V2.0 | 已修正数据分类】渲染向导的第二步：数据类型选择列表
+ */
+function renderClearWizardStep2() {
+    const listEl = document.getElementById('data-clear-type-list');
+    listEl.innerHTML = '';
+    
+    const dataTypes = [
+        { id: 'chat', name: '聊天记录', description: '将清空选定角色的所有对话消息。' },
+        { id: 'qzone', name: '动态与互动', description: '将清空选定角色的所有动态、评论和点赞。' },
+        { id: 'calls', name: '通话记录', description: '将清空选定角色的所有通话记录。' },
+        // 【【【核心修正1：数据分类】】】
+        { id: 'thoughts', name: '心声', description: '将清空选定角色的心声和散记历史。' },
+        { id: 'memories', name: '长期记忆', description: '将清空选定角色的所有长期记忆。' },
+        { id: 'cphone', name: '角色手机数据 (CPhone)', description: '将清空角色的相册、QQ、浏览器、淘宝、日记、备忘录等所有模拟手机数据。' }
+    ];
+
+    dataTypes.forEach(type => {
+        const item = document.createElement('div');
+        item.className = 'clear-posts-item';
+        item.dataset.typeId = type.id;
+        item.innerHTML = `
+            <div class="checkbox"></div>
+            <div>
+                <span class="name">${type.name}</span>
+                <p style="font-size: 12px; color: #888; margin: 4px 0 0;">${type.description}</p>
+            </div>
+        `;
+        listEl.appendChild(item);
+    });
+}
+
+
+/**
+ * 处理“下一步”按钮的点击事件
+ */
+function handleDataClearNext() {
+    const selectedItems = document.querySelectorAll('#data-clear-char-list .clear-posts-item.selected');
+    if (selectedItems.length === 0) {
+        alert("请至少选择一个要清理的角色。");
+        return;
+    }
+
+    selectedCharsForClear = Array.from(selectedItems).map(item => item.dataset.charId);
+    
+    // 渲染第二步并切换视图
+    renderClearWizardStep2();
+    document.getElementById('data-clear-step-1').style.display = 'none';
+    document.getElementById('data-clear-step-2').style.display = 'flex';
+}
+
+/**
+ * 处理“上一步”按钮的点击事件
+ */
+function handleDataClearBack() {
+    document.getElementById('data-clear-step-2').style.display = 'none';
+    document.getElementById('data-clear-step-1').style.display = 'flex';
+    // 保留已选中的角色
+    document.querySelectorAll('#data-clear-char-list .clear-posts-item').forEach(item => {
+        if (selectedCharsForClear.includes(item.dataset.charId)) {
+            item.classList.add('selected');
+        }
+    });
+}
+
+/**
+ * 【V2.0 | 已修正数据分类】处理最终确认清理的逻辑
+ */
+async function handleConfirmDataClear() {
+    const selectedItems = document.querySelectorAll('#data-clear-type-list .clear-posts-item.selected');
+    if (selectedItems.length === 0) {
+        alert("请至少选择一种要清理的数据类型。");
+        return;
+    }
+
+    selectedTypesForClear = Array.from(selectedItems).map(item => item.dataset.typeId);
+
+    const confirmed = await showCustomConfirm(
+        '最后确认！',
+        '此操作将永久删除您选择的所有数据，且无法恢复！确定要继续吗？',
+        { confirmButtonClass: 'btn-danger', confirmText: '确认删除' }
+    );
+
+    if (!confirmed) return;
+    
+    await showCustomAlert("请稍候...", "正在执行清理操作，请不要关闭页面...");
+
+    try {
+        await db.transaction('rw', db.tables, async () => {
+            for (const charId of selectedCharsForClear) {
+                for (const type of selectedTypesForClear) {
+                    
+                    if (type === 'chat') {
+                        if (charId === 'user') {
+                            const allChats = await db.chats.toArray();
+                            for (const chat of allChats) {
+                                chat.history = chat.history.filter(msg => msg.role !== 'user');
+                                await db.chats.put(chat);
+                            }
+                        } else {
+                            const chat = await db.chats.get(charId);
+                            if (chat) {
+                                chat.history = [];
+                                await db.chats.put(chat);
+                            }
+                        }
+                    }
+
+                    if (type === 'qzone') {
+                        const authorId = (charId === 'user') ? 'user' : charId;
+                        await db.qzonePosts.where('authorId').equals(authorId).delete();
+                    }
+
+                    if (type === 'calls' && charId !== 'user') {
+                        await db.callRecords.where('chatId').equals(charId).delete();
+                    }
+
+                    // 【【【核心修正2：清理逻辑】】】
+                    if (type === 'thoughts' && charId !== 'user') {
+                        const chat = await db.chats.get(charId);
+                        if (chat) {
+                            chat.thoughtsHistory = [];
+                            // 不再清理日记和备忘录
+                            await db.chats.put(chat);
+                        }
+                    }
+
+                    if (type === 'memories' && charId !== 'user') {
+                        const chat = await db.chats.get(charId);
+                        if (chat) {
+                            chat.longTermMemory = [];
+                            await db.chats.put(chat);
+                        }
+                    }
+                    
+                    if (type === 'cphone' && charId !== 'user') {
+                        const chat = await db.chats.get(charId);
+                        if (chat) {
+                            // 清理所有CPhone相关数据，并加入日记和备忘录
+                            chat.simulatedAlbum = [];
+                            chat.simulatedConversations = [];
+                            chat.simulatedBrowserHistory = [];
+                            chat.simulatedTaobaoHistory = null;
+                            chat.simulatedAmapHistory = [];
+                            chat.simulatedAppUsage = [];
+                            chat.simulatedMusicPlaylist = [];
+                            chat.diary = []; // <-- 新增
+                            chat.memos = []; // <-- 新增
+                            await db.chats.put(chat);
+                        }
+                    }
+                }
+            }
+        });
+        
+        await loadAllDataFromDB();
+        await renderChatList();
+        
+        document.getElementById('data-clear-wizard-modal').classList.remove('visible');
+        await showCustomAlert("清理完成", "指定的数据已成功清除。");
+
+    } catch (error) {
+        console.error("高级数据清理失败:", error);
+        await showCustomAlert("清理失败", `操作失败: ${error.message}`);
+    }
+}
+// ▲▲▲ 全新JS代码粘贴结束 ▲▲▲
 
 
               // ===================================================================
@@ -37573,6 +37897,50 @@ document.querySelector('#avatar-frame-modal .modal-body').addEventListener('clic
         document.getElementById('import-preset-input').addEventListener('change', handlePresetImport);
         // ▲▲▲ 新增事件绑定结束 ▲▲▲
 document.getElementById('reset-button-order-btn').addEventListener('click', resetButtonOrder);
+// ▼▼▼ 【全新V2.0 | 已修复】高级数据清理功能事件绑定 ▼▼▼
+document.getElementById('clear-specific-data-btn').addEventListener('click', openDataClearWizard);
+
+// 向导第一步的按钮
+document.getElementById('cancel-clear-wizard-btn-step1').addEventListener('click', () => {
+    document.getElementById('data-clear-wizard-modal').classList.remove('visible');
+});
+document.getElementById('go-to-clear-step2-btn').addEventListener('click', handleDataClearNext);
+
+// 向导第二步的按钮
+document.getElementById('back-to-clear-step1-btn').addEventListener('click', handleDataClearBack);
+document.getElementById('cancel-clear-wizard-btn-step2').addEventListener('click', () => {
+    document.getElementById('data-clear-wizard-modal').classList.remove('visible');
+});
+document.getElementById('confirm-final-clear-btn').addEventListener('click', handleConfirmDataClear);
+
+// 【核心新增】使用事件委托处理两个列表的勾选/取消勾选 和 全选
+document.getElementById('data-clear-wizard-modal').addEventListener('click', (e) => {
+    const item = e.target.closest('.clear-posts-item');
+    if (item) {
+        // 阻止事件冒泡，避免触发下面的change事件
+        e.stopPropagation();
+        item.classList.toggle('selected');
+    }
+});
+document.getElementById('data-clear-wizard-modal').addEventListener('change', (e) => {
+    // 全选角色
+    if (e.target.id === 'select-all-chars-for-clear') {
+        const isChecked = e.target.checked;
+        document.querySelectorAll('#data-clear-char-list .clear-posts-item').forEach(item => {
+            item.classList.toggle('selected', isChecked);
+        });
+    } 
+    // 全选数据类型
+    else if (e.target.id === 'select-all-types-for-clear') {
+        const isChecked = e.target.checked;
+        document.querySelectorAll('#data-clear-type-list .clear-posts-item').forEach(item => {
+            item.classList.toggle('selected', isChecked);
+        });
+    }
+});
+// ▲▲▲ 新增事件绑定结束 ▲▲▲
+
+
 
 
              setupAndroidKeyboardFix();
@@ -37790,7 +38158,6 @@ document.getElementById('reset-button-order-btn').addEventListener('click', rese
 <!-- ▲▲▲ 新增HTML结束 ▲▲▲ -->
 </body>
 </html>
-
 
 
 
