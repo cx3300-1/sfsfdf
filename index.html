@@ -8891,6 +8891,73 @@
     cursor: pointer;
 }
 /* ▲▲▲ 新增CSS结束 ▲▲▲ */
+/* ▼▼▼ 【全新】这是更新通知弹窗的样式 ▼▼▼ */
+#update-notice-modal {
+    position: fixed; /* 固定定位，覆盖在所有内容之上 */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: none; /* 默认隐藏 */
+    align-items: center;
+    justify-content: center;
+    z-index: 2000; /* 确保在最上层 */
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+#update-notice-modal.visible {
+    display: flex;
+    opacity: 1;
+}
+.update-notice-content {
+    background-color: #fff;
+    width: 300px;
+    border-radius: 14px;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.15);
+    display: flex;
+    flex-direction: column;
+    transform: scale(0.95);
+    transition: transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+#update-notice-modal.visible .update-notice-content {
+    transform: scale(1);
+}
+.update-notice-body {
+    padding: 20px;
+    font-size: 15px;
+    line-height: 1.6;
+    color: #333;
+    
+    /* --- ▼▼▼ 核心修改就在这里 ▼▼▼ --- */
+
+    /* 1. 设置一个最大高度。我们使用 vh (视窗高度) 单位，
+       让弹窗最大不超过屏幕高度的60%，以适应不同尺寸的手机。 */
+    max-height: 60vh; 
+    
+    /* 2. 当内容超出这个最大高度时，自动显示垂直滚动条。 */
+    overflow-y: auto; 
+
+    /* --- ▲▲▲ 修改结束 ▲▲▲ --- */
+}
+.update-notice-footer {
+    border-top: 1px solid #dbdbdb;
+    display: flex;
+}
+.update-notice-footer button {
+    flex: 1;
+    background: none;
+    border: none;
+    padding: 14px;
+    font-size: 17px;
+    cursor: pointer;
+    color: var(--accent-color);
+}
+.update-notice-footer button:first-child {
+    border-right: 1px solid #dbdbdb;
+    font-weight: 600;
+}
+/* ▲▲▲ 新增CSS结束 ▲▲▲ */
     </style>
 </head>
 <body>
@@ -33849,7 +33916,84 @@ function compressImage(base64Str, options = {}) {
     });
 }
 // ▲▲▲ JS代码粘贴结束 ▲▲▲
+// ▼▼▼ 【全新】这是更新通知功能的【全部核心JS代码】，请完整粘贴 ▼▼▼
 
+/**
+ * 检查应用更新并根据版本决定是否显示通知
+ */
+async function checkForUpdates() {
+    // 关键1：在你的主应用中定义当前的版本号。
+    // 每次你希望用户看到更新通知时，都需要更新 `update-notice.html` 里的 `data-version`。
+    // 这个版本号主要是为了逻辑完整性，但核心判断依据是通知文件里的版本。
+    const CURRENT_APP_VERSION = "1.0"; 
+
+    try {
+        // 1. 从服务器获取最新的通知文件内容
+        const response = await fetch('update-notice.html?_=' + Date.now()); // 添加时间戳防止缓存
+        if (!response.ok) {
+            console.warn('获取更新通知文件失败。');
+            return;
+        }
+        const noticeHtml = await response.text();
+        
+        // 2. 解析通知内容和版本号
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = noticeHtml;
+        const noticeContent = tempDiv.querySelector('[data-version]');
+        
+        if (!noticeContent) {
+            console.error('更新通知文件中缺少 data-version 属性。');
+            return;
+        }
+        
+        const notificationVersion = noticeContent.dataset.version;
+        
+        // 3. 从本地存储中获取用户上次忽略的版本号
+        const dismissedVersion = localStorage.getItem('dismissedUpdateVersion');
+        
+        // 4. 核心逻辑：如果通知版本号比用户忽略的版本号要新，就显示通知
+        // 使用简单的字符串比较即可
+        if (notificationVersion > dismissedVersion) {
+            console.log(`发现新版本通知: ${notificationVersion} (已忽略版本: ${dismissedVersion})`);
+            showUpdateNotice(notificationVersion, noticeContent.innerHTML);
+        } else {
+            console.log(`当前通知版本 (${notificationVersion}) 已被用户忽略，无需显示。`);
+        }
+
+    } catch (error) {
+        console.error('检查更新时出错:', error);
+    }
+}
+
+/**
+ * 显示更新通知弹窗
+ * @param {string} version - 当前通知的版本号
+ * @param {string} contentHtml - 要显示的HTML内容
+ */
+function showUpdateNotice(version, contentHtml) {
+    const modal = document.getElementById('update-notice-modal');
+    const body = document.getElementById('update-notice-body');
+    const confirmBtn = document.getElementById('update-notice-confirm-btn');
+    const dismissBtn = document.getElementById('update-notice-dismiss-btn');
+    
+    body.innerHTML = contentHtml;
+    
+    // “我知道了”按钮：只关闭弹窗，不记录版本
+    confirmBtn.onclick = () => {
+        modal.classList.remove('visible');
+    };
+    
+    // “不再提示”按钮：关闭弹窗，并将当前版本号存入localStorage
+    dismissBtn.onclick = () => {
+        localStorage.setItem('dismissedUpdateVersion', version);
+        modal.classList.remove('visible');
+        console.log(`用户已忽略版本: ${version}`);
+    };
+    
+    modal.classList.add('visible');
+}
+
+// ▲▲▲ 新增JS代码结束 ▲▲▲
 
               // ===================================================================
                 // 4. 初始化函数 init()
@@ -38315,6 +38459,8 @@ document.getElementById('compress-images-btn').addEventListener('click', compres
 
 
 
+
+    checkForUpdates();
              setupAndroidKeyboardFix();
                     showScreen('home-screen');
                 }
@@ -38527,6 +38673,19 @@ document.getElementById('compress-images-btn').addEventListener('click', compres
 <!-- ▲▲▲ 新增HTML结束 ▲▲▲ -->
 <!-- ▼▼▼ 【全新】这是为“预设”功能新增的文件导入输入框 ▼▼▼ -->
 <input type="file" id="import-preset-input" accept=".json" hidden>
+<!-- ▲▲▲ 新增HTML结束 ▲▲▲ -->
+<!-- ▼▼▼ 【全新】这是更新通知弹窗的HTML结构 ▼▼▼ -->
+<div id="update-notice-modal">
+    <div class="update-notice-content">
+        <div class="update-notice-body" id="update-notice-body">
+            <!-- 更新内容将由JS动态加载到这里 -->
+        </div>
+        <div class="update-notice-footer">
+            <button id="update-notice-confirm-btn">我知道了</button>
+            <button id="update-notice-dismiss-btn">不再提示</button>
+        </div>
+    </div>
+</div>
 <!-- ▲▲▲ 新增HTML结束 ▲▲▲ -->
 </body>
 </html>
