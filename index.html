@@ -9571,6 +9571,17 @@
                         <span class="slider"></span>
                     </label>
                 </div>
+<!-- ▼▼▼ 在这里粘贴下面的新按钮代码 ▼▼▼ -->
+<hr style="margin: 30px 0; opacity: 0.3;">
+<h3 style="border-bottom: 1px solid #eee; padding-bottom: 10px;">存储空间优化</h3>
+<button class="form-button form-button-secondary" id="compress-images-btn" style="background-color: #e8f5e9; color: #2e7d32; border-color: #c8e6c9;">
+    一键压缩本地图片
+</button>
+<p style="font-size: 12px; color: #8a8a8a; margin-top: 8px; line-height: 1.5;">
+    此功能会将您所有本地上传的图片（如头像、表情包、聊天图片、头像框、组件图等）压缩为JPEG格式，以大幅减小数据体积。
+    <br><strong style="color: #ff3b30;">警告：这是一个有损压缩且不可逆的操作，会轻微降低图片质量。建议操作前先备份数据。</strong>
+</p>
+<!-- ▲▲▲ 粘贴结束 ▲▲▲ -->
                 <!-- 保存与导入导出 -->
                 <hr style="margin: 30px 0; opacity: 0.3;">
                 <button class="form-button" id="save-api-settings-btn" style="margin-top: 20px;">保存所有设置</button>
@@ -33600,6 +33611,179 @@ async function handleConfirmDataClear() {
                 alert("请输入一个有效的URL或选择一个文件！");
             }
         }
+// ▼▼▼ 【最终修复版】请用这个全新的、分步执行的函数，完整替换旧的 compressAllLocalImages ▼▼▼
+
+/**
+ * 【总入口 | V2.0 修复版】一键压缩数据库中所有本地上传的图片
+ */
+async function compressAllLocalImages() {
+    // 1. 弹出最终确认框 (逻辑不变)
+    const confirmed = await showCustomConfirm(
+        '确认压缩图片？',
+        '此操作将扫描并压缩所有本地上传的图片（Base64格式），将其转换为JPEG以减小体积。这会轻微降低图片质量且【不可恢复】。<br><br><strong>强烈建议在操作前先进行数据备份！</strong>',
+        { confirmButtonClass: 'btn-danger', confirmText: '我已了解风险，确认压缩' }
+    );
+
+    if (!confirmed) return;
+
+    // 2. 显示处理中的提示 (逻辑不变)
+    await showCustomAlert("请稍候...", "正在开始全面压缩图片，根据图片数量，这可能需要几分钟时间，请不要关闭或刷新页面...");
+
+    let stats = {
+        found: 0,
+        compressed: 0,
+        skipped: 0,
+        originalSize: 0,
+        newSize: 0
+    };
+
+    try {
+        // ==========================================================
+        //            ★★★ 核心修复逻辑从这里开始 ★★★
+        // ==========================================================
+        
+        // --- 步骤 A: 读取所有相关数据到内存 ---
+        console.log("压缩步骤 1/3: 正在从数据库读取所有相关数据...");
+        const tablesToScan = [
+            'chats', 'globalSettings', 'qzoneSettings', 
+            'userStickers', 'customAvatarFrames'
+        ];
+        const allData = [];
+        for (const tableName of tablesToScan) {
+            const table = db.table(tableName);
+            const records = await table.toArray();
+            allData.push({ tableName, records });
+        }
+
+        // --- 步骤 B: 在内存中对数据进行异步压缩 ---
+        console.log("压缩步骤 2/3: 正在内存中异步压缩图片，这可能需要一些时间...");
+        for (const data of allData) {
+            for (const record of data.records) {
+                // traverseAndCompress 函数现在是安全的，因为它不再处于一个开启的事务中
+                await traverseAndCompress(record, stats);
+            }
+        }
+        
+        // --- 步骤 C: 开启一个新事务，将所有修改后的数据一次性写回数据库 ---
+        console.log("压缩步骤 3/3: 正在将压缩后的数据写回数据库...");
+        await db.transaction('rw', tablesToScan, async () => {
+            for (const data of allData) {
+                // 使用 bulkPut 批量更新，性能更佳
+                await db.table(data.tableName).bulkPut(data.records);
+            }
+        });
+        
+        // ==========================================================
+        //            ★★★ 核心修复逻辑到此结束 ★★★
+        // ==========================================================
+
+        // 4. 操作完成后，显示统计结果 (逻辑不变)
+        const reduction = stats.originalSize - stats.newSize;
+        const reductionPercent = stats.originalSize > 0 ? (reduction / stats.originalSize * 100).toFixed(2) : 0;
+
+        await showCustomAlert(
+            '压缩完成！',
+            `扫描完成！<br>
+            - 共找到 ${stats.found} 张本地图片<br>
+            - 成功压缩 ${stats.compressed} 张<br>
+            - 跳过(已压缩或无需压缩) ${stats.skipped} 张<br>
+            - 空间节省了 <strong>${(reduction / 1024 / 1024).toFixed(2)} MB</strong> (压缩率 ${reductionPercent}%)
+            <br><br>
+            建议刷新页面以应用所有更改。`
+        );
+
+    } catch (error) {
+        console.error("图片压缩过程中发生错误:", error);
+        await showCustomAlert('压缩失败', `操作失败: ${error.message}`);
+    }
+}
+
+// ▲▲▲ JS函数替换结束 ▲▲▲
+
+/**
+ * 【辅助函数】递归遍历对象，找到并压缩所有Base64图片
+ * @param {object|Array} obj - 要遍历的对象或数组
+ * @param {object} stats - 用于统计的对象
+ */
+async function traverseAndCompress(obj, stats) {
+    for (const key in obj) {
+        if (typeof obj[key] === 'string' && obj[key].startsWith('data:image')) {
+            stats.found++;
+            const originalBase64 = obj[key];
+            stats.originalSize += originalBase64.length;
+
+            const compressedBase64 = await compressImage(originalBase64);
+
+            if (compressedBase64 && compressedBase64 !== originalBase64) {
+                obj[key] = compressedBase64; // 直接修改原对象
+                stats.compressed++;
+                stats.newSize += compressedBase64.length;
+            } else {
+                stats.skipped++;
+                stats.newSize += originalBase64.length;
+            }
+        } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+            // 如果是嵌套对象或数组，则继续递归
+            await traverseAndCompress(obj[key], stats);
+        }
+    }
+}
+
+/**
+ * 【核心压缩函数】将单个Base64图片字符串压缩为JPEG格式
+ * @param {string} base64Str - 原始的Base64图片字符串
+ * @param {object} options - 压缩选项 (质量、最大宽度)
+ * @returns {Promise<string|null>} - 返回压缩后的Base64字符串，如果无需压缩或失败则返回原字符串
+ */
+function compressImage(base64Str, options = {}) {
+    return new Promise((resolve) => {
+        // 如果已经是JPEG，或者不是一个有效的图片字符串，则直接跳过
+        if (base64Str.startsWith('data:image/jpeg') || !base64Str.startsWith('data:image')) {
+            resolve(base64Str);
+            return;
+        }
+
+        const quality = options.quality || 0.7; // 70%的JPEG质量
+        const maxWidth = options.maxWidth || 1024; // 图片最大宽度限制为1024px
+
+        const img = new Image();
+        img.onload = () => {
+            let width = img.width;
+            let height = img.height;
+
+            // 如果图片宽度超过最大限制，则等比缩放
+            if (width > maxWidth) {
+                height = (maxWidth / width) * height;
+                width = maxWidth;
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            
+            // 将图片绘制到canvas上
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            // 从canvas导出为JPEG格式的Base64字符串
+            const newDataUrl = canvas.toDataURL('image/jpeg', quality);
+            
+            // 只有当压缩后的体积比原来小时才替换
+            if (newDataUrl.length < base64Str.length) {
+                resolve(newDataUrl);
+            } else {
+                resolve(base64Str); // 压缩后反而变大了，保留原图
+            }
+        };
+        img.onerror = () => {
+            console.warn("加载图片失败，跳过压缩:", base64Str.substring(0, 50) + "...");
+            resolve(base64Str); // 加载失败，保留原图
+        };
+        img.src = base64Str;
+    });
+}
+// ▲▲▲ JS代码粘贴结束 ▲▲▲
+
 
               // ===================================================================
                 // 4. 初始化函数 init()
@@ -38060,7 +38244,7 @@ document.getElementById('data-clear-wizard-modal').addEventListener('change', (e
     }
 });
 // ▲▲▲ 新增事件绑定结束 ▲▲▲
-
+document.getElementById('compress-images-btn').addEventListener('click', compressAllLocalImages);
 
 
 
