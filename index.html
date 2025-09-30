@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>EPhone</title>
     <!-- ▼▼▼ 【桌面图标】纯HTML单文件方案，请粘贴到 <title> 之后 ▼▼▼ -->
-    <!-- 1. (核心) 为苹果设备设置主屏幕图标  -->
+    <!-- 1. (核心) 为苹果设备设置主屏幕图标 -->
     <!-- 浏览器会自动选择最合适的尺寸 -->
     <link rel="apple-touch-icon" href="https://s3plus.meituan.net/opapisdk/op_ticket_885190757_1758510900942_qdqqd_djw0z2.jpeg">
     <link rel="apple-touch-icon" sizes="152x152" href="https://s3plus.meituan.net/opapisdk/op_ticket_885190757_1758510900942_qdqqd_djw0z2.jpeg">
@@ -14386,23 +14386,45 @@ async function loadAllDataFromDB() {
             return [{ type: 'text', content: content }];
         }
         /**
-         * 【全新】根据当前时间获取一天中的问候语
-         * @returns {string} - 返回如 "凌晨", "早上", "下午", "晚上" 等字符串
+         * 【全新 V2.1 | 最终时区修复版】获取准确的中国上海时间信息
+         * @returns {{currentTime: string, timeOfDayGreeting: string}}
          */
-        function getTimeOfDayGreeting(date = new Date()) { // 允许传入一个日期对象
-            const hour = date.getHours(); // 使用传入的日期对象来获取小时
-            if (hour >= 0 && hour < 5) {
-                return "凌晨";
-            } else if (hour >= 5 && hour < 9) {
-                return "早上";
-            } else if (hour >= 9 && hour < 13) {
-                return "上午";
-            } else if (hour >= 13 && hour < 18) {
-                return "下午";
-            } else if (hour >= 18 && hour < 24) {
-                return "晚上";
+        function getChinaTimeInfo() {
+            const now = new Date();
+            
+            // 使用 Intl.DateTimeFormat API 来获取带正确时区的完整时间字符串
+            const chinaTimeFormatter = new Intl.DateTimeFormat('zh-CN', {
+                timeZone: 'Asia/Shanghai',
+                dateStyle: 'full',
+                timeStyle: 'short',
+                hour12: false
+            });
+            const currentTimeString = chinaTimeFormatter.format(now);
+
+            // 再次使用该 API，专门获取上海时区的“小时”数，用于判断时间段
+            const chinaHourFormatter = new Intl.DateTimeFormat('en-US', {
+                timeZone: 'Asia/Shanghai',
+                hour: '2-digit',
+                hour12: false
+            });
+            const chinaHour = parseInt(chinaHourFormatter.format(now));
+
+            let timeOfDayGreeting;
+            if (chinaHour >= 0 && chinaHour < 5) {
+                timeOfDayGreeting = "凌晨";
+            } else if (chinaHour >= 5 && chinaHour < 9) {
+                timeOfDayGreeting = "早上";
+            } else if (chinaHour >= 9 && chinaHour < 13) {
+                timeOfDayGreeting = "上午";
+            } else if (chinaHour >= 13 && chinaHour < 18) {
+                timeOfDayGreeting = "下午";
+            } else if (chinaHour >= 18 && chinaHour < 24) { // <-- 这里的笔误已被修正！
+                timeOfDayGreeting = "晚上";
+            } else {
+                timeOfDayGreeting = "现在";
             }
-            return "现在"; // 默认情况
+
+            return { currentTime: currentTimeString, timeOfDayGreeting: timeOfDayGreeting };
         }
         // ▼▼▼ 【全新】API预设功能核心函数 ▼▼▼
         
@@ -16283,11 +16305,12 @@ async function loadAllDataFromDB() {
 
         // 1. 检查时间感知开关是否为开启状态
         if (chat.settings.timePerceptionEnabled) {
-            const now = new Date();
-            const chinaTime = new Date(now.getTime() + (now.getTimezoneOffset() * 60000) + (3600000 * 8));
-            currentTime = chinaTime.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', dateStyle: 'full', timeStyle: 'short' });
-            timeOfDayGreeting = getTimeOfDayGreeting(chinaTime);
+            // 【核心修复】调用我们新的、可靠的时间获取函数
+            const chinaTime = getChinaTimeInfo();
+            currentTime = chinaTime.currentTime;
+            timeOfDayGreeting = chinaTime.timeOfDayGreeting;
 
+            // （后续的对话状态判断逻辑保持不变）
             const lastAiMsgIndex = chat.history.slice(-maxMemory).findLastIndex(msg => msg.role === 'assistant');
             if (lastAiMsgIndex !== -1 && lastAiMsgIndex < chat.history.slice(-maxMemory).length - 1) {
                 const lastAiMessage = chat.history.slice(-maxMemory)[lastAiMsgIndex];
@@ -16297,7 +16320,7 @@ async function loadAllDataFromDB() {
                     if (timeDiffHours > 12) {
                         longTimeNoSee = true;
                         const diffDays = Math.floor(timeDiffHours / 24);
-                        timeContext = `- **【紧急】对话状态**: 你们已经有**${diffDays > 0 ? diffDays + '天' : Math.floor(timeDiffHours) + '小时'}**没有聊天了。你【必须】主动开启一个全新的、符合当前时间的话题来问候用户，绝对不要延续之前的话题！`;
+                        timeContext = `- **对话状态**: 你们已经有**${diffDays > 0 ? diffDays + '天' : Math.floor(timeDiffHours) + '小时'}**没有聊天了。你【必须】主动开启一个全新的、符合当前时间的话题来问候用户，绝对不要延续之前的话题！`;
                     } else {
                         const diffMinutes = Math.floor(timeDiffHours * 60);
                         if (diffMinutes < 5) { timeContext = "- **对话状态**: 你们的对话刚刚还在继续。"; } 
@@ -16311,13 +16334,16 @@ async function loadAllDataFromDB() {
         }
         
         // 2. 根据开关状态，动态生成不同的Prompt片段
+        // 【核心修复】强化对AI的指令，使用“铁律”和“绝对禁止”等词语
         const timePerceptionRule = chat.settings.timePerceptionEnabled
-            ? `- **时间**: 你必须感知到当前是 ${currentTime} (${timeOfDayGreeting})，并在对话中自然地体现出来。`
+            ? `- **【时间】**: 你【必须】将当前时间作为【绝对的、不可改变的】事实。当前真实时间是 **${currentTime} (${timeOfDayGreeting})**。`
             : `- **时间**: 你【必须忽略】当前真实时间，专注于对话内容的连贯性和故事性。`;
 
         const timePerceptionContext = chat.settings.timePerceptionEnabled
             ? `- **当前时间**: ${currentTime} (${timeOfDayGreeting})\n${timeContext}`
             : `- **对话状态**: 忽略真实时间，根据对话历史继续。`;
+        
+        // ▲▲▲ 【【【核心修改到此结束】】】 ▲▲▲
                 let systemPrompt, messagesPayload;
         
                 const gomokuContext = formatGomokuStateForAI(gomokuState[chatId]);
@@ -17042,7 +17068,7 @@ ${linkedMemoryContext}
                                 if (timeDiffHours > 12) {
                                     longTimeNoSee = true;
                                     const diffDays = Math.floor(timeDiffHours / 24);
-                                    timeContext = `- **【紧急】对话状态**: 你们已经有**${diffDays > 0 ? diffDays + '天' : Math.floor(timeDiffHours) + '小时'}**没有聊天了。你【必须】主动开启一个全新的、符合当前时间（${timeOfDayGreeting}）的话题来问候用户，绝对不要延续之前的话题！`;
+                                    timeContext = `- **对话状态**: 你们已经有**${diffDays > 0 ? diffDays + '天' : Math.floor(timeDiffHours) + '小时'}**没有聊天了。你【必须】主动开启一个全新的、符合当前时间（${timeOfDayGreeting}）的话题来问候用户，绝对不要延续之前的话题！`;
                                 } else {
                                     const diffMinutes = Math.floor(timeDiffHours * 60);
                                     if (diffMinutes < 5) { timeContext = "- **对话状态**: 你们的对话刚刚还在继续。"; } 
@@ -17065,7 +17091,6 @@ systemPrompt = `
 # 角色扮演核心规则
 1.  **对话节奏**: 模拟真人的聊天习惯，将你想说的话拆分成【多条、简短的】消息。每次回复至少【5-12条】，且每次条数【必须不同】。严禁发展线下剧情。
 2.  **情景感知**:
-- **情景感知**:
     ${timePerceptionRule}
     - **音乐**: ${musicContext ? '你们正在一起听歌，' + musicContext : '你们没有在听歌。'}
 3.  **主动性**:
@@ -17100,7 +17125,7 @@ ${chat.longTermMemory && chat.longTermMemory.length > 0 ? chat.longTermMemory.ma
 # 指令使用原则与动机 
 **核心目标**: 主动运用多种功能，创造丰富、真实的聊天体验，而不只是文字对话。
 
--   **情感表达**: 表达强烈或复杂的情绪时，优先发【语音】，用【表情】增加趣味性。
+-   **情感表达**: 表达强烈或复杂的情绪时，优先发【语音】，用【表情】增加趣味性，禁止编造表情。
 -   **精确回应**: 当你想回应的【某一句话】，或者想对用户的某句特定的话表达强烈感受时，【必须使用引用回复】来确保对方明白你的意图。
 -   **想象与分享**: 聊到美好事物时主动【发图片】分享想象；遇到有趣内容时【分享链接】。
 -   **创造羁绊**: 用【倒计时】记录约定，用【回忆】珍藏趣事。适时【拍一拍】或换首【音乐】来调节气氛。
@@ -19090,41 +19115,58 @@ async function triggerInactiveAiAction(chatId) {
     if (!proxyUrl || !apiKey || !model) return;
 
     const userNickname = state.qzoneSettings.nickname;
-    let timeContextText;
     let recentContextSummary; 
-    let longTimeNoSee = false;
-        
-    const lastMessage = chat.history.filter(m => !m.isHidden).slice(-1)[0];
-    
-    if (lastMessage) {
-        const lastTime = new Date(lastMessage.timestamp);
-        const timeDiffHours = (now - lastTime) / (1000 * 60 * 60);
+            // ▼▼▼ 【【【核心修改从这里开始】】】 ▼▼▼
+            let timeContextText = "这是你们的第一次互动。";
+            let currentTime = '';
+            let timeOfDayGreeting = '';
+            let timeContext = '';
+            let longTimeNoSee = false;
 
-        if (timeDiffHours > 12) {
-            longTimeNoSee = true;
-            const diffDays = Math.floor(timeDiffHours / 24);
-            timeContextText = `你们已经有${diffDays > 0 ? diffDays + '天' : Math.floor(timeDiffHours) + '小时'}没有聊天了。`;
-            recentContextSummary = `[重要指令] ${timeContextText} 请你根据当前时间（${now.toLocaleString('zh-CN', { dateStyle: 'full', timeStyle: 'short' })}）和你的角色设定，主动开启一个全新的话题来问候用户。绝对不要延续之前的话题。`;
-        } else {
-            const diffMinutes = Math.floor(timeDiffHours * 60);
-            if (diffMinutes < 5) { timeContextText = "你们的对话刚刚还在继续。"; } 
-            else if (diffMinutes < 60) { timeContextText = `你们在${diffMinutes}分钟前聊过。`; } 
-            else { timeContextText = `你们在${Math.floor(timeDiffHours)}小时前聊过。`; }
-            
-            if (recentHistory.length > 0) {
-                recentContextSummary = "这是你们最近的对话：\n" + recentHistory.map(msg => {
-                    const sender = msg.role === 'user' ? userNickname : chat.name;
-                    return `${sender}: ${String(msg.content).substring(0, 50)}...`;
-                }).join('\n');
+            if (chat.settings.timePerceptionEnabled) {
+                // 1. 【核心修复】调用我们新的、可靠的时间获取函数
+                const chinaTime = getChinaTimeInfo();
+                currentTime = chinaTime.currentTime;
+                timeOfDayGreeting = chinaTime.timeOfDayGreeting;
+
+                const lastMessage = chat.history.filter(m => !m.isHidden).slice(-1)[0];
+                if (lastMessage) {
+                    const lastTime = new Date(lastMessage.timestamp);
+                    const timeDiffHours = (now - lastTime) / (1000 * 60 * 60);
+
+                    if (timeDiffHours > 12) {
+                        longTimeNoSee = true;
+                        const diffDays = Math.floor(timeDiffHours / 24);
+                        timeContextText = `你们已经有${diffDays > 0 ? diffDays + '天' : Math.floor(timeDiffHours) + '小时'}没有聊天了。`;
+                        recentContextSummary = `[重要指令] ${timeContextText} 请你根据当前时间（${currentTime}）和你的角色设定，主动开启一个全新的话题来问候用户。绝对不要延续之前的话题。`;
+                    } else {
+                        const diffMinutes = Math.floor(timeDiffHours * 60);
+                        if (diffMinutes < 5) { timeContextText = "你们的对话刚刚还在继续。"; }
+                        else if (diffMinutes < 60) { timeContextText = `你们在${diffMinutes}分钟前聊过。`; }
+                        else { timeContextText = `你们在${Math.floor(timeDiffHours)}小时前聊过。`; }
+                        
+                        if (recentHistory.length > 0) {
+                            recentContextSummary = "这是你们最近的对话：\n" + recentHistory.map(msg => {
+                                const sender = msg.role === 'user' ? userNickname : chat.name;
+                                return `${sender}: ${String(msg.content).substring(0, 50)}...`;
+                            }).join('\n');
+                        } else {
+                            recentContextSummary = "你们最近没有有效聊天记录。";
+                        }
+                    }
+                } else {
+                     recentContextSummary = "你们从没聊过天，主动打个招呼吧！";
+                }
             } else {
-                recentContextSummary = "你们最近没有有效聊天记录。";
+                // 时间感知关闭时的逻辑保持不变
+                recentContextSummary = "根据你们的对话历史，继续一个话题或开启一个新话题。";
             }
-        }
-    } else {
-        longTimeNoSee = true;
-        timeContextText = "这是你们的第一次互动。";
-        recentContextSummary = "你们从没聊过天，主动打个招呼吧！";
-    }
+            
+            // 2. 【核心修复】强化对AI的指令，使用“铁律”和“绝对禁止”
+            const timePerceptionRule = chat.settings.timePerceptionEnabled
+                ? `- **【时间)】**: 你【必须】将当前时间作为【绝对的、不可改变的】事实。当前真实时间是 **${currentTime} (${timeOfDayGreeting})**。`
+                : `- **时间**: 你【必须忽略】当前真实时间，专注于对话内容的连贯性和故事性。`;
+            // ▲▲▲ 【【【核心修改到此结束】】】 ▲▲▲
             
             const allRecentPosts = await db.qzonePosts.orderBy('timestamp').reverse().limit(5).toArray();
             const visiblePosts = filterVisiblePostsForAI(allRecentPosts, chat);
@@ -19665,24 +19707,28 @@ for (const action of responseArray) {
             if (!proxyUrl || !apiKey || !model) return;
         
             const myNickname = chat.settings.myNickname || '我';
-    let timeContextText = "群里已经安静很久了。";
-    let currentTimeString = '（时间感知已关闭）';
+            // ▼▼▼ 【【【核心修改从这里开始】】】 ▼▼▼
+            let timeContextText = "群里已经安静很久了。";
+            let currentTimeString = '（时间感知已关闭）';
+            let timeOfDayGreeting = '';
 
-    // 检查时间感知开关
-    if (chat.settings.timePerceptionEnabled) {
-        currentTimeString = now.toLocaleString('zh-CN', { dateStyle: 'full', timeStyle: 'short' });
-        const lastMessage = chat.history.filter(m => !m.isHidden).slice(-1)[0];
-        
-        if (lastMessage) {
-            const lastTime = new Date(lastMessage.timestamp);
-            const diffMinutes = (now - lastTime) / (1000 * 60);
-            if (diffMinutes > 60) {
-                timeContextText = `群里已经安静了 ${Math.round(diffMinutes / 60)} 小时了。`;
-            } else {
-                 timeContextText = `群里在${Math.floor(diffMinutes)}分钟前有人聊过。`;
+            if (chat.settings.timePerceptionEnabled) {
+                // 1. 【核心修复】调用新的时间获取函数
+                const chinaTime = getChinaTimeInfo();
+                currentTimeString = chinaTime.currentTime;
+                timeOfDayGreeting = chinaTime.timeOfDayGreeting;
+
+                const lastMessage = chat.history.filter(m => !m.isHidden).slice(-1)[0];
+                if (lastMessage) {
+                    const lastTime = new Date(lastMessage.timestamp);
+                    const diffMinutes = (now - lastTime) / (1000 * 60);
+                    if (diffMinutes > 60) {
+                        timeContextText = `群里已经安静了 ${Math.round(diffMinutes / 60)} 小时了。`;
+                    } else {
+                         timeContextText = `群里在${Math.floor(diffMinutes)}分钟前有人聊过。`;
+                    }
+                }
             }
-        }
-    }
     
 
             
