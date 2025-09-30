@@ -10612,6 +10612,22 @@
         <div class="form-group" id="my-group-nickname-group"><label for="my-group-nickname-input">我的群昵称</label><input type="text" id="my-group-nickname-input"></div>
         <button class="form-button form-button-secondary" id="search-history-btn" style="margin-top: 10px;">搜索聊天记录</button>
 <!-- ▼▼▼ 在这里粘贴下面的新代码 ▼▼▼ -->
+<div class="form-group" id="time-perception-group">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <label for="time-perception-toggle" style="margin-bottom: 0;">
+            启用时间感知
+            <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;">
+                开启后，AI会感知并提及当前真实时间。关闭可获得更沉浸的、不受时间干扰的对话体验。
+            </p>
+        </label>
+        <label class="toggle-switch">
+            <input type="checkbox" id="time-perception-toggle">
+            <span class="slider"></span>
+        </label>
+    </div>
+</div>
+<!-- ▲▲▲ 新增HTML结束 ▲▲▲ -->
+<!-- ▼▼▼ 在这里粘贴下面的新代码 ▼▼▼ -->
 <div class="form-group" id="single-char-background-activity-group">
     <div style="display: flex; justify-content: space-between; align-items: center;">
         <label for="char-background-activity-switch" style="margin-bottom: 0;">
@@ -14155,6 +14171,12 @@ async function loadAllDataFromDB() {
                 chat.thoughtsHistory = [];
             }
         }
+        // ▼▼▼ 在这里添加新代码 ▼▼▼
+        // 为旧数据添加默认的时间感知设置
+        if (typeof chat.settings.timePerceptionEnabled === 'undefined') {
+            chat.settings.timePerceptionEnabled = true; // 默认为开启
+        }
+        // ▲▲▲ 新增代码结束 ▲▲▲
         acc[chat.id] = chat;
         return acc;
     }, {});
@@ -15948,7 +15970,7 @@ async function loadAllDataFromDB() {
             if (!state.activeChatId) return;
             const chatId = state.activeChatId;
             const chat = state.chats[state.activeChatId];
-        
+            const maxMemory = parseInt(chat.settings.maxMemory) || 10;
             const isViewingThisChat = document.getElementById('chat-interface-screen').classList.contains('active') && state.activeChatId === chatId;
         
             setAvatarActingState(chatId, true);
@@ -16186,10 +16208,49 @@ async function loadAllDataFromDB() {
                 //                  ★★★ 核心修复代码到此结束 ★★★
                 // =========================================================================
         
-                const now = new Date();
-                const chinaTime = new Date(now.getTime() + (now.getTimezoneOffset() * 60000) + (3600000 * 8));
-                const currentTime = chinaTime.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', dateStyle: 'full', timeStyle: 'short' });
-                const timeOfDayGreeting = getTimeOfDayGreeting(chinaTime);
+        // ▼▼▼ 【【【核心修改从这里开始】】】 ▼▼▼
+        let currentTime = '';
+        let timeOfDayGreeting = '';
+        let timeContext = '';
+        let longTimeNoSee = false;
+
+        // 1. 检查时间感知开关是否为开启状态
+        if (chat.settings.timePerceptionEnabled) {
+            const now = new Date();
+            const chinaTime = new Date(now.getTime() + (now.getTimezoneOffset() * 60000) + (3600000 * 8));
+            currentTime = chinaTime.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', dateStyle: 'full', timeStyle: 'short' });
+            timeOfDayGreeting = getTimeOfDayGreeting(chinaTime);
+
+            const lastAiMsgIndex = chat.history.slice(-maxMemory).findLastIndex(msg => msg.role === 'assistant');
+            if (lastAiMsgIndex !== -1 && lastAiMsgIndex < chat.history.slice(-maxMemory).length - 1) {
+                const lastAiMessage = chat.history.slice(-maxMemory)[lastAiMsgIndex];
+                const firstUserReply = chat.history.slice(-maxMemory)[lastAiMsgIndex + 1];
+                if (firstUserReply.role === 'user') {
+                    const timeDiffHours = (new Date(firstUserReply.timestamp) - new Date(lastAiMessage.timestamp)) / (1000 * 60 * 60);
+                    if (timeDiffHours > 12) {
+                        longTimeNoSee = true;
+                        const diffDays = Math.floor(timeDiffHours / 24);
+                        timeContext = `- **【紧急】对话状态**: 你们已经有**${diffDays > 0 ? diffDays + '天' : Math.floor(timeDiffHours) + '小时'}**没有聊天了。你【必须】主动开启一个全新的、符合当前时间的话题来问候用户，绝对不要延续之前的话题！`;
+                    } else {
+                        const diffMinutes = Math.floor(timeDiffHours * 60);
+                        if (diffMinutes < 5) { timeContext = "- **对话状态**: 你们的对话刚刚还在继续。"; } 
+                        else if (diffMinutes < 60) { timeContext = `- **对话状态**: 你们在${diffMinutes}分钟前聊过。`; } 
+                        else { timeContext = `- **对话状态**: 你们在${Math.floor(timeDiffHours)}小时前聊过。`; }
+                    }
+                }
+            } else if (chat.history.filter(m => !m.isHidden).every(msg => msg.role === 'user')) {
+                 timeContext = "- **对话状态**: 这是你们的第一次对话。";
+            }
+        }
+        
+        // 2. 根据开关状态，动态生成不同的Prompt片段
+        const timePerceptionRule = chat.settings.timePerceptionEnabled
+            ? `- **时间**: 你必须感知到当前是 ${currentTime} (${timeOfDayGreeting})，并在对话中自然地体现出来。`
+            : `- **时间**: 你【必须忽略】当前真实时间，专注于对话内容的连贯性和故事性。`;
+
+        const timePerceptionContext = chat.settings.timePerceptionEnabled
+            ? `- **当前时间**: ${currentTime} (${timeOfDayGreeting})\n${timeContext}`
+            : `- **对话状态**: 忽略真实时间，根据对话历史继续。`;
                 let systemPrompt, messagesPayload;
         
                 const gomokuContext = formatGomokuStateForAI(gomokuState[chatId]);
@@ -16253,7 +16314,7 @@ async function loadAllDataFromDB() {
                 }
         // ▲▲▲ 修复结束 ▲▲▲
         
-                const maxMemory = parseInt(chat.settings.maxMemory) || 10;
+ 
                 const historySlice = chat.history.slice(-maxMemory);
         
                 let sharedContext = '';
@@ -16483,7 +16544,7 @@ systemPrompt = `
     -   在对话中，你可以根据人设和关系，自由使用角色的【群昵称】或【本名】进行称呼。
     -   严禁生成 'name' 字段为 "${myNickname}" (用户) 或 "${chat.name}" (群名) 的消息。
 3.  **禁止出戏**: 绝不能透露你是AI或模型。严禁发展线下剧情。
-4.  **情景感知**: 你的对话【必须】自然地体现出对当前时间 (${currentTime}) 和情景的感知。${longTimeNoSee ? `【重要提示】${timeContextText} 你应该让角色们主动开启新话题来打破沉默。` : ''}
+4. **情景感知**: ${chat.settings.timePerceptionEnabled ? `你的对话【必须】自然地体现出对当前时间 (${currentTime}) 和情景的感知。${longTimeNoSee ? `【重要提示】${timeContext} 你应该让角色们主动开启新话题来打破沉默。` : ''}` : '你【必须忽略】当前真实时间，专注于对话内容的连贯性和故事性。'}
 # 导演策略与节奏控制
 1.  **并非人人发言**: 不是每个角色都必须在每一轮都说话。你可以根据当前话题，让1-2个最相关的角色进行深度对话，其他角色可以暂时“潜水”，等待合适的时机再切入。
 2.  **创造“小团体”**: 允许角色之间形成短暂的“两人对话”或“三人讨论”，让群聊更有层次感。
@@ -16502,8 +16563,7 @@ ${chat.longTermMemory && chat.longTermMemory.length > 0 ? chat.longTermMemory.ma
 
 # 当前群聊信息
 - **群名称**: ${chat.name}
-- **对话状态**: 上次互动于 ${timeContextText}
-${announcementContext}
+- **对话状态**: ${chat.settings.timePerceptionEnabled ? `上次互动于 ${timeContext}` : '（时间感知已关闭）'}
 
 # 群成员列表、人设及社交背景 (至关重要！)
 你【必须】根据每个角色的社交背景来决定他们的互动方式。
@@ -16766,7 +16826,8 @@ ${chat.settings.myPersona}
 ${chat.longTermMemory && chat.longTermMemory.length > 0 ? chat.longTermMemory.map(mem => `- ${mem.content}`).join('\n') : '- (暂无)'}
 
 # 供你参考的信息
-- **当前时间**: ${currentTime}
+# 当前情景
+${timePerceptionContext}
 - **你们最后的对话摘要**: 
 ${historySlice.map(msg => {
     let line = `${msg.role === 'user' ? myNickname : chat.name}: `;
@@ -16937,7 +16998,8 @@ systemPrompt = `
 # 角色扮演核心规则
 1.  **对话节奏**: 模拟真人的聊天习惯，将你想说的话拆分成【多条、简短的】消息。每次回复至少【5-12条】，且每次条数【必须不同】。严禁发展线下剧情。
 2.  **情景感知**:
-    - **时间**: 你必须感知到当前是 ${currentTime} (${timeOfDayGreeting})，并在对话中自然地体现出来。
+- **情景感知**:
+    ${timePerceptionRule}
     - **音乐**: ${musicContext ? '你们正在一起听歌，' + musicContext : '你们没有在听歌。'}
 3.  **主动性**:
     - 你可以根据对话发展，使用指令来更新自己的状态、更换头像、记录回忆、发起约定或执行其他社交行为。
@@ -17040,10 +17102,7 @@ ${contactsList}
 ${postsContext}
 
 # 当前情景
-- **当前时间**: ${currentTime} (${timeOfDayGreeting})
-${timeContext}
-你必须严格遵守${worldBookContent}
-${linkedMemoryContext}
+${timePerceptionContext}
 # 当前音乐情景
 ${musicContext}
 ${sharedContext}
@@ -18937,64 +18996,54 @@ function runBackgroundSimulationTick() {
 // ▲▲▲ 替换结束 ▲▲▲
         
         // ▼▼▼ 【最终修复版】请用这个全新的函数，完整替换旧的 triggerInactiveAiAction ▼▼▼
-        /**
-         * 【V3.0 | 记忆增强版】AI在非活跃状态下的独立行动决策
-         */
-        async function triggerInactiveAiAction(chatId) {
-            const chat = state.chats[chatId];
-            if (!chat) return;
-        
-            // 【【【核心修改1：从聊天设置中读取冷却时间】】】
-            const actionCooldownMinutes = chat.settings.actionCooldownMinutes || 10; 
-        
-            if (chat.lastActionTimestamp) {
-                const minutesSinceLastAction = (Date.now() - chat.lastActionTimestamp) / (1000 * 60);
-                // 【【【核心修改2：使用新的变量进行判断】】】
-                if (minutesSinceLastAction < actionCooldownMinutes) {
-                    console.log(`角色 "${chat.name}" 处于行动冷却中 (还剩 ${Math.round(actionCooldownMinutes - minutesSinceLastAction)} 分钟)，本次独立行动跳过。`);
-                    return;
-                }
-            }
-            setAvatarActingState(chatId, true);
-        
-            const { proxyUrl, apiKey, model } = state.apiConfig;
-            if (!proxyUrl || !apiKey || !model) return;
-        
-            const userNickname = state.qzoneSettings.nickname;
-            const now = new Date();
-            let timeContextText;
-            let recentContextSummary; 
-            let longTimeNoSee = false;
-    // ==========================================================
-    //            ★★★ 核心修复从这里开始 ★★★
-    // ==========================================================
+/**
+ * 【V3.0 | 记忆增强版】AI在非活跃状态下的独立行动决策
+ */
+async function triggerInactiveAiAction(chatId) {
+    const chat = state.chats[chatId];
+    if (!chat) return;
 
-    // 步骤 1: (保持不变) 我们依然需要获取最近的10条消息，用于后续的API请求
+    const now = new Date();
+    // 1. 将 recentHistory 的定义移到函数顶部，确保它始终存在。
     const selfMemoryCount = 10;
     const recentHistory = chat.history.filter(m => !m.isHidden).slice(-selfMemoryCount);
-        
-            const lastMessage = chat.history.filter(m => !m.isHidden).slice(-1)[0];
+    const actionCooldownMinutes = chat.settings.actionCooldownMinutes || 10;
+
+    if (chat.lastActionTimestamp) {
+        const minutesSinceLastAction = (now - chat.lastActionTimestamp) / (1000 * 60);
+        if (minutesSinceLastAction < actionCooldownMinutes) {
+            console.log(`角色 "${chat.name}" 处于行动冷却中 (还剩 ${Math.round(actionCooldownMinutes - minutesSinceLastAction)} 分钟)，本次独立行动跳过。`);
+            return;
+        }
+    }
             
-            if (lastMessage) {
-                const lastTime = new Date(lastMessage.timestamp);
-                const timeDiffHours = (now - lastTime) / (1000 * 60 * 60);
+    setAvatarActingState(chatId, true);
+
+    const { proxyUrl, apiKey, model } = state.apiConfig;
+    if (!proxyUrl || !apiKey || !model) return;
+
+    const userNickname = state.qzoneSettings.nickname;
+    let timeContextText;
+    let recentContextSummary; 
+    let longTimeNoSee = false;
         
-                if (timeDiffHours > 12) {
-                    longTimeNoSee = true;
-                    const diffDays = Math.floor(timeDiffHours / 24);
-                    timeContextText = `你们已经有${diffDays > 0 ? diffDays + '天' : Math.floor(timeDiffHours) + '小时'}没有聊天了。`;
-                    recentContextSummary = `[重要指令] ${timeContextText} 请你根据当前时间（${now.toLocaleString('zh-CN', { dateStyle: 'full', timeStyle: 'short' })}）和你的角色设定，主动开启一个全新的话题来问候用户。绝对不要延续之前的话题。`;
-                } else {
-                    const diffMinutes = Math.floor(timeDiffHours * 60);
-                    if (diffMinutes < 5) { timeContextText = "你们的对话刚刚还在继续。"; } 
-                    else if (diffMinutes < 60) { timeContextText = `你们在${diffMinutes}分钟前聊过。`; } 
-                    else { timeContextText = `你们在${Math.floor(timeDiffHours)}小时前聊过。`; }
-        
-                    const selfMemoryCount = 10;
-                    const recentHistory = chat.history.filter(m => !m.isHidden).slice(-selfMemoryCount);
-                    const filteredHistory = recentHistory.filter(msg => !String(msg.content).includes('已被用户删除'));
-        
-            // 步骤 2: (保持不变) 我们依然为AI生成一份简洁的摘要，作为高级指示
+    const lastMessage = chat.history.filter(m => !m.isHidden).slice(-1)[0];
+    
+    if (lastMessage) {
+        const lastTime = new Date(lastMessage.timestamp);
+        const timeDiffHours = (now - lastTime) / (1000 * 60 * 60);
+
+        if (timeDiffHours > 12) {
+            longTimeNoSee = true;
+            const diffDays = Math.floor(timeDiffHours / 24);
+            timeContextText = `你们已经有${diffDays > 0 ? diffDays + '天' : Math.floor(timeDiffHours) + '小时'}没有聊天了。`;
+            recentContextSummary = `[重要指令] ${timeContextText} 请你根据当前时间（${now.toLocaleString('zh-CN', { dateStyle: 'full', timeStyle: 'short' })}）和你的角色设定，主动开启一个全新的话题来问候用户。绝对不要延续之前的话题。`;
+        } else {
+            const diffMinutes = Math.floor(timeDiffHours * 60);
+            if (diffMinutes < 5) { timeContextText = "你们的对话刚刚还在继续。"; } 
+            else if (diffMinutes < 60) { timeContextText = `你们在${diffMinutes}分钟前聊过。`; } 
+            else { timeContextText = `你们在${Math.floor(timeDiffHours)}小时前聊过。`; }
+            
             if (recentHistory.length > 0) {
                 recentContextSummary = "这是你们最近的对话：\n" + recentHistory.map(msg => {
                     const sender = msg.role === 'user' ? userNickname : chat.name;
@@ -19193,7 +19242,7 @@ ${chat.longTermMemory && chat.longTermMemory.length > 0 ? chat.longTermMemory.ma
 ${longTermMemoryContext}        
         # 【【【最高优先级指令：情感维系】】】
         **你与用户的关系是最重要的！** 相比于在动态区闲逛，你应该【优先考虑】是否需要主动给用户发消息来维系你们的感情。
-        ${ longTimeNoSee ? `**【【【当前紧急情况】】】: 你们已经很久没聊天了！你【必须、一定、务必】将本次行动的重点放在使用 'text' 指令给用户发消息，主动开启一个新的、有趣的话题来重新建立联系。绝对不要只是点赞或评论动态，那会显得你很冷漠！**` : ''}
+${ chat.settings.timePerceptionEnabled && longTimeNoSee ? `**【【【当前紧急情况】】】: ${timeContextText} 你【必须、一定、务必】将本次行动的重点放在使用 'text' 指令给用户发消息，主动开启一个新的、有趣的话题来重新建立联系。绝对不要只是点赞或评论动态，那会显得你很冷漠！**` : ''}
         
         # 【【【对话节奏铁律 (至关重要！)】】】
         你的回复【必须】模拟真人的打字和思考习惯。**绝对不要一次性发送一大段文字！** 你应该将你想说的话，拆分成【多条、简短的】消息气泡来发送，每条消息最好不要超过30个字。这会让对话看起来更自然、更真实。
@@ -19248,8 +19297,8 @@ ${longTermMemoryContext}
         -   **你的角色设定**: ${chat.settings.aiPersona}
         ${worldBookContent}
         ${linkedMemoryContext}
-        -   **当前时间**: ${now.toLocaleString('zh-CN', { dateStyle: 'full', timeStyle: 'short' })}
-        -   **对话状态**: ${timeContextText}
+- **当前时间**: ${chat.settings.timePerceptionEnabled ? now.toLocaleString('zh-CN', { dateStyle: 'full', timeStyle: 'short' }) : '（时间感知已关闭）'}
+- **对话状态**: ${chat.settings.timePerceptionEnabled ? timeContextText : '（时间感知已关闭）'}
         -   **你们最后的对话摘要**: ${recentContextSummary}
         ${dynamicContext}`;
     // 步骤 3: 【【【这就是最关键的修复！】】】
@@ -19533,25 +19582,42 @@ for (const action of responseArray) {
         async function triggerGroupAiAction(chatId) {
             const chat = state.chats[chatId];
             if (!chat || !chat.isGroup) return;
-        
-            // 【【【核心修改1：从群聊设置中读取冷却时间】】】
-            const groupActionCooldownMinutes = chat.settings.actionCooldownMinutes || 10;
-        
-            if (chat.lastActionTimestamp) {
-                const minutesSinceLastAction = (Date.now() - chat.lastActionTimestamp) / (1000 * 60);
-                // 【【【核心修改2：使用新的变量进行判断】】】
-                if (minutesSinceLastAction < groupActionCooldownMinutes) {
-                    console.log(`群聊 "${chat.name}" 处于行动冷却中，本次独立行动跳过。`);
-                    return;
-                }
-            }
+    const now = new Date();        
+    
+    const groupActionCooldownMinutes = chat.settings.actionCooldownMinutes || 10;
+    if (chat.lastActionTimestamp) {
+        const minutesSinceLastAction = (now - chat.lastActionTimestamp) / (1000 * 60);
+        if (minutesSinceLastAction < groupActionCooldownMinutes) {
+            console.log(`群聊 "${chat.name}" 处于行动冷却中，本次独立行动跳过。`);
+            return;
+        }
+    }
             
             
             const { proxyUrl, apiKey, model } = state.apiConfig;
             if (!proxyUrl || !apiKey || !model) return;
         
             const myNickname = chat.settings.myNickname || '我';
-            const now = new Date();
+    let timeContextText = "群里已经安静很久了。";
+    let currentTimeString = '（时间感知已关闭）';
+
+    // 检查时间感知开关
+    if (chat.settings.timePerceptionEnabled) {
+        currentTimeString = now.toLocaleString('zh-CN', { dateStyle: 'full', timeStyle: 'short' });
+        const lastMessage = chat.history.filter(m => !m.isHidden).slice(-1)[0];
+        
+        if (lastMessage) {
+            const lastTime = new Date(lastMessage.timestamp);
+            const diffMinutes = (now - lastTime) / (1000 * 60);
+            if (diffMinutes > 60) {
+                timeContextText = `群里已经安静了 ${Math.round(diffMinutes / 60)} 小时了。`;
+            } else {
+                 timeContextText = `群里在${Math.floor(diffMinutes)}分钟前有人聊过。`;
+            }
+        }
+    }
+    
+
             
             // ★★★ 核心修复开始 ★★★
             let systemPrompt;
@@ -19749,8 +19815,8 @@ for (const action of responseArray) {
                 systemPrompt = `
         # 你的任务
         你是一个群聊AI导演。你现在控制着一个名为“${chat.name}”的群聊。
-        当前时间是 ${now.toLocaleString('zh-CN', { dateStyle: 'full', timeStyle: 'short' })}。
-        ${timeContextText} 你的任务是根据群成员的性格、世界观、参考记忆、最近的动态和当前情景，【选择一个或多个角色】，让他们主动发起一段对话，打破沉默，让群聊重新活跃起来。
+当前时间是 ${currentTimeString}。
+${timeContextText} 你的任务是根据群成员的性格、世界观、参考记忆、最近的动态和当前情景，【选择一个或多个角色】，让他们主动发起一段对话，打破沉默，让群聊重新活跃起来。
 # 【【【交互铁律：角色间必须互动！】】】
 1.  你的核心任务是**导演一场生动的群聊**，而不仅仅是让角色轮流发言。
 2.  当有多个角色在同一轮发言时，他们的对话【必须】有逻辑上的前后关联。后面的角色应该**回应、反驳、或补充**前面角色的发言。
@@ -19778,7 +19844,7 @@ ${longTermMemoryContext}
         ${worldBookContent}
        
         ${linkedMemoryContext}
-        
+- **对话状态**: ${chat.settings.timePerceptionEnabled ? `上次互动于 ${timeContextText}` : '（时间感知已关闭）'}      
         # 群成员列表及人设
         ${membersList}
         
@@ -34725,7 +34791,7 @@ document.getElementById('save-world-book-btn').addEventListener('click', async (
 // 【核心新增】根据是否为群聊，显示或隐藏对应的后台活动开关
 document.getElementById('single-char-background-activity-group').style.display = isGroup ? 'none' : 'block';
 document.getElementById('group-background-activity-group').style.display = isGroup ? 'block' : 'none';
-
+document.getElementById('time-perception-toggle').checked = chat.settings.timePerceptionEnabled;
 // (后续的赋值逻辑，请用下面这整块新代码完整替换)
 
 if (isGroup) {
@@ -34989,6 +35055,7 @@ if (chat.isGroup) {
     chat.groupId = selectedGroupId ? parseInt(selectedGroupId) : null;
 }
 // ▲▲▲ 替换结束 ▲▲▲
+    chat.settings.timePerceptionEnabled = document.getElementById('time-perception-toggle').checked;
             chat.settings.maxMemory = parseInt(document.getElementById('max-memory').value) || 10;
             chat.settings.linkedMemoryCount = parseInt(document.getElementById('linked-memory-count').value) || 10;
             const linkMemoryToggleChecked = document.getElementById('link-memory-toggle').checked;
@@ -38463,7 +38530,6 @@ document.getElementById('compress-images-btn').addEventListener('click', compres
 <!-- ▲▲▲ 新增HTML结束 ▲▲▲ -->
 </body>
 </html>
-
 
 
 
