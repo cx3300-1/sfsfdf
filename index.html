@@ -7270,7 +7270,7 @@
             color: white;
         }
         /* ▲▲▲ 新增CSS结束 ▲▲▲ */
-/* ▼▼▼ 【全新 V2.0】角色手机功能的所有CSS样式 ▼▼▼ */
+/* ▼▼▼ 【全新 V2.0】Cphone功能的所有CSS样式 ▼▼▼ */
 
 /* --- 1. 角色选择界面 (保持不变) --- */
 #character-selection-screen { background-color: #f0f2f5; }
@@ -7322,19 +7322,19 @@
 }
 /* --- 替换结束 --- */
 
-/* --- 2. 角色手机主容器与屏幕切换 (保持不变) --- */
+/* --- 2. Cphone主容器与屏幕切换 (保持不变) --- */
 #character-phone-screen { background-size: cover; background-position: center; }
 .char-screen { width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: flex; flex-direction: column; overflow: hidden; opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s; }
 .char-screen.active { opacity: 1; visibility: visible; z-index: 2; }
 
-/* --- 3. 角色手机主屏幕 (保持不变) --- */
+/* --- 3. Cphone主屏幕 (保持不变) --- */
 #char-home-screen { justify-content: flex-start; align-items: center; box-sizing: border-box; padding: 0 20px; }
 #char-clock-container { text-align: center; color: white; text-shadow: 0 3px 8px rgba(0,0,0,0.4); margin-top: calc(60px + env(safe-area-inset-top)); flex-shrink: 0; margin-bottom: 100px; }
 #char-main-time { font-size: 88px; font-weight: 600; letter-spacing: -2px; font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif; }
 #char-main-date { font-size: 22px; font-weight: normal; }
 #char-app-grid { display: flex; flex-direction: column; align-items: center; gap: 20px; width: 100%; }
 
-/* --- 4. 角色手机内的App通用背景色 (已扩展) --- */
+/* --- 4. Cphone内的App通用背景色 (已扩展) --- */
 #char-qq-screen, #char-memo-screen, #char-diary-screen, #char-usage-screen, 
 #char-album-screen, #char-browser-screen, #char-taobao-screen {
      background-color: var(--secondary-bg);
@@ -7418,12 +7418,12 @@
 .char-product-item .product-price::before { content: '¥'; font-size: 12px; }
 
 /* ▲▲▲ 全新CSS粘贴结束 ▲▲▲ */
-/* ▼▼▼ 【全新V2.0】角色手机QQ模拟功能样式 ▼▼▼ */
+/* ▼▼▼ 【全新V2.0】CphoneQQ模拟功能样式 ▼▼▼ */
 #char-qq-screen .list-container {
     padding: 0; /* 移除容器的内边距 */
 }
 /* ▲▲▲ 新增CSS粘贴结束 ▲▲▲ */
-/* ▼▼▼ 【全新】角色手机QQ模拟聊天记录弹窗样式 ▼▼▼ */
+/* ▼▼▼ 【全新】CphoneQQ模拟聊天记录弹窗样式 ▼▼▼ */
 
 /* 1. 让弹窗内容区拥有和主聊天界面一样的布局 */
 #transcript-modal-body {
@@ -7464,7 +7464,7 @@
     min-width: 0; /* 关键！允许容器收缩，从而防止内部的长文字撑破布局导致重叠 */
 }
 /* ▲▲▲ 替换结束 ▲▲▲ */
-/* ▼▼▼ 【全新】角色手机QQ模拟对话页面美化样式 ▼▼▼ */
+/* ▼▼▼ 【全新】CphoneQQ模拟对话页面美化样式 ▼▼▼ */
 
 /* 1. 让弹窗内容区拥有和主聊天界面一样的布局 */
 #char-qq-conversation-screen .list-container {
@@ -7479,7 +7479,7 @@
 #phone-screen.dark-mode #char-qq-conversation-screen .list-container {
     background-color: #000000;
 }
-/* ▼▼▼ 【全新】角色手机App通用背景色 (已修复) ▼▼▼ */
+/* ▼▼▼ 【全新】CphoneApp通用背景色 (已修复) ▼▼▼ */
 #char-qq-screen, 
 #char-memo-screen, 
 #char-diary-screen, 
@@ -7492,7 +7492,7 @@
      background-color: var(--secondary-bg);
 }
 /* ▲▲▲ 修复结束 ▲▲▲ */
-/* ▼▼▼ 【全新】角色手机App通用背景色 (已修复钱包页面) ▼▼▼ */
+/* ▼▼▼ 【全新】CphoneApp通用背景色 (已修复钱包页面) ▼▼▼ */
 #char-qq-screen, 
 #char-memo-screen, 
 #char-diary-screen, 
@@ -7506,7 +7506,7 @@
      background-color: var(--secondary-bg);
 }
 /* ▲▲▲ 修复结束 ▲▲▲ */
-/* ▼▼▼ 【全新】角色手机备忘录详情页样式 ▼▼▼ */
+/* ▼▼▼ 【全新】Cphone备忘录详情页样式 ▼▼▼ */
 
 #char-memo-detail-content {
     width: 100%;
@@ -7524,7 +7524,7 @@
 }
 
 /* ▲▲▲ 新增CSS结束 ▲▲▲ */
-/* ▼▼▼ 【全新】角色手机备忘录详情页美化 (仿iOS Notes App) ▼▼▼ */
+/* ▼▼▼ 【全新】Cphone备忘录详情页美化 (仿iOS Notes App) ▼▼▼ */
 
 /* 1. 让详情页拥有自己的、能适配夜间模式的背景色 */
 #char-memo-detail-screen {
@@ -7562,7 +7562,7 @@
 }
 
 /* ▲▲▲ 新增CSS结束 ▲▲▲ */
-/* ▼▼▼ 【全新】角色手机日记详情页“信纸”样式 ▼▼▼ */
+/* ▼▼▼ 【全新】Cphone日记详情页“信纸”样式 ▼▼▼ */
 
 /* 1. 详情页主屏幕，使用柔和的米白色背景 */
 #char-diary-detail-screen {
@@ -9003,8 +9003,8 @@
             <span class="label">字体</span>
         </div>
         <div class="desktop-app-icon" onclick="openCharacterSelector()">
-            <div class="icon-bg-desktop"><img id="icon-img-char-phone" src="https://i.postimg.cc/pXj9h20L/IMG-7275.jpg" alt="角色手机"></div>
-            <span class="label">角色手机</span>
+            <div class="icon-bg-desktop"><img id="icon-img-char-phone" src="https://i.postimg.cc/pXj9h20L/IMG-7275.jpg" alt="Cphone"></div>
+            <span class="label">Cphone</span>
         </div>
         <div class="desktop-app-icon" onclick="showScreen('douban-screen')">
             <div class="icon-bg-desktop"><img id="icon-img-douban" src="https://i.postimg.cc/Pq2xJN1g/IMG-7301.jpg" alt="豆瓣"></div>
@@ -9014,7 +9014,7 @@
 </div>
 
 <!-- ▲▲▲ 替换结束 ▲▲▲ -->
-<!-- ▼▼▼ 【全新】角色手机功能的所有HTML屏幕 ▼▼▼ -->
+<!-- ▼▼▼ 【全新】Cphone功能的所有HTML屏幕 ▼▼▼ -->
 
 <!-- 1. 角色选择屏幕 -->
 <div id="character-selection-screen" class="screen">
@@ -9031,7 +9031,7 @@
 <!-- ▼▼▼ 【V3.0 全新版本】请用这整块代码，完整替换旧的 #character-phone-screen ▼▼▼ -->
 <div id="character-phone-screen" class="screen">
     
-    <!-- 1. 角色手机 - 主屏幕 (这是它应该在的位置，作为独立的页面) -->
+    <!-- 1. Cphone - 主屏幕 (这是它应该在的位置，作为独立的页面) -->
     <div id="char-home-screen" class="char-screen active">
         <div id="char-clock-container">
             <div id="char-main-time">12:00</div>
@@ -9073,7 +9073,7 @@
         <!-- 足迹列表将由JS动态生成在这里 -->
     </div>
 </div>
-    <!-- 2. 角色手机 - QQ App 列表页 -->
+    <!-- 2. Cphone - QQ App 列表页 -->
     <div id="char-qq-screen" class="char-screen">
         <div class="header">
             <span class="back-btn" onclick="switchToCharHomeScreen()">‹</span>
@@ -9090,7 +9090,7 @@
         <div id="char-chat-list" class="list-container"></div>
     </div>
     
-    <!-- 3. 角色手机 - 模拟对话页面 -->
+    <!-- 3. Cphone - 模拟对话页面 -->
     <div id="char-qq-conversation-screen" class="char-screen">
         <div class="header">
             <span class="back-btn" id="back-to-char-qq-list-btn">‹</span>
@@ -9105,7 +9105,7 @@
         </div>
     </div>
     
-    <!-- 4. 角色手机 - 相册 App 页面 (这是它应该在的位置，与主屏幕平级) -->
+    <!-- 4. Cphone - 相册 App 页面 (这是它应该在的位置，与主屏幕平级) -->
     <div id="char-album-screen" class="char-screen">
         <div class="header">
             <span class="back-btn" onclick="switchToCharHomeScreen()">‹</span>
@@ -10092,7 +10092,7 @@
                 
                 <!-- 【【【全新：CPhone 壁纸设置】】】 -->
                 <hr style="width: 80%; opacity: 0.3; margin: 30px 0;">
-                <label style="font-weight: 500; color: var(--text-secondary);">CPhone 角色手机壁纸</label>
+                <label style="font-weight: 500; color: var(--text-secondary);">CPhone Cphone壁纸</label>
                 <div id="cphone-wallpaper-preview">点击下方上传</div>
                 <button class="form-button" onclick="document.getElementById('cphone-wallpaper-upload-input').click();">上传CPhone壁纸</button>
                 <input type="file" id="cphone-wallpaper-upload-input" accept="image/*" hidden>
@@ -11820,7 +11820,7 @@ let state = { chats: {}, activeChatId: null, globalSettings: {}, apiConfig: {}, 
         let waimaiTimers = {}; // 用于存储外卖倒计时
         
         let activeMessageTimestamp = null;
-let activeCharacterId = null; // 用于跟踪当前正在查看的角色手机ID
+let activeCharacterId = null; // 用于跟踪当前正在查看的CphoneID
 let editingMemoId = null;
 let editingDiaryId = null;
         // ▼▼▼ 在下方粘贴新变量 ▼▼▼
@@ -11866,7 +11866,7 @@ const DEFAULT_NOTIFICATION_SOUND = 'https://www.myinstants.com/media/sounds/noti
             'renderer': 'https://s3plus.meituan.net/opapisdk/op_ticket_885190757_1756312261242_qdqqd_g0eriz.jpeg',
             'api-settings': 'https://i.postimg.cc/MK8rJ8t7/IMG-6438.jpg',
             'font': 'https://i.postimg.cc/pXxk1JXk/IMG-6442.jpg',
-            // 【核心新增】将角色手机(Cphone)和豆瓣也加入管理列表
+            // 【核心新增】将Cphone(Cphone)和豆瓣也加入管理列表
             'char-phone': 'https://i.postimg.cc/pXj9h20L/IMG-7275.jpg',
             'douban': 'https://i.postimg.cc/Pq2xJN1g/IMG-7301.jpg',
     // 【【【核心新增：在这里为“预设”App注册一个唯一的ID和默认图标】】】
@@ -23306,7 +23306,7 @@ async function endVideoCall() {
         // ▼▼▼ 【全新】这是为CPhone新增的所有功能函数，请完整粘贴 ▼▼▼
 
         /**
-         * 【全新】将保存的CPhone壁纸应用到角色手机屏幕
+         * 【全新】将保存的CPhone壁纸应用到Cphone屏幕
          */
         function applyCPhoneWallpaper() {
             const charPhoneScreen = document.getElementById('character-phone-screen');
@@ -23394,7 +23394,7 @@ async function endVideoCall() {
        'renderer': '渲染器',
        'api-settings': 'API设置',
        'font': '字体',
-       'char-phone': '角色手机',
+       'char-phone': 'Cphone',
        'douban': '豆瓣小组',
        // 【【【核心新增：在这里为“预设”App添加对应的中文名】】】
        'preset': '预设',
@@ -29030,7 +29030,7 @@ async function importSingleChat(file) {
         await showCustomAlert('导入失败', `文件解析或应用失败: ${error.message}`);
     }
 }
-// ▼▼▼ 【全新】角色手机功能的所有核心JS代码 ▼▼▼
+// ▼▼▼ 【全新】Cphone功能的所有核心JS代码 ▼▼▼
 
 /**
  * 【总入口】打开角色选择界面
@@ -29080,7 +29080,7 @@ function renderCharacterSelector() {
             applyCPhoneWallpaper();
             applyCPhoneAppIcons();
             
-            // 渲染并显示角色手机的主屏幕
+            // 渲染并显示Cphone的主屏幕
             renderCharHomeScreen();
             showScreen('character-phone-screen');
         }
@@ -29096,7 +29096,7 @@ function switchToMyPhone() {
 }
 
 /**
- * 渲染角色手机的主屏幕（主要是更新时钟）
+ * 渲染Cphone的主屏幕（主要是更新时钟）
  */
 function renderCharHomeScreen() {
     const now = new Date();
@@ -29108,7 +29108,7 @@ function renderCharHomeScreen() {
 }
 
 /**
- * 在角色手机内部切换不同的App屏幕
+ * 在Cphone内部切换不同的App屏幕
  * @param {string} screenId - 要显示的角色App屏幕ID
  */
 function switchToCharScreen(screenId) {
@@ -29121,7 +29121,7 @@ window.switchToCharScreen = switchToCharScreen;
 
 // ▼▼▼ 【V3.0 | 最终版】请用这个全新的函数，完整替换旧的 openCharApp ▼▼▼
          /**
-         * 【总分发 | V3.0 | 最终修复版 | 已添加音乐App】打开角色手机内的App
+         * 【总分发 | V3.0 | 最终修复版 | 已添加音乐App】打开Cphone内的App
          * @param {string} appName - App的简称 (qq, album, amap...)
          */
         async function openCharApp(appName) {
@@ -29308,14 +29308,14 @@ function renderCharBrowserHistory() {
             });
         }
 /**
- * 切换回角色手机的主屏幕
+ * 切换回Cphone的主屏幕
  */
 function switchToCharHomeScreen() {
     switchToCharScreen('char-home-screen');
 }
 
 
-// --- 角色手机App的具体功能 ---
+// --- CphoneApp的具体功能 ---
 
 /**
  * 渲染角色视角的QQ聊天列表 (简化版)
@@ -29442,7 +29442,7 @@ async function viewMemo(memoId) {
 }
 
 /**
- * 【V2.0 | 支持标题】渲染角色手机的备忘录列表
+ * 【V2.0 | 支持标题】渲染Cphone的备忘录列表
  */
 function renderCharMemoList() {
     const listEl = document.getElementById('char-memo-list');
@@ -29765,7 +29765,7 @@ ${recentHistoryWithUser}
         }
 
         /**
-         * 【全新 | V2.0】渲染角色手机的日记列表
+         * 【全新 | V2.0】渲染Cphone的日记列表
          */
         function renderCharDiaryList() {
             const listEl = document.getElementById('char-diary-list');
@@ -29833,7 +29833,7 @@ ${recentHistoryWithUser}
         // ▲▲▲ 替换结束 ▲▲▲
 
 /**
- * 【全新 V2.0 | 支持群聊】渲染角色手机的QQ界面
+ * 【全新 V2.0 | 支持群聊】渲染Cphone的QQ界面
  */
 async function renderCharSimulatedQQ() {
     const listEl = document.getElementById('char-chat-list');
@@ -31001,7 +31001,7 @@ async function handleGenerateAppUsage() {
 你是一个虚拟生活模拟器。你的任务是扮演角色“${chat.name}”，并根据其人设、记忆和最近的互动，虚构出TA最近一天的【手机App屏幕使用时间】记录，总共约20条。
 
 # 核心规则
-1.  **创造性与多样性**: 生成的App列表【不必局限于】角色手机主屏幕上已有的App。你可以自由地虚构TA可能使用的其他App，例如 Instagram, Twitter, 各种游戏 (如：原神, 王者荣耀), 视频App (如：抖音, YouTube), 学习或工作软件等，这能更好地体现角色的隐藏兴趣和生活习惯。
+1.  **创造性与多样性**: 生成的App列表【不必局限于】Cphone主屏幕上已有的App。你可以自由地虚构TA可能使用的其他App，例如 Instagram, Twitter, 各种游戏 (如：原神, 王者荣耀), 视频App (如：抖音, YouTube), 学习或工作软件等，这能更好地体现角色的隐藏兴趣和生活习惯。
 2.  **合理性**: 使用时长和App类型必须完全符合角色的性格、爱好、职业和生活环境。
 3.  **格式铁律 (最高优先级)**: 
     - 你的回复【必须且只能】是一个JSON数组格式的字符串。
@@ -31273,7 +31273,7 @@ let charPlayerState = {
 };
 
 /**
- * 播放角色手机中的歌曲 (V3.0 - 适配新UI和歌词)
+ * 播放Cphone中的歌曲 (V3.0 - 适配新UI和歌词)
  * @param {object} songObject - 包含所有信息的完整歌曲对象
  */
 function playCharSong(songObject) {
@@ -31318,7 +31318,7 @@ function playCharSong(songObject) {
 }
 
 /**
- * 关闭角色手机的音乐播放器 (V3.0)
+ * 关闭Cphone的音乐播放器 (V3.0)
  */
 function closeCharMusicPlayer() {
     const modal = document.getElementById('char-music-player-modal');
@@ -33383,7 +33383,7 @@ function renderClearWizardStep2() {
         // 【【【核心修正1：数据分类】】】
         { id: 'thoughts', name: '心声', description: '将清空选定角色的心声和散记历史。' },
         { id: 'memories', name: '长期记忆', description: '将清空选定角色的所有长期记忆。' },
-        { id: 'cphone', name: '角色手机数据 (CPhone)', description: '将清空角色的相册、QQ、浏览器、淘宝、日记、备忘录等所有模拟手机数据。' }
+        { id: 'cphone', name: 'Cphone数据 (CPhone)', description: '将清空角色的相册、QQ、浏览器、淘宝、日记、备忘录等所有模拟手机数据。' }
     ];
 
     dataTypes.forEach(type => {
@@ -33536,7 +33536,70 @@ async function handleConfirmDataClear() {
     }
 }
 // ▲▲▲ 全新JS代码粘贴结束 ▲▲▲
+        /**
+         * 【全新 V2.0 | 支持本地上传】处理更换图标的逻辑 (EPhone & CPhone通用)
+         * @param {string} iconId - 被点击图标的ID (例如 'qq', 'album')
+         * @param {string} phoneType - 'ephone' 或 'cphone'
+         * @param {HTMLElement} itemElement - 被点击的那个图标设置项的DOM元素
+         */
+        async function handleIconChange(iconId, phoneType, itemElement) {
+            const appName = itemElement.querySelector('.icon-preview').alt;
+        
+            // 1. 弹出选择框，让用户选择上传方式
+            const choice = await showChoiceModal(`更换“${appName}”图标`, [
+                { text: '📁 从本地上传', value: 'local' },
+                { text: '🌐 使用网络URL', value: 'url' }
+            ]);
+        
+            let newUrl = null;
+        
+            // 2. 根据用户的选择执行不同操作
+            if (choice === 'local') {
+                // 调用我们现有的本地上传辅助函数
+                newUrl = await uploadImageLocally();
+            } else if (choice === 'url') {
+                const currentUrl = (phoneType === 'cphone')
+                    ? state.globalSettings.cphoneAppIcons[iconId]
+                    : state.globalSettings.appIcons[iconId];
 
+                // ★★★★★ 这就是本次修复的核心！ ★★★★★
+                // 1. 判断当前的URL是不是一个Base64字符串
+                const isBase64 = currentUrl.startsWith('data:image');
+
+                // 2. 如果是Base64，我们就传一个空字符串作为默认值，避免卡死。
+                //    如果不是，就正常显示当前的URL，方便用户修改。
+                const initialValueForPrompt = isBase64 ? '' : currentUrl;
+                // ★★★★★ 修复结束 ★★★★★
+
+                // 3. 使用我们新处理过的值来调用弹窗
+                newUrl = await showCustomPrompt(
+                    `更换图标`, 
+                    '请输入新的图片URL', 
+                    initialValueForPrompt, // <-- 使用这个新变量
+                    'url'
+                );
+            }
+        
+            // 3. 如果获取到了新值（无论是Base64还是URL），就更新并保存
+            if (newUrl && newUrl.trim()) {
+                const trimmedUrl = newUrl.trim();
+                
+                // 根据手机类型，更新 state 中对应的数据
+                if (phoneType === 'cphone') {
+                    state.globalSettings.cphoneAppIcons[iconId] = trimmedUrl;
+                } else {
+                    state.globalSettings.appIcons[iconId] = trimmedUrl;
+                }
+                
+                // 实时更新设置页面的预览图
+                itemElement.querySelector('.icon-preview').src = trimmedUrl;
+                
+                // 无需在这里保存到数据库，等待用户点击“保存所有外观设置”按钮时统一保存。
+            } else if (newUrl !== null) {
+                // 如果用户输入了无效的URL
+                alert("请输入一个有效的URL或选择一个文件！");
+            }
+        }
 
               // ===================================================================
                 // 4. 初始化函数 init()
@@ -36536,25 +36599,16 @@ document.getElementById('chat-settings-screen').addEventListener('click', (e) =>
         document.getElementById('close-group-avatar-library-btn').addEventListener('click', closeGroupAvatarLibraryModal);
         // ▲▲▲ 新增结束 ▲▲▲
         // ▼▼▼ 在 init() 的事件监听区域，粘贴这段【新代码】▼▼▼
-        document.getElementById('icon-settings-grid').addEventListener('click', async (e) => {
-            if (e.target.classList.contains('change-icon-btn')) {
-                const item = e.target.closest('.icon-setting-item');
-                const iconId = item.dataset.iconId;
-                if (!iconId) return;
-        
-                const currentUrl = state.globalSettings.appIcons[iconId];
-                const newUrl = await showCustomPrompt(`更换“${item.querySelector('.icon-preview').alt}”图标`, '请输入新的图片URL', currentUrl, 'url');
-        
-                if (newUrl && newUrl.trim().startsWith('http')) {
-                    // 仅在内存中更新，等待用户点击“保存”
-                    state.globalSettings.appIcons[iconId] = newUrl.trim();
-                    // 实时更新设置页面的预览图
-                    item.querySelector('.icon-preview').src = newUrl.trim();
-                } else if (newUrl !== null) {
-                    alert("请输入一个有效的URL！");
-                }
-            }
-        });
+// 为 EPhone 图标设置网格绑定事件委托
+document.getElementById('icon-settings-grid').addEventListener('click', (e) => {
+    if (e.target.classList.contains('change-icon-btn')) {
+        const item = e.target.closest('.icon-setting-item');
+        const iconId = item.dataset.iconId;
+        if (iconId) {
+            handleIconChange(iconId, 'ephone', item);
+        }
+    }
+});
         // ▲▲▲ 新代码粘贴结束 ▲▲▲
         
         // ▼▼▼ 在 init() 函数的末尾，粘贴这段【全新的事件监听器】 ▼▼▼
@@ -37666,7 +37720,7 @@ document.getElementById('import-single-chat-input').addEventListener('change', (
     e.target.value = null; // 清空以便下次能选择同一个文件
 });
 // ▲▲▲ 新增代码结束 ▲▲▲
-// ▼▼▼ 【全新】角色手机功能事件绑定 ▼▼▼
+// ▼▼▼ 【全新】Cphone功能事件绑定 ▼▼▼
 document.getElementById('add-char-memo-btn').addEventListener('click', () => openMemoEditor());
 document.getElementById('add-char-diary-btn').addEventListener('click', () => openDiaryEditor());
 // ▲▲▲ 新增事件绑定结束 ▲▲▲
@@ -37760,25 +37814,16 @@ document.getElementById('douban-wait-reply-btn').addEventListener('click', handl
         });
         
         // 2. 为CPhone的图标设置网格绑定事件委托
-        document.getElementById('cphone-icon-settings-grid').addEventListener('click', async (e) => {
-            if (e.target.classList.contains('change-icon-btn')) {
-                const item = e.target.closest('.icon-setting-item');
-                const iconId = item.dataset.iconId;
-                if (!iconId) return;
-
-                const currentUrl = state.globalSettings.cphoneAppIcons[iconId];
-                const newUrl = await showCustomPrompt(`更换CPhone“${item.querySelector('.icon-preview').alt}”图标`, '请输入新的图片URL', currentUrl, 'url');
-
-                if (newUrl && newUrl.trim().startsWith('http')) {
-                    // 更新 state 中的值，等待保存
-                    state.globalSettings.cphoneAppIcons[iconId] = newUrl.trim();
-                    // 实时更新预览
-                    item.querySelector('.icon-preview').src = newUrl.trim();
-                } else if (newUrl !== null) {
-                    alert("请输入一个有效的URL！");
-                }
-            }
-        });
+// 为 CPhone 图标设置网格绑定事件委托
+document.getElementById('cphone-icon-settings-grid').addEventListener('click', (e) => {
+    if (e.target.classList.contains('change-icon-btn')) {
+        const item = e.target.closest('.icon-setting-item');
+        const iconId = item.dataset.iconId;
+        if (iconId) {
+            handleIconChange(iconId, 'cphone', item);
+        }
+    }
+});
 document.getElementById('import-appearance-btn').addEventListener('click', () => {
     document.getElementById('import-appearance-input').click();
 });
@@ -37840,7 +37885,7 @@ document.getElementById('import-world-book-input').addEventListener('change', (e
                     case 'douban-post-detail-screen':
                         openDoubanPostDetail(activeDoubanPostId);
                         break;
-                    // 角色手机内部的刷新
+                    // Cphone内部的刷新
                     case 'character-phone-screen':
                         const activeCharScreen = document.querySelector('.char-screen.active');
                         if (activeCharScreen) {
