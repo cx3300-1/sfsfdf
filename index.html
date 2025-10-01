@@ -33636,25 +33636,25 @@ async function resetButtonOrder() {
 }
 // ▲▲▲ 新增代码结束 ▲▲▲
 
-    /**
-     * 【全新】安卓键盘遮挡问题的终极解决方案
-     */
-    function setupAndroidKeyboardFix() {
-        const chatInput = document.getElementById('chat-input');
-        const chatScreen = document.getElementById('chat-interface-screen');
-        
-        if (!chatInput || !chatScreen) return;
+/**
+ * 【全新 | 安卓键盘遮挡终极解决方案】
+ * 当输入框获得焦点时，平滑地将输入框本身滚动到可视区域内。
+ */
+function setupAndroidKeyboardFix() {
+    const chatInput = document.getElementById('chat-input');
+    if (!chatInput) return;
 
-        // 当用户点击输入框时触发
-        chatInput.addEventListener('focus', () => {
-            // 延迟一小段时间，等待键盘完全弹出
-            setTimeout(() => {
-                // 将包含输入框的整个聊天屏幕滚动到底部
-                // 'smooth' 参数让滚动具有平滑的动画效果
-                chatScreen.scrollIntoView({ behavior: 'smooth', block: 'end' });
-            }, 300); // 300毫秒的延迟是一个比较安全的值
-        });
-    }
+    // 当用户点击输入框时触发
+    chatInput.addEventListener('focus', () => {
+        // 延迟一小段时间，等待键盘动画完全弹出
+        setTimeout(() => {
+            // 直接调用元素自身的 scrollIntoView 方法，
+            // 浏览器会自动找到最近的可滚动父容器（在这里是 #chat-messages）并将其滚动到合适位置。
+            // 'block: 'end'' 确保元素的底部与容器底部对齐，非常适合输入框场景。
+            chatInput.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }, 300); 
+    });
+}
 // ▼▼▼ 【全新 V2.0 | 已修复】这是高级数据清理功能的【全部核心JS代码】，请完整粘贴 ▼▼▼
 
 let selectedCharsForClear = []; // 用于存储第一步选择的角色ID
