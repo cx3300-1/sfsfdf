@@ -8997,6 +8997,47 @@
 input, textarea, select {
     font-size: 16px !important;
 }
+/* ▼▼▼ 【全新】这是为日记收藏功能添加的样式 ▼▼▼ */
+
+/* 收藏按钮激活时的样式（填充黄色） */
+#favorite-diary-btn.active svg {
+    fill: #ffc107; /* 您可以换成任何您喜欢的颜色 */
+    color: #ffc107;
+}
+
+/* 收藏卡片中日记标题的样式 */
+.favorite-item-card .diary-title {
+    font-weight: 600;
+    display: block;
+    margin-bottom: 8px;
+    font-size: 15px;
+}
+
+/* 收藏卡片中日记内容预览的样式 */
+.favorite-item-card .diary-content-preview {
+    font-size: 13px;
+    opacity: 0.8;
+    line-height: 1.6;
+    
+    /* 多行省略号效果 */
+    display: -webkit-box;
+    -webkit-line-clamp: 3; /* 最多显示3行 */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+/* ▼▼▼ 把这段CSS代码【完全删除】▼▼▼ */
+.favorite-item-card .diary-content-preview {
+    font-size: 13px;
+    opacity: 0.8;
+    line-height: 1.6;
+    
+    /* 多行省略号效果 */
+    display: -webkit-box;
+    -webkit-line-clamp: 3; /* 最多显示3行 */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+/* ▲▲▲ 删除到这里结束 ▲▲▲ */
     </style>
 </head>
 <body>
@@ -9339,11 +9380,18 @@ input, textarea, select {
 
 <!-- 【【【核心新增：全新的日记详情屏幕】】】 -->
 <div id="char-diary-detail-screen" class="char-screen">
-    <div class="header">
-        <span class="back-btn" id="char-diary-detail-back-btn">‹ </span>
-        <span id="char-diary-detail-title"></span>
-        <span style="width: 50px;"></span>
+<div class="header">
+    <span class="back-btn" id="char-diary-detail-back-btn">‹ </span>
+    <span id="char-diary-detail-title"></span>
+    <!-- 【核心新增】在这里添加收藏按钮 -->
+    <div class="header-actions">
+        <span class="action-btn" id="favorite-diary-btn" title="收藏">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+        </span>
     </div>
+</div>
     <div id="char-diary-detail-content-wrapper" class="list-container">
         <div id="char-diary-detail-content">
             <!-- 日记内容将由JS动态生成在这里 -->
@@ -11957,6 +12005,7 @@ let state = { chats: {}, activeChatId: null, globalSettings: {}, apiConfig: {}, 
 let activeCharacterId = null; // 用于跟踪当前正在查看的CphoneID
 let editingMemoId = null;
 let editingDiaryId = null;
+let activeDiaryForViewing = null; // 用于暂存当前正在查看的日记对象
         // ▼▼▼ 在下方粘贴新变量 ▼▼▼
         let shoppingCart = []; // 数据结构将变为 [{ productId: 123, quantity: 1 }, ...]
         let editingProductId = null; // 用于存储正在编辑的商品ID
@@ -13748,7 +13797,27 @@ function renderOriginalPostContent(targetPost) {
                 contentHtml = String(msg.content || '').replace(/\n/g, '<br>');
             }
         }
-                
+                      // ▼▼▼ 【【【核心新增逻辑就在这里！】】】 ▼▼▼
+        else if (item.type === 'char_diary') {
+            const diary = item.content;
+            sourceText = `来自 ${diary.characterName} 的日记`;
+
+            const charChat = state.chats[diary.characterId];
+            const authorAvatar = charChat ? charChat.settings.aiAvatar : defaultAvatar;
+            
+            headerHtml = `<img src="${authorAvatar}" class="avatar"><div class="info"><div class="name">${diary.characterName}</div></div>`;
+            
+            // 1. 获取完整的日记内容
+            const fullDiaryContent = diary.content || '';
+            // 2. 使用与详情页完全相同的Markdown解析和换行逻辑
+            const formattedContent = parseMarkdown(fullDiaryContent).replace(/\n/g, '<br>');
+
+            // 3. 将完整的、格式化后的内容放入 contentHtml
+            contentHtml = `
+                <span class="diary-title">${diary.title}</span>
+                <div class="fav-card-content-full">${formattedContent}</div>
+            `;
+        }     
                 // ▼▼▼ 修改最终的HTML拼接，加入 footerHtml ▼▼▼
                 card.innerHTML = `
                     <div class="fav-card-header">${headerHtml}<div class="source">${sourceText}</div></div>
@@ -30138,31 +30207,78 @@ ${recentHistoryWithUser}
             });
         }
 
-        /**
-         * 【全新】点击日记列表项时，打开详情页面查看
-         * @param {number} diaryId - 要查看的日记的ID
-         */
-        async function viewDiary(diaryId) {
-            const char = state.chats[activeCharacterId];
-            if (!char || !char.diary) return;
-
-            const entry = char.diary.find(d => d.id === diaryId);
-            if (entry) {
-                const titleEl = document.getElementById('char-diary-detail-title');
-                const contentEl = document.getElementById('char-diary-detail-content');
-
-                titleEl.textContent = entry.title;
-                const formattedContent = parseMarkdown(entry.content)
-                    .split('\n')
-                    .map(p => `<p>${p || '&nbsp;'}</p>`)
-                    .join('');
-                    
-                contentEl.innerHTML = formattedContent;
-
-                switchToCharScreen('char-diary-detail-screen');
-            }
+    // ▼▼▼ 【请用这个 V2.0 版本】替换旧的 viewDiary 函数 ▼▼▼
+    /**
+     * 【V2.0 | 支持收藏】点击日记列表项时，打开详情页面查看
+     * @param {number} diaryId - 要查看的日记的ID
+     */
+    async function viewDiary(diaryId) {
+        const char = state.chats[activeCharacterId];
+        if (!char || !char.diary) return;
+    
+        const entry = char.diary.find(d => d.id === diaryId);
+        if (entry) {
+            // 1. 将当前日记对象存入全局变量，方便收藏功能调用
+            activeDiaryForViewing = entry;
+    
+            const titleEl = document.getElementById('char-diary-detail-title');
+            const contentEl = document.getElementById('char-diary-detail-content');
+            const favBtn = document.getElementById('favorite-diary-btn');
+    
+            titleEl.textContent = entry.title;
+            const formattedContent = parseMarkdown(entry.content)
+                .split('\n')
+                .map(p => `<p>${p || '&nbsp;'}</p>`)
+                .join('');
+            contentEl.innerHTML = formattedContent;
+    
+            // 2. 检查这篇日记是否已被收藏，并更新按钮状态
+            const existingFavorite = await db.favorites.where({ type: 'char_diary', 'content.id': diaryId }).first();
+            favBtn.classList.toggle('active', !!existingFavorite);
+    
+            switchToCharScreen('char-diary-detail-screen');
         }
-
+    }
+    // ▼▼▼ 【全新】这是收藏/取消收藏日记的核心功能 ▼▼▼
+    /**
+     * 切换当前日记的收藏状态
+     */
+    async function toggleDiaryFavorite() {
+        if (!activeDiaryForViewing || !activeCharacterId) return;
+    
+        const diary = activeDiaryForViewing;
+        const char = state.chats[activeCharacterId];
+        const favBtn = document.getElementById('favorite-diary-btn');
+    
+        // 再次检查是否已收藏
+        const existingFavorite = await db.favorites.where({ type: 'char_diary', 'content.id': diary.id }).first();
+    
+        if (existingFavorite) {
+            // 如果已收藏，则取消收藏
+            await db.favorites.delete(existingFavorite.id);
+            favBtn.classList.remove('active');
+            await showCustomAlert('操作成功', '已取消收藏。');
+        } else {
+            // 如果未收藏，则执行收藏
+            const newFavorite = {
+                type: 'char_diary',
+                // 将日记的完整内容，连同作者信息一起存入
+                content: {
+                    id: diary.id,
+                    title: diary.title,
+                    content: diary.content,
+                    timestamp: diary.timestamp,
+                    characterId: activeCharacterId,
+                    characterName: char.name
+                },
+                timestamp: Date.now() // 收藏操作的时间
+            };
+            await db.favorites.add(newFavorite);
+            favBtn.classList.add('active');
+            await showCustomAlert('操作成功', '已成功收藏到“我的收藏”页面！');
+        }
+    }
+    // ▲▲▲ 新增函数结束 ▲▲▲
         /**
          * 【全新】删除一篇日记
          * @param {number} diaryId - 要删除的日记的ID
@@ -38356,6 +38472,7 @@ document.getElementById('import-single-chat-input').addEventListener('change', (
 // ▼▼▼ 【全新】Cphone功能事件绑定 ▼▼▼
 document.getElementById('add-char-memo-btn').addEventListener('click', () => openMemoEditor());
 document.getElementById('add-char-diary-btn').addEventListener('click', () => openDiaryEditor());
+document.getElementById('favorite-diary-btn').addEventListener('click', toggleDiaryFavorite);
 // ▲▲▲ 新增事件绑定结束 ▲▲▲
         // “重新生成”按钮
         document.getElementById('regenerate-char-qq-btn').addEventListener('click', handleGenerateSimulatedQQ);
