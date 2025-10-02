@@ -30179,16 +30179,22 @@ ${recentHistoryWithUser}
         // ▲▲▲ 替换结束 ▲▲▲
 
 /**
- * 【全新 V2.0 | 支持群聊】渲染Cphone的QQ界面
+ * 【全新 V2.3 | 头像来源终极修复版】渲染角色视角的QQ聊天列表
  */
 async function renderCharSimulatedQQ() {
     const listEl = document.getElementById('char-chat-list');
     listEl.innerHTML = '';
     const char = state.chats[activeCharacterId];
     
-    if (!char.simulatedConversations || char.simulatedConversations.length === 0) {
+    if (!char || !char.simulatedConversations || char.simulatedConversations.length === 0) {
         listEl.innerHTML = '<p style="text-align:center; color: var(--text-secondary); padding: 50px 0;">点击右上角刷新按钮，<br>看看TA最近都和谁聊天了吧！</p>';
         return;
+    }
+
+    const userConvoIndex = char.simulatedConversations.findIndex(c => c.type === 'private_user');
+    if (userConvoIndex > 0) {
+        const userConvo = char.simulatedConversations.splice(userConvoIndex, 1)[0];
+        char.simulatedConversations.unshift(userConvo);
     }
 
     char.simulatedConversations.forEach((convo, index) => {
@@ -30198,35 +30204,45 @@ async function renderCharSimulatedQQ() {
 
         const lastMessage = convo.messages.slice(-1)[0] || { content: '...' };
 
-        let avatarUrl, displayName;
-
-        // ▼▼▼ 核心修改就在这里！ ▼▼▼
-        if (convo.type === 'group') {
-            displayName = convo.groupName;
+        let avatarHtml, displayName;
+        
+        if (convo.type === 'private_user') {
+            displayName = convo.userRemarkName || (state.qzoneSettings.nickname || '我');
             
-            // 1. 我们不再只用群名，而是构造一个更丰富的英文指令
-            //    - "logo": 告诉AI我们想要一个图标
-            //    - "simple, flat design": 要求设计简洁、扁平化，更像App图标
-            //    - convo.groupName: 将群名作为核心主题
+            // ▼▼▼ 核心修复就在这里！ ▼▼▼
+            // 我们不再从全局设置取头像，而是从当前角色的聊天设置里取“我的头像”
+            const myAvatar = char.settings.myAvatar || defaultAvatar; 
+            const myFrame = char.settings.myAvatarFrame || '';
+            // ▲▲▲ 修复结束 ▲▲▲
+            
+            if (myFrame) {
+                 avatarHtml = `<div class="avatar-group has-frame" style="width: 45px; height: 45px;">
+                                 <div class="avatar-with-frame" style="width: 45px; height: 45px;">
+                                     <img src="${myAvatar}" class="avatar-img" style="border-radius: 50%;">
+                                     <img src="${myFrame}" class="avatar-frame">
+                                 </div>
+                               </div>`;
+            } else {
+                 avatarHtml = `<div class="avatar-group" style="width: 45px; height: 45px;">
+                                 <img src="${myAvatar}" class="avatar" style="border-radius: 50%; width: 45px; height: 45px;">
+                               </div>`;
+            }
+
+        } else if (convo.type === 'group') {
+            displayName = convo.groupName + ` <span class="group-tag">群</span>`;
             const groupAvatarPrompt = `logo, simple, flat design, for a group chat named '${convo.groupName}'`;
-            
-            // 2. 将这个更具体的指令发送给AI绘画引擎
-            avatarUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(groupAvatarPrompt)}`;
-            
-            // (这段添加“群”标签的逻辑保持不变)
-            displayName += ` <span class="group-tag">群</span>`;
-
-        } else { // 私聊的逻辑保持不变
+            const avatarUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(groupAvatarPrompt)}`;
+            avatarHtml = `<div class="avatar-group"><img src="${avatarUrl}" class="avatar" style="border-radius: 50%;"></div>`;
+        
+        } else { // 与NPC的私聊
             displayName = convo.participant.name;
             const npcAvatarPrompt = convo.participant.avatar_prompt || 'anime person';
-            avatarUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(npcAvatarPrompt)}`;
+            const avatarUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(npcAvatarPrompt)}`;
+            avatarHtml = `<div class="avatar-group"><img src="${avatarUrl}" class="avatar" style="border-radius: 50%;"></div>`;
         }
-        // ▲▲▲ 修改结束 ▲▲▲
 
         item.innerHTML = `
-            <div class="avatar-group">
-                 <img src="${avatarUrl}" class="avatar" style="border-radius: 50%;">
-            </div>
+            ${avatarHtml}
             <div class="info">
                 <div class="name-line">
                     <span class="name">${displayName}</span>
@@ -30285,12 +30301,12 @@ async function handleGenerateSimulatedQQ() {
     const characterOriginalName = chat.originalName || chat.name;
 
     // ▼▼▼ 核心修改1：强化AI指令，确保在没有强制JSON模式下也能稳定输出 ▼▼▼
-    const systemPrompt = `
+     const systemPrompt = `
 # 你的任务
-你是一个虚拟社交生活模拟器。你的任务是扮演角色“${chat.name}”，并根据其人设、记忆和最近的互动，虚构出【5到7段】TA最近可能发生的QQ聊天记录。这些记录可以包括【私聊】和【群聊】。
+你是一个虚拟社交生活模拟器。你的任务是扮演角色“${chat.name}”，并根据其人设、记忆和最近的互动，虚构出【5到7段】TA最近可能发生的QQ聊天记录。这些记录中【必须包含一段与用户的私聊】，其余可以是与其他NPC的私聊或群聊。
 
 # 核心规则
-1.  **【世界书优先】**: 如果下面的“世界观设定”中提到了任何具体的【群聊名称】或【群成员】，你【必须】为这个群聊生成一段对话。
+1.  **【与用户的对话 (最高优先级)】**: 你的生成结果中，【必须且只能包含一个】与用户（即“我”）的私聊记录。
 2.  **创造性与多样性**: 自由创造符合角色背景的NPC和群聊，对话内容要多样化，反映角色的生活。
 3.  **关联性**: 对话内容应巧妙地反映角色的长期记忆、世界观，以及与用户互动可能带来的心情变化。
 4.  **简洁性**: 每段对话的总长度应在8到15句之间。
@@ -30298,12 +30314,24 @@ async function handleGenerateSimulatedQQ() {
     - 你的回复【必须且只能】是一个JSON数组格式的字符串。
     - 你的回复必须以 \`[\` 开始，并以 \`]\` 结束。
     - 【绝对禁止】在JSON数组前后添加任何多余的文字、解释、或 markdown 标记 (如 \`\`\`json)。
-    - 数组中的每个元素都代表一段对话，且【必须】是以下两种格式之一：
+    - 数组中的每个元素都代表一段对话，且【必须】是以下三种格式之一：
 
-    **格式 A：私聊**
+    **格式 A：与用户的私聊 (必须有1个)**
     \`\`\`json
     {
-      "type": "private",
+      "type": "private_user",
+      "userRemarkName": "你为用户起的专属备注名",
+      "messages": [
+        { "sender": "${characterOriginalName}", "content": "你对用户说的话" },
+        { "sender": "${userDisplayNameForAI}", "content": "用户对你说的话" }
+      ]
+    }
+    \`\`\`
+
+    **格式 B：与NPC的私聊**
+    \`\`\`json
+    {
+      "type": "private_npc",
       "participant": {
         "name": "NPC的名字",
         "avatar_prompt": "一段用于生成头像的【英文】关键词, 风格为动漫/插画/二次元等, 禁止真人"
@@ -30315,7 +30343,7 @@ async function handleGenerateSimulatedQQ() {
     }
     \`\`\`
 
-    **格式 B：群聊**
+    **格式 C：群聊**
     \`\`\`json
     {
       "type": "group",
@@ -30326,12 +30354,11 @@ async function handleGenerateSimulatedQQ() {
       ],
       "messages": [
         { "sender": "${characterOriginalName}", "content": "我在群里说的话" },
-        { "sender": "NPC成员1", "content": "成员1回复我" },
-        { "sender": "NPC成员2", "content": "成员2加入了讨论" }
+        { "sender": "NPC成员1", "content": "成员1回复我" }
       ]
     }
     \`\`\`
-    - **重要**: \`messages\` 数组中的 \`sender\` 字段，【必须】使用角色的【本名】("${characterOriginalName}") 或NPC的名字。
+    - **重要**: \`messages\` 数组中的 \`sender\` 字段，【必须】使用角色的【本名】("${characterOriginalName}")、NPC的名字、或用户的名字("${userDisplayNameForAI}")。
 
 # 供你参考的上下文
 - **你的角色设定**: ${chat.settings.aiPersona}
@@ -30396,7 +30423,7 @@ ${recentHistoryWithUser}
 }
 
 /**
- * 【全新 | V3.0 页面版 | 支持群聊】打开并显示指定的模拟聊天记录
+ * 【全新 | V2.4 | 专属头像终极修复版】打开并显示指定的模拟聊天记录
  * @param {number} conversationIndex - 在数组中的索引
  */
 async function openCharSimulatedConversation(conversationIndex) {
@@ -30404,7 +30431,6 @@ async function openCharSimulatedConversation(conversationIndex) {
     const conversation = mainChar.simulatedConversations[conversationIndex];
     if (!conversation) return;
 
-    const conversationScreen = document.getElementById('char-qq-conversation-screen');
     const titleEl = document.getElementById('char-conversation-partner-name');
     const bodyEl = document.getElementById('char-conversation-messages');
     const inputEl = document.getElementById('char-simulated-input');
@@ -30414,60 +30440,84 @@ async function openCharSimulatedConversation(conversationIndex) {
     const isDarkMode = document.getElementById('phone-screen').classList.contains('dark-mode');
     bodyEl.style.backgroundColor = isDarkMode ? '#000000' : '#f0f2f5';
 
-    const participantMap = new Map();
+    let tempChatObjectForRendering;
+    const userDisplayNameForAI = (state.qzoneSettings.nickname === '{{user}}' || !state.qzoneSettings.nickname) ? '用户' : state.qzoneSettings.nickname;
+    
+    if (conversation.type === 'private_user') {
+        titleEl.textContent = conversation.userRemarkName;
+        inputEl.placeholder = `与 ${conversation.userRemarkName} 的对话`;
 
-    // ▼▼▼ 核心修改就在这里！▼▼▼
-    // 我们现在统一使用 participantMap 来处理所有头像，不再区分私聊和群聊
+        tempChatObjectForRendering = {
+            id: 'temp_user_chat', isGroup: false,
+            name: conversation.userRemarkName,
+            originalName: mainChar.originalName,
+            settings: {
+                ...mainChar.settings,
+                myAvatar: mainChar.settings.aiAvatar,
+                myAvatarFrame: mainChar.settings.aiAvatarFrame,
+                
+                // ▼▼▼ 核心修复就在这里！ ▼▼▼
+                // 我们不再从全局设置取头像，而是从当前角色的聊天设置里取“我的头像”
+                aiAvatar: mainChar.settings.myAvatar,
+                // ▲▲▲ 修复结束 ▲▲▲
+                
+                aiAvatarFrame: mainChar.settings.myAvatarFrame
+            }
+        };
 
-    if (conversation.type === 'group') {
+    } else if (conversation.type === 'group') {
         titleEl.textContent = `${conversation.groupName} (${conversation.participants.length + 1})`;
         inputEl.placeholder = `在 ${conversation.groupName} 中聊天`;
-        
-        conversation.participants.forEach(p => {
-            participantMap.set(p.name, `https://image.pollinations.ai/prompt/${encodeURIComponent(p.avatar_prompt || 'anime person')}`);
-        });
-        
-    } else { // 私聊逻辑
+
+        tempChatObjectForRendering = {
+            id: 'temp_group_chat', isGroup: true,
+            name: conversation.groupName,
+            originalName: mainChar.originalName,
+            members: conversation.participants.map(p => ({
+                originalName: p.name,
+                groupNickname: p.name,
+                avatar: `https://image.pollinations.ai/prompt/${encodeURIComponent(p.avatar_prompt || 'anime person')}`
+            })),
+            settings: {
+                ...mainChar.settings,
+                myNickname: mainChar.name,
+                myAvatar: mainChar.settings.aiAvatar,
+                myAvatarFrame: mainChar.settings.aiAvatarFrame,
+            }
+        };
+
+    } else { // 与NPC的私聊
         titleEl.textContent = conversation.participant.name;
         inputEl.placeholder = `与 ${conversation.participant.name} 的对话`;
-        
-        // 【关键修复】为私聊也添加头像到 participantMap 中
-        const npcAvatarUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(conversation.participant.avatar_prompt || 'anime person')}`;
-        participantMap.set(conversation.participant.name, npcAvatarUrl);
+
+        tempChatObjectForRendering = {
+            id: 'temp_npc_chat', isGroup: false,
+            name: conversation.participant.name,
+            originalName: mainChar.originalName,
+            settings: {
+                ...mainChar.settings,
+                myAvatar: mainChar.settings.aiAvatar,
+                myAvatarFrame: mainChar.settings.aiAvatarFrame,
+                aiAvatar: `https://image.pollinations.ai/prompt/${encodeURIComponent(conversation.participant.avatar_prompt || 'anime person')}`,
+                aiAvatarFrame: ''
+            }
+        };
     }
-    
-    // 无论私聊还是群聊，都把主角自己的信息也存入Map
-    participantMap.set(mainChar.originalName || mainChar.name, mainChar.settings.aiAvatar);
-    
-    const tempChatObjectForRendering = {
-        id: 'temp_simulated_chat',
-        isGroup: conversation.type === 'group',
-        name: conversation.groupName || conversation.participant.name,
-        originalName: mainChar.originalName,
-        members: conversation.participants ? conversation.participants.map(p => ({
-            originalName: p.name,
-            groupNickname: p.name,
-            avatar: participantMap.get(p.name) || defaultGroupMemberAvatar
-        })) : [],
-        settings: {
-            theme: mainChar.settings.theme,
-            fontSize: mainChar.settings.fontSize,
-            customCss: mainChar.settings.customCss,
-            myNickname: mainChar.name,
-            myAvatar: mainChar.settings.aiAvatar,
-            // 【关键修复】对于私聊，我们也从 map 中获取aiAvatar
-            aiAvatar: conversation.participant ? participantMap.get(conversation.participant.name) : '',
-            myAvatarFrame: mainChar.settings.aiAvatarFrame,
-            aiAvatarFrame: ''
-        }
-    };
-    // ▲▲▲ 修改结束 ▲▲▲
     
     for (const msg of conversation.messages) {
         const isFromMainChar = msg.sender === (mainChar.originalName || mainChar.name);
+        const isFromUser = msg.sender === userDisplayNameForAI;
+
+        let role;
+        
+        if (conversation.type === 'private_user') {
+            role = isFromUser ? 'assistant' : 'user';
+        } else {
+            role = isFromMainChar ? 'user' : 'assistant';
+        }
         
         const tempMessageObject = {
-            role: isFromMainChar ? 'user' : 'assistant',
+            role: role,
             senderName: msg.sender,
             content: msg.content,
             timestamp: Date.now() + Math.random()
@@ -38883,7 +38933,6 @@ document.getElementById('copy-timestamp-btn').addEventListener('click', copyMess
 <!-- ▲▲▲ 新增HTML结束 ▲▲▲ -->
 </body>
 </html>
-
 
 
 
