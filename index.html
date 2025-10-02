@@ -12908,21 +12908,21 @@ const DEFAULT_NOTIFICATION_SOUND = 'https://www.myinstants.com/media/sounds/noti
                 authorAvatar = defaultAvatar;
             }
         
-            function renderOriginalPostContent(targetPost) {
-                let innerContentHtml = '';
-                // ▼▼▼ 已添加 Markdown 解析 ▼▼▼
-                const publicTextHtml = targetPost.publicText ? `<div class="post-content">${parseMarkdown(targetPost.publicText).replace(/\n/g, '<br>')}</div>` : '';
-        
-                if (targetPost.type === 'shuoshuo') {
-                    // ▼▼▼ 已添加 Markdown 解析 ▼▼▼
-                    innerContentHtml = `<div class="post-content" style="margin-bottom: 10px;">${parseMarkdown(targetPost.content).replace(/\n/g, '<br>')}</div>`;
-                } else if (targetPost.type === 'image_post' && targetPost.imageUrl) {
-                    innerContentHtml = publicTextHtml ? `${publicTextHtml}<div style="margin-top:10px;"><img src="${targetPost.imageUrl}" class="chat-image"></div>` : `<img src="${targetPost.imageUrl}" class="chat-image">`;
-                } else if (targetPost.type === 'text_image') {
-                    innerContentHtml = publicTextHtml ? `${publicTextHtml}<div style="margin-top:10px;"><img src="https://i.postimg.cc/KYr2qRCK/1.jpg" class="chat-image" style="cursor: pointer;" data-hidden-text="${targetPost.hiddenContent}"></div>` : `<img src="https://i.postimg.cc/KYr2qRCK/1.jpg" class="chat-image" style="cursor: pointer;" data-hidden-text="${targetPost.hiddenContent}">`;
-                }
-                return innerContentHtml;
+function renderOriginalPostContent(targetPost) {
+            let innerContentHtml = '';
+            const publicTextHtml = targetPost.publicText ? `<div class="post-content">${parseMarkdown(targetPost.publicText).replace(/\n/g, '<br>')}</div>` : '';
+
+            if (targetPost.type === 'shuoshuo') {
+                innerContentHtml = `<div class="post-content" style="margin-bottom: 10px;">${parseMarkdown(targetPost.content).replace(/\n/g, '<br>')}</div>`;
+            } else if (targetPost.type === 'image_post' && targetPost.imageUrl) {
+                // 【核心修复】直接使用 targetPost.imageUrl 来显示用户上传的图片
+                innerContentHtml = publicTextHtml ? `${publicTextHtml}<div style="margin-top:10px;"><img src="${targetPost.imageUrl}" class="chat-image"></div>` : `<img src="${targetPost.imageUrl}" class="chat-image">`;
+            } else if (targetPost.type === 'text_image') {
+                const postImageUrl = state.globalSettings.enableAiDrawing && targetPost.image_prompt ? `https://image.pollinations.ai/prompt/${targetPost.image_prompt}` : 'https://i.postimg.cc/KYr2qRCK/1.jpg';
+                innerContentHtml = publicTextHtml ? `${publicTextHtml}<div style="margin-top:10px;"><img src="${postImageUrl}" class="chat-image" style="cursor: pointer;" data-hidden-text="${targetPost.hiddenContent}"></div>` : `<img src="${postImageUrl}" class="chat-image" style="cursor: pointer;" data-hidden-text="${targetPost.hiddenContent}">`;
             }
+            return innerContentHtml;
+        }
         
             let mainContentHtml;
         
@@ -13141,21 +13141,22 @@ const DEFAULT_NOTIFICATION_SOUND = 'https://www.myinstants.com/media/sounds/noti
                 authorAvatar = defaultAvatar;
             }
         
-            function renderOriginalPostContent(targetPost) {
-                let innerContentHtml = '';
-                const publicTextHtml = targetPost.publicText ? `<div class="post-content">${parseMarkdown(targetPost.publicText).replace(/\n/g, '<br>')}</div>` : '';
-        
-                if (targetPost.type === 'shuoshuo') {
-                    innerContentHtml = `<div class="post-content" style="margin-bottom: 10px;">${parseMarkdown(targetPost.content).replace(/\n/g, '<br>')}</div>`;
-                } else if (targetPost.type === 'image_post' && targetPost.imageUrl) {
-                        const postImageUrl = state.globalSettings.enableAiDrawing && post.image_prompt ? `https://image.pollinations.ai/prompt/${post.image_prompt}` : 'https://i.postimg.cc/KYr2qRCK/1.jpg';
-    innerContentHtml = publicTextHtml ? `${publicTextHtml}<div style="margin-top:10px;"><img src="${postImageUrl}" class="chat-image"></div>` : `<img src="${postImageUrl}" class="chat-image">`;
-} else if (targetPost.type === 'text_image') {
-    const postImageUrl = state.globalSettings.enableAiDrawing && targetPost.image_prompt ? `https://image.pollinations.ai/prompt/${targetPost.image_prompt}` : 'https://i.postimg.cc/KYr2qRCK/1.jpg';
-    innerContentHtml = publicTextHtml ? `${publicTextHtml}<div style="margin-top:10px;"><img src="${postImageUrl}" class="chat-image" style="cursor: pointer;" data-hidden-text="${targetPost.hiddenContent}"></div>` : `<img src="${postImageUrl}" class="chat-image" style="cursor: pointer;" data-hidden-text="${targetPost.hiddenContent}">`;
-                }
-                return innerContentHtml;
+function renderOriginalPostContent(targetPost) {
+            let innerContentHtml = '';
+            const publicTextHtml = targetPost.publicText ? `<div class="post-content">${parseMarkdown(targetPost.publicText).replace(/\n/g, '<br>')}</div>` : '';
+
+            if (targetPost.type === 'shuoshuo') {
+                innerContentHtml = `<div class="post-content" style="margin-bottom: 10px;">${parseMarkdown(targetPost.content).replace(/\n/g, '<br>')}</div>`;
+            } else if (targetPost.type === 'image_post' && targetPost.imageUrl) {
+                // 【核心修复 ①】直接使用 targetPost.imageUrl 显示您上传的图片
+                innerContentHtml = publicTextHtml ? `${publicTextHtml}<div style="margin-top:10px;"><img src="${targetPost.imageUrl}" class="chat-image"></div>` : `<img src="${targetPost.imageUrl}" class="chat-image">`;
+            } else if (targetPost.type === 'text_image') {
+                // （这部分逻辑保持不变，用于AI生成的文字图）
+                const postImageUrl = state.globalSettings.enableAiDrawing && targetPost.image_prompt ? `https://image.pollinations.ai/prompt/${targetPost.image_prompt}` : 'https://i.postimg.cc/KYr2qRCK/1.jpg';
+                innerContentHtml = publicTextHtml ? `${publicTextHtml}<div style="margin-top:10px;"><img src="${postImageUrl}" class="chat-image" style="cursor: pointer;" data-hidden-text="${targetPost.hiddenContent}"></div>` : `<img src="${postImageUrl}" class="chat-image" style="cursor: pointer;" data-hidden-text="${targetPost.hiddenContent}">`;
             }
+            return innerContentHtml;
+        }
         
             let mainContentHtml;
         
