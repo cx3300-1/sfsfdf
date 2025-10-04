@@ -19498,7 +19498,7 @@ async function addSongFromLocal(event) {
 }
 // ▲▲▲ 替换结束 ▲▲▲
 
-// ▼▼▼ 【请用这个已修复自动播放问题的全新版本】完整替换旧的 playSong 函数 ▼▼▼
+// ▼▼▼ 【请用这个已修复的版本】完整替换旧的 playSong 函数 ▼▼▼
 async function playSong(index) {
     if (index < 0 || index >= musicState.playlist.length) return;
 
@@ -19526,6 +19526,7 @@ async function playSong(index) {
         }
     }
     
+    // 【核心修复4】优先处理 ArrayBuffer，并根据 fileType 创建 Blob
     if (track.isLocal && track.src instanceof ArrayBuffer) {
         const blob = new Blob([track.src], { type: track.fileType || 'audio/mpeg' });
         audioPlayer.src = URL.createObjectURL(blob);
@@ -19542,19 +19543,7 @@ async function playSong(index) {
     const playPromise = audioPlayer.play();
     if (playPromise !== undefined) {
         playPromise.catch(error => {
-            // --- ★★★★★ 这就是本次修复的核心！ ★★★★★ ---
-            // 捕获浏览器因自动播放策略而抛出的 "NotAllowedError" 错误
-            if (error.name === 'NotAllowedError') {
-                console.warn('Autoplay was prevented by the browser.');
-                // 确保播放器状态为暂停
-                audioPlayer.pause();
-                // 弹窗告知用户，并引导他们手动点击播放
-                showCustomAlert("播放已暂停", "由于浏览器安全限制，AI切换的歌曲无法自动播放。请手动点击播放按钮 ▶ 继续欣赏。");
-            } else if (error.name !== 'AbortError') {
-                // 对于其他非预期的播放错误，在控制台记录下来
-                console.error('Playback error:', error);
-            }
-            // --- ★★★★★ 修复结束 ★★★★★ ---
+            if (error.name !== 'AbortError') console.error('Playback error:', error);
         });
     }
     updatePlaylistUI();
@@ -19569,6 +19558,7 @@ async function playSong(index) {
         lyricBar.classList.remove('visible');
     }
 }
+// ▲▲▲ 替换结束 ▲▲▲
 // ▲▲▲ 替换结束 ▲▲▲
 
 async function deleteTrack(index) { if (index < 0 || index >= musicState.playlist.length) return; const track = musicState.playlist[index]; const wasPlaying = musicState.isPlaying && musicState.currentIndex === index; if (track.isLocal && audioPlayer.src.startsWith('blob:') && musicState.currentIndex === index) URL.revokeObjectURL(audioPlayer.src); musicState.playlist.splice(index, 1); await saveGlobalPlaylist(); if (musicState.playlist.length === 0) { if (musicState.isPlaying) audioPlayer.pause(); audioPlayer.src = ''; musicState.currentIndex = -1; musicState.isPlaying = false; } else { if (wasPlaying) { playNext(); } else { if (musicState.currentIndex >= index) musicState.currentIndex = Math.max(0, musicState.currentIndex - 1); } } updatePlayerUI(); updatePlaylistUI(); }
