@@ -27,6 +27,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/phoebeboo/mewoooo@main/pp.js" defer></script>
     <style>
         @font-face { font-family: 'bulangni'; src: url('') format('truetype'); font-weight: normal; font-style: normal; font-display: swap; }
         :root { --screen-width: 350px; --screen-height: 650px; --secondary-bg: #ffffff; --border-color: #e0e0e0; --text-primary: #1f1f1f; --text-secondary: #8a8a8a; --accent-color: #007bff; }
@@ -9082,15 +9083,44 @@ input, textarea, select {
 #phone-screen.dark-mode #npc-list-view {
     background-color: #000;
 }
-/* ▼▼▼ 【全新】这是让围观模式按钮横向排列的样式 ▼▼▼ */
-.spectator-actions-container {
-    display: flex;
-    flex-direction: row; /* 强制水平排列 */
-    justify-content: center; /* 居中对齐 */
-    gap: 10px; /* 按钮之间的间距 */
-    margin-top: 10px; /* 与上方文字的间距 */
-}
-/* ▲▲▲ 新增CSS结束 ▲▲▲ */
+       /* 悬浮X Logo样式 */
+        #floating-x-logo {
+          position: fixed;
+          right: 20px;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 50px;
+          height: 50px;
+          background: linear-gradient(135deg, #1d9bf0 0%, #0ea5ff 100%);
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          cursor: pointer;
+          box-shadow: 0 4px 20px rgba(29, 155, 240, 0.3);
+          z-index: 999;
+          transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .floating-x-hidden {
+          transform: translateY(-50%) translateX(100px);
+          opacity: 0;
+        }
+
+        .floating-x-visible {
+          transform: translateY(-50%) translateX(0);
+          opacity: 1;
+        }
+
+        #floating-x-logo:hover {
+          transform: translateY(-50%) scale(1.1);
+          box-shadow: 0 6px 25px rgba(29, 155, 240, 0.4);
+        }
+
+        #floating-x-logo:active {
+          transform: translateY(-50%) scale(0.95);
+        }
     </style>
 </head>
 <body>
@@ -9181,6 +9211,13 @@ input, textarea, select {
     <div class="icon-bg-desktop"><img id="icon-img-tutorial" src="https://i.postimg.cc/d10GjC4g/IMG-7302.jpg" alt="教程"></div>
     <span class="label">教程</span>
 </div>
+     <!-- 悬浮X Logo - 只在主页面显示 -->
+      <div id="floating-x-logo" class="floating-x-hidden">
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
+          <path
+            d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+        </svg>
+      </div>
                 </div>
             </div>
         </div>
@@ -11843,16 +11880,60 @@ if (!Array.prototype.findLastIndex) {
     writable: true
   });
 }
+        // 双击检测变量
+        let homeScreenTapCount = 0;
+        let homeScreenTapTimer = null;
+       document.addEventListener('DOMContentLoaded', function () {
+          const homeScreen = document.getElementById('home-screen');
+          const floatingXLogo = document.getElementById('floating-x-logo');
+
+          if (homeScreen && floatingXLogo) {
+            // 双击事件监听
+            homeScreen.addEventListener('click', function (e) {
+              // 避免与其他元素的点击事件冲突
+              if (e.target.closest('.desktop-app-icon') || e.target.closest('#floating-x-logo')) {
+                return;
+              }
+
+              homeScreenTapCount++;
+
+              if (homeScreenTapCount === 1) {
+                homeScreenTapTimer = setTimeout(function () {
+                  homeScreenTapCount = 0;
+                }, 300);
+              } else if (homeScreenTapCount === 2) {
+                clearTimeout(homeScreenTapTimer);
+                homeScreenTapCount = 0;
+
+                // 显示悬浮X Logo
+                floatingXLogo.classList.remove('floating-x-hidden');
+                floatingXLogo.classList.add('floating-x-visible');
+
+                // 3秒后自动隐藏
+                setTimeout(function () {
+                  floatingXLogo.classList.remove('floating-x-visible');
+                  floatingXLogo.classList.add('floating-x-hidden');
+                }, 3000);
+              }
+            });
+
+            // X Logo点击事件
+            floatingXLogo.addEventListener('click', function (e) {
+              e.stopPropagation();
+              showScreen('x-social-screen');
+              // 点击后隐藏logo
+              floatingXLogo.classList.remove('floating-x-visible');
+              floatingXLogo.classList.add('floating-x-hidden');
+            });
+          }
+        });
+
         // ... 其他全局变量
         let activeMessageTimestamp = null;
         let activeTransferTimestamp = null; // <-- 确保这行在这里，并且只有一行
         // ▼▼▼ 在下方粘贴新变量 ▼▼▼
         let lastRawAiResponse = ''; // 用于存储AI上一轮的原始响应字符串
         let lastResponseTimestamps = []; // 用于存储上一轮响应生成的消息的时间戳
-// ▼▼▼ 在这里粘贴下面的新代码 ▼▼▼
-let lastSpectatorRawResponse = ''; // 用于存储旁观模式的AI原始响应
-let lastSpectatorResponseTimestamps = []; // 用于存储旁观模式上一轮响应的消息时间戳
-// ▲▲▲ 新增结束 ▲▲▲
         // ▲▲▲ 新增结束 ▲▲▲
         let currentQzoneReplyContext = null;
         let editingNpcId = null; // <-- 新增这一行
@@ -12954,7 +13035,7 @@ const DEFAULT_NOTIFICATION_SOUND = 'https://www.myinstants.com/media/sounds/noti
             });
         });
         // ▲▲▲ 替换结束 ▲▲▲
-        
+window.db = db;        
                 // ===================================================================
                 // 3. 所有功能函数定义
                 // ===================================================================
@@ -12967,6 +13048,7 @@ const DEFAULT_NOTIFICATION_SOUND = 'https://www.myinstants.com/media/sounds/noti
                     if (screenId === 'api-settings-screen') window.renderApiSettingsProxy();
                     if (screenId === 'wallpaper-screen') window.renderWallpaperScreenProxy();
                     if (screenId === 'world-book-screen') window.renderWorldBookScreenProxy();
+                    if (screenId === 'x-social-screen') window.renderXSocialScreenProxy();
                      if (screenId === 'douban-screen') renderDoubanScreen();
                     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
                     const screenToShow = document.getElementById(screenId);
@@ -13043,6 +13125,12 @@ const DEFAULT_NOTIFICATION_SOUND = 'https://www.myinstants.com/media/sounds/noti
             break;
                     }
                 }
+    // X社交页面渲染函数
+      function renderXSocialScreen() {
+        // 暂时为空，后续添加X社交页面的渲染逻辑
+        console.log("渲染X社交页面");
+      }
+      window.renderXSocialScreenProxy = renderXSocialScreen;
                 
                 function renderQzoneScreen() {
                     if (state && state.qzoneSettings) {
@@ -15255,19 +15343,12 @@ async function deleteNpc(npcId) {
                 chatInputArea.style.display = 'none'; // 1. 隐藏整个输入区域
                 lockOverlay.style.display = 'flex';   // 2. 显示遮罩层作为背景
                 lockContent.innerHTML = `
-        <span class="lock-text">正在围观AI们的群聊...</span>
-        <div class="spectator-actions-container">
-            <button id="spectator-regenerate-btn" class="lock-action-btn secondary">🔄 重新生成</button>
-            <button id="spectator-propel-btn" class="lock-action-btn">🎬 推进剧情</button>
-            <button id="spectator-director-btn" class="lock-action-btn secondary">🎬 导演模式</button>
-        </div>
+                    <span class="lock-text">正在围观AI们的群聊...</span>
+                    <button id="spectator-propel-btn" class="lock-action-btn">🎬 推进剧情</button>
                 `; // 3. 在遮罩层里显示新的UI
                 
                 // 4. 为新的“推进剧情”按钮绑定专属函数
                 document.getElementById('spectator-propel-btn').onclick = triggerSpectatorGroupAiAction;
-    document.getElementById('spectator-propel-btn').onclick = triggerSpectatorGroupAiAction;
-    document.getElementById('spectator-regenerate-btn').addEventListener('click', handleRegenerateSpectatorResponse);
-    document.getElementById('spectator-director-btn').addEventListener('click', openSpectatorResponseEditor);
 
             } else {
                 // 如果是普通聊天
@@ -16627,10 +16708,6 @@ ${membersList}
 
         const data = await response.json();
         const aiResponseContent = getGeminiResponseText(data);
-// ▼▼▼ 【核心修改】在这里缓存AI的原始响应 ▼▼▼
-lastSpectatorRawResponse = aiResponseContent; 
-lastSpectatorResponseTimestamps = []; // 每次生成新回复时，清空旧的时间戳记录
-// ▲▲▲ 修改结束 ▲▲▲
         const messagesArray = parseAiResponse(aiResponseContent);
 
         // ==========================================================
@@ -16645,7 +16722,7 @@ lastSpectatorResponseTimestamps = []; // 每次生成新回复时，清空旧的
 
             let aiMessage = null;
             const baseMessage = { role: 'assistant', senderName: msgData.name, timestamp: messageTimestamp++ };
-    lastSpectatorResponseTimestamps.push(baseMessage.timestamp);            
+            
             // 使用 switch 语句来处理不同的消息类型
             switch (msgData.type) {
                 case 'text':
@@ -16710,177 +16787,7 @@ lastSpectatorResponseTimestamps = []; // 每次生成新回复时，清空旧的
         setAvatarActingState(chatId, false);
     }
 } 
-// ▼▼▼ 【全新】这是“围观群聊”导演模式和重新生成功能的【全部核心JS代码】，请完整粘贴 ▼▼▼
-
-/**
- * 【总入口】处理“重新生成”按钮的点击事件
- */
-async function handleRegenerateSpectatorResponse() {
-    const chat = state.chats[state.activeChatId];
-    if (!chat || !chat.isSpectatorGroup) return;
-
-    // 1. 检查是否有可供重新生成的内容
-    if (lastSpectatorResponseTimestamps.length === 0) {
-        alert("还没有可供重新生成的AI回应。");
-        return;
-    }
-
-    // 2. 找到上一轮AI回应的第一条消息在历史记录中的位置
-    const firstTimestampOfLastTurn = lastSpectatorResponseTimestamps[0];
-    const firstMsgIndexOfLastTurn = chat.history.findIndex(msg => msg.timestamp === firstTimestampOfLastTurn);
-
-    if (firstMsgIndexOfLastTurn === -1) {
-        alert("无法在历史记录中找到上一轮AI的回应，无法重新生成。");
-        return;
-    }
-
-    // 3. 删除从那个位置开始的所有消息（即AI的上一轮完整回应）
-    chat.history.splice(firstMsgIndexOfLastTurn);
-
-    // 4. 保存更改并刷新UI
-    await db.chats.put(chat);
-    await renderChatInterface(chat.id);
-    
-    // 5. 再次触发AI响应
-    triggerSpectatorGroupAiAction();
-}
-
-/**
- * 【总入口】打开“导演剪辑室”，编辑旁观模式的上一轮AI响应
- */
-function openSpectatorResponseEditor() {
-    if (!lastSpectatorRawResponse) {
-        alert("还没有可供编辑的AI响应。");
-        return;
-    }
-
-    const editorModal = document.getElementById('ai-response-editor-modal');
-    const editorContainer = document.getElementById('ai-response-editor-container');
-    editorContainer.innerHTML = ''; 
-
-    // 使用与主聊天相同的逻辑来解析和填充编辑器
-    const jsonMatches = lastSpectatorRawResponse.match(/{[^{}]*}/g);
-    
-    if (jsonMatches) {
-        jsonMatches.forEach(jsonString => {
-            try {
-                const parsedObject = JSON.parse(jsonString);
-                const formattedJson = JSON.stringify(parsedObject, null, 2);
-                const block = createAiResponseEditorBlock(formattedJson);
-                editorContainer.appendChild(block);
-            } catch (e) {
-                const block = createAiResponseEditorBlock(jsonString);
-                editorContainer.appendChild(block);
-            }
-        });
-    } else {
-        const block = createAiResponseEditorBlock(lastSpectatorRawResponse);
-        editorContainer.appendChild(block);
-    }
-    
-    // 【核心】修改保存按钮的行为，让它调用我们为旁观模式写的专属保存函数
-    const saveBtn = document.getElementById('save-ai-response-editor-btn');
-    const newSaveBtn = saveBtn.cloneNode(true); // 克隆以移除旧事件
-    saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
-    newSaveBtn.addEventListener('click', saveEditedSpectatorResponse); // 绑定新函数
-
-    editorModal.classList.add('visible');
-}
-
-/**
- * 【核心】保存导演模式下为旁观模式修改过的内容
- */
-async function saveEditedSpectatorResponse() {
-    const chat = state.chats[state.activeChatId];
-    if (!chat || !chat.isSpectatorGroup) return;
-
-    // 1. 从DOM中收集所有编辑后的JSON字符串
-    const editorContainer = document.getElementById('ai-response-editor-container');
-    const editorTextareas = editorContainer.querySelectorAll('textarea');
-    const editedRawBlocks = Array.from(editorTextareas).map(ta => ta.value.trim()).filter(Boolean);
-    
-    // 2. 从历史记录中移除上一轮AI生成的所有消息
-    if (lastSpectatorResponseTimestamps.length > 0) {
-        const firstTimestamp = lastSpectatorResponseTimestamps[0];
-        const firstMsgIndex = chat.history.findIndex(msg => msg.timestamp === firstTimestamp);
-        if (firstMsgIndex > -1) {
-            chat.history.splice(firstMsgIndex);
-        }
-    }
-
-    // 3. 将新编辑的消息添加回历史记录
-    const newRawResponse = editedRawBlocks.join('\n');
-    const newMessagesArray = parseAiResponse(newRawResponse);
-    let newTimestamps = [];
-    let messageTimestamp = Date.now();
-
-    for (const msgData of newMessagesArray) {
-        // (这部分逻辑与 triggerSpectatorGroupAiAction 中的消息处理逻辑完全相同)
-            if (!msgData || !msgData.type || !msgData.name) continue;
-
-            let aiMessage = null;
-            const baseMessage = { role: 'assistant', senderName: msgData.name, timestamp: messageTimestamp++ };
-    lastSpectatorResponseTimestamps.push(baseMessage.timestamp);            
-            // 使用 switch 语句来处理不同的消息类型
-            switch (msgData.type) {
-                case 'text':
-                    aiMessage = { ...baseMessage, content: msgData.content };
-                    break;
-                case 'sticker':
-                    // 【关键】为 sticker 类型创建正确的对象结构
-                    aiMessage = { ...baseMessage, type: 'sticker', content: msgData.url, meaning: msgData.meaning || '' };
-                    break;
-                case 'ai_image':
-                    // 【关键】为 ai_image 类型创建正确的对象结构
-                    aiMessage = { ...baseMessage, type: 'ai_image', content: msgData.description, image_prompt: msgData.image_prompt };
-                    break;
-                case 'voice_message':
-                    // 【关键】为 voice_message 类型创建正确的对象结构
-                    aiMessage = { ...baseMessage, type: 'voice_message', content: msgData.content };
-                    break;
-                case 'quote_reply':
-                    // 【关键】为引用回复创建正确的对象结构
-                    const originalMessage = chat.history.find(m => m.timestamp === msgData.target_timestamp);
-                    if (originalMessage) {
-                        aiMessage = { 
-                            ...baseMessage, 
-                            content: msgData.reply_content,
-                            quote: {
-                                timestamp: originalMessage.timestamp,
-                                senderName: originalMessage.senderName,
-                                content: String(originalMessage.content || '').substring(0, 50)
-                            }
-                        };
-                    } else {
-                        // 如果找不到被引用的消息，就作为普通消息发送
-                        aiMessage = { ...baseMessage, content: msgData.reply_content };
-                    }
-                    break;
-                default:
-                    console.warn("旁观模式收到未知指令类型:", msgData.type);
-                    continue; // 跳过未知类型的指令
-            }
-
-        if (aiMessage) {
-            chat.history.push(aiMessage);
-            newTimestamps.push(aiMessage.timestamp);
-        }
-    }
-    
-    // 4. 保存到数据库并刷新UI
-    await db.chats.put(chat);
-    renderChatInterface(state.activeChatId);
-    renderChatList();
-    document.getElementById('ai-response-editor-modal').classList.remove('visible');
-    
-    // 5. 更新缓存，以便下次编辑
-    lastSpectatorRawResponse = newRawResponse;
-    lastSpectatorResponseTimestamps = newTimestamps;
-    
-    await showCustomAlert("导演模式", "您的修改已保存！");
-}
-
-// ▲▲▲ 全新JS代码粘贴结束 ▲▲▲        
+        
         
         
         
@@ -19498,7 +19405,7 @@ async function addSongFromLocal(event) {
 }
 // ▲▲▲ 替换结束 ▲▲▲
 
-// ▼▼▼ 【请用这个已修复的版本】完整替换旧的 playSong 函数 ▼▼▼
+// ▼▼▼ 【请用这个已修复自动播放问题的全新版本】完整替换旧的 playSong 函数 ▼▼▼
 async function playSong(index) {
     if (index < 0 || index >= musicState.playlist.length) return;
 
@@ -19526,7 +19433,6 @@ async function playSong(index) {
         }
     }
     
-    // 【核心修复4】优先处理 ArrayBuffer，并根据 fileType 创建 Blob
     if (track.isLocal && track.src instanceof ArrayBuffer) {
         const blob = new Blob([track.src], { type: track.fileType || 'audio/mpeg' });
         audioPlayer.src = URL.createObjectURL(blob);
@@ -19543,7 +19449,19 @@ async function playSong(index) {
     const playPromise = audioPlayer.play();
     if (playPromise !== undefined) {
         playPromise.catch(error => {
-            if (error.name !== 'AbortError') console.error('Playback error:', error);
+            // --- ★★★★★ 这就是本次修复的核心！ ★★★★★ ---
+            // 捕获浏览器因自动播放策略而抛出的 "NotAllowedError" 错误
+            if (error.name === 'NotAllowedError') {
+                console.warn('Autoplay was prevented by the browser.');
+                // 确保播放器状态为暂停
+                audioPlayer.pause();
+                // 弹窗告知用户，并引导他们手动点击播放
+                showCustomAlert("播放已暂停", "由于浏览器安全限制，AI切换的歌曲无法自动播放。请手动点击播放按钮 ▶ 继续欣赏。");
+            } else if (error.name !== 'AbortError') {
+                // 对于其他非预期的播放错误，在控制台记录下来
+                console.error('Playback error:', error);
+            }
+            // --- ★★★★★ 修复结束 ★★★★★ ---
         });
     }
     updatePlaylistUI();
@@ -19558,7 +19476,6 @@ async function playSong(index) {
         lyricBar.classList.remove('visible');
     }
 }
-// ▲▲▲ 替换结束 ▲▲▲
 // ▲▲▲ 替换结束 ▲▲▲
 
 async function deleteTrack(index) { if (index < 0 || index >= musicState.playlist.length) return; const track = musicState.playlist[index]; const wasPlaying = musicState.isPlaying && musicState.currentIndex === index; if (track.isLocal && audioPlayer.src.startsWith('blob:') && musicState.currentIndex === index) URL.revokeObjectURL(audioPlayer.src); musicState.playlist.splice(index, 1); await saveGlobalPlaylist(); if (musicState.playlist.length === 0) { if (musicState.isPlaying) audioPlayer.pause(); audioPlayer.src = ''; musicState.currentIndex = -1; musicState.isPlaying = false; } else { if (wasPlaying) { playNext(); } else { if (musicState.currentIndex >= index) musicState.currentIndex = Math.max(0, musicState.currentIndex - 1); } } updatePlayerUI(); updatePlaylistUI(); }
