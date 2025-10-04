@@ -9082,6 +9082,15 @@ input, textarea, select {
 #phone-screen.dark-mode #npc-list-view {
     background-color: #000;
 }
+/* ▼▼▼ 【全新】这是让围观模式按钮横向排列的样式 ▼▼▼ */
+.spectator-actions-container {
+    display: flex;
+    flex-direction: row; /* 强制水平排列 */
+    justify-content: center; /* 居中对齐 */
+    gap: 10px; /* 按钮之间的间距 */
+    margin-top: 10px; /* 与上方文字的间距 */
+}
+/* ▲▲▲ 新增CSS结束 ▲▲▲ */
     </style>
 </head>
 <body>
@@ -11840,6 +11849,10 @@ if (!Array.prototype.findLastIndex) {
         // ▼▼▼ 在下方粘贴新变量 ▼▼▼
         let lastRawAiResponse = ''; // 用于存储AI上一轮的原始响应字符串
         let lastResponseTimestamps = []; // 用于存储上一轮响应生成的消息的时间戳
+// ▼▼▼ 在这里粘贴下面的新代码 ▼▼▼
+let lastSpectatorRawResponse = ''; // 用于存储旁观模式的AI原始响应
+let lastSpectatorResponseTimestamps = []; // 用于存储旁观模式上一轮响应的消息时间戳
+// ▲▲▲ 新增结束 ▲▲▲
         // ▲▲▲ 新增结束 ▲▲▲
         let currentQzoneReplyContext = null;
         let editingNpcId = null; // <-- 新增这一行
@@ -15242,12 +15255,19 @@ async function deleteNpc(npcId) {
                 chatInputArea.style.display = 'none'; // 1. 隐藏整个输入区域
                 lockOverlay.style.display = 'flex';   // 2. 显示遮罩层作为背景
                 lockContent.innerHTML = `
-                    <span class="lock-text">正在围观AI们的群聊...</span>
-                    <button id="spectator-propel-btn" class="lock-action-btn">🎬 推进剧情</button>
+        <span class="lock-text">正在围观AI们的群聊...</span>
+        <div class="spectator-actions-container">
+            <button id="spectator-regenerate-btn" class="lock-action-btn secondary">🔄 重新生成</button>
+            <button id="spectator-propel-btn" class="lock-action-btn">🎬 推进剧情</button>
+            <button id="spectator-director-btn" class="lock-action-btn secondary">🎬 导演模式</button>
+        </div>
                 `; // 3. 在遮罩层里显示新的UI
                 
                 // 4. 为新的“推进剧情”按钮绑定专属函数
                 document.getElementById('spectator-propel-btn').onclick = triggerSpectatorGroupAiAction;
+    document.getElementById('spectator-propel-btn').onclick = triggerSpectatorGroupAiAction;
+    document.getElementById('spectator-regenerate-btn').addEventListener('click', handleRegenerateSpectatorResponse);
+    document.getElementById('spectator-director-btn').addEventListener('click', openSpectatorResponseEditor);
 
             } else {
                 // 如果是普通聊天
@@ -16607,6 +16627,10 @@ ${membersList}
 
         const data = await response.json();
         const aiResponseContent = getGeminiResponseText(data);
+// ▼▼▼ 【核心修改】在这里缓存AI的原始响应 ▼▼▼
+lastSpectatorRawResponse = aiResponseContent; 
+lastSpectatorResponseTimestamps = []; // 每次生成新回复时，清空旧的时间戳记录
+// ▲▲▲ 修改结束 ▲▲▲
         const messagesArray = parseAiResponse(aiResponseContent);
 
         // ==========================================================
@@ -16621,7 +16645,7 @@ ${membersList}
 
             let aiMessage = null;
             const baseMessage = { role: 'assistant', senderName: msgData.name, timestamp: messageTimestamp++ };
-            
+    lastSpectatorResponseTimestamps.push(baseMessage.timestamp);            
             // 使用 switch 语句来处理不同的消息类型
             switch (msgData.type) {
                 case 'text':
@@ -16686,7 +16710,177 @@ ${membersList}
         setAvatarActingState(chatId, false);
     }
 } 
-        
+// ▼▼▼ 【全新】这是“围观群聊”导演模式和重新生成功能的【全部核心JS代码】，请完整粘贴 ▼▼▼
+
+/**
+ * 【总入口】处理“重新生成”按钮的点击事件
+ */
+async function handleRegenerateSpectatorResponse() {
+    const chat = state.chats[state.activeChatId];
+    if (!chat || !chat.isSpectatorGroup) return;
+
+    // 1. 检查是否有可供重新生成的内容
+    if (lastSpectatorResponseTimestamps.length === 0) {
+        alert("还没有可供重新生成的AI回应。");
+        return;
+    }
+
+    // 2. 找到上一轮AI回应的第一条消息在历史记录中的位置
+    const firstTimestampOfLastTurn = lastSpectatorResponseTimestamps[0];
+    const firstMsgIndexOfLastTurn = chat.history.findIndex(msg => msg.timestamp === firstTimestampOfLastTurn);
+
+    if (firstMsgIndexOfLastTurn === -1) {
+        alert("无法在历史记录中找到上一轮AI的回应，无法重新生成。");
+        return;
+    }
+
+    // 3. 删除从那个位置开始的所有消息（即AI的上一轮完整回应）
+    chat.history.splice(firstMsgIndexOfLastTurn);
+
+    // 4. 保存更改并刷新UI
+    await db.chats.put(chat);
+    await renderChatInterface(chat.id);
+    
+    // 5. 再次触发AI响应
+    triggerSpectatorGroupAiAction();
+}
+
+/**
+ * 【总入口】打开“导演剪辑室”，编辑旁观模式的上一轮AI响应
+ */
+function openSpectatorResponseEditor() {
+    if (!lastSpectatorRawResponse) {
+        alert("还没有可供编辑的AI响应。");
+        return;
+    }
+
+    const editorModal = document.getElementById('ai-response-editor-modal');
+    const editorContainer = document.getElementById('ai-response-editor-container');
+    editorContainer.innerHTML = ''; 
+
+    // 使用与主聊天相同的逻辑来解析和填充编辑器
+    const jsonMatches = lastSpectatorRawResponse.match(/{[^{}]*}/g);
+    
+    if (jsonMatches) {
+        jsonMatches.forEach(jsonString => {
+            try {
+                const parsedObject = JSON.parse(jsonString);
+                const formattedJson = JSON.stringify(parsedObject, null, 2);
+                const block = createAiResponseEditorBlock(formattedJson);
+                editorContainer.appendChild(block);
+            } catch (e) {
+                const block = createAiResponseEditorBlock(jsonString);
+                editorContainer.appendChild(block);
+            }
+        });
+    } else {
+        const block = createAiResponseEditorBlock(lastSpectatorRawResponse);
+        editorContainer.appendChild(block);
+    }
+    
+    // 【核心】修改保存按钮的行为，让它调用我们为旁观模式写的专属保存函数
+    const saveBtn = document.getElementById('save-ai-response-editor-btn');
+    const newSaveBtn = saveBtn.cloneNode(true); // 克隆以移除旧事件
+    saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
+    newSaveBtn.addEventListener('click', saveEditedSpectatorResponse); // 绑定新函数
+
+    editorModal.classList.add('visible');
+}
+
+/**
+ * 【核心】保存导演模式下为旁观模式修改过的内容
+ */
+async function saveEditedSpectatorResponse() {
+    const chat = state.chats[state.activeChatId];
+    if (!chat || !chat.isSpectatorGroup) return;
+
+    // 1. 从DOM中收集所有编辑后的JSON字符串
+    const editorContainer = document.getElementById('ai-response-editor-container');
+    const editorTextareas = editorContainer.querySelectorAll('textarea');
+    const editedRawBlocks = Array.from(editorTextareas).map(ta => ta.value.trim()).filter(Boolean);
+    
+    // 2. 从历史记录中移除上一轮AI生成的所有消息
+    if (lastSpectatorResponseTimestamps.length > 0) {
+        const firstTimestamp = lastSpectatorResponseTimestamps[0];
+        const firstMsgIndex = chat.history.findIndex(msg => msg.timestamp === firstTimestamp);
+        if (firstMsgIndex > -1) {
+            chat.history.splice(firstMsgIndex);
+        }
+    }
+
+    // 3. 将新编辑的消息添加回历史记录
+    const newRawResponse = editedRawBlocks.join('\n');
+    const newMessagesArray = parseAiResponse(newRawResponse);
+    let newTimestamps = [];
+    let messageTimestamp = Date.now();
+
+    for (const msgData of newMessagesArray) {
+        // (这部分逻辑与 triggerSpectatorGroupAiAction 中的消息处理逻辑完全相同)
+            if (!msgData || !msgData.type || !msgData.name) continue;
+
+            let aiMessage = null;
+            const baseMessage = { role: 'assistant', senderName: msgData.name, timestamp: messageTimestamp++ };
+    lastSpectatorResponseTimestamps.push(baseMessage.timestamp);            
+            // 使用 switch 语句来处理不同的消息类型
+            switch (msgData.type) {
+                case 'text':
+                    aiMessage = { ...baseMessage, content: msgData.content };
+                    break;
+                case 'sticker':
+                    // 【关键】为 sticker 类型创建正确的对象结构
+                    aiMessage = { ...baseMessage, type: 'sticker', content: msgData.url, meaning: msgData.meaning || '' };
+                    break;
+                case 'ai_image':
+                    // 【关键】为 ai_image 类型创建正确的对象结构
+                    aiMessage = { ...baseMessage, type: 'ai_image', content: msgData.description, image_prompt: msgData.image_prompt };
+                    break;
+                case 'voice_message':
+                    // 【关键】为 voice_message 类型创建正确的对象结构
+                    aiMessage = { ...baseMessage, type: 'voice_message', content: msgData.content };
+                    break;
+                case 'quote_reply':
+                    // 【关键】为引用回复创建正确的对象结构
+                    const originalMessage = chat.history.find(m => m.timestamp === msgData.target_timestamp);
+                    if (originalMessage) {
+                        aiMessage = { 
+                            ...baseMessage, 
+                            content: msgData.reply_content,
+                            quote: {
+                                timestamp: originalMessage.timestamp,
+                                senderName: originalMessage.senderName,
+                                content: String(originalMessage.content || '').substring(0, 50)
+                            }
+                        };
+                    } else {
+                        // 如果找不到被引用的消息，就作为普通消息发送
+                        aiMessage = { ...baseMessage, content: msgData.reply_content };
+                    }
+                    break;
+                default:
+                    console.warn("旁观模式收到未知指令类型:", msgData.type);
+                    continue; // 跳过未知类型的指令
+            }
+
+        if (aiMessage) {
+            chat.history.push(aiMessage);
+            newTimestamps.push(aiMessage.timestamp);
+        }
+    }
+    
+    // 4. 保存到数据库并刷新UI
+    await db.chats.put(chat);
+    renderChatInterface(state.activeChatId);
+    renderChatList();
+    document.getElementById('ai-response-editor-modal').classList.remove('visible');
+    
+    // 5. 更新缓存，以便下次编辑
+    lastSpectatorRawResponse = newRawResponse;
+    lastSpectatorResponseTimestamps = newTimestamps;
+    
+    await showCustomAlert("导演模式", "您的修改已保存！");
+}
+
+// ▲▲▲ 全新JS代码粘贴结束 ▲▲▲        
         
         
         
