@@ -15412,35 +15412,81 @@ async function deleteNpc(npcId) {
             }
             // --- 【修改结束】 ---
 
-            // --- (这部分渲染消息历史的逻辑保持不变) ---
-            messagesContainer.innerHTML = '';
-            const history = chat.history;
-            const totalMessages = history.length;
-            currentRenderedCount = 0;
-            const initialMessages = history.slice(-MESSAGE_RENDER_WINDOW);
-            let lastTimestamp = 0;
-            const fragment = document.createDocumentFragment();
-            for (const msg of initialMessages) {
-                if (lastTimestamp > 0 && (msg.timestamp - lastTimestamp > 3600000)) {
-                    fragment.appendChild(createSystemTimestampElement(msg.timestamp));
-                }
-                const messageEl = await createMessageElement(msg, chat, true);
-                if (messageEl) {
-                    fragment.appendChild(messageEl);
-                }
-                lastTimestamp = msg.timestamp;
-            }
-            messagesContainer.appendChild(fragment);
-            currentRenderedCount = initialMessages.length;
-            if (totalMessages > currentRenderedCount) {
-                prependLoadMoreButton(messagesContainer);
-            }
-            const typingIndicator = document.createElement('div');
-            typingIndicator.id = 'typing-indicator';
-            typingIndicator.style.display = 'none';
-            typingIndicator.textContent = '对方正在输入...';
-            messagesContainer.appendChild(typingIndicator);
+    // ▼▼▼ 核心修改从这里开始 ▼▼▼
+
+    messagesContainer.innerHTML = ''; // 1. 立即清空旧消息
+
+    // 2. 准备数据
+    const history = chat.history;
+    const totalMessages = history.length;
+    currentRenderedCount = 0;
+    const initialMessages = history.slice(-MESSAGE_RENDER_WINDOW); // 还是取最近50条
+
+    // 3. 立即添加“加载更多”按钮和打字指示器 (如果需要)
+    if (totalMessages > initialMessages.length) {
+        prependLoadMoreButton(messagesContainer);
+    }
+    const typingIndicator = document.createElement('div');
+    typingIndicator.id = 'typing-indicator';
+    typingIndicator.style.display = 'none';
+    typingIndicator.textContent = '对方正在输入...';
+    messagesContainer.appendChild(typingIndicator);
+
+    // 4. (可选但推荐) 显示一个临时的“加载中...”提示
+    const loadingMessage = document.createElement('p');
+    loadingMessage.id = 'loading-messages-indicator';
+    loadingMessage.textContent = '正在加载消息...';
+    loadingMessage.style.textAlign = 'center';
+    loadingMessage.style.color = 'var(--text-secondary)';
+    messagesContainer.appendChild(loadingMessage);
+    
+    // 5. 定义异步渲染函数
+    async function renderChunk(index = 0) {
+        const chunkSize = 15; // 每次渲染15条，这个数量比较均衡
+        const chunk = initialMessages.slice(index, index + chunkSize);
+
+        // 如果所有消息都渲染完了
+        if (chunk.length === 0) {
+            // 移除“加载中”提示
+            if (loadingMessage) loadingMessage.remove();
+            // 滚动到底部
             setTimeout(() => messagesContainer.scrollTop = messagesContainer.scrollHeight, 0);
+            return;
+        }
+
+        const fragment = document.createDocumentFragment();
+        let lastTimestamp = (initialMessages[index - 1] || {}).timestamp || 0;
+
+        // 使用 Promise.all 并行创建消息元素，提高效率
+        const messageElements = await Promise.all(chunk.map(async (msg) => {
+            const elements = [];
+            if (lastTimestamp > 0 && (msg.timestamp - lastTimestamp > 3600000)) {
+                elements.push(createSystemTimestampElement(msg.timestamp));
+            }
+            const messageEl = await createMessageElement(msg, chat, true);
+            if (messageEl) {
+                elements.push(messageEl);
+            }
+            lastTimestamp = msg.timestamp;
+            return elements;
+        }));
+
+        // 将创建好的元素一次性添加到文档片段
+        messageElements.flat().forEach(el => fragment.appendChild(el));
+        
+        // 关键：在 typingIndicator 前面插入，而不是末尾
+        messagesContainer.insertBefore(fragment, typingIndicator);
+
+        currentRenderedCount += chunk.length;
+
+        // 6. 调度下一次渲染，把控制权交还给浏览器
+        setTimeout(() => renderChunk(index + chunkSize), 0);
+    }
+
+    // 7. 启动渲染流程
+    renderChunk(0);
+    
+    // ▲▲▲ 核心修改到这里结束 ▲▲▲
         }
 // ▲▲▲ 替换结束 ▲▲▲
         
@@ -40064,7 +40110,6 @@ document.getElementById('npc-avatar-input').addEventListener('change', (event) =
 <!-- ▲▲▲ 新增HTML结束 ▲▲▲ -->
 </body>
 </html>
-
 
 
 
