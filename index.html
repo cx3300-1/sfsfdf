@@ -9121,6 +9121,41 @@ input, textarea, select {
         #floating-x-logo:active {
           transform: translateY(-50%) scale(0.95);
         }
+/* ▼▼▼ 【全新】这是为“围观群聊”操作按钮添加的样式 ▼▼▼ */
+
+/* 1. 让“围观中”文字和按钮容器垂直排列 */
+#chat-lock-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px; /* 在文字和按钮之间增加间距 */
+}
+
+/* 2. 按钮的容器，使用Flex布局让它们水平排列 */
+.spectator-actions-container {
+    display: flex;
+    gap: 12px; /* 按钮之间的间距 */
+    align-items: center;
+}
+
+/* 3. 为次要按钮（重Roll/剪辑）创建一个新样式 */
+#chat-lock-content .lock-action-btn.secondary {
+    background-color: transparent; /* 透明背景 */
+    color: var(--accent-color);   /* 使用主题色文字 */
+    border: 1px solid var(--accent-color); /* 同样颜色的边框 */
+    padding: 8px 18px; /* 调整内边距，让它比主按钮小一点 */
+    font-size: 14px;
+}
+/* ▲▲▲ 新增CSS粘贴结束 ▲▲▲ */
+/* ▼▼▼ 【全新】这是为“围观群聊”SVG图标按钮添加的样式 ▼▼▼ */
+
+.spectator-actions-container .lock-action-btn.secondary svg {
+    width: 20px;  /* 设置图标宽度 */
+    height: 20px; /* 设置图标高度 */
+    stroke: currentColor; /* 关键：让图标颜色自动继承按钮的文字颜色 */
+}
+
+/* ▲▲▲ 新增CSS粘贴结束 ▲▲▲ */
     </style>
 </head>
 <body>
@@ -15073,22 +15108,21 @@ async function deleteNpc(npcId) {
     }
 }
 // ▲▲▲ 全新JS代码粘贴结束 ▲▲▲        
-        // ▼▼▼ 请用这个【全新版本】的函数，完整替换掉你旧的 renderChatList ▼▼▼
+// ▼▼▼ 【请用这个已升级“分批加载”功能的全新版本】替换旧的 renderChatList 函数 ▼▼▼
+        let chatListRenderCount = 0; // 新增一个全局变量，跟踪已渲染的数量
+        const CHAT_LIST_RENDER_WINDOW = 30; // 每次加载30条
+
         async function renderChatList() {
             const chatListEl = document.getElementById('chat-list');
             chatListEl.innerHTML = '';
         
-            // 1. 获取所有聊天并进行【多级排序】
+            // 1. 获取并排序所有聊天数据（这部分逻辑不变）
             const allChats = Object.values(state.chats).sort((a, b) => {
-                // 规则1：按 isPinned 降序排（true的在前）
                 const pinDiff = (b.isPinned || false) - (a.isPinned || false);
                 if (pinDiff !== 0) return pinDiff;
-        
-                // 规则2：如果置顶状态相同，则按最新消息时间降序排
                 return (b.history.slice(-1)[0]?.timestamp || 0) - (a.history.slice(-1)[0]?.timestamp || 0);
             });
             
-            // 2. 获取所有分组
             const allGroups = await db.qzoneGroups.toArray();
         
             if (allChats.length === 0) {
@@ -15096,54 +15130,159 @@ async function deleteNpc(npcId) {
                 return;
             }
         
-            // 3. 为每个分组找到其内部最新的消息时间戳
             allGroups.forEach(group => {
                 const latestChatInGroup = allChats.find(chat => chat.groupId === group.id);
                 group.latestTimestamp = latestChatInGroup ? (latestChatInGroup.history.slice(-1)[0]?.timestamp || 0) : 0;
             });
-        
-            // 4. 根据这个最新的时间戳来对“分组本身”进行排序
             allGroups.sort((a, b) => b.latestTimestamp - a.latestTimestamp);
-        
-            // 5. 现在，我们按照排好序的分组来渲染
+            
+            // 【核心修改】将排序后的所有聊天项（包括分组和非分组）合并到一个有序数组中
+            const sortedRenderableItems = [];
+            const processedChatIds = new Set();
+
             allGroups.forEach(group => {
                 const groupChats = allChats.filter(chat => !chat.isGroup && chat.groupId === group.id);
-                if (groupChats.length === 0) return;
-        
-                const groupContainer = document.createElement('div');
-                groupContainer.className = 'chat-group-container';
-                groupContainer.innerHTML = `
-                    <div class="chat-group-header">
-                        <span class="arrow">▼</span>
-                        <span class="group-name">${group.name}</span>
-                    </div>
-                    <div class="chat-group-content"></div>
-                `;
-                const contentEl = groupContainer.querySelector('.chat-group-content');
-                groupChats.forEach(chat => {
-                    const item = createChatListItem(chat);
-                    contentEl.appendChild(item);
-                });
-                chatListEl.appendChild(groupContainer);
+                if (groupChats.length > 0) {
+                    sortedRenderableItems.push({ type: 'groupHeader', group });
+                    groupChats.forEach(chat => {
+                        sortedRenderableItems.push({ type: 'chatItem', chat });
+                        processedChatIds.add(chat.id);
+                    });
+                }
             });
-        
-            // 6. 最后，渲染所有群聊和未分组的好友
-            const ungroupedOrGroupChats = allChats.filter(chat => chat.isGroup || (!chat.isGroup && !chat.groupId));
-            ungroupedOrGroupChats.forEach(chat => {
-                const item = createChatListItem(chat);
-                chatListEl.appendChild(item);
+
+            allChats.forEach(chat => {
+                if (!processedChatIds.has(chat.id)) {
+                    sortedRenderableItems.push({ type: 'chatItem', chat });
+                }
             });
-        
-            // 为所有分组标题添加折叠事件
+
+            // 2. 【核心修改】只渲染第一批次的聊天项
+            const initialItems = sortedRenderableItems.slice(0, CHAT_LIST_RENDER_WINDOW);
+            chatListRenderCount = 0;
+
+            const fragment = document.createDocumentFragment();
+            let currentGroupContent = null;
+
+            initialItems.forEach(item => {
+                if (item.type === 'groupHeader') {
+                    const groupContainer = createChatGroupContainer(item.group);
+                    fragment.appendChild(groupContainer);
+                    currentGroupContent = groupContainer.querySelector('.chat-group-content');
+                } else if (item.type === 'chatItem') {
+                    const listItem = createChatListItem(item.chat);
+                    if (currentGroupContent && item.chat.groupId) {
+                        currentGroupContent.appendChild(listItem);
+                    } else {
+                        fragment.appendChild(listItem);
+                        currentGroupContent = null;
+                    }
+                }
+            });
+            chatListEl.appendChild(fragment);
+            chatListRenderCount = initialItems.length;
+
+            // 3. 【核心修改】如果还有更多，则添加“加载更多”按钮
+            if (sortedRenderableItems.length > chatListRenderCount) {
+                appendLoadMoreChatsButton(chatListEl, sortedRenderableItems);
+            }
+            
+            // 为所有新渲染的分组标题添加折叠事件
             document.querySelectorAll('.chat-group-header').forEach(header => {
-                header.addEventListener('click', () => {
-                    header.classList.toggle('collapsed');
-                    header.nextElementSibling.classList.toggle('collapsed');
+                // (为避免重复绑定，先移除旧的)
+                const newHeader = header.cloneNode(true);
+                header.parentNode.replaceChild(newHeader, header);
+                newHeader.addEventListener('click', () => {
+                    newHeader.classList.toggle('collapsed');
+                    newHeader.nextElementSibling.classList.toggle('collapsed');
                 });
             });
         }
         // ▲▲▲ 替换结束 ▲▲▲
-        
+// ▼▼▼ 【全新】这是为“分批加载”新增的所有辅助函数 ▼▼▼
+
+        /**
+         * 创建一个分组的容器（不包含聊天项）
+         */
+        function createChatGroupContainer(group) {
+            const groupContainer = document.createElement('div');
+            groupContainer.className = 'chat-group-container';
+            groupContainer.innerHTML = `
+                <div class="chat-group-header">
+                    <span class="arrow">▼</span>
+                    <span class="group-name">${group.name}</span>
+                </div>
+                <div class="chat-group-content"></div>
+            `;
+            return groupContainer;
+        }
+
+        /**
+         * 创建并添加“加载更多”按钮
+         */
+        function appendLoadMoreChatsButton(container, sortedItems) {
+            const button = document.createElement('button');
+            button.id = 'load-more-chats-btn';
+            button.textContent = '加载更早的会话';
+            button.className = 'load-more-btn'; // 复用样式
+            
+            // 【重要】为按钮绑定加载下一页的事件
+            button.addEventListener('click', () => loadMoreChats(sortedItems), { once: true });
+            
+            container.prepend(button); // 将按钮添加到列表顶部
+        }
+
+        /**
+         * 加载并渲染下一批次的聊天记录
+         */
+        function loadMoreChats(sortedItems) {
+            const chatListEl = document.getElementById('chat-list');
+            const loadMoreBtn = document.getElementById('load-more-chats-btn');
+            if (loadMoreBtn) loadMoreBtn.remove();
+            
+            const nextSliceStart = chatListRenderCount;
+            const nextSliceEnd = chatListRenderCount + CHAT_LIST_RENDER_WINDOW;
+            const itemsToAppend = sortedItems.slice(nextSliceStart, nextSliceEnd);
+
+            // 使用 DocumentFragment 提高性能
+            const fragment = document.createDocumentFragment();
+            let currentGroupContent = chatListEl.querySelector('.chat-group-content:last-of-type');
+
+            itemsToAppend.forEach(item => {
+                if (item.type === 'groupHeader') {
+                    const groupContainer = createChatGroupContainer(item.group);
+                    fragment.appendChild(groupContainer);
+                    currentGroupContent = groupContainer.querySelector('.chat-group-content');
+                } else if (item.type === 'chatItem') {
+                    const listItem = createChatListItem(item.chat);
+                    if (currentGroupContent && item.chat.groupId) {
+                        currentGroupContent.appendChild(listItem);
+                    } else {
+                        fragment.appendChild(listItem);
+                        currentGroupContent = null;
+                    }
+                }
+            });
+            
+            // 将新生成的项一次性添加到列表中
+            chatListEl.appendChild(fragment);
+            chatListRenderCount += itemsToAppend.length;
+
+            if (sortedItems.length > chatListRenderCount) {
+                appendLoadMoreChatsButton(chatListEl, sortedItems);
+            }
+            
+            // 重新为所有分组标题绑定事件
+            document.querySelectorAll('.chat-group-header').forEach(header => {
+                const newHeader = header.cloneNode(true);
+                header.parentNode.replaceChild(newHeader, header);
+                newHeader.addEventListener('click', () => {
+                    newHeader.classList.toggle('collapsed');
+                    newHeader.nextElementSibling.classList.toggle('collapsed');
+                });
+            });
+        }
+        // ▲▲▲ 新增函数结束 ▲▲▲        
         // ▼▼▼ 请用这个【已升级HTML结构并修复点击问题】的全新版本，完整替换您现有的 createChatListItem 函数 ▼▼▼
         function createChatListItem(chat) {
             const lastMsgObj = chat.history.filter(msg => !msg.isHidden).slice(-1)[0] || {};
@@ -15344,7 +15483,22 @@ async function deleteNpc(npcId) {
                 lockOverlay.style.display = 'flex';   // 2. 显示遮罩层作为背景
                 lockContent.innerHTML = `
                     <span class="lock-text">正在围观AI们的群聊...</span>
-                    <button id="spectator-propel-btn" class="lock-action-btn">🎬 推进剧情</button>
+        <div class="spectator-actions-container">
+           <button id="spectator-reroll-btn" class="lock-action-btn secondary" title="重新生成上一轮对话">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 11A8.1 8.1 0 0 0 4.5 9M4 5v4h4"></path>
+                    <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"></path>
+                </svg>
+            </button>
+            <button id="spectator-propel-btn" class="lock-action-btn">🎬 推进剧情</button>
+            <button id="spectator-edit-btn" class="lock-action-btn secondary" title="导演剪辑室：编辑AI上一轮的响应">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path>
+                    <line x1="16" y1="8" x2="2" y2="22"></line>
+                    <line x1="17.5" y1="15" x2="9" y2="15"></line>
+                </svg>
+            </button>
+        </div>
                 `; // 3. 在遮罩层里显示新的UI
                 
                 // 4. 为新的“推进剧情”按钮绑定专属函数
@@ -15412,81 +15566,35 @@ async function deleteNpc(npcId) {
             }
             // --- 【修改结束】 ---
 
-    // ▼▼▼ 核心修改从这里开始 ▼▼▼
-
-    messagesContainer.innerHTML = ''; // 1. 立即清空旧消息
-
-    // 2. 准备数据
-    const history = chat.history;
-    const totalMessages = history.length;
-    currentRenderedCount = 0;
-    const initialMessages = history.slice(-MESSAGE_RENDER_WINDOW); // 还是取最近50条
-
-    // 3. 立即添加“加载更多”按钮和打字指示器 (如果需要)
-    if (totalMessages > initialMessages.length) {
-        prependLoadMoreButton(messagesContainer);
-    }
-    const typingIndicator = document.createElement('div');
-    typingIndicator.id = 'typing-indicator';
-    typingIndicator.style.display = 'none';
-    typingIndicator.textContent = '对方正在输入...';
-    messagesContainer.appendChild(typingIndicator);
-
-    // 4. (可选但推荐) 显示一个临时的“加载中...”提示
-    const loadingMessage = document.createElement('p');
-    loadingMessage.id = 'loading-messages-indicator';
-    loadingMessage.textContent = '正在加载消息...';
-    loadingMessage.style.textAlign = 'center';
-    loadingMessage.style.color = 'var(--text-secondary)';
-    messagesContainer.appendChild(loadingMessage);
-    
-    // 5. 定义异步渲染函数
-    async function renderChunk(index = 0) {
-        const chunkSize = 15; // 每次渲染15条，这个数量比较均衡
-        const chunk = initialMessages.slice(index, index + chunkSize);
-
-        // 如果所有消息都渲染完了
-        if (chunk.length === 0) {
-            // 移除“加载中”提示
-            if (loadingMessage) loadingMessage.remove();
-            // 滚动到底部
+            // --- (这部分渲染消息历史的逻辑保持不变) ---
+            messagesContainer.innerHTML = '';
+            const history = chat.history;
+            const totalMessages = history.length;
+            currentRenderedCount = 0;
+            const initialMessages = history.slice(-MESSAGE_RENDER_WINDOW);
+            let lastTimestamp = 0;
+            const fragment = document.createDocumentFragment();
+            for (const msg of initialMessages) {
+                if (lastTimestamp > 0 && (msg.timestamp - lastTimestamp > 3600000)) {
+                    fragment.appendChild(createSystemTimestampElement(msg.timestamp));
+                }
+                const messageEl = await createMessageElement(msg, chat, true);
+                if (messageEl) {
+                    fragment.appendChild(messageEl);
+                }
+                lastTimestamp = msg.timestamp;
+            }
+            messagesContainer.appendChild(fragment);
+            currentRenderedCount = initialMessages.length;
+            if (totalMessages > currentRenderedCount) {
+                prependLoadMoreButton(messagesContainer);
+            }
+            const typingIndicator = document.createElement('div');
+            typingIndicator.id = 'typing-indicator';
+            typingIndicator.style.display = 'none';
+            typingIndicator.textContent = '对方正在输入...';
+            messagesContainer.appendChild(typingIndicator);
             setTimeout(() => messagesContainer.scrollTop = messagesContainer.scrollHeight, 0);
-            return;
-        }
-
-        const fragment = document.createDocumentFragment();
-        let lastTimestamp = (initialMessages[index - 1] || {}).timestamp || 0;
-
-        // 使用 Promise.all 并行创建消息元素，提高效率
-        const messageElements = await Promise.all(chunk.map(async (msg) => {
-            const elements = [];
-            if (lastTimestamp > 0 && (msg.timestamp - lastTimestamp > 3600000)) {
-                elements.push(createSystemTimestampElement(msg.timestamp));
-            }
-            const messageEl = await createMessageElement(msg, chat, true);
-            if (messageEl) {
-                elements.push(messageEl);
-            }
-            lastTimestamp = msg.timestamp;
-            return elements;
-        }));
-
-        // 将创建好的元素一次性添加到文档片段
-        messageElements.flat().forEach(el => fragment.appendChild(el));
-        
-        // 关键：在 typingIndicator 前面插入，而不是末尾
-        messagesContainer.insertBefore(fragment, typingIndicator);
-
-        currentRenderedCount += chunk.length;
-
-        // 6. 调度下一次渲染，把控制权交还给浏览器
-        setTimeout(() => renderChunk(index + chunkSize), 0);
-    }
-
-    // 7. 启动渲染流程
-    renderChunk(0);
-    
-    // ▲▲▲ 核心修改到这里结束 ▲▲▲
         }
 // ▲▲▲ 替换结束 ▲▲▲
         
@@ -16615,7 +16723,8 @@ async function triggerSpectatorGroupAiAction() {
     if (!state.activeChatId) return;
     const chatId = state.activeChatId;
     const chat = state.chats[chatId];
-
+    lastRawAiResponse = '';
+    lastResponseTimestamps = [];
     const propelBtn = document.getElementById('spectator-propel-btn');
     if(propelBtn) {
         propelBtn.disabled = true;
@@ -16754,6 +16863,7 @@ ${membersList}
 
         const data = await response.json();
         const aiResponseContent = getGeminiResponseText(data);
+        lastRawAiResponse = aiResponseContent;
         const messagesArray = parseAiResponse(aiResponseContent);
 
         // ==========================================================
@@ -16767,8 +16877,10 @@ ${membersList}
             if (!msgData || !msgData.type || !msgData.name) continue;
 
             let aiMessage = null;
-            const baseMessage = { role: 'assistant', senderName: msgData.name, timestamp: messageTimestamp++ };
-            
+            const currentMessageTimestamp = messageTimestamp++;
+            lastResponseTimestamps.push(currentMessageTimestamp);
+            const baseMessage = { role: 'assistant', senderName: msgData.name, timestamp: currentMessageTimestamp };
+ 
             // 使用 switch 语句来处理不同的消息类型
             switch (msgData.type) {
                 case 'text':
@@ -19451,7 +19563,7 @@ async function addSongFromLocal(event) {
 }
 // ▲▲▲ 替换结束 ▲▲▲
 
-// ▼▼▼ 【请用这个已修复自动播放问题的全新版本】完整替换旧的 playSong 函数 ▼▼▼
+// ▼▼▼ 【请用这个已修复的版本】完整替换旧的 playSong 函数 ▼▼▼
 async function playSong(index) {
     if (index < 0 || index >= musicState.playlist.length) return;
 
@@ -19479,6 +19591,7 @@ async function playSong(index) {
         }
     }
     
+    // 【核心修复4】优先处理 ArrayBuffer，并根据 fileType 创建 Blob
     if (track.isLocal && track.src instanceof ArrayBuffer) {
         const blob = new Blob([track.src], { type: track.fileType || 'audio/mpeg' });
         audioPlayer.src = URL.createObjectURL(blob);
@@ -19495,19 +19608,7 @@ async function playSong(index) {
     const playPromise = audioPlayer.play();
     if (playPromise !== undefined) {
         playPromise.catch(error => {
-            // --- ★★★★★ 这就是本次修复的核心！ ★★★★★ ---
-            // 捕获浏览器因自动播放策略而抛出的 "NotAllowedError" 错误
-            if (error.name === 'NotAllowedError') {
-                console.warn('Autoplay was prevented by the browser.');
-                // 确保播放器状态为暂停
-                audioPlayer.pause();
-                // 弹窗告知用户，并引导他们手动点击播放
-                showCustomAlert("播放已暂停", "由于浏览器安全限制，AI切换的歌曲无法自动播放。请手动点击播放按钮 ▶ 继续欣赏。");
-            } else if (error.name !== 'AbortError') {
-                // 对于其他非预期的播放错误，在控制台记录下来
-                console.error('Playback error:', error);
-            }
-            // --- ★★★★★ 修复结束 ★★★★★ ---
+            if (error.name !== 'AbortError') console.error('Playback error:', error);
         });
     }
     updatePlaylistUI();
@@ -19523,6 +19624,7 @@ async function playSong(index) {
     }
 }
 // ▲▲▲ 替换结束 ▲▲▲
+
 
 async function deleteTrack(index) { if (index < 0 || index >= musicState.playlist.length) return; const track = musicState.playlist[index]; const wasPlaying = musicState.isPlaying && musicState.currentIndex === index; if (track.isLocal && audioPlayer.src.startsWith('blob:') && musicState.currentIndex === index) URL.revokeObjectURL(audioPlayer.src); musicState.playlist.splice(index, 1); await saveGlobalPlaylist(); if (musicState.playlist.length === 0) { if (musicState.isPlaying) audioPlayer.pause(); audioPlayer.src = ''; musicState.currentIndex = -1; musicState.isPlaying = false; } else { if (wasPlaying) { playNext(); } else { if (musicState.currentIndex >= index) musicState.currentIndex = Math.max(0, musicState.currentIndex - 1); } } updatePlayerUI(); updatePlaylistUI(); }
         
@@ -29065,7 +29167,28 @@ ${boardString}
             return wrapper;
         }
         // ▼▼▼ 【全新】重新生成回复功能核心函数 ▼▼▼
-        
+// ▼▼▼ 【全新】这是为“围观模式”新增的“重Roll”功能函数 ▼▼▼
+/**
+ * 处理围观模式下的“重Roll”请求
+ */
+async function handleSpectatorReroll() {
+    const chat = state.chats[state.activeChatId];
+    if (!chat || !lastResponseTimestamps || lastResponseTimestamps.length === 0) {
+        alert("没有可供重新生成的AI响应。");
+        return;
+    }
+
+    // 1. 从聊天历史中移除上一轮AI生成的所有消息
+    chat.history = chat.history.filter(msg => !lastResponseTimestamps.includes(msg.timestamp));
+
+    // 2. 保存更改并刷新UI
+    await db.chats.put(chat);
+    await renderChatInterface(state.activeChatId);
+    
+    // 3. 再次触发AI响应
+    triggerSpectatorGroupAiAction();
+}
+// ▲▲▲ 新增函数结束 ▲▲▲        
         /**
          * 【总入口】处理聊天界面的“重新生成”请求
          */
@@ -39877,7 +40000,18 @@ document.getElementById('npc-avatar-input').addEventListener('change', (event) =
         reader.readAsDataURL(file);
     }
 });
-
+document.getElementById('chat-lock-overlay').addEventListener('click', (e) => {
+    // 检查点击的是否是“重Roll”按钮
+    if (e.target.id === 'spectator-reroll-btn') {
+        handleSpectatorReroll();
+    }
+    // 检查点击的是否是“剪辑”按钮
+    else if (e.target.id === 'spectator-edit-btn') {
+        // 直接复用现有的“导演剪辑室”打开函数
+        openAiResponseEditor();
+    }
+    // (注意：主按钮 spectator-propel-btn 的事件已在 renderChatInterface 中直接绑定，这里无需处理)
+});
 
 
 
