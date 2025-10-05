@@ -1763,7 +1763,7 @@
         <div class="tweet-detail-header"
           style="display: flex; align-items: center; justify-content: space-between; padding: 10px 15px; border-bottom: 1px solid #333; background-color: rgba(0,0,0,0.8); backdrop-filter: blur(12px); position: sticky; top: 0; z-index: 5;">
           <div style="display: flex; align-items: center;">
-            <div class="tweet-detail-back-btn" onclick="switchXPage('home')"
+            <div class="tweet-detail-back-btn" onclick="goBackFromTweetDetail()"
               style="cursor: pointer; margin-right: 15px;">
               <svg viewBox="0 0 24 24" aria-hidden="true" style="width: 20px; height: 20px; fill: #fff;">
                 <g>
@@ -1804,40 +1804,46 @@
           </div>
 
           <!-- 评论区域 -->
-          <div style="border-top: 1px solid #2f3336; margin-top: 20px;">
-            <!-- 评论输入区域 -->
+          <div style="border-top: 1px solid #2f3336;">
+            <!-- 评论列表容器 -->
+            <div id="detail-comments-container" style="padding: 0; padding-bottom: 70px;">
+              <!-- 评论将通过JavaScript动态生成在这里 -->
+            </div>
+          </div>
+            
+            <!-- 评论输入区域 - 移到底部 -->
             <div class="detail-comment-input-area"
-              style="border-bottom: 1px solid #333; padding: 15px; background-color: #000;">
-              <div style="display: flex; align-items: flex-start; gap: 12px;">
+              style="border-top: 1px solid #333; padding: 10px 15px; background-color: #000; position: fixed; bottom: 0; left: 0; right: 0; z-index: 10;">
+              <div style="display: flex; align-items: flex-start; gap: 12px; max-width: 100%;">
                 <!-- 用户头像 -->
                 <img id="detail-comment-user-avatar" src="https://i.postimg.cc/pXxk1JXk/IMG-6442.jpg" alt="Your avatar"
-                  style="width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;">
+                  style="width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;">
 
                 <!-- 输入框容器 -->
                 <div style="flex: 1;">
                   <textarea id="detail-comment-input" placeholder="发布你的回复"
-                    style="width: 100%; min-height: 20px; max-height: 120px; background: transparent; border: none; color: #fff; font-size: 20px; resize: none; outline: none; font-family: inherit; line-height: 1.3;"
+                    style="width: 100%; min-height: 18px; max-height: 100px; background: transparent; border: none; color: #fff; font-size: 15px; resize: none; outline: none; font-family: inherit; line-height: 1.3;"
                     onkeydown="handleDetailCommentInput(event)" oninput="autoResizeDetail(this)"></textarea>
 
                   <!-- 输入框底部工具栏 -->
-                  <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
                     <!-- 左侧工具图标 -->
-                    <div style="display: flex; gap: 15px;">
-                      <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; fill: #1d9bf0; cursor: pointer;" onclick="triggerDetailCommentImageUpload()">
+                    <div style="display: flex; gap: 12px;">
+                      <svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: #1d9bf0; cursor: pointer;" onclick="triggerDetailCommentImageUpload()">
                         <g>
                           <path
                             d="M3 5.5C3 4.119 4.119 3 5.5 3h13C19.881 3 21 4.119 21 5.5v13c0 1.381-1.119 2.5-2.5 2.5h-13C4.119 21 3 19.881 3 18.5v-13zM5.5 5c-.276 0-.5.224-.5.5v9.086l3-3 3 3 5-5 3 3V5.5c0-.276-.224-.5-.5-.5h-13zM19 15.414l-3-3-5 5-3-3-3 3V18.5c0 .276.224.5.5.5h13c.276 0 .5-.224.5-.5v-3.086zM9.75 7C8.784 7 8 7.784 8 8.75s.784 1.75 1.75 1.75 1.75-.784 1.75-1.75S10.716 7 9.75 7z">
                           </path>
                         </g>
                       </svg>
-                      <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; fill: #1d9bf0; cursor: pointer; opacity: 0.5;">
+                      <svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: #1d9bf0; cursor: pointer; opacity: 0.5;">
                         <g>
                           <path
                             d="M3 5.5C3 4.119 4.12 3 5.5 3h13C19.88 3 21 4.119 21 5.5v13c0 1.381-1.12 2.5-2.5 2.5h-13C4.12 21 3 19.881 3 18.5v-13zM5.5 5c-.28 0-.5.224-.5.5v13c0 .276.22.5.5.5h13c.28 0 .5-.224.5-.5v-13c0-.276-.22-.5-.5-.5h-13zM18 10.711V9.25h-3.74v5.5h1.44v-1.719h1.7V11.57h-1.7v-.859H18zM11.79 9.25h1.44v5.5h-1.44v-5.5zm-3.07 1.375c.34 0 .77.172 1.02.43l1.03-.86c-.51-.601-1.28-.945-2.05-.945C7.19 9.25 6 10.453 6 12s1.19 2.75 2.72 2.75c.77 0 1.54-.344 2.05-.945l-1.03-.86c-.25.258-.68.43-1.02.43-.76 0-1.29-.546-1.29-1.375S8.03 10.625 8.79 10.625z">
                           </path>
                         </g>
                       </svg>
-                      <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; fill: #1d9bf0; cursor: pointer; opacity: 0.5;">
+                      <svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: #1d9bf0; cursor: pointer; opacity: 0.5;">
                         <g>
                           <path
                             d="M8 9.5C8 8.119 8.672 7 9.5 7S11 8.119 11 9.5 10.328 12 9.5 12 8 10.881 8 9.5zm6.5 2.5c.828 0 1.5-1.119 1.5-2.5S15.328 7 14.5 7 13 8.119 13 9.5s.672 2.5 1.5 2.5zM12 16c-2.224 0-3.021-2.227-3.051-2.316l-1.897.633c.05.15 1.271 3.684 4.949 3.684s4.898-3.533 4.949-3.684l-1.896-.638c-.033.095-.83 2.322-3.053 2.322zm10.25-4.001c0 5.652-4.598 10.25-10.25 10.25S1.75 17.652 1.75 12 6.348 1.75 12 1.75 22.25 6.348 22.25 12zm-2 0c0-4.549-3.701-8.25-8.25-8.25S3.75 7.451 3.75 12s3.701 8.25 8.25 8.25 8.25-3.701 8.25-8.25z">
@@ -1848,18 +1854,18 @@
 
                     <!-- 右侧发送按钮 -->
                     <button id="detail-reply-btn" onclick="submitDetailComment()"
-                      style="background-color: #1d9bf0; color: #fff; border: none; border-radius: 20px; padding: 8px 20px; font-size: 15px; font-weight: 700; cursor: pointer; opacity: 0.5;"
+                      style="background-color: #1d9bf0; color: #fff; border: none; border-radius: 18px; padding: 6px 16px; font-size: 14px; font-weight: 700; cursor: pointer; opacity: 0.5;"
                       disabled>
                       回复
                     </button>
                   </div>
                   
                   <!-- 图片预览区域 -->
-                  <div id="detail-comment-image-preview" style="display: none; margin-top: 12px; position: relative;">
-                    <img id="detail-comment-image-preview-img" src="" style="max-width: 200px; max-height: 200px; border-radius: 12px; display: block;">
+                  <div id="detail-comment-image-preview" style="display: none; margin-top: 10px; position: relative;">
+                    <img id="detail-comment-image-preview-img" src="" style="max-width: 180px; max-height: 180px; border-radius: 12px; display: block;">
                     <button onclick="removeDetailCommentImage()" 
-                      style="position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.75); border: none; border-radius: 50%; width: 28px; height: 28px; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                      <svg viewBox="0 0 24 24" style="width: 16px; height: 16px; fill: #fff;">
+                      style="position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.75); border: none; border-radius: 50%; width: 26px; height: 26px; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                      <svg viewBox="0 0 24 24" style="width: 14px; height: 14px; fill: #fff;">
                         <g><path d="M10.59 12L4.54 5.96l1.42-1.42L12 10.59l6.04-6.05 1.42 1.42L13.41 12l6.05 6.04-1.42 1.42L12 13.41l-6.04 6.05-1.42-1.42L10.59 12z"></path></g>
                       </svg>
                     </button>
@@ -1870,12 +1876,6 @@
                 </div>
               </div>
             </div>
-
-            <!-- 评论列表容器 -->
-            <div id="detail-comments-container" style="padding: 0;">
-              <!-- 评论将通过JavaScript动态生成在这里 -->
-            </div>
-          </div>
         </div>
       </div>
 
@@ -3734,11 +3734,8 @@
           <div class="account-tab" onclick="switchAccountTab('replies')" style="flex: 1; text-align: center; padding: 16px 0; font-size: 15px; font-weight: 500; color: #71767b; cursor: pointer; position: relative; border-bottom: 4px solid transparent;">
             回复
           </div>
-          <div class="account-tab" onclick="switchAccountTab('highlights')" style="flex: 1; text-align: center; padding: 16px 0; font-size: 15px; font-weight: 500; color: #71767b; cursor: pointer; position: relative; border-bottom: 4px solid transparent;">
-            亮点
-          </div>
-          <div class="account-tab" onclick="switchAccountTab('media')" style="flex: 1; text-align: center; padding: 16px 0; font-size: 15px; font-weight: 500; color: #71767b; cursor: pointer; position: relative; border-bottom: 4px solid transparent;">
-            媒体
+          <div class="account-tab" onclick="switchAccountTab('likes')" style="flex: 1; text-align: center; padding: 16px 0; font-size: 15px; font-weight: 500; color: #71767b; cursor: pointer; position: relative; border-bottom: 4px solid transparent;">
+            喜欢
           </div>
         </div>
 
@@ -6818,17 +6815,15 @@ ${xProfile.showRealName && xProfile.realName ? `- 真实姓名：${xProfile.real
                   }
                   <span class="tweet-user-handle">${comment.user.handle}</span>
                   <span class="tweet-time">·${comment.time}</span>
-                  ${
+                  <div style="margin-left: auto; cursor: pointer; padding: 4px; border-radius: 50%; transition: background-color 0.2s; display: flex; align-items: center;" onmouseover="this.style.backgroundColor='rgba(29, 155, 240, 0.1)'" onmouseout="this.style.backgroundColor='transparent'" onclick="${
                     comment.user.handle === userProfileData.handle
-                      ? `
-                  <div class="comment-delete-btn" onclick="deleteUserComment('${comment.id}')" style="margin-left: auto; cursor: pointer; padding: 4px; border-radius: 50%; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='rgba(239, 68, 68, 0.1)'" onmouseout="this.style.backgroundColor='transparent'" title="删除评论">
-                    <svg viewBox="0 0 24 24" style="width: 16px; height: 16px; fill: #ef4444;">
-                      <g><path d="M16 6V4.5C16 3.12 14.88 2 13.5 2h-3C9.11 2 8 3.12 8 4.5V6H3v2h2v10c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V8h2V6h-5zM10 4.5c0-.28.22-.5.5-.5h3c.28 0 .5.22.5.5V6h-4V4.5zM19 8H5v10h14V8z"></path></g>
+                      ? `deleteUserComment('${comment.id}')`
+                      : `event.stopPropagation(); showXToast('更多选项开发中', 'info')`
+                  }">
+                    <svg viewBox="0 0 24 24" style="width: 16px; height: 16px; fill: #71767b;">
+                      <g><circle cx="12" cy="5" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="12" cy="19" r="2"></circle></g>
                     </svg>
                   </div>
-                  `
-                      : ''
-                  }
                 </div>
                 <div class="comment-content">
                   ${comment.replyTo ? `<span class="reply-to">${comment.replyTo}</span>` : ''}
@@ -6873,6 +6868,16 @@ ${xProfile.showRealName && xProfile.realName ? `- 真实姓名：${xProfile.real
                       <g><path d="M8.75 21V3h2v18h-2zM18 21V8.5h2V21h-2zM4 21l.004-10H6v10H4zm9.248 0v-7h2v7h-2z"></path></g>
                     </svg>
                     <span>${formatNumber(randomViews)}</span>
+                  </div>
+                  <div class="comment-action bookmark">
+                    <svg class="action-icon" viewBox="0 0 24 24" fill="currentColor">
+                      <g><path d="M4 4.5C4 3.12 5.119 2 6.5 2h11C18.881 2 20 3.12 20 4.5v18.44l-8-5.71-8 5.71V4.5zM6.5 4c-.276 0-.5.22-.5.5v14.56l6-4.29 6 4.29V4.5c0-.28-.224-.5-.5-.5h-11z"></path></g>
+                    </svg>
+                  </div>
+                  <div class="comment-action share">
+                    <svg class="action-icon" viewBox="0 0 24 24" fill="currentColor">
+                      <g><path d="M12 2.59l5.7 5.7-1.41 1.42L13 6.41V16h-2V6.41l-3.29 3.3-1.42-1.42L12 2.59zM21 15l-.02 3.51c0 1.38-1.12 2.49-2.5 2.49H5.5C4.11 21 3 19.88 3 18.5V15h2v3.5c0 .28.22.5.5.5h12.98c.28 0 .5-.22.5-.5L19 15h2z"></path></g>
+                    </svg>
                   </div>
                 </div>
                 <!-- 回复输入框容器 -->
@@ -7548,6 +7553,14 @@ ${xProfile.showRealName && xProfile.realName ? `- 真实姓名：${xProfile.real
       replies: [],
     };
 
+    console.log('💬 [楼中楼回复] 创建新回复:', {
+      id: newReply.id,
+      content: newReply.content.substring(0, 50) + '...',
+      replyTo: replyToHandle,
+      mainCommentId,
+      isDetailPage,
+    });
+
     if (isDetailPage) {
       // 详情页面：渲染到页面并同时保存到数据库 - 修复楼中楼插入位置
       const commentElement = createCommentElement(newReply, true);
@@ -7586,64 +7599,96 @@ ${xProfile.showRealName && xProfile.realName ? `- 真实姓名：${xProfile.real
 
       // 同时保存到sessionStorage中的推文数据
       try {
+        console.log('💬 [楼中楼回复] 开始保存到数据库');
         let updatedTweetData = JSON.parse(sessionStorage.getItem('currentTweetData'));
+
         if (updatedTweetData) {
+          console.log('💬 [楼中楼回复] 推文ID:', updatedTweetData.id);
+          console.log('💬 [楼中楼回复] 主评论ID:', mainCommentId);
+          console.log('💬 [楼中楼回复] 当前评论总数:', updatedTweetData.comments?.length || 0);
+
           const mainComment = updatedTweetData.comments.find(c => c.id === mainCommentId);
           if (mainComment) {
+            console.log('💬 [楼中楼回复] 找到主评论，当前回复数:', mainComment.replies?.length || 0);
+
             if (!mainComment.replies) mainComment.replies = [];
             mainComment.replies.push(newReply);
 
+            console.log('💬 [楼中楼回复] 新回复已添加，新回复总数:', mainComment.replies.length);
+
             // 更新sessionStorage
             sessionStorage.setItem('currentTweetData', JSON.stringify(updatedTweetData));
+            console.log('✅ [楼中楼回复] sessionStorage 已更新');
 
             // 同时保存到数据库
             const db = getXDB();
+            const isUserTweet = updatedTweetData.id.startsWith('user_');
 
-            // 更新对应的推文数据到数据库
-            const tweetsData = await db.xTweetsData.get('tweets');
-            if (tweetsData) {
-              // 在forYouTweets和followingTweets中查找并更新
-              let updated = false;
+            console.log('💬 [楼中楼回复] 是否为用户推文:', isUserTweet);
 
-              if (tweetsData.forYouTweets) {
-                const tweetIndex = tweetsData.forYouTweets.findIndex(t => t.id === updatedTweetData.id);
-                if (tweetIndex !== -1) {
-                  tweetsData.forYouTweets[tweetIndex] = updatedTweetData;
-                  updated = true;
+            if (isUserTweet) {
+              // 用户自己的推文，保存到 xUserTweets
+              console.log('💬 [楼中楼回复] 保存到用户推文数据库');
+              const accountTweetsId = `userTweets_${currentAccountId || 'main'}`;
+              const userTweets = await db.xUserTweets.get(accountTweetsId);
+
+              if (userTweets && userTweets.tweets) {
+                console.log('💬 [楼中楼回复] 找到用户推文数据，推文总数:', userTweets.tweets.length);
+
+                const userTweetIndex = userTweets.tweets.findIndex(t => t.id === updatedTweetData.id);
+                if (userTweetIndex !== -1) {
+                  console.log('💬 [楼中楼回复] 找到目标推文，索引:', userTweetIndex);
+                  userTweets.tweets[userTweetIndex] = updatedTweetData;
+                  await db.xUserTweets.put(userTweets);
+                  console.log('✅ [楼中楼回复] 用户推文已更新到账户:', accountTweetsId);
+                } else {
+                  console.warn('⚠️ [楼中楼回复] 未找到目标用户推文');
                 }
+              } else {
+                console.warn('⚠️ [楼中楼回复] 未找到用户推文数据');
               }
+            } else {
+              // 主页推文，保存到 xTweetsData
+              console.log('💬 [楼中楼回复] 保存到主页推文数据库');
+              const tweetsData = await db.xTweetsData.get('tweets');
 
-              if (!updated && tweetsData.followingTweets) {
-                const tweetIndex = tweetsData.followingTweets.findIndex(t => t.id === updatedTweetData.id);
-                if (tweetIndex !== -1) {
-                  tweetsData.followingTweets[tweetIndex] = updatedTweetData;
-                  updated = true;
-                }
-              }
+              if (tweetsData) {
+                let updated = false;
 
-              // 如果是用户自己的推文，更新到用户推文数据
-              if (updatedTweetData.id.startsWith('user_')) {
-                const accountTweetsId = `userTweets_${currentAccountId || 'main'}`;
-                const userTweets = await db.xUserTweets.get(accountTweetsId);
-                if (userTweets && userTweets.tweets) {
-                  const userTweetIndex = userTweets.tweets.findIndex(t => t.id === updatedTweetData.id);
-                  if (userTweetIndex !== -1) {
-                    userTweets.tweets[userTweetIndex] = updatedTweetData;
-                    await db.xUserTweets.put(userTweets);
-                    console.log('✅ 用户推文已更新到账户:', accountTweetsId);
+                if (tweetsData.forYouTweets) {
+                  const tweetIndex = tweetsData.forYouTweets.findIndex(t => t.id === updatedTweetData.id);
+                  if (tweetIndex !== -1) {
+                    tweetsData.forYouTweets[tweetIndex] = updatedTweetData;
+                    updated = true;
+                    console.log('💬 [楼中楼回复] 已更新 forYouTweets');
                   }
                 }
-              }
 
-              if (updated) {
-                await db.xTweetsData.put(tweetsData);
-                console.log('详情页评论已保存到数据库');
+                if (!updated && tweetsData.followingTweets) {
+                  const tweetIndex = tweetsData.followingTweets.findIndex(t => t.id === updatedTweetData.id);
+                  if (tweetIndex !== -1) {
+                    tweetsData.followingTweets[tweetIndex] = updatedTweetData;
+                    updated = true;
+                    console.log('💬 [楼中楼回复] 已更新 followingTweets');
+                  }
+                }
+
+                if (updated) {
+                  await db.xTweetsData.put(tweetsData);
+                  console.log('✅ [楼中楼回复] 主页推文已保存到数据库');
+                } else {
+                  console.warn('⚠️ [楼中楼回复] 未在主页数据中找到目标推文');
+                }
               }
             }
+          } else {
+            console.warn('⚠️ [楼中楼回复] 未找到主评论，mainCommentId:', mainCommentId);
           }
+        } else {
+          console.warn('⚠️ [楼中楼回复] sessionStorage 中无推文数据');
         }
       } catch (saveError) {
-        console.error('保存详情页评论失败:', saveError);
+        console.error('❌ [楼中楼回复] 保存失败:', saveError);
       }
     } else {
       // 主页推文：添加到数据并重新渲染 - 支持楼中楼平级回复
@@ -8649,7 +8694,7 @@ ${accountData.followersCount ? `- 关注者：${accountData.followersCount}` : '
 
 【JSON返回格式】：
 \`\`\`json
-{"accountInfo": {...}, "tweets": [推文数组]}
+{"accountInfo": {...}, "tweets": [推文数组], "accountReplies": [回复数组]}
 \`\`\`
 
 accountInfo对象结构：
@@ -8665,13 +8710,41 @@ tweets数组（3-5条）：
 - time: 时间描述
 - stats: {comments, retweets, likes, views} (纯数字)
 - media: [{type:"description", description:"图片描述"}] (可选)
-- comments: [评论数组] (0-3条)
+- comments: [评论数组] (1-5条，必须生成)
 - pinned: true/false (可选，第一条推文可置顶，显示"已置顶"标识)
 
-评论对象结构：
+评论对象结构（重要）：
+- id: 评论唯一ID（可留空，系统自动生成）
 - user: {name, handle, avatar, verified}
 - content: 评论文本
 - time: 时间描述
+- replies: [楼中楼回复数组] (可选，0-2条)
+
+楼中楼回复对象结构：
+- id: 回复唯一ID（可留空，系统自动生成）
+- user: {name, handle, avatar, verified}
+- content: 回复文本
+- time: 时间描述
+- replyTo: "@被回复者句柄" (必填)
+
+accountReplies数组（2-4条，账户的回复记录）：
+每条回复包含原始推文/评论 + 账户的回复内容：
+- type: "tweet" | "comment" (回复的是推文还是评论)
+- originalTweet: 原始推文对象
+  - user: {name, handle, avatar, verified}
+  - content: 推文内容
+  - time: 时间描述
+  - stats: {comments, retweets, likes, views}
+  - media: [{type:"description", description:"图片描述"}] (可选)
+- originalComment: 原始评论对象（仅当type="comment"时存在）
+  - user: {name, handle, avatar, verified}
+  - content: 评论内容
+  - time: 时间描述
+- accountReply: 账户的回复对象（必填）
+  - user: {name, handle, avatar, verified} (必须是目标账户信息)
+  - content: 回复内容
+  - time: 时间描述
+  - stats: {comments, retweets, likes, views}
 
 关键规则：
 1. accountInfo已提供字段必须与输入完全一致，不得修改
@@ -8680,9 +8753,12 @@ tweets数组（3-5条）：
 4. 如果该账户在角色X资料或NPC设置中标注为情侣关系，必须设置verificationType为"couple"
 5. 建议将最重要或最新的一条推文设置为pinned: true（置顶）
 6. stats所有数字必须是纯数字，不带引号
-7. 可选字段不使用时完全省略
-8. 普通用户头像：https://i.postimg.cc/4xmx7V4R/mmexport1759081128356.jpg
-9. 默认背景图：https://i.postimg.cc/tT8Rfsf1/mmexport1759603246385.jpg`;
+7. 每条推文必须包含1-5条评论，评论内容要与推文相关
+8. 评论可以包含楼中楼回复（replies数组），形成对话链
+9. accountReplies必须生成2-4条，展示账户的互动历史
+10. accountReplies中的accountReply.user必须使用目标账户的信息
+11. 除了角色和npc以外所有账号都使用统一头像：https://i.postimg.cc/4xmx7V4R/mmexport1759081128356.jpg
+12. 默认背景图：https://i.postimg.cc/tT8Rfsf1/mmexport1759603246385.jpg`;
       // ▲▲▲ 构建SystemPrompt ▲▲▲
 
       const messages = [{ role: 'user', content: `请生成账户 ${accountData.name} (${accountData.handle}) 的主页内容` }];
@@ -8771,6 +8847,50 @@ tweets数组（3-5条）：
       if (!profileData.accountInfo || !profileData.tweets) {
         throw new Error('AI返回的数据格式不正确');
       }
+
+      // 为推文和评论分配唯一ID和时间戳
+      const timestamp = Date.now();
+      profileData.tweets.forEach((tweet, tweetIndex) => {
+        // 为推文分配ID（如果没有）
+        if (!tweet.id) {
+          tweet.id = `account_tweet_${timestamp}_${tweetIndex}`;
+        }
+
+        // 为推文添加timestamp（如果没有）
+        if (!tweet.timestamp) {
+          // 根据索引生成不同的时间戳（越前面的推文越新）
+          const hoursAgo = tweetIndex * 2 + Math.floor(Math.random() * 2);
+          tweet.timestamp = timestamp - hoursAgo * 60 * 60 * 1000;
+        }
+
+        // 确保stats字段存在
+        if (!tweet.stats) {
+          tweet.stats = {
+            comments: tweet.comments?.length || 0,
+            retweets: 0,
+            likes: 0,
+            views: 0,
+          };
+        }
+
+        // 为评论分配ID
+        if (tweet.comments && tweet.comments.length > 0) {
+          tweet.comments.forEach((comment, commentIndex) => {
+            if (!comment.id) {
+              comment.id = `account_comment_${timestamp}_${tweetIndex}_${commentIndex}`;
+            }
+
+            // 为楼中楼回复分配ID
+            if (comment.replies && comment.replies.length > 0) {
+              comment.replies.forEach((reply, replyIndex) => {
+                if (!reply.id) {
+                  reply.id = `account_reply_${timestamp}_${tweetIndex}_${commentIndex}_${replyIndex}`;
+                }
+              });
+            }
+          });
+        }
+      });
 
       showXToast('账户主页已生成', 'success');
       return profileData;
@@ -8896,6 +9016,257 @@ tweets数组（3-5条）：
     showXToast(`已加载 ${accountInfo.name || accountData.name} 的主页`, 'success');
   }
 
+  // 创建账户回复元素
+  function createAccountReplyElement(reply) {
+    const replyEl = document.createElement('div');
+    replyEl.style.cssText = 'border-bottom: 1px solid #2f3336;';
+
+    const accountInfo = currentViewingAccount.accountInfo || currentViewingAccount;
+
+    // 构建账户认证图标HTML
+    let accountVerifiedBadgeHtml = '';
+    if (accountInfo.verified) {
+      if (accountInfo.verificationType === 'couple') {
+        accountVerifiedBadgeHtml =
+          '<svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: #fff;"><g><path d="M16.697 5.5c-1.222-.06-2.679.51-3.89 2.16l-.805 1.09-.806-1.09C9.984 6.01 8.526 5.44 7.304 5.5c-1.243.07-2.349.78-2.91 1.91-.552 1.12-.633 2.78.479 4.82 1.074 1.97 3.257 4.27 7.129 6.61 3.87-2.34 6.052-4.64 7.126-6.61 1.111-2.04 1.03-3.7.477-4.82-.561-1.13-1.666-1.84-2.908-1.91zm4.187 7.69c-1.351 2.48-4.001 5.12-8.379 7.67l-.503.3-.504-.3c-4.379-2.55-7.029-5.19-8.382-7.67-1.36-2.5-1.41-4.86-.514-6.67.887-1.79 2.647-2.91 4.601-3.01 1.651-.09 3.368.56 4.798 2.01 1.429-1.45 3.146-2.1 4.796-2.01 1.954.1 3.714 1.22 4.601 3.01.896 1.81.846 4.17-.514 6.67z"></path></g></svg>';
+      } else {
+        accountVerifiedBadgeHtml =
+          '<svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: #1d9bf0;"><g><path d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.66-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.33 2.19c-1.4-.46-2.91-.2-3.92.81s-1.26 2.52-.8 3.91c-1.31.67-2.2 1.91-2.2 3.34s.89 2.67 2.2 3.34c-.46 1.39-.21 2.9.8 3.91s2.52 1.27 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.68-.88 3.34-2.19c1.39.46 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34zm-11.71 4.2L6.8 12.46l1.41-1.42 2.26 2.26 4.8-5.23 1.47 1.36-6.2 6.77z"></path></g></svg>';
+      }
+    }
+
+    if (reply.type === 'tweet') {
+      // 回复推文的样式
+      const originalUser = reply.originalTweet.user;
+      const accountReply = reply.accountReply;
+
+      // 构建原推文作者认证图标
+      let originalVerifiedHtml = '';
+      if (originalUser.verified) {
+        originalVerifiedHtml =
+          '<svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: #1d9bf0;"><g><path d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.66-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.33 2.19c-1.4-.46-2.91-.2-3.92.81s-1.26 2.52-.8 3.91c-1.31.67-2.2 1.91-2.2 3.34s.89 2.67 2.2 3.34c-.46 1.39-.21 2.9.8 3.91s2.52 1.27 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.68-.88 3.34-2.19c1.39.46 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34zm-11.71 4.2L6.8 12.46l1.41-1.42 2.26 2.26 4.8-5.23 1.47 1.36-6.2 6.77z"></path></g></svg>';
+      }
+
+      replyEl.innerHTML = `
+        <div style="padding: 12px 16px;">
+          <!-- 原始推文 -->
+          <div style="display: flex; gap: 12px; margin-bottom: 8px;">
+            <img src="${originalUser.avatar}" style="width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;">
+            <div style="flex: 1; min-width: 0;">
+              <div style="display: flex; align-items: center; gap: 4px; margin-bottom: 2px; flex-wrap: wrap;">
+                <span style="color: #fff; font-weight: 800; font-size: 15px;">${originalUser.name}</span>
+                ${originalVerifiedHtml}
+                <span style="color: #71767b; font-size: 15px;">${
+                  originalUser.handle.startsWith('@') ? originalUser.handle : '@' + originalUser.handle
+                }</span>
+                <span style="color: #71767b; font-size: 15px; margin: 0 4px;">·</span>
+                <span style="color: #71767b; font-size: 15px;">${reply.originalTweet.time}</span>
+              </div>
+              <div style="color: #fff; font-size: 15px; line-height: 20px; word-wrap: break-word;">${processContent(
+                reply.originalTweet.content,
+              )}</div>
+              ${
+                reply.originalTweet.media && reply.originalTweet.media.length > 0
+                  ? `
+                <div style="background-color: #202327; border-radius: 16px; padding: 12px; margin-top: 12px; border: 1px solid #2f3336;">
+                  <div style="color: #e7e9ea; font-size: 15px; line-height: 20px;">${reply.originalTweet.media[0].description}</div>
+                </div>
+              `
+                  : ''
+              }
+            </div>
+          </div>
+
+          <!-- 连接线和账户回复 -->
+          <div style="display: flex; gap: 12px;">
+            <!-- 左侧连接线 -->
+            <div style="width: 40px; display: flex; justify-content: center; position: relative;">
+              <div style="width: 2px; height: 100%; background-color: #2f3336;"></div>
+            </div>
+            <div style="flex: 1;"></div>
+          </div>
+
+          <!-- 账户的回复 -->
+          <div style="display: flex; gap: 12px; margin-top: 8px;">
+            <img src="${accountInfo.avatar}" style="width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;">
+            <div style="flex: 1; min-width: 0;">
+              <div style="display: flex; align-items: center; gap: 4px; margin-bottom: 2px; flex-wrap: wrap;">
+                <span style="color: #fff; font-weight: 800; font-size: 15px;">${accountInfo.name}</span>
+                ${accountVerifiedBadgeHtml}
+                <span style="color: #71767b; font-size: 15px;">${
+                  accountInfo.handle.startsWith('@') ? accountInfo.handle : '@' + accountInfo.handle
+                }</span>
+                <span style="color: #71767b; font-size: 15px; margin: 0 4px;">·</span>
+                <span style="color: #71767b; font-size: 15px;">${accountReply.time}</span>
+              </div>
+              <div style="color: #71767b; font-size: 15px; margin-bottom: 4px;">回复 <span style="color: #1d9bf0;">${
+                originalUser.handle.startsWith('@') ? originalUser.handle : '@' + originalUser.handle
+              }</span></div>
+              <div style="color: #fff; font-size: 15px; line-height: 20px; margin-bottom: 12px; word-wrap: break-word;">${processContent(
+                accountReply.content,
+              )}</div>
+              
+              <!-- 互动按钮 -->
+              <div style="display: flex; justify-content: space-between; max-width: 425px;">
+                <div style="display: flex; align-items: center; gap: 4px; color: #71767b; cursor: pointer;" onmouseover="this.style.color='#1d9bf0'" onmouseout="this.style.color='#71767b'">
+                  <svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: currentColor;"><g><path d="M1.751 10c0-4.42 3.584-8 8.005-8h4.366c4.49 0 8.129 3.64 8.129 8.13 0 2.96-1.607 5.68-4.196 7.11l-8.054 4.46v-3.69h-.067c-4.49.1-8.183-3.51-8.183-8.01zm8.005-6c-3.317 0-6.005 2.69-6.005 6 0 3.37 2.77 6.08 6.138 6.01l.351-.01h1.761v2.3l5.087-2.81c1.951-1.08 3.163-3.13 3.163-5.36 0-3.39-2.744-6.13-6.129-6.13H9.756z"></path></g></svg>
+                  <span style="font-size: 13px;">${DataUtils.formatNumber(accountReply.stats.comments || 0)}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 4px; color: #71767b; cursor: pointer;" onmouseover="this.style.color='#00ba7c'" onmouseout="this.style.color='#71767b'">
+                  <svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: currentColor;"><g><path d="M4.5 3.88l4.432 4.14-1.364 1.46L5.5 7.55V16c0 1.1.896 2 2 2H13v2H7.5c-2.209 0-4-1.79-4-4V7.55L1.432 9.48.068 8.02 4.5 3.88zM16.5 6H11V4h5.5c2.209 0 4 1.79 4 4v8.45l2.068-1.93 1.364 1.46-4.432 4.14-4.432-4.14 1.364-1.46 2.068 1.93V8c0-1.1-.896-2-2-2z"></path></g></svg>
+                  <span style="font-size: 13px;">${DataUtils.formatNumber(accountReply.stats.retweets || 0)}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 4px; color: #71767b; cursor: pointer;" onmouseover="this.style.color='#f91880'" onmouseout="this.style.color='#71767b'">
+                  <svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: currentColor;"><g><path d="M16.697 5.5c-1.222-.06-2.679.51-3.89 2.16l-.805 1.09-.806-1.09C9.984 6.01 8.526 5.44 7.304 5.5c-1.243.07-2.349.78-2.91 1.91-.552 1.12-.633 2.78.479 4.82 1.074 1.97 3.257 4.27 7.129 6.61 3.87-2.34 6.052-4.64 7.126-6.61 1.111-2.04 1.03-3.7.477-4.82-.561-1.13-1.666-1.84-2.908-1.91zm4.187 7.69c-1.351 2.48-4.001 5.12-8.379 7.67l-.503.3-.504-.3c-4.379-2.55-7.029-5.19-8.382-7.67-1.36-2.5-1.41-4.86-.514-6.67.887-1.79 2.647-2.91 4.601-3.01 1.651-.09 3.368.56 4.798 2.01 1.429-1.45 3.146-2.1 4.796-2.01 1.954.1 3.714 1.22 4.601 3.01.896 1.81.846 4.17-.514 6.67z"></path></g></svg>
+                  <span style="font-size: 13px;">${DataUtils.formatNumber(accountReply.stats.likes || 0)}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 4px; color: #71767b; cursor: pointer;" onmouseover="this.style.color='#1d9bf0'" onmouseout="this.style.color='#71767b'">
+                  <svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: currentColor;"><g><path d="M8.75 21V3h2v18h-2zM18 21V8.5h2V21h-2zM4 21l.004-10h2L6 21H4zm9.248 0v-7h2v7h-2z"></path></g></svg>
+                  <span style="font-size: 13px;">${DataUtils.formatNumber(accountReply.stats.views || 0)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    } else if (reply.type === 'comment') {
+      // 回复评论的样式（楼中楼）
+      const originalTweetUser = reply.originalTweet.user;
+      const originalCommentUser = reply.originalComment.user;
+      const accountReply = reply.accountReply;
+
+      // 构建认证图标
+      let tweetVerifiedHtml = '';
+      if (originalTweetUser.verified) {
+        tweetVerifiedHtml =
+          '<svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: #1d9bf0;"><g><path d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.66-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.33 2.19c-1.4-.46-2.91-.2-3.92.81s-1.26 2.52-.8 3.91c-1.31.67-2.2 1.91-2.2 3.34s.89 2.67 2.2 3.34c-.46 1.39-.21 2.9.8 3.91s2.52 1.27 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.68-.88 3.34-2.19c1.39.46 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34zm-11.71 4.2L6.8 12.46l1.41-1.42 2.26 2.26 4.8-5.23 1.47 1.36-6.2 6.77z"></path></g></svg>';
+      }
+
+      let commentVerifiedHtml = '';
+      if (originalCommentUser.verified) {
+        commentVerifiedHtml =
+          '<svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: #1d9bf0;"><g><path d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.66-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.33 2.19c-1.4-.46-2.91-.2-3.92.81s-1.26 2.52-.8 3.91c-1.31.67-2.2 1.91-2.2 3.34s.89 2.67 2.2 3.34c-.46 1.39-.21 2.9.8 3.91s2.52 1.27 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.68-.88 3.34-2.19c1.39.46 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34zm-11.71 4.2L6.8 12.46l1.41-1.42 2.26 2.26 4.8-5.23 1.47 1.36-6.2 6.77z"></path></g></svg>';
+      }
+
+      replyEl.innerHTML = `
+        <div style="padding: 12px 16px;">
+          <!-- 原始推文 -->
+          <div style="display: flex; gap: 12px; margin-bottom: 4px;">
+            <img src="${
+              originalTweetUser.avatar
+            }" style="width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;">
+            <div style="flex: 1; min-width: 0;">
+              <div style="display: flex; align-items: center; gap: 4px; margin-bottom: 2px; flex-wrap: wrap;">
+                <span style="color: #fff; font-weight: 800; font-size: 15px;">${originalTweetUser.name}</span>
+                ${tweetVerifiedHtml}
+                <span style="color: #71767b; font-size: 15px;">${
+                  originalTweetUser.handle.startsWith('@') ? originalTweetUser.handle : '@' + originalTweetUser.handle
+                }</span>
+                <span style="color: #71767b; font-size: 15px; margin: 0 4px;">·</span>
+                <span style="color: #71767b; font-size: 15px;">${reply.originalTweet.time}</span>
+              </div>
+              <div style="color: #fff; font-size: 15px; line-height: 20px; word-wrap: break-word;">${processContent(
+                reply.originalTweet.content,
+              )}</div>
+              ${
+                reply.originalTweet.media && reply.originalTweet.media.length > 0
+                  ? `
+                <div style="background-color: #202327; border-radius: 16px; padding: 12px; margin-top: 12px; border: 1px solid #2f3336;">
+                  <div style="color: #e7e9ea; font-size: 15px; line-height: 20px;">${reply.originalTweet.media[0].description}</div>
+                </div>
+              `
+                  : ''
+              }
+            </div>
+          </div>
+
+          <!-- 连接线和原始评论 -->
+          <div style="display: flex; gap: 12px; margin-top: 8px;">
+            <div style="width: 40px; display: flex; justify-content: center;">
+              <div style="width: 2px; background-color: #2f3336; height: 100%;"></div>
+            </div>
+            <div style="flex: 1; padding-top: 4px;">
+              <div style="display: flex; gap: 12px;">
+                <img src="${
+                  originalCommentUser.avatar
+                }" style="width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;">
+                <div style="flex: 1; min-width: 0;">
+                  <div style="display: flex; align-items: center; gap: 4px; margin-bottom: 2px; flex-wrap: wrap;">
+                    <span style="color: #fff; font-weight: 800; font-size: 15px;">${originalCommentUser.name}</span>
+                    ${commentVerifiedHtml}
+                    <span style="color: #71767b; font-size: 15px;">${
+                      originalCommentUser.handle.startsWith('@')
+                        ? originalCommentUser.handle
+                        : '@' + originalCommentUser.handle
+                    }</span>
+                    <span style="color: #71767b; font-size: 15px; margin: 0 4px;">·</span>
+                    <span style="color: #71767b; font-size: 15px;">${reply.originalComment.time}</span>
+                  </div>
+                  <div style="color: #fff; font-size: 15px; line-height: 20px; word-wrap: break-word;">${processContent(
+                    reply.originalComment.content,
+                  )}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 连接线和账户回复 -->
+          <div style="display: flex; gap: 12px; margin-top: 8px;">
+            <div style="width: 40px; display: flex; justify-content: center;">
+              <div style="width: 2px; background-color: #2f3336; height: 100%;"></div>
+            </div>
+            <div style="flex: 1; padding-top: 4px;">
+              <div style="display: flex; gap: 12px;">
+                <img src="${accountInfo.avatar}" style="width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;">
+                <div style="flex: 1; min-width: 0;">
+                  <div style="display: flex; align-items: center; gap: 4px; margin-bottom: 2px; flex-wrap: wrap;">
+                    <span style="color: #fff; font-weight: 800; font-size: 15px;">${accountInfo.name}</span>
+                    ${accountVerifiedBadgeHtml}
+                    <span style="color: #71767b; font-size: 15px;">${
+                      accountInfo.handle.startsWith('@') ? accountInfo.handle : '@' + accountInfo.handle
+                    }</span>
+                    <span style="color: #71767b; font-size: 15px; margin: 0 4px;">·</span>
+                    <span style="color: #71767b; font-size: 15px;">${accountReply.time}</span>
+                  </div>
+                  <div style="color: #71767b; font-size: 15px; margin-bottom: 4px;">回复 <span style="color: #1d9bf0;">${
+                    originalCommentUser.handle.startsWith('@')
+                      ? originalCommentUser.handle
+                      : '@' + originalCommentUser.handle
+                  }</span></div>
+                  <div style="color: #fff; font-size: 15px; line-height: 20px; margin-bottom: 12px; word-wrap: break-word;">${processContent(
+                    accountReply.content,
+                  )}</div>
+                  
+                  <!-- 互动按钮 -->
+                  <div style="display: flex; justify-content: space-between; max-width: 425px;">
+                    <div style="display: flex; align-items: center; gap: 4px; color: #71767b; cursor: pointer;" onmouseover="this.style.color='#1d9bf0'" onmouseout="this.style.color='#71767b'">
+                      <svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: currentColor;"><g><path d="M1.751 10c0-4.42 3.584-8 8.005-8h4.366c4.49 0 8.129 3.64 8.129 8.13 0 2.96-1.607 5.68-4.196 7.11l-8.054 4.46v-3.69h-.067c-4.49.1-8.183-3.51-8.183-8.01zm8.005-6c-3.317 0-6.005 2.69-6.005 6 0 3.37 2.77 6.08 6.138 6.01l.351-.01h1.761v2.3l5.087-2.81c1.951-1.08 3.163-3.13 3.163-5.36 0-3.39-2.744-6.13-6.129-6.13H9.756z"></path></g></svg>
+                      <span style="font-size: 13px;">${DataUtils.formatNumber(accountReply.stats.comments || 0)}</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 4px; color: #71767b; cursor: pointer;" onmouseover="this.style.color='#00ba7c'" onmouseout="this.style.color='#71767b'">
+                      <svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: currentColor;"><g><path d="M4.5 3.88l4.432 4.14-1.364 1.46L5.5 7.55V16c0 1.1.896 2 2 2H13v2H7.5c-2.209 0-4-1.79-4-4V7.55L1.432 9.48.068 8.02 4.5 3.88zM16.5 6H11V4h5.5c2.209 0 4 1.79 4 4v8.45l2.068-1.93 1.364 1.46-4.432 4.14-4.432-4.14 1.364-1.46 2.068 1.93V8c0-1.1-.896-2-2-2z"></path></g></svg>
+                      <span style="font-size: 13px;">${DataUtils.formatNumber(accountReply.stats.retweets || 0)}</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 4px; color: #71767b; cursor: pointer;" onmouseover="this.style.color='#f91880'" onmouseout="this.style.color='#71767b'">
+                      <svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: currentColor;"><g><path d="M16.697 5.5c-1.222-.06-2.679.51-3.89 2.16l-.805 1.09-.806-1.09C9.984 6.01 8.526 5.44 7.304 5.5c-1.243.07-2.349.78-2.91 1.91-.552 1.12-.633 2.78.479 4.82 1.074 1.97 3.257 4.27 7.129 6.61 3.87-2.34 6.052-4.64 7.126-6.61 1.111-2.04 1.03-3.7.477-4.82-.561-1.13-1.666-1.84-2.908-1.91zm4.187 7.69c-1.351 2.48-4.001 5.12-8.379 7.67l-.503.3-.504-.3c-4.379-2.55-7.029-5.19-8.382-7.67-1.36-2.5-1.41-4.86-.514-6.67.887-1.79 2.647-2.91 4.601-3.01 1.651-.09 3.368.56 4.798 2.01 1.429-1.45 3.146-2.1 4.796-2.01 1.954.1 3.714 1.22 4.601 3.01.896 1.81.846 4.17-.514 6.67z"></path></g></svg>
+                      <span style="font-size: 13px;">${DataUtils.formatNumber(accountReply.stats.likes || 0)}</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 4px; color: #71767b; cursor: pointer;" onmouseover="this.style.color='#1d9bf0'" onmouseout="this.style.color='#71767b'">
+                      <svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: currentColor;"><g><path d="M8.75 21V3h2v18h-2zM18 21V8.5h2V21h-2zM4 21l.004-10h2L6 21H4zm9.248 0v-7h2v7h-2z"></path></g></svg>
+                      <span style="font-size: 13px;">${DataUtils.formatNumber(accountReply.stats.views || 0)}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    return replyEl;
+  }
+
   // 创建账户推文元素（按图片样式设计）
   function createAccountTweetElement(tweet, accountInfo) {
     const tweetEl = document.createElement('div');
@@ -8958,7 +9329,9 @@ tweets数组（3-5条）：
               : ''
           }
           <div style="display: flex; justify-content: space-between; max-width: 425px; margin-top: 12px;">
-            <div style="display: flex; align-items: center; gap: 4px; color: #71767b; cursor: pointer; padding: 0;" onmouseover="this.style.color='#1d9bf0'" onmouseout="this.style.color='#71767b'">
+            <div onclick="showAccountTweetDetail('${
+              tweet.id
+            }')" style="display: flex; align-items: center; gap: 4px; color: #71767b; cursor: pointer; padding: 0;" onmouseover="this.style.color='#1d9bf0'" onmouseout="this.style.color='#71767b'">
               <svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: currentColor;"><g><path d="M1.751 10c0-4.42 3.584-8 8.005-8h4.366c4.49 0 8.129 3.64 8.129 8.13 0 2.96-1.607 5.68-4.196 7.11l-8.054 4.46v-3.69h-.067c-4.49.1-8.183-3.51-8.183-8.01zm8.005-6c-3.317 0-6.005 2.69-6.005 6 0 3.37 2.77 6.08 6.138 6.01l.351-.01h1.761v2.3l5.087-2.81c1.951-1.08 3.163-3.13 3.163-5.36 0-3.39-2.744-6.13-6.129-6.13H9.756z"></path></g></svg>
               <span style="font-size: 13px;">${DataUtils.formatNumber(tweet.stats.comments || 0)}</span>
             </div>
@@ -9000,6 +9373,28 @@ tweets数组（3-5条）：
   window.closeAccountProfile = function () {
     document.getElementById('account-profile-page').style.display = 'none';
     document.getElementById('x-home-page').style.display = 'flex';
+  };
+
+  // 显示账户推文详情
+  window.showAccountTweetDetail = async function (tweetId) {
+    if (!currentViewingAccount || !currentViewingAccount.tweets) {
+      showXToast('无法找到推文数据', 'error');
+      return;
+    }
+
+    // 从当前账户数据中查找推文
+    const tweet = currentViewingAccount.tweets.find(t => t.id === tweetId);
+    if (!tweet) {
+      showXToast('未找到该推文', 'error');
+      return;
+    }
+
+    // 标记数据来源为账户推文（避免与用户推文混淆）
+    tweet._source = 'account';
+    tweet._accountHandle = (currentViewingAccount.accountInfo || currentViewingAccount).handle;
+
+    // 使用现有的showTweetDetail函数显示详情
+    await showTweetDetail(tweet);
   };
 
   // 切换关注状态
@@ -9052,31 +9447,52 @@ tweets数组（3-5条）：
       }
     });
 
-    // 目前只有帖子标签有内容，其他标签显示占位符
-    if (tabName !== 'posts') {
-      const tweetsContainer = document.getElementById('account-tweets-container');
-      const tabNameMap = {
-        replies: '回复',
-        highlights: '亮点',
-        media: '媒体',
-      };
-      tweetsContainer.innerHTML = `
-        <div style="padding: 60px 32px; text-align: center;">
-          <div style="color: #71767b; font-size: 31px; font-weight: 800; margin-bottom: 8px;">还没有${tabNameMap[tabName]}</div>
-          <div style="color: #71767b; font-size: 15px;">该账户的${tabNameMap[tabName]}内容会显示在这里。</div>
-        </div>
-      `;
-    } else {
-      // 重新渲染推文
+    const tweetsContainer = document.getElementById('account-tweets-container');
+    tweetsContainer.innerHTML = '';
+
+    if (tabName === 'posts') {
+      // 渲染推文
       if (currentViewingAccount && currentViewingAccount.tweets) {
-        const tweetsContainer = document.getElementById('account-tweets-container');
-        tweetsContainer.innerHTML = '';
         const accountInfo = currentViewingAccount.accountInfo || currentViewingAccount;
         currentViewingAccount.tweets.forEach(tweet => {
           const tweetElement = createAccountTweetElement(tweet, accountInfo);
           tweetsContainer.appendChild(tweetElement);
         });
+      } else {
+        tweetsContainer.innerHTML = `
+          <div style="padding: 60px 32px; text-align: center;">
+            <div style="color: #71767b; font-size: 31px; font-weight: 800; margin-bottom: 8px;">还没有帖子</div>
+            <div style="color: #71767b; font-size: 15px;">该账户的帖子会显示在这里。</div>
+          </div>
+        `;
       }
+    } else if (tabName === 'replies') {
+      // 渲染回复
+      if (
+        currentViewingAccount &&
+        currentViewingAccount.accountReplies &&
+        currentViewingAccount.accountReplies.length > 0
+      ) {
+        currentViewingAccount.accountReplies.forEach(reply => {
+          const replyElement = createAccountReplyElement(reply);
+          tweetsContainer.appendChild(replyElement);
+        });
+      } else {
+        tweetsContainer.innerHTML = `
+          <div style="padding: 60px 32px; text-align: center;">
+            <div style="color: #71767b; font-size: 31px; font-weight: 800; margin-bottom: 8px;">还没有回复</div>
+            <div style="color: #71767b; font-size: 15px;">该账户的回复会显示在这里。</div>
+          </div>
+        `;
+      }
+    } else if (tabName === 'likes') {
+      // 渲染喜欢（暂时显示占位符）
+      tweetsContainer.innerHTML = `
+        <div style="padding: 60px 32px; text-align: center;">
+          <div style="color: #71767b; font-size: 31px; font-weight: 800; margin-bottom: 8px;">还没有喜欢</div>
+          <div style="color: #71767b; font-size: 15px;">该账户喜欢的内容会显示在这里。</div>
+        </div>
+      `;
     }
   };
 
@@ -9092,11 +9508,19 @@ tweets数组（3-5条）：
         name: accountData.accountInfo.name,
         accountInfo: accountData.accountInfo,
         tweets: accountData.tweets || [],
+        accountReplies: accountData.accountReplies || [], // 添加回复数据
         updatedAt: new Date().toISOString(),
       };
 
       await xDB.xAccountProfiles.put(profileToSave);
-      console.log('✅ 账户主页数据已保存:', cleanHandle);
+      console.log(
+        '✅ 账户主页数据已保存:',
+        cleanHandle,
+        '- 推文数:',
+        profileToSave.tweets.length,
+        '- 回复数:',
+        profileToSave.accountReplies.length,
+      );
     } catch (error) {
       console.error('保存账户主页数据失败:', error);
     }
@@ -9418,12 +9842,29 @@ tweets数组（3-5条）：
 `;
       }
 
-      // 获取该账户已有的推文（如果有）
+      // 获取该账户已有的推文（最近5条）
       let accountTweetsInfo = '';
       if (currentViewingAccount.tweets && currentViewingAccount.tweets.length > 0) {
         accountTweetsInfo = `\n【该账户最近发布的推文】：\n`;
         currentViewingAccount.tweets.slice(0, 5).forEach((tweet, i) => {
-          accountTweetsInfo += `${i + 1}. ${tweet.content}${tweet.time ? ` (${tweet.time})` : ''}\n`;
+          accountTweetsInfo += `${i + 1}. ${tweet.content}${tweet.time ? ` (${tweet.time})` : ''}`;
+          // 添加图片信息
+          if (tweet.image) {
+            if (tweet.image.type === 'description') {
+              accountTweetsInfo += `\n   [图片描述: ${tweet.image.content}]`;
+            } else if (tweet.image.type === 'upload') {
+              accountTweetsInfo += `\n   [包含上传的图片]`;
+            }
+          }
+          // 添加媒体信息（如果使用media字段）
+          if (tweet.media && tweet.media.length > 0) {
+            tweet.media.forEach(m => {
+              if (m.type === 'description' && m.description) {
+                accountTweetsInfo += `\n   [图片描述: ${m.description}]`;
+              }
+            });
+          }
+          accountTweetsInfo += '\n';
         });
       }
 
@@ -13743,10 +14184,80 @@ ${existingQuestionsContext}
     document.getElementById('link-image-preview').style.display = 'none';
   }
 
+  // 从推文详情返回
+  window.goBackFromTweetDetail = function () {
+    const currentTweetData = sessionStorage.getItem('currentTweetData');
+    if (currentTweetData) {
+      try {
+        const tweet = JSON.parse(currentTweetData);
+        // 根据推文来源返回到正确的页面
+        if (tweet._source === 'account') {
+          // 返回账户主页
+          document.getElementById('x-tweet-detail-page').style.display = 'none';
+          document.getElementById('account-profile-page').style.display = 'flex';
+          return;
+        }
+      } catch (e) {
+        console.warn('解析推文数据失败:', e);
+      }
+    }
+    // 默认返回主页
+    switchXPage('home');
+  };
+
   // 显示推文详情页面
-  function showTweetDetail(tweetData) {
-    // 保存推文数据到sessionStorage，供重回功能使用
-    sessionStorage.setItem('currentTweetData', JSON.stringify(tweetData));
+  async function showTweetDetail(tweetData) {
+    console.log('📖 [显示详情] 开始显示推文详情，推文ID:', tweetData.id);
+
+    // 从数据库加载最新的推文数据（包括所有评论）
+    let latestTweetData = tweetData;
+    try {
+      const xDb = getXDB();
+      const isUserTweet = tweetData.id.startsWith('user_');
+
+      if (isUserTweet) {
+        console.log('📖 [显示详情] 从用户推文数据库加载');
+        const userTweetsId = `userTweets_${currentAccountId || 'main'}`;
+        const userTweetsData = await xDb.xUserTweets.get(userTweetsId);
+
+        if (userTweetsData && userTweetsData.tweets) {
+          const dbTweet = userTweetsData.tweets.find(t => t.id === tweetData.id);
+          if (dbTweet) {
+            latestTweetData = dbTweet;
+            console.log('✅ [显示详情] 已加载最新用户推文数据，评论数:', dbTweet.comments?.length || 0);
+          } else {
+            console.warn('⚠️ [显示详情] 数据库中未找到该用户推文');
+          }
+        }
+      } else {
+        console.log('📖 [显示详情] 从主页推文数据库加载');
+        const tweetsData = await xDb.xTweetsData.get('tweets');
+        if (tweetsData) {
+          let dbTweet = null;
+
+          if (tweetsData.forYouTweets) {
+            dbTweet = tweetsData.forYouTweets.find(t => t.id === tweetData.id);
+          }
+
+          if (!dbTweet && tweetsData.followingTweets) {
+            dbTweet = tweetsData.followingTweets.find(t => t.id === tweetData.id);
+          }
+
+          if (dbTweet) {
+            latestTweetData = dbTweet;
+            console.log('✅ [显示详情] 已加载最新主页推文数据，评论数:', dbTweet.comments?.length || 0);
+          } else {
+            console.warn('⚠️ [显示详情] 数据库中未找到该主页推文');
+          }
+        }
+      }
+    } catch (loadError) {
+      console.error('❌ [显示详情] 从数据库加载推文失败:', loadError);
+    }
+
+    // 保存最新推文数据到sessionStorage，供重回功能使用
+    sessionStorage.setItem('currentTweetData', JSON.stringify(latestTweetData));
+    console.log('📖 [显示详情] sessionStorage 已更新');
 
     // 隐藏所有页面
     document.querySelectorAll('.x-page').forEach(page => {
@@ -13758,7 +14269,9 @@ ${existingQuestionsContext}
     detailPage.style.display = 'flex';
 
     // 渲染推文详情
-    renderTweetDetail(tweetData);
+    renderTweetDetail(latestTweetData);
+
+    console.log('✅ [显示详情] 推文详情页面已显示');
 
     // 确保用户资料头像正确显示
     setTimeout(() => {
@@ -13782,7 +14295,7 @@ ${existingQuestionsContext}
 
     // 创建详情HTML
     const detailHTML = `
-              <div class="tweet-detail-item" style="padding: 16px; border-bottom: 1px solid #2f3336;">
+              <div class="tweet-detail-item" style="padding: 16px 16px 4px 16px;">
                 <!-- 用户信息 -->
                 <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
                   <img src="${tweet.user.avatar}" alt="${tweet.user.name}" 
@@ -13810,13 +14323,14 @@ ${existingQuestionsContext}
                 ${renderQuotedTweet(tweet)}
 
                 <!-- 时间和位置信息 -->
-                <div style="display: flex; align-items: center; justify-content: space-between; margin: 16px 0; padding: 16px 0; border-top: 1px solid #2f3336; border-bottom: 1px solid #2f3336;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin: 12px 0 16px 0;">
                   <div style="display: flex; align-items: center; gap: 16px;">
                     <span style="color: #71767b; font-size: 15px;">${formatDetailTime(tweet.timestamp)}</span>
                     <span style="color: #71767b; font-size: 15px;">·</span>
-                    <span id="tweet-detail-views" style="color: #71767b; font-size: 15px;">${formatNumber(
+                    <span id="tweet-detail-views" style="color: #fff; font-weight: 700; font-size: 15px;">${formatNumber(
                       tweet.stats.views,
-                    )} 查看</span>
+                    )}</span>
+                    <span style="color: #71767b; font-size: 15px;">查看</span>
                   </div>
                   ${
                     tweet.location
@@ -13835,7 +14349,7 @@ ${existingQuestionsContext}
                 </div>
 
                 <!-- 互动数据 -->
-                <div id="tweet-detail-stats" style="display: flex; align-items: center; gap: 32px; padding: 12px 0; border-bottom: 1px solid #2f3336;">
+                <div id="tweet-detail-stats" style="display: flex; align-items: center; gap: 32px; padding: 16px 0; border-top: 1px solid #2f3336; border-bottom: 1px solid #2f3336;">
                   <div style="display: flex; align-items: center; gap: 4px;">
                     <span style="color: #fff; font-weight: 700; font-size: 15px;">${formatNumber(
                       tweet.stats.retweets,
@@ -13857,7 +14371,7 @@ ${existingQuestionsContext}
                 </div>
 
                 <!-- 互动按钮 -->
-                <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+                <div style="display: flex; justify-content: space-between; padding: 12px 0 0 0;">
                   <div class="tweet-action comment" style="display: flex; align-items: center; gap: 8px; padding: 8px; border-radius: 50%; cursor: pointer; color: #71767b; transition: all 0.2s;" onmouseover="this.style.backgroundColor='rgba(29,155,240,0.1)'; this.style.color='#1d9bf0';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#71767b';">
                     <svg class="action-icon" viewBox="0 0 24 24" fill="currentColor" style="width: 20px; height: 20px;">
                       <g><path d="M1.751 10c0-4.42 3.584-8.005 8.005-8.005h4.366c4.49 0 8.129 3.64 8.129 8.13 0 2.96-1.607 5.68-4.196 7.11l-8.054 4.46v-3.69h-.067c-4.49.1-8.183-3.51-8.183-8.005zm8.005-6.005c-3.317 0-6.005 2.69-6.005 6.005 0 3.37 2.77 6.08 6.138 6.01l.351-.01h1.761v2.3l5.087-2.81c1.951-1.08 3.163-3.13 3.163-5.36 0-3.39-2.744-6.13-6.129-6.13H9.756z"></path></g>
@@ -14012,8 +14526,17 @@ ${existingQuestionsContext}
 
   // 格式化详情页时间
   function formatDetailTime(timestamp) {
+    // 如果没有timestamp，返回默认值
+    if (!timestamp) {
+      return '未知时间';
+    }
+
     const date = new Date(timestamp);
-    const now = new Date();
+
+    // 检查日期是否有效
+    if (isNaN(date.getTime())) {
+      return '未知时间';
+    }
 
     const formatter = new Intl.DateTimeFormat('zh-CN', {
       year: 'numeric',
@@ -14100,6 +14623,12 @@ ${existingQuestionsContext}
       return;
     }
 
+    console.log('📝 [提交评论] 开始处理评论提交');
+    console.log('📝 [提交评论] 推文ID:', tweetData.id);
+    console.log('📝 [提交评论] 推文作者:', tweetData.user.handle);
+    console.log('📝 [提交评论] 当前用户:', window.userProfileData.handle);
+    console.log('📝 [提交评论] 是否为用户推文:', tweetData.id.startsWith('user_'));
+
     // 检查是否为仅自己可见的帖子
     if (tweetData.privacy === 'private') {
       showXToast('私有帖子不支持回复功能', 'error');
@@ -14127,10 +14656,110 @@ ${existingQuestionsContext}
       };
     }
 
+    console.log('📝 [提交评论] 新评论数据:', {
+      id: newComment.id,
+      content: newComment.content.substring(0, 50) + '...',
+      hasImage: !!newComment.image,
+    });
+
+    // 将评论添加到推文数据中
+    if (!tweetData.comments) {
+      tweetData.comments = [];
+    }
+    tweetData.comments.push(newComment);
+
+    // 更新评论数量统计
+    if (!tweetData.stats) {
+      tweetData.stats = { comments: 0, retweets: 0, likes: 0, views: 0 };
+    }
+    tweetData.stats.comments = tweetData.comments.length;
+
+    console.log('📝 [提交评论] 评论已添加到推文数据，当前评论总数:', tweetData.stats.comments);
+
+    // 保存到数据库
+    try {
+      const xDb = getXDB();
+
+      // 判断是否为用户自己的推文
+      const isUserTweet = tweetData.id.startsWith('user_');
+
+      if (isUserTweet) {
+        console.log('📝 [提交评论] 这是用户自己的推文，保存到 xUserTweets');
+
+        // 获取用户推文数据ID（按账号隔离）
+        const userTweetsId = `userTweets_${currentAccountId || 'main'}`;
+        const userTweetsData = await xDb.xUserTweets.get(userTweetsId);
+
+        if (userTweetsData && userTweetsData.tweets) {
+          console.log('📝 [提交评论] 找到用户推文数据，推文总数:', userTweetsData.tweets.length);
+
+          const tweetIndex = userTweetsData.tweets.findIndex(t => t.id === tweetData.id);
+          if (tweetIndex !== -1) {
+            console.log('📝 [提交评论] 找到目标推文，索引:', tweetIndex);
+
+            // 更新推文数据
+            userTweetsData.tweets[tweetIndex] = tweetData;
+
+            // 保存到数据库
+            await xDb.xUserTweets.put(userTweetsData);
+            console.log('✅ [提交评论] 用户推文数据已保存到数据库');
+          } else {
+            console.warn('⚠️ [提交评论] 未找到目标推文，推文ID:', tweetData.id);
+          }
+        } else {
+          console.warn('⚠️ [提交评论] 未找到用户推文数据');
+        }
+      } else {
+        console.log('📝 [提交评论] 这是主页推文，保存到 xTweetsData');
+
+        // 这是主页推文，更新到主页数据
+        const tweetsData = await xDb.xTweetsData.get('tweets');
+        if (tweetsData) {
+          let updated = false;
+
+          // 更新 forYouTweets
+          if (tweetsData.forYouTweets) {
+            const index = tweetsData.forYouTweets.findIndex(t => t.id === tweetData.id);
+            if (index !== -1) {
+              tweetsData.forYouTweets[index] = tweetData;
+              updated = true;
+              console.log('📝 [提交评论] 已更新 forYouTweets');
+            }
+          }
+
+          // 更新 followingTweets
+          if (tweetsData.followingTweets && !updated) {
+            const index = tweetsData.followingTweets.findIndex(t => t.id === tweetData.id);
+            if (index !== -1) {
+              tweetsData.followingTweets[index] = tweetData;
+              updated = true;
+              console.log('📝 [提交评论] 已更新 followingTweets');
+            }
+          }
+
+          if (updated) {
+            await xDb.xTweetsData.put(tweetsData);
+            console.log('✅ [提交评论] 主页推文数据已保存到数据库');
+          } else {
+            console.warn('⚠️ [提交评论] 未在主页数据中找到目标推文');
+          }
+        }
+      }
+
+      // 更新 sessionStorage 中的数据
+      sessionStorage.setItem('currentTweetData', JSON.stringify(tweetData));
+      console.log('✅ [提交评论] sessionStorage 已更新');
+    } catch (saveError) {
+      console.error('❌ [提交评论] 保存评论到数据库失败:', saveError);
+      showXToast('评论保存失败: ' + saveError.message, 'error');
+    }
+
     // 渲染新评论
     const commentsContainer = document.getElementById('detail-comments-container');
     const commentElement = createCommentElement(newComment);
     commentsContainer.appendChild(commentElement);
+
+    console.log('📝 [提交评论] 评论已渲染到页面');
 
     // 更新新添加的回复输入框头像（使用window.userProfileData确保获取最新账号数据）
     const replyUserAvatars = document.querySelectorAll('.reply-user-avatar');
@@ -14156,12 +14785,16 @@ ${existingQuestionsContext}
     // 触发AI回复 - 判断是否为用户自己的帖子
     const isOwnPost =
       tweetData.user && (tweetData.user.handle === userProfileData.handle || tweetData.id.startsWith('user_'));
+    console.log('📝 [提交评论] 准备触发AI回复，isOwnPost:', isOwnPost);
+
     await generateUnifiedAIResponse(tweetData, newComment, {
       isOwnPost,
       commentType: 'main_comment',
       pageType: 'detail',
       parentComment: null,
     });
+
+    console.log('✅ [提交评论] 评论提交流程完成');
   }
 
   function renderDetailComments(comments) {
@@ -14170,10 +14803,25 @@ ${existingQuestionsContext}
 
     if (!comments || comments.length === 0) return;
 
+    console.log('📋 [渲染评论] 开始渲染评论，主评论数:', comments.length);
+
     comments.forEach(comment => {
+      // 渲染主评论
       const commentElement = createCommentElement(comment);
       container.appendChild(commentElement);
+
+      // 如果有楼中楼回复，也渲染它们
+      if (comment.replies && comment.replies.length > 0) {
+        console.log('📋 [渲染评论] 评论', comment.id, '有', comment.replies.length, '条楼中楼回复');
+
+        comment.replies.forEach(reply => {
+          const replyElement = createCommentElement(reply, true);
+          container.appendChild(replyElement);
+        });
+      }
     });
+
+    console.log('✅ [渲染评论] 评论渲染完成');
 
     // 更新所有回复输入框头像
     const replyUserAvatars = document.querySelectorAll('.reply-user-avatar');
@@ -15625,9 +16273,87 @@ ${tweetAuthorCharacter.relationships
 
       // 根据页面类型和评论类型处理渲染
       if (pageType === 'detail') {
-        // 详情页面：直接渲染到页面 - 修复楼中楼平级回复插入逻辑
+        console.log('🤖 [AI回复] 详情页模式 - 生成了', replies.length, '条回复');
+
+        // 详情页面：先更新数据，再渲染到页面
+        // 将AI回复添加到推文数据中
+        if (commentType === 'main_comment') {
+          // 主评论回复
+          replies.forEach((comment, index) => {
+            comment.id = `ai_unified_${timestamp}_${index}`;
+            tweetData.comments.push(comment);
+          });
+          tweetData.stats.comments += replies.length;
+          console.log('🤖 [AI回复] AI回复已添加到推文数据，新评论总数:', tweetData.stats.comments);
+        } else if (commentType === 'reply_comment' && parentComment) {
+          // 楼中楼回复
+          const targetComment = tweetData.comments.find(c => c.id === parentComment.id);
+          if (targetComment) {
+            if (!targetComment.replies) targetComment.replies = [];
+            replies.forEach((reply, index) => {
+              reply.id = `ai_unified_${timestamp}_${index}`;
+              targetComment.replies.push(reply);
+            });
+            console.log('🤖 [AI回复] 楼中楼回复已添加，目标评论:', parentComment.id);
+          }
+        }
+
+        // 保存到数据库
+        try {
+          const xDb = getXDB();
+          const isUserTweet = tweetData.id.startsWith('user_');
+
+          if (isUserTweet) {
+            console.log('🤖 [AI回复] 保存到用户推文数据');
+            const userTweetsId = `userTweets_${currentAccountId || 'main'}`;
+            const userTweetsData = await xDb.xUserTweets.get(userTweetsId);
+
+            if (userTweetsData && userTweetsData.tweets) {
+              const tweetIndex = userTweetsData.tweets.findIndex(t => t.id === tweetData.id);
+              if (tweetIndex !== -1) {
+                userTweetsData.tweets[tweetIndex] = tweetData;
+                await xDb.xUserTweets.put(userTweetsData);
+                console.log('✅ [AI回复] 用户推文AI回复已保存');
+              }
+            }
+          } else {
+            console.log('🤖 [AI回复] 保存到主页推文数据');
+            const tweetsData = await xDb.xTweetsData.get('tweets');
+            if (tweetsData) {
+              let updated = false;
+
+              if (tweetsData.forYouTweets) {
+                const index = tweetsData.forYouTweets.findIndex(t => t.id === tweetData.id);
+                if (index !== -1) {
+                  tweetsData.forYouTweets[index] = tweetData;
+                  updated = true;
+                }
+              }
+
+              if (tweetsData.followingTweets && !updated) {
+                const index = tweetsData.followingTweets.findIndex(t => t.id === tweetData.id);
+                if (index !== -1) {
+                  tweetsData.followingTweets[index] = tweetData;
+                  updated = true;
+                }
+              }
+
+              if (updated) {
+                await xDb.xTweetsData.put(tweetsData);
+                console.log('✅ [AI回复] 主页推文AI回复已保存');
+              }
+            }
+          }
+
+          // 更新 sessionStorage
+          sessionStorage.setItem('currentTweetData', JSON.stringify(tweetData));
+          console.log('✅ [AI回复] sessionStorage 已更新');
+        } catch (saveError) {
+          console.error('❌ [AI回复] 保存AI回复到数据库失败:', saveError);
+        }
+
+        // 渲染到页面
         replies.forEach((comment, index) => {
-          comment.id = `ai_unified_${timestamp}_${index}`;
           const commentElement = createCommentElement(comment, commentType === 'reply_comment');
           const commentsContainer = document.getElementById('detail-comments-container');
 
@@ -15681,6 +16407,8 @@ ${tweetAuthorCharacter.relationships
             commentsContainer.appendChild(commentElement);
           }
         });
+
+        console.log('✅ [AI回复] AI回复已渲染到页面');
 
         // 更新回复输入框头像
         const replyUserAvatars = document.querySelectorAll('.reply-user-avatar');
@@ -16430,11 +17158,11 @@ ${tweetAuthorCharacter.relationships
       // 使用工具函数构建用户X个人资料信息
       const userXProfileInfo = StringBuilders.buildUserXProfileInfo(window.userProfileData);
 
-      // 读取用户已发布的推文
+      // 读取用户已发布的推文（最近5条）
       const userTweetsId = `userTweets_${currentAccountId || 'main'}`;
       const userTweetsData = await xDb.xUserTweets.get(userTweetsId);
       const userTweets = userTweetsData?.tweets || [];
-      const recentUserTweets = userTweets.slice(0, 10); // 最近10条推文
+      const recentUserTweets = userTweets.slice(0, 5); // 最近5条推文
 
       // 获取情侣角色的X资料
       let coupleCharacterInfo = '';
@@ -16522,7 +17250,20 @@ ${coupleCharacterInfo}
 【用户最近发布的推文】：
 ${
   recentUserTweets.length > 0
-    ? recentUserTweets.map((tweet, i) => `${i + 1}. ${tweet.content}${tweet.time ? ` (${tweet.time})` : ''}`).join('\n')
+    ? recentUserTweets
+        .map((tweet, i) => {
+          let tweetText = `${i + 1}. ${tweet.content}${tweet.time ? ` (${tweet.time})` : ''}`;
+          // 添加图片信息
+          if (tweet.image) {
+            if (tweet.image.type === 'description') {
+              tweetText += `\n   [图片描述: ${tweet.image.content}]`;
+            } else if (tweet.image.type === 'upload') {
+              tweetText += `\n   [包含上传的图片]`;
+            }
+          }
+          return tweetText;
+        })
+        .join('\n')
     : '暂无推文'
 }
 
@@ -16900,7 +17641,7 @@ ${
         display: flex;
         align-items: center;
         gap: 16px;
-        z-index: 2000；
+        z-index: 2000;
         box-shadow: 0 4px 20px rgba(0,0,0,0.5);
       `;
 
@@ -17158,6 +17899,17 @@ ${
   window.performSearch = performSearch;
   window.switchSearchResultTab = switchSearchResultTab;
   window.backToTrending = backToTrending;
+
+  // 账户主页相关函数
+  window.openAccountProfile = openAccountProfile;
+  window.closeAccountProfile = closeAccountProfile;
+  window.showAccountTweetDetail = showAccountTweetDetail;
+  window.toggleAccountFollow = toggleAccountFollow;
+  window.toggleAccountNotifications = toggleAccountNotifications;
+  window.sendMessageToAccount = sendMessageToAccount;
+  window.switchAccountTab = switchAccountTab;
+  window.refreshAccountProfile = refreshAccountProfile;
+  window.goBackFromTweetDetail = goBackFromTweetDetail;
 
   console.log('✅ 全局接口已暴露');
 
