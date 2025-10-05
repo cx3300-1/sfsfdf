@@ -12827,22 +12827,28 @@ const DEFAULT_NOTIFICATION_SOUND = 'https://www.myinstants.com/media/sounds/noti
         }
         // ▲▲▲ 替换结束 ▲▲▲
         
-                function showCustomAlert(title, message) {
-                    return new Promise(resolve => {
-                        modalResolve = resolve;
-                        modalTitle.textContent = title;
-                        modalBody.innerHTML = `<p style="text-align: left; white-space: pre-wrap;">${message}</p>`;
-                        modalCancelBtn.style.display = 'none';
-                        modalConfirmBtn.textContent = '好的';
-                        modalConfirmBtn.onclick = () => {
-                            modalCancelBtn.style.display = 'block'; 
-                            modalConfirmBtn.textContent = '确定';
-                            resolve(true); 
-                            hideCustomModal();
-                        };
-                        showCustomModal();
-                    });
-                }
+function showCustomAlert(title, message) {
+    return new Promise(resolve => {
+        modalResolve = resolve;
+        modalTitle.textContent = title;
+        modalBody.innerHTML =`<p style="text-align: left; white-space: pre-wrap;">${message}</p>`;
+
+        // 核心修正：在函数被调用时，重新获取最新的按钮元素
+        const confirmBtn = document.getElementById('custom-modal-confirm');
+        const cancelBtn = document.getElementById('custom-modal-cancel');
+
+        cancelBtn.style.display = 'none';
+        confirmBtn.textContent = '好的';
+
+        confirmBtn.onclick = () => {
+            cancelBtn.style.display = 'block'; 
+            confirmBtn.textContent = '确定';
+            resolve(true); 
+            hideCustomModal();
+        };
+        showCustomModal();
+    });
+}
         
         // ▼▼▼ 请用这个【修正后】的完整函数，替换掉您现有的 showCustomPrompt 函数 ▼▼▼
         
@@ -15111,94 +15117,178 @@ async function deleteNpc(npcId) {
 // ▼▼▼ 【请用这个已升级“分批加载”功能的全新版本】替换旧的 renderChatList 函数 ▼▼▼
         let chatListRenderCount = 0; // 新增一个全局变量，跟踪已渲染的数量
         const CHAT_LIST_RENDER_WINDOW = 30; // 每次加载30条
+// ▼▼▼ 【全新】这是为“按需加载”新增的所有辅助函数 ▼▼▼
 
-        async function renderChatList() {
-            const chatListEl = document.getElementById('chat-list');
-            chatListEl.innerHTML = '';
-        
-            // 1. 获取并排序所有聊天数据（这部分逻辑不变）
-            const allChats = Object.values(state.chats).sort((a, b) => {
-                const pinDiff = (b.isPinned || false) - (a.isPinned || false);
-                if (pinDiff !== 0) return pinDiff;
-                return (b.history.slice(-1)[0]?.timestamp || 0) - (a.history.slice(-1)[0]?.timestamp || 0);
-            });
-            
-            const allGroups = await db.qzoneGroups.toArray();
-        
-            if (allChats.length === 0) {
-                chatListEl.innerHTML = '<p style="text-align:center; color: #8a8a8a; margin-top: 50px;">点击右上角 "+" 或群组图标添加聊天</p>';
-                return;
+/**
+ * 创建一个分组的容器（不包含聊天项）
+ */
+function createChatGroupContainer(group) {
+    const groupContainer = document.createElement('div');
+    groupContainer.className = 'chat-group-container';
+    groupContainer.innerHTML = `
+        <div class="chat-group-header">
+            <span class="arrow">▼</span>
+            <span class="group-name">${group.name}</span>
+        </div>
+        <div class="chat-group-content"></div>
+    `;
+    return groupContainer;
+}
+
+/**
+ * 创建并添加“加载更多”按钮
+ */
+function appendLoadMoreChatsButton(container, sortedItems) {
+    const button = document.createElement('button');
+    button.id = 'load-more-chats-btn';
+    button.textContent = '加载更早的会话';
+    button.className = 'load-more-btn'; // 复用样式
+    
+    // 【重要】为按钮绑定加载下一页的事件
+    button.addEventListener('click', () => loadMoreChats(sortedItems), { once: true });
+    
+    container.appendChild(button); // 将按钮添加到列表底部
+}
+
+/**
+ * 加载并渲染下一批次的聊天记录
+ */
+function loadMoreChats(sortedItems) {
+    const chatListEl = document.getElementById('chat-list');
+    const loadMoreBtn = document.getElementById('load-more-chats-btn');
+    if (loadMoreBtn) loadMoreBtn.remove();
+    
+    const nextSliceStart = chatListRenderCount;
+    const nextSliceEnd = chatListRenderCount + CHAT_LIST_RENDER_WINDOW;
+    const itemsToAppend = sortedItems.slice(nextSliceStart, nextSliceEnd);
+
+    // 使用 DocumentFragment 提高性能
+    const fragment = document.createDocumentFragment();
+    let currentGroupContent = chatListEl.querySelector('.chat-group-content:last-of-type');
+
+    itemsToAppend.forEach(item => {
+        if (item.type === 'groupHeader') {
+            const groupContainer = createChatGroupContainer(item.group);
+            fragment.appendChild(groupContainer);
+            currentGroupContent = groupContainer.querySelector('.chat-group-content');
+        } else if (item.type === 'chatItem') {
+            const listItem = createChatListItem(item.chat);
+            if (currentGroupContent && item.chat.groupId) {
+                currentGroupContent.appendChild(listItem);
+            } else {
+                fragment.appendChild(listItem);
+                currentGroupContent = null;
             }
-        
-            allGroups.forEach(group => {
-                const latestChatInGroup = allChats.find(chat => chat.groupId === group.id);
-                group.latestTimestamp = latestChatInGroup ? (latestChatInGroup.history.slice(-1)[0]?.timestamp || 0) : 0;
-            });
-            allGroups.sort((a, b) => b.latestTimestamp - a.latestTimestamp);
-            
-            // 【核心修改】将排序后的所有聊天项（包括分组和非分组）合并到一个有序数组中
-            const sortedRenderableItems = [];
-            const processedChatIds = new Set();
+        }
+    });
+    
+    // 将新生成的项一次性添加到列表中
+    chatListEl.appendChild(fragment);
+    chatListRenderCount += itemsToAppend.length;
 
-            allGroups.forEach(group => {
-                const groupChats = allChats.filter(chat => !chat.isGroup && chat.groupId === group.id);
-                if (groupChats.length > 0) {
-                    sortedRenderableItems.push({ type: 'groupHeader', group });
-                    groupChats.forEach(chat => {
-                        sortedRenderableItems.push({ type: 'chatItem', chat });
-                        processedChatIds.add(chat.id);
-                    });
-                }
-            });
+    if (sortedItems.length > chatListRenderCount) {
+        appendLoadMoreChatsButton(chatListEl, sortedItems);
+    }
+    
+    // 重新为所有分组标题绑定事件
+    document.querySelectorAll('.chat-group-header').forEach(header => {
+        const newHeader = header.cloneNode(true);
+        header.parentNode.replaceChild(newHeader, header);
+        newHeader.addEventListener('click', () => {
+            newHeader.classList.toggle('collapsed');
+            newHeader.nextElementSibling.classList.toggle('collapsed');
+        });
+    });
+}
+// ▲▲▲ 新增函数结束 ▲▲▲
+// ▼▼▼ 【全新 | 已升级“分批加载”功能】请用这个全新版本替换旧的 renderChatList 函数 ▼▼▼
+async function renderChatList() {
+    const chatListEl = document.getElementById('chat-list');
+    chatListEl.innerHTML = '';
 
-            allChats.forEach(chat => {
-                if (!processedChatIds.has(chat.id)) {
-                    sortedRenderableItems.push({ type: 'chatItem', chat });
-                }
-            });
+    // 1. 获取并排序所有聊天数据（这部分逻辑不变）
+    const allChats = Object.values(state.chats).sort((a, b) => {
+        const pinDiff = (b.isPinned || false) - (a.isPinned || false);
+        if (pinDiff !== 0) return pinDiff;
+        return (b.history.slice(-1)[0]?.timestamp || 0) - (a.history.slice(-1)[0]?.timestamp || 0);
+    });
+    
+    const allGroups = await db.qzoneGroups.toArray();
 
-            // 2. 【核心修改】只渲染第一批次的聊天项
-            const initialItems = sortedRenderableItems.slice(0, CHAT_LIST_RENDER_WINDOW);
-            chatListRenderCount = 0;
+    if (allChats.length === 0) {
+        chatListEl.innerHTML = '<p style="text-align:center; color: #8a8a8a; margin-top: 50px;">点击右上角 "+" 或群组图标添加聊天</p>';
+        return;
+    }
 
-            const fragment = document.createDocumentFragment();
-            let currentGroupContent = null;
+    allGroups.forEach(group => {
+        const latestChatInGroup = allChats.find(chat => chat.groupId === group.id);
+        group.latestTimestamp = latestChatInGroup ? (latestChatInGroup.history.slice(-1)[0]?.timestamp || 0) : 0;
+    });
+    allGroups.sort((a, b) => b.latestTimestamp - a.latestTimestamp);
+    
+    // 【核心修改】将排序后的所有聊天项（包括分组和非分组）合并到一个有序数组中
+    const sortedRenderableItems = [];
+    const processedChatIds = new Set();
 
-            initialItems.forEach(item => {
-                if (item.type === 'groupHeader') {
-                    const groupContainer = createChatGroupContainer(item.group);
-                    fragment.appendChild(groupContainer);
-                    currentGroupContent = groupContainer.querySelector('.chat-group-content');
-                } else if (item.type === 'chatItem') {
-                    const listItem = createChatListItem(item.chat);
-                    if (currentGroupContent && item.chat.groupId) {
-                        currentGroupContent.appendChild(listItem);
-                    } else {
-                        fragment.appendChild(listItem);
-                        currentGroupContent = null;
-                    }
-                }
-            });
-            chatListEl.appendChild(fragment);
-            chatListRenderCount = initialItems.length;
-
-            // 3. 【核心修改】如果还有更多，则添加“加载更多”按钮
-            if (sortedRenderableItems.length > chatListRenderCount) {
-                appendLoadMoreChatsButton(chatListEl, sortedRenderableItems);
-            }
-            
-            // 为所有新渲染的分组标题添加折叠事件
-            document.querySelectorAll('.chat-group-header').forEach(header => {
-                // (为避免重复绑定，先移除旧的)
-                const newHeader = header.cloneNode(true);
-                header.parentNode.replaceChild(newHeader, header);
-                newHeader.addEventListener('click', () => {
-                    newHeader.classList.toggle('collapsed');
-                    newHeader.nextElementSibling.classList.toggle('collapsed');
-                });
+    allGroups.forEach(group => {
+        const groupChats = allChats.filter(chat => !chat.isGroup && chat.groupId === group.id);
+        if (groupChats.length > 0) {
+            sortedRenderableItems.push({ type: 'groupHeader', group });
+            groupChats.forEach(chat => {
+                sortedRenderableItems.push({ type: 'chatItem', chat });
+                processedChatIds.add(chat.id);
             });
         }
-        // ▲▲▲ 替换结束 ▲▲▲
+    });
+
+    allChats.forEach(chat => {
+        if (!processedChatIds.has(chat.id)) {
+            sortedRenderableItems.push({ type: 'chatItem', chat });
+        }
+    });
+
+    // 2. 【核心修改】只渲染第一批次的聊天项
+    const initialItems = sortedRenderableItems.slice(0, CHAT_LIST_RENDER_WINDOW);
+    chatListRenderCount = 0;
+
+    const fragment = document.createDocumentFragment();
+    let currentGroupContent = null;
+
+    initialItems.forEach(item => {
+        if (item.type === 'groupHeader') {
+            const groupContainer = createChatGroupContainer(item.group);
+            fragment.appendChild(groupContainer);
+            currentGroupContent = groupContainer.querySelector('.chat-group-content');
+        } else if (item.type === 'chatItem') {
+            const listItem = createChatListItem(item.chat);
+            if (currentGroupContent && item.chat.groupId) {
+                currentGroupContent.appendChild(listItem);
+            } else {
+                fragment.appendChild(listItem);
+                currentGroupContent = null;
+            }
+        }
+    });
+    chatListEl.appendChild(fragment);
+    chatListRenderCount = initialItems.length;
+
+    // 3. 【核心修改】如果还有更多，则添加“加载更多”按钮
+    if (sortedRenderableItems.length > chatListRenderCount) {
+        appendLoadMoreChatsButton(chatListEl, sortedRenderableItems);
+    }
+    
+    // 为所有新渲染的分组标题添加折叠事件
+    document.querySelectorAll('.chat-group-header').forEach(header => {
+        // (为避免重复绑定，先移除旧的)
+        const newHeader = header.cloneNode(true);
+        header.parentNode.replaceChild(newHeader, header);
+        newHeader.addEventListener('click', () => {
+            newHeader.classList.toggle('collapsed');
+            newHeader.nextElementSibling.classList.toggle('collapsed');
+        });
+    });
+}
+// ▲▲▲ 替换结束 ▲▲▲
 // ▼▼▼ 【全新】这是为“分批加载”新增的所有辅助函数 ▼▼▼
 
         /**
@@ -19481,16 +19571,21 @@ function updatePlaylistUI() {
         const item = document.createElement('div');
         item.className = 'playlist-item';
         if(index === musicState.currentIndex) item.classList.add('playing');
+
+        // ▼▼▼ 核心修改就在这里 ▼▼▼
         item.innerHTML = `
             <div class="playlist-item-info">
                 <div class="title">${track.name}</div>
                 <div class="artist">${track.artist}</div>
             </div>
             <div class="playlist-item-actions">
+                <span class="playlist-action-btn album-art-btn" data-index="${index}">专辑</span>
                 <span class="playlist-action-btn lyrics-btn" data-index="${index}">词</span>
                 <span class="playlist-action-btn delete-track-btn" data-index="${index}">×</span>
             </div>
         `;
+        // ▲▲▲ 修改结束 ▲▲▲
+
         item.querySelector('.playlist-item-info').addEventListener('click', () => playSong(index));
         playlistBody.appendChild(item);
     });
@@ -19519,7 +19614,7 @@ function playPrev() { if (musicState.playlist.length === 0) return; const newInd
 function changePlayMode() { const modes = ['order', 'random', 'single']; const currentModeIndex = modes.indexOf(musicState.playMode); musicState.playMode = modes[(currentModeIndex + 1) % modes.length]; document.getElementById('music-mode-btn').textContent = {'order': '顺序', 'random': '随机', 'single': '单曲'}[musicState.playMode]; }
 
 async function addSongFromURL() { const url = await showCustomPrompt("添加网络歌曲", "请输入歌曲的URL", "", "url"); if (!url) return; const name = await showCustomPrompt("歌曲信息", "请输入歌名"); if (!name) return; const artist = await showCustomPrompt("歌曲信息", "请输入歌手名"); if (!artist) return; musicState.playlist.push({ name, artist, src: url, isLocal: false }); await saveGlobalPlaylist(); updatePlaylistUI(); if(musicState.currentIndex === -1) { musicState.currentIndex = musicState.playlist.length - 1; updatePlayerUI(); } }
-
+ 
 // ▼▼▼ 【请用这个已修复的版本】完整替换旧的 addSongFromLocal 函数 ▼▼▼
 async function addSongFromLocal(event) {
     const files = event.target.files;
@@ -19624,7 +19719,45 @@ async function playSong(index) {
     }
 }
 // ▲▲▲ 替换结束 ▲▲▲
+/**
+ * 【全新】处理更换专辑封面的逻辑
+ * @param {number} trackIndex - 播放列表中歌曲的索引
+ */
+async function handleChangeAlbumArt(trackIndex) {
+    // 安全检查，确保索引有效
+    if (trackIndex < 0 || trackIndex >= musicState.playlist.length) return;
 
+    // 弹出选项，让用户选择上传方式
+    const choice = await showChoiceModal("更换专辑封面", [
+        { text: '📁 从本地上传', value: 'local' },
+        { text: '🌐 使用网络URL', value: 'url' }
+    ]);
+
+    let newCoverUrl = null;
+
+    if (choice === 'local') {
+        // 调用一个通用的本地图片上传函数 (假设您已有或将创建它)
+        newCoverUrl = await uploadImageLocally(); 
+    } else if (choice === 'url') {
+        // 弹出输入框让用户粘贴URL
+        newCoverUrl = await showCustomPrompt("输入图片URL", "请输入新的封面图片链接", "", "url");
+    }
+
+    // 如果用户成功提供了新的图片URL
+    if (newCoverUrl && newCoverUrl.trim()) {
+        // 更新播放列表中的对应歌曲数据
+        musicState.playlist[trackIndex].cover = newCoverUrl.trim();
+        // 将更新后的整个播放列表保存到数据库
+        await saveGlobalPlaylist();
+
+        // 如果正在播放的歌曲就是被修改的这首，立即更新播放器UI上的封面
+        if (musicState.currentIndex === trackIndex) {
+            document.getElementById('music-player-cover').src = newCoverUrl.trim();
+        }
+
+        await showCustomAlert("成功", "专辑封面已更新！");
+    }
+}
 
 async function deleteTrack(index) { if (index < 0 || index >= musicState.playlist.length) return; const track = musicState.playlist[index]; const wasPlaying = musicState.isPlaying && musicState.currentIndex === index; if (track.isLocal && audioPlayer.src.startsWith('blob:') && musicState.currentIndex === index) URL.revokeObjectURL(audioPlayer.src); musicState.playlist.splice(index, 1); await saveGlobalPlaylist(); if (musicState.playlist.length === 0) { if (musicState.isPlaying) audioPlayer.pause(); audioPlayer.src = ''; musicState.currentIndex = -1; musicState.isPlaying = false; } else { if (wasPlaying) { playNext(); } else { if (musicState.currentIndex >= index) musicState.currentIndex = Math.max(0, musicState.currentIndex - 1); } } updatePlayerUI(); updatePlaylistUI(); }
         
@@ -29872,9 +30005,6 @@ async function getLyricsForSong(songId, source) {
     return "";
 }
 
-/**
- * 【V3.0 | 全新】这是手动导入歌词的专属功能函数
- */
 async function handleManualLrcImport(trackIndex) {
     if (trackIndex < 0 || trackIndex >= musicState.playlist.length) return;
 
@@ -29906,10 +30036,14 @@ async function handleManualLrcImport(trackIndex) {
         const pastedText = await showCustomPrompt('粘贴歌词', '请在此处粘贴完整的LRC格式歌词...', '', 'textarea');
         if (pastedText) lrcContent = pastedText.replace(/\[/g, '\n[').trim();
     }
-    
+
     if (lrcContent !== null) {
         musicState.playlist[trackIndex].lrcContent = lrcContent;
-        await saveGlobalPlaylist();
+
+        // ▼▼▼ 【核心修复】在这里添加下面这行代码 ▼▼▼
+        await saveGlobalPlaylist(); // 将更新后的播放列表保存到数据库
+        // ▲▲▲ 修复结束 ▲▲▲
+
         if (musicState.currentIndex === trackIndex) {
             musicState.parsedLyrics = parseLRC(lrcContent);
             renderLyrics();
@@ -38811,65 +38945,58 @@ document.getElementById('close-call-transcript-btn').addEventListener('click', (
             } 
         });
         
-        // ▼▼▼ 【最终修复版】请用这个全新的事件监听器，替换旧的 playlist-body 监听器 ▼▼▼
-        
-        document.getElementById('playlist-body').addEventListener('click', async (e) => {
-            const target = e.target;
-            
-            // 点击“词”按钮
-            const lyricsBtn = target.closest('.lyrics-btn');
-            if (lyricsBtn) {
-                const index = parseInt(lyricsBtn.dataset.index);
-                if (isNaN(index)) return;
+// ▼▼▼ 【最终修复版】请用这个全新的事件监听器，替换旧的 playlist-body 监听器 ▼▼▼
 
-                // 【核心修复1】调用函数并等待用户上传或粘贴歌词
-                const newLrcContent = await handleManualLrcImport(index);
+document.getElementById('playlist-body').addEventListener('click', async (e) => {
+    const target = e.target;
+    // 【【【核心新增逻辑就在这里！】】】
+    // 点击“专辑”按钮
+    const albumArtBtn = target.closest('.album-art-btn');
+    if (albumArtBtn) {
+        const index = parseInt(albumArtBtn.dataset.index);
+        if (!isNaN(index)) {
+            // 调用我们刚刚添加的新函数
+            await handleChangeAlbumArt(index);
+        }
+        return; // 处理完后直接退出
+    }
+    // 点击“词”按钮
+    const lyricsBtn = target.closest('.lyrics-btn');
+    if (lyricsBtn) {
+        const index = parseInt(lyricsBtn.dataset.index);
+        if (isNaN(index)) return;
 
-                // 【核心修复2】如果用户没有取消，并且我们得到了歌词内容
-                if (newLrcContent !== null) {
-                    // a. 更新内存中的歌曲数据
-                    musicState.playlist[index].lrcContent = newLrcContent;
-                    
-                    // b. 将更新后的整个播放列表保存到数据库
-                    await saveGlobalPlaylist();
-                    
-                    // c. 如果当前正在播放的就是这首歌，立即刷新歌词显示
-                    if (musicState.currentIndex === index) {
-                        musicState.parsedLyrics = parseLRC(newLrcContent);
-                        renderLyrics(); // 重新渲染歌词列表
-                        updateLyricsUI(); // 更新UI高亮
-                    }
-                    
-                    // d. 给用户一个成功的提示
-                    await showCustomAlert('成功', `《${musicState.playlist[index].name}》的歌词已成功保存！`);
-                }
-                return;
-            }
-        
-            // 点击“删除”按钮 (这部分逻辑不变)
-            const deleteBtn = target.closest('.delete-track-btn');
-            if (deleteBtn) {
-                const index = parseInt(deleteBtn.dataset.index);
-                if (isNaN(index)) return;
-                const track = musicState.playlist[index];
-                const confirmed = await showCustomConfirm('删除歌曲', `确定要从播放列表中删除《${track.name}》吗？`);
-                if (confirmed) {
-                    deleteTrack(index);
-                }
-                return;
-            }
-        
-            // 点击歌曲信息区域 -> 播放歌曲 (这部分逻辑不变)
-            const itemInfo = target.closest('.playlist-item-info');
-            if (itemInfo) {
-                const item = itemInfo.closest('.playlist-item');
-                const index = Array.from(item.parentElement.children).indexOf(item);
-                if (index > -1) {
-                    playSong(index);
-                }
-            }
-        });
-        // ▲▲▲ 替换结束 ▲▲▲
+        // 【核心修复】我们现在只调用函数，不再需要处理它的返回值。
+        // 因为所有必要的逻辑（包括保存）都已经在函数内部完成了。
+        await handleManualLrcImport(index);
+
+        return; // 处理完后直接退出
+    }
+
+    // 点击“删除”按钮 (这部分逻辑不变)
+    const deleteBtn = target.closest('.delete-track-btn');
+    if (deleteBtn) {
+        const index = parseInt(deleteBtn.dataset.index);
+        if (isNaN(index)) return;
+        const track = musicState.playlist[index];
+        const confirmed = await showCustomConfirm('删除歌曲', `确定要从播放列表中删除《${track.name}》吗？`);
+        if (confirmed) {
+            deleteTrack(index);
+        }
+        return;
+    }
+
+    // 点击歌曲信息区域 -> 播放歌曲 (这部分逻辑不变)
+    const itemInfo = target.closest('.playlist-item-info');
+    if (itemInfo) {
+        const item = itemInfo.closest('.playlist-item');
+        const index = Array.from(item.parentElement.children).indexOf(item);
+        if (index > -1) {
+            playSong(index);
+        }
+    }
+});
+// ▲▲▲ 替换结束 ▲▲▲
         
         document.querySelector('.progress-bar').addEventListener('click', (e) => {
             if (!audioPlayer.duration) return;
@@ -40012,7 +40139,7 @@ document.getElementById('chat-lock-overlay').addEventListener('click', (e) => {
     }
     // (注意：主按钮 spectator-propel-btn 的事件已在 renderChatInterface 中直接绑定，这里无需处理)
 });
-
+addLongPressListener(document.getElementById('music-visual-container'), () => { if (musicState.currentIndex > -1) { handleChangeAlbumArt(musicState.currentIndex); } });
 
 
     checkForUpdates();
@@ -40244,3 +40371,4 @@ document.getElementById('chat-lock-overlay').addEventListener('click', (e) => {
 <!-- ▲▲▲ 新增HTML结束 ▲▲▲ -->
 </body>
 </html>
+
