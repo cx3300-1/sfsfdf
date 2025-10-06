@@ -9337,6 +9337,27 @@ input, textarea, select {
     opacity: 1;
 }
 /* ▲▲▲ 新增CSS结束 ▲▲▲ */
+/* ▼▼▼ 【全新】这是为豆瓣设置弹窗添加的样式 ▼▼▼ */
+.douban-settings-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.douban-settings-item label {
+    margin-bottom: 0;
+    flex-grow: 1; /* 让标签占据更多空间 */
+}
+.douban-settings-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* 在输入框和文字之间增加间距 */
+    flex-shrink: 0; /* 防止被压缩 */
+}
+.douban-settings-controls input {
+    width: 60px;
+    text-align: center;
+}
+/* ▲▲▲ 新增CSS结束 ▲▲▲ */
     </style>
 </head>
 <body>
@@ -10953,6 +10974,12 @@ input, textarea, select {
         <span class="back-btn" onclick="showScreen('home-screen')">‹</span>
         <span>豆瓣小组</span>
         <div class="header-actions">
+        <!-- 【核心新增】这就是我们的新设置按钮 -->
+        <span class="action-btn" id="douban-settings-btn" title="豆瓣设置">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.44,0.17-0.48,0.41L9.12,4.84c-0.59,0.24-1.12,0.56-1.62,0.94L5.11,4.82c-0.22-0.08-0.47,0-0.59,0.22l-1.92,3.32 c-0.12,0.22-0.07,0.47,0.12,0.61l2.03,1.58C4.84,11.36,4.82,11.68,4.82,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.48,2.03 c0.04,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.48-0.41l0.48-2.03c0.59-0.24,1.12-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"></path>
+            </svg>
+        </span>
             <span class="action-btn" id="douban-cast-select-btn" title="选择参与角色">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -16928,6 +16955,19 @@ async function renderChatList() {
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
                 currentRenderedCount++;
             }
+    // --- ▼▼▼ 【虚拟列表核心改造】节点回收 ---
+    // 当向下追加了新消息后，检查DOM中的消息总数
+    const messageWrappers = messagesContainer.querySelectorAll('.message-wrapper');
+    if (messageWrappers.length > MAX_CHAT_NODES) {
+        // 如果超出最大数量，就从列表的【顶部】开始移除最老的消息
+        // 我们需要保留顶部的哨兵元素，所以不能直接用 firstChild
+        const firstMessageWrapper = messagesContainer.querySelector('.message-wrapper');
+        if(firstMessageWrapper) {
+            firstMessageWrapper.remove();
+            console.log(`虚拟列表：追加新消息后，从顶部移除了1条消息。`);
+        }
+    }
+    // --- ▲▲▲ 改造结束 ▲▲▲
         }
         // ▲▲▲ 替换结束 ▲▲▲
         
@@ -16941,6 +16981,7 @@ async function renderChatList() {
                 chat.unreadCount = 0;
                 await db.chats.put(chat);
             }
+    await initChatVirtualList(chatId); 
             applyLyricsBarPosition(chat); 
             renderChatInterface(chatId);
             showScreen('chat-interface-screen');
@@ -33839,10 +33880,11 @@ async function handleGenerateDoubanPosts() {
     
     const now = new Date();
     const currentTimeString = now.toLocaleString('zh-CN', { dateStyle: 'full', timeStyle: 'short' });
-
+    const minPosts = state.globalSettings.doubanMinPosts || 12;
+    const maxPosts = state.globalSettings.doubanMaxPosts || 20;
     const systemPrompt = `
 # 你的任务
-你是一个虚拟社区内容生成器。你的任务是根据下面提供的【统一角色列表】，虚构出【12到20篇】他们最近可能会在各种豆瓣小组中发布的帖子和评论。
+你是一个虚拟社区内容生成器。你的任务是根据下面提供的【统一角色列表】，虚构出【${minPosts}到${maxPosts}篇】他们最近可能会在各种豆瓣小组中发布的帖子和评论。
 
 # 核心规则
 1.  **【时间感知】**:
@@ -36014,6 +36056,199 @@ function showUpdateNotice(version, contentHtml) {
 }
 
 // ▲▲▲ 新增JS代码结束 ▲▲▲
+// ▼▼▼ 【全新】这是豆瓣设置功能的【全部核心JS代码】，请完整粘贴 ▼▼▼
+
+/**
+ * 【总入口】打开豆瓣设置弹窗
+ */
+function openDoubanSettingsModal() {
+    const modal = document.getElementById('douban-settings-modal');
+    
+    // 从全局设置中读取已保存的值，如果没有就使用默认值
+    document.getElementById('douban-min-posts-input').value = state.globalSettings.doubanMinPosts || 12;
+    document.getElementById('douban-max-posts-input').value = state.globalSettings.doubanMaxPosts || 20;
+    
+    modal.classList.add('visible');
+}
+
+/**
+ * 保存豆瓣设置
+ */
+async function saveDoubanSettings() {
+    const minInput = document.getElementById('douban-min-posts-input');
+    const maxInput = document.getElementById('douban-max-posts-input');
+    
+    const min = parseInt(minInput.value);
+    const max = parseInt(maxInput.value);
+
+    // 数据验证
+    if (isNaN(min) || isNaN(max) || min < 1 || max < 1) {
+        alert("请输入有效的正整数！");
+        return;
+    }
+    if (min > max) {
+        alert("最小帖子数不能大于最大帖子数！");
+        return;
+    }
+
+    // 保存到全局状态和数据库
+    state.globalSettings.doubanMinPosts = min;
+    state.globalSettings.doubanMaxPosts = max;
+    await db.globalSettings.put(state.globalSettings);
+
+    // 关闭弹窗并提示用户
+    document.getElementById('douban-settings-modal').classList.remove('visible');
+    await showCustomAlert('保存成功', '豆瓣设置已更新！下次重新生成时将生效。');
+}
+// ▲▲▲ 新增JS代码粘贴结束 ▲▲▲
+// ▼▼▼ 【全新】虚拟列表功能的核心代码，请完整粘贴 ▼▼▼
+
+let chatObserver = null; // 用于监视滚动的观察者
+const CHAT_PAGE_SIZE = 10; // 每次向上加载30条消息
+const MAX_CHAT_NODES = 50; // DOM中最多保留90个消息节点（3页），防止卡顿
+
+/**
+ * 【虚拟列表核心】处理滚动到顶部的事件
+ * 当顶部的“哨兵”元素进入视野时，此函数会被调用
+ */
+function handleChatScroll(entries) {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            // 当顶部哨兵进入视野时，加载上一页
+            loadPreviousMessages();
+        }
+    });
+}
+
+/**
+ * 【虚拟列表核心】加载并渲染上一页的聊天记录
+ */
+async function loadPreviousMessages() {
+    const chatId = state.activeChatId;
+    const chat = state.chats[chatId];
+    if (!chat) return;
+
+    const messagesContainer = document.getElementById('chat-messages');
+    const topSentinel = document.getElementById('chat-top-sentinel');
+    if (!topSentinel) return;
+
+    // 停止观察，防止在加载时重复触发
+    chatObserver.unobserve(topSentinel);
+
+    // 计算当前最顶端消息在 history 数组中的索引
+    const firstMessageEl = messagesContainer.querySelector('.message-wrapper');
+    const firstTimestamp = firstMessageEl ? parseInt(firstMessageEl.dataset.timestamp) : -1;
+    const firstMessageIndex = chat.history.findIndex(m => m.timestamp === firstTimestamp);
+
+    // 如果已经是第一条消息，则没有更多可加载
+    if (firstMessageIndex === 0) {
+        topSentinel.remove(); // 移除哨兵，不再触发加载
+        return;
+    }
+
+    // 计算要加载的范围
+    const startIndex = Math.max(0, firstMessageIndex - CHAT_PAGE_SIZE);
+    const messagesToPrepend = chat.history.slice(startIndex, firstMessageIndex);
+
+    if (messagesToPrepend.length > 0) {
+        const fragment = document.createDocumentFragment();
+        // 注意：我们需要倒序创建，因为是向上插入
+        for (const msg of messagesToPrepend.reverse()) {
+            const messageEl = await createMessageElement(msg, chat, true);
+            if (messageEl) {
+                fragment.prepend(messageEl);
+            }
+        }
+        
+        // 记录加载前的高度，用于恢复滚动位置
+        const oldScrollHeight = messagesContainer.scrollHeight;
+        
+        // 插入新消息
+        messagesContainer.insertBefore(fragment, topSentinel.nextSibling);
+
+        // 恢复滚动位置，使用户感觉不到页面跳动
+        messagesContainer.scrollTop += messagesContainer.scrollHeight - oldScrollHeight;
+
+        // 【节点回收】如果DOM中消息过多，从底部移除
+        const messageWrappers = messagesContainer.querySelectorAll('.message-wrapper');
+        if (messageWrappers.length > MAX_CHAT_NODES) {
+            const toRemoveCount = messageWrappers.length - MAX_CHAT_NODES;
+            for (let i = 0; i < toRemoveCount; i++) {
+                // 找到最后一个消息元素并移除
+                const lastMessageWrapper = messagesContainer.querySelector('.message-wrapper:last-of-type');
+                if(lastMessageWrapper) {
+                    messagesContainer.removeChild(lastMessageWrapper);
+                }
+            }
+            console.log(`虚拟列表：向上加载后，从底部移除了 ${toRemoveCount} 条消息。`);
+        }
+    }
+    
+    // 如果还有更早的消息，重新开始观察顶部哨兵
+    if (startIndex > 0) {
+        chatObserver.observe(topSentinel);
+    } else {
+        topSentinel.remove(); // 到达最顶端，移除哨兵
+    }
+}
+
+/**
+ * 【虚拟列表核心】初始化聊天界面的虚拟列表
+ * 这个函数将替代旧的 renderChatInterface 的核心渲染逻辑
+ */
+async function initChatVirtualList(chatId) {
+    const chat = state.chats[chatId];
+    if (!chat) return;
+    
+    const messagesContainer = document.getElementById('chat-messages');
+    
+    // 清理旧的观察者和内容
+    if (chatObserver) chatObserver.disconnect();
+    messagesContainer.innerHTML = '';
+    
+    // 渲染初始页面 (最近的30条消息)
+    const history = chat.history.filter(m => !m.isHidden);
+    const totalMessages = history.length;
+    const startIndex = Math.max(0, totalMessages - CHAT_PAGE_SIZE);
+    const initialMessages = history.slice(startIndex);
+    
+    const fragment = document.createDocumentFragment();
+    for (const msg of initialMessages) {
+        const messageEl = await createMessageElement(msg, chat, true);
+        if (messageEl) {
+            fragment.appendChild(messageEl);
+        }
+    }
+    
+    // 如果还有更早的消息，就在顶部添加哨兵元素
+    if (startIndex > 0) {
+        const topSentinel = document.createElement('div');
+        topSentinel.id = 'chat-top-sentinel';
+        topSentinel.style.height = '1px';
+        messagesContainer.appendChild(topSentinel);
+    }
+    
+    messagesContainer.appendChild(fragment);
+    
+    // 添加打字指示器
+    const typingIndicator = document.createElement('div');
+    typingIndicator.id = 'typing-indicator';
+    typingIndicator.style.display = 'none';
+    typingIndicator.textContent = '对方正在输入...';
+    messagesContainer.appendChild(typingIndicator);
+    
+    // 滚动到底部
+    setTimeout(() => messagesContainer.scrollTop = messagesContainer.scrollHeight, 0);
+
+    // 创建并启动新的观察者，监视顶部哨兵
+    chatObserver = new IntersectionObserver(handleChatScroll, { root: messagesContainer, threshold: 0.5 });
+    const topSentinelEl = document.getElementById('chat-top-sentinel');
+    if (topSentinelEl) {
+        chatObserver.observe(topSentinelEl);
+    }
+}
+
+// ▲▲▲ 虚拟列表功能的核心代码粘贴结束 ▲▲▲
 
               // ===================================================================
                 // 4. 初始化函数 init()
@@ -40514,7 +40749,11 @@ document.getElementById('chat-lock-overlay').addEventListener('click', (e) => {
     // (注意：主按钮 spectator-propel-btn 的事件已在 renderChatInterface 中直接绑定，这里无需处理)
 });
 addLongPressListener(document.getElementById('music-visual-container'), () => { if (musicState.currentIndex > -1) { handleChangeAlbumArt(musicState.currentIndex); } });
-
+document.getElementById('douban-settings-btn').addEventListener('click', openDoubanSettingsModal);
+document.getElementById('save-douban-settings-btn').addEventListener('click', saveDoubanSettings);
+document.getElementById('cancel-douban-settings-btn').addEventListener('click', () => {
+    document.getElementById('douban-settings-modal').classList.remove('visible');
+});
 
     checkForUpdates();
 
@@ -40710,6 +40949,35 @@ addLongPressListener(document.getElementById('music-visual-container'), () => { 
     </div>
 </div>
 <!-- ▲▲▲ 替换结束 ▲▲▲ -->
+<!-- ▼▼▼ 【全新】这是豆瓣设置的弹窗，请粘贴到 body 底部 ▼▼▼ -->
+<div id="douban-settings-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <span>豆瓣设置</span>
+        </div>
+        <div class="modal-body">
+            <div class="form-group douban-settings-item">
+                <label for="douban-min-posts-input">
+                    每次生成帖子数范围
+                    <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;">
+                        设置AI在豆瓣页面一次性生成帖子的最小和最大数量。
+                    </p>
+                </label>
+                <div class="douban-settings-controls">
+                    <input type="number" id="douban-min-posts-input" min="1" value="12">
+                    <span>到</span>
+                    <input type="number" id="douban-max-posts-input" min="1" value="20">
+                    <span>篇</span>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="cancel" id="cancel-douban-settings-btn">取消</button>
+            <button class="save" id="save-douban-settings-btn">保存</button>
+        </div>
+    </div>
+</div>
+<!-- ▲▲▲ 新增HTML结束 ▲▲▲ -->
 <audio id="char-audio-player" preload="auto"></audio>
 <!-- ▼▼▼ 【全新】豆瓣角色选择弹窗 ▼▼▼ -->
 <div id="douban-cast-modal" class="modal">
