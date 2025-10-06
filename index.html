@@ -15895,34 +15895,28 @@ async function renderChatList() {
             // --- 【修改结束】 ---
 
             // --- (这部分渲染消息历史的逻辑保持不变) ---
-    messagesContainer.innerHTML = ''; // 清空旧内容
-    const history = chat.history;
-    const totalMessages = history.length;
-
-    // 1. 只截取最后一页的消息进行渲染
-    const initialMessages = history.slice(-MESSAGE_RENDER_WINDOW);
-    currentRenderedCount = initialMessages.length; // 更新已渲染计数
-
-    let lastTimestamp = 0;
-    const fragment = document.createDocumentFragment();
-
-    // 2. 渲染截取出的消息
-    for (const msg of initialMessages) {
-        if (lastTimestamp > 0 && (msg.timestamp - lastTimestamp > 3600000)) {
-            fragment.appendChild(createSystemTimestampElement(msg.timestamp));
-        }
-        const messageEl = await createMessageElement(msg, chat, true);
-        if (messageEl) {
-            fragment.appendChild(messageEl);
-        }
-        lastTimestamp = msg.timestamp;
-    }
-    messagesContainer.appendChild(fragment);
-
-    // 3. 如果还有更多历史消息，就在顶部添加“加载更多”按钮
-    if (totalMessages > currentRenderedCount) {
-        prependLoadMoreButton(messagesContainer);
-    }
+            messagesContainer.innerHTML = '';
+            const history = chat.history;
+            const totalMessages = history.length;
+            currentRenderedCount = 0;
+            const initialMessages = history.slice(-MESSAGE_RENDER_WINDOW);
+            let lastTimestamp = 0;
+            const fragment = document.createDocumentFragment();
+            for (const msg of initialMessages) {
+                if (lastTimestamp > 0 && (msg.timestamp - lastTimestamp > 3600000)) {
+                    fragment.appendChild(createSystemTimestampElement(msg.timestamp));
+                }
+                const messageEl = await createMessageElement(msg, chat, true);
+                if (messageEl) {
+                    fragment.appendChild(messageEl);
+                }
+                lastTimestamp = msg.timestamp;
+            }
+            messagesContainer.appendChild(fragment);
+            currentRenderedCount = initialMessages.length;
+            if (totalMessages > currentRenderedCount) {
+                prependLoadMoreButton(messagesContainer);
+            }
             const typingIndicator = document.createElement('div');
             typingIndicator.id = 'typing-indicator';
             typingIndicator.style.display = 'none';
@@ -15934,124 +15928,37 @@ async function renderChatList() {
         
                 function prependLoadMoreButton(container) { const button = document.createElement('button'); button.id = 'load-more-btn'; button.textContent = '加载更早的记录'; button.addEventListener('click', loadMoreMessages); container.prepend(button); }
         
-// ▼▼▼ 【第 2 步】请用这个全新的函数，完整替换旧的 loadMoreMessages ▼▼▼
-
-/**
- * 【虚拟列表改造版】加载更早的历史消息
- */
-async function loadMoreMessages() {
-    const messagesContainer = document.getElementById('chat-messages');
-    const chat = state.chats[state.activeChatId];
-    if (!chat) return;
-
-    const loadMoreBtn = document.getElementById('load-more-btn');
-    if (loadMoreBtn) loadMoreBtn.remove();
-    
-    const totalMessages = chat.history.length;
-    const nextSliceStart = totalMessages - currentRenderedCount - MESSAGE_RENDER_WINDOW;
-    const nextSliceEnd = totalMessages - currentRenderedCount;
-    const messagesToPrepend = chat.history.slice(Math.max(0, nextSliceStart), nextSliceEnd);
-    
-    // 1. 记录加载前旧的滚动高度
-    const oldScrollHeight = messagesContainer.scrollHeight;
-    
-    const fragment = document.createDocumentFragment();
-    for (const msg of messagesToPrepend.reverse()) {
-        const messageEl = await createMessageElement(msg, chat); 
-        if (!messageEl) continue;
-        fragment.appendChild(messageEl);
-    }
-
-    // 2. 将新消息一次性插入到顶部
-    messagesContainer.prepend(fragment);
-    currentRenderedCount += messagesToPrepend.length;
-    
-    // 3. 关键：手动调整滚动条位置，让它看起来像是“钉”在了原来的位置
-    const newScrollHeight = messagesContainer.scrollHeight;
-    messagesContainer.scrollTop += (newScrollHeight - oldScrollHeight);
-    
-    // 4. 如果还有更多，再次添加按钮
-    if (totalMessages > currentRenderedCount) {
-        prependLoadMoreButton(messagesContainer);
-    }
-}
-// ▲▲▲ 替换结束 ▲▲▲
-// ▼▼▼ 【第 3 步】请将这一整块全新的代码，完整粘贴到你的JS功能函数定义区 ▼▼▼
-
-// --- 虚拟列表核心控制变量 ---
-let isVirtualScrollingSetup = false;
-let isLoadingMore = false; // 防止在加载时重复触发
-const VIRTUAL_LIST_PRUNE_THRESHOLD = 400; // 设置为一个固定的较大值，比如500
-
-/**
- * 【全新】为聊天消息容器设置虚拟滚动事件监听
- */
-function setupVirtualScrolling() {
-    // 确保这个函数只被执行一次
-    if (isVirtualScrollingSetup) return;
-
-    const messagesContainer = document.getElementById('chat-messages');
-
-    messagesContainer.addEventListener('scroll', async () => {
-        // --- 1. 向上滚动加载更多 ---
-        if (messagesContainer.scrollTop === 0 && !isLoadingMore) {
+        // ▼▼▼ 【预防性修复】请用这个新版本替换旧的 loadMoreMessages 函数 ▼▼▼
+        async function loadMoreMessages() { // <--- 关键修改1：将函数声明为 async
+            const messagesContainer = document.getElementById('chat-messages');
+            const chat = state.chats[state.activeChatId];
+            if (!chat) return;
+        
             const loadMoreBtn = document.getElementById('load-more-btn');
-            if (loadMoreBtn) {
-                isLoadingMore = true;
-                await loadMoreMessages();
-                isLoadingMore = false;
-            }
-        }
-
-        // --- 2. 向下滚动时修剪顶部的旧消息 ---
-        const messageElements = messagesContainer.querySelectorAll('.message-wrapper');
-        if (messageElements.length > VIRTUAL_LIST_PRUNE_THRESHOLD) {
-            console.log(`消息数量 (${messageElements.length}) 已超出门槛，开始修剪...`);
+            if (loadMoreBtn) loadMoreBtn.remove();
             
-            // 计算要移除的元素数量
-            const itemsToRemoveCount = messageElements.length - (MESSAGE_RENDER_WINDOW * 2);
-            let removedHeight = 0;
-
-            for (let i = 0; i < itemsToRemoveCount; i++) {
-                const itemToRemove = messageElements[i];
-                // 检查顶部是否是“加载更多”按钮，如果是，则跳过它
-                if (itemToRemove.id === 'load-more-btn') continue;
-
-                removedHeight += itemToRemove.offsetHeight;
-                itemToRemove.remove();
-                currentRenderedCount--;
+            const totalMessages = chat.history.length;
+            const nextSliceStart = totalMessages - currentRenderedCount - MESSAGE_RENDER_WINDOW;
+            const nextSliceEnd = totalMessages - currentRenderedCount;
+            const messagesToPrepend = chat.history.slice(Math.max(0, nextSliceStart), nextSliceEnd);
+            
+            const oldScrollHeight = messagesContainer.scrollHeight;
+            
+            // ▼▼▼ 关键修改2：将 forEach 替换为 for...of 循环 ▼▼▼
+            for (const msg of messagesToPrepend.reverse()) {
+                await prependMessage(msg, chat); // <-- 使用 await 等待
             }
-
-            // 关键：调整滚动位置以补偿被移除元素的高度
-            messagesContainer.scrollTop -= removedHeight;
-
-            // 确保如果顶部还有未加载的消息，"加载更多"按钮依然存在
-            if (!document.getElementById('load-more-btn') && chat.history.length > currentRenderedCount) {
+            // ▲▲▲ 修改结束 ▲▲▲
+        
+            currentRenderedCount += messagesToPrepend.length;
+            const newScrollHeight = messagesContainer.scrollHeight;
+            messagesContainer.scrollTop += (newScrollHeight - oldScrollHeight);
+            
+            if (totalMessages > currentRenderedCount) {
                 prependLoadMoreButton(messagesContainer);
             }
         }
-    });
-
-    isVirtualScrollingSetup = true;
-}
-
-/**
- * 【全新】当有新消息到达时，也检查并执行修剪
- */
-function pruneMessagesOnAppend() {
-    const messagesContainer = document.getElementById('chat-messages');
-    const messageElements = messagesContainer.querySelectorAll('.message-wrapper');
-
-    if (messageElements.length > VIRTUAL_LIST_PRUNE_THRESHOLD) {
-        const itemToRemove = messagesContainer.querySelector('.message-wrapper:not(#load-more-btn)');
-        if (itemToRemove) {
-            itemToRemove.remove();
-            currentRenderedCount--;
-        }
-    }
-}
-
-// ▲▲▲ 代码粘贴结束 ▲▲▲
+        
 // ▼▼▼ 【请用这个已更新的版本】替换旧的 renderWallpaperScreen 函数 ▼▼▼
         function renderWallpaperScreen() { 
             loadCssPresetsDropdown();
@@ -17048,7 +16955,6 @@ function pruneMessagesOnAppend() {
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
                 currentRenderedCount++;
             }
-pruneMessagesOnAppend();
         }
         // ▲▲▲ 替换结束 ▲▲▲
         
@@ -40686,11 +40592,8 @@ document.getElementById('cancel-douban-settings-btn').addEventListener('click', 
     document.getElementById('douban-settings-modal').classList.remove('visible');
 });
 
-
-
-
-setupVirtualScrolling();
     checkForUpdates();
+
                     showScreen('home-screen');
                 }
         
@@ -40947,6 +40850,7 @@ setupVirtualScrolling();
 <!-- ▲▲▲ 新增HTML结束 ▲▲▲ -->
 </body>
 </html>
+
 
 
 
