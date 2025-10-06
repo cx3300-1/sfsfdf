@@ -9156,6 +9156,187 @@ input, textarea, select {
 }
 
 /* ▲▲▲ 新增CSS粘贴结束 ▲▲▲ */
+/* ▼▼▼ 【全新】音乐播放器背景样式 ▼▼▼ */
+
+/* 1. 让播放器窗口成为相对定位的容器，以便伪元素定位 */
+.music-player-window {
+    position: relative;
+    /* (可选) 增加一个轻微的背景蒙版，让文字在亮色背景下更清晰 */
+    background-color: rgba(255, 255, 255, 0.75);
+}
+
+/* 2. 这就是我们的背景层核心样式 */
+.music-player-window::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    
+    /* 3. 使用CSS变量来动态设置背景图片 */
+    background-image: var(--music-bg-image);
+    background-size: cover;
+    background-position: center;
+    
+    /* 4. 添加视觉效果：高斯模糊和降低亮度，营造氛围感 */
+    filter: blur(15px) brightness(0.8);
+    
+    /* 5. 确保背景在最底层，不遮挡内容 */
+    z-index: -1;
+    
+    /* 6. 让背景层的圆角和播放器窗口保持一致 */
+    border-radius: inherit; 
+    
+    /* 7. 为背景切换增加平滑的过渡动画 */
+    transition: background-image 0.5s ease-in-out;
+}
+
+/* ▲▲▲ 新增CSS结束 ▲▲▲ */
+
+/* ▼▼▼ 【全新V2.0 | 最终修复版】背景清晰度切换功能样式 ▼▼▼ */
+
+/* 1. 当播放器窗口拥有 .bg-clear 这个 class 时，让背景变得清晰 (此规则不变) */
+.music-player-window.bg-clear::before {
+    filter: none;
+}
+
+/* 2. 【核心修改】为“清”字按钮设置新的、与其它控制按钮一致的样式 */
+#toggle-blur-btn {
+    /* 移除所有定位属性 */
+    /* position: absolute; bottom: 95px; right: 20px; z-index: 55; */
+
+    /* 复用其他按钮的样式 */
+    background: none;
+    border: none;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    color: #333;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.2s ease;
+    border-radius: 50%;
+    
+    /* 给一个和其他按钮相似的淡淡背景 */
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* 3. 按钮激活时的样式（表示当前是清晰模式） */
+#toggle-blur-btn.active {
+    background-color: var(--accent-color); /* 例如，激活时变为主题色 */
+    color: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+/* ▲▲▲ 新增CSS结束 ▲▲▲ */
+
+/* ▼▼▼ 【全新】播放器全屏功能样式 ▼▼▼ */
+
+/* 1. 当播放器窗口拥有 .fullscreen 这个 class 时，让它撑满整个屏幕 */
+.music-player-window.fullscreen {
+    width: 100%;
+    height: 100%;
+    max-height: 100%; /* 覆盖可能存在的 max-height 限制 */
+    border-radius: 0; /* 全屏时移除圆角 */
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* 让放大缩小的动画更流畅 */
+}
+
+/* 2. 当播放器全屏时，移除外部容器的内边距，让播放器能真正贴合屏幕边缘 */
+#music-player-overlay.fullscreen-active {
+    padding-top: 0;
+    align-items: stretch; /* 让播放器在垂直方向上也能撑满 */
+}
+
+/* 3. 【核心】为新的全屏切换按钮定义样式 */
+#toggle-fullscreen-btn {
+    background: none;
+    border: none;
+    font-size: 22px; /* 设置一个合适的图标大小 */
+    cursor: pointer;
+    color: #555;
+    padding: 5px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+}
+#toggle-fullscreen-btn:hover {
+    color: #000;
+}
+
+/* 4. 【核心】通过 CSS 控制放大/缩小图标的显示和隐藏 */
+/* 默认情况下，只显示“放大”图标 */
+#toggle-fullscreen-btn .icon-minimize {
+    display: none;
+}
+/* 当播放器处于全屏状态时，隐藏“放大”图标，显示“缩小”图标 */
+.music-player-window.fullscreen #toggle-fullscreen-btn .icon-maximize {
+    display: none;
+}
+.music-player-window.fullscreen #toggle-fullscreen-btn .icon-minimize {
+    display: block;
+}
+/* ▲▲▲ 新增CSS结束 ▲▲▲ */
+
+/* ▼▼▼ 【全新】播放器全屏头像显示功能样式 ▼▼▼ */
+
+/* 1. 头像显示容器的样式 */
+#music-player-avatar-display {
+    display: none; /* 默认隐藏 */
+    width: 100%;
+    padding: 15px 20px;
+    box-sizing: border-box;
+    justify-content: space-between; /* 让两个头像分布在两端 */
+    align-items: center;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1); /* 添加一条分割线 */
+    margin-bottom: 10px;
+}
+
+/* 2. 只有当播放器全屏，并且该容器有 .visible 类时，才显示它 */
+.music-player-window.fullscreen #music-player-avatar-display.visible {
+    display: flex;
+}
+
+/* 3. 头像本身的样式 */
+.participant-display-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+/* 4. 新的“显示头像”按钮的样式 */
+#show-avatars-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    display: none; /* 默认在非全屏模式下隐藏 */
+    align-items: center;
+    justify-content: center;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
+
+/* 5. 只有在全屏模式下才显示这个按钮 */
+.music-player-window.fullscreen #show-avatars-btn {
+    display: flex;
+}
+
+#show-avatars-btn:hover {
+    opacity: 1;
+}
+
+/* 6. 当头像正在显示时，让按钮也高亮 */
+#show-avatars-btn.active {
+    opacity: 1;
+}
+/* ▲▲▲ 新增CSS结束 ▲▲▲ */
     </style>
 </head>
 <body>
@@ -10375,20 +10556,48 @@ input, textarea, select {
 <div id="music-player-overlay">
     <!-- ▼▼▼ 【请用这整块代码】替换旧的 .music-player-window ▼▼▼ -->
     <div class="music-player-window">
-        <div class="music-player-top-actions">
-            <div class="top-left-cluster">
-                <button id="music-return-btn">‹</button>
-                <button id="music-exit-btn">×</button>
-            </div>
-            <span id="music-playlist-btn">☰</span>
-        </div>
+        <!-- ▼▼▼ 【请用这整块代码】替换旧的 .music-player-top-actions ▼▼▼ -->
+<div class="music-player-top-actions">
+    <div class="top-left-cluster">
+        <button id="music-return-btn">‹</button>
+        <button id="music-exit-btn">×</button>
+    </div>
+    
+    <!-- 【核心修改】创建一个新的容器来包裹右侧的两个按钮 -->
+    <div style="display: flex; align-items: center; gap: 15px;">
+        <!-- 【全新】这就是我们的全屏切换按钮 -->
+        <button id="toggle-fullscreen-btn" title="切换全屏">
+            <!-- 放大图标 -->
+            <svg class="icon-maximize" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+            <!-- 缩小图标 (默认隐藏) -->
+            <svg class="icon-minimize" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>
+        </button>
 
-        <!-- 核心修改：将歌曲信息移动到唱片上方，并用一个容器包裹 -->
-        <div id="music-info-top">
-            <div id="music-time-counter">已经一起听了0.0小时</div>
-            <div id="music-player-song-title">请添加歌曲</div>
-            <div id="music-player-artist">...</div>
-        </div>
+        <!-- 播放列表按钮保持不变 -->
+        <span id="music-playlist-btn">☰</span>
+    </div>
+</div>
+<!-- ▲▲▲ 替换结束 ▲▲▲ -->
+
+        <!-- ▼▼▼ 【全新】这是头像显示容器，默认隐藏 ▼▼▼ -->
+<div id="music-player-avatar-display">
+    <!-- 头像将由JS动态生成在这里 -->
+</div>
+<!-- ▲▲▲ 新增HTML结束 ▲▲▲ -->
+
+<!-- 核心修改：将歌曲信息移动到唱片上方，并用一个容器包裹 -->
+<div id="music-info-top">
+    <!-- 【核心修改】将时间和按钮包裹在一个flex容器中，使其并排显示 -->
+    <div style="display: flex; justify-content: center; align-items: center; gap: 10px;">
+        <div id="music-time-counter">已经一起听了0.0小时</div>
+        <!-- 【全新】这是我们的新按钮 -->
+        <button id="show-avatars-btn" title="显示/隐藏头像">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+        </button>
+    </div>
+    <div id="music-player-song-title">请添加歌曲</div>
+    <div id="music-player-artist">...</div>
+</div>
 
         <!-- 唱片/歌词切换容器保持不变 -->
         <div id="music-visual-container">
@@ -10418,6 +10627,7 @@ input, textarea, select {
                 <button id="music-play-pause-btn" class="play-pause-btn">▶</button>
                 <button id="music-next-btn">▶</button>
                 <button id="music-mode-btn">顺序</button>
+                <button id="toggle-blur-btn" title="切换背景清晰度">清</button>
             </div>
         </div>
     </div>
@@ -12308,6 +12518,7 @@ let activeDiaryForViewing = null; // 用于暂存当前正在查看的日记对�
                 const defaultGroupMemberAvatar = 'https://i.postimg.cc/VkQfgzGJ/1.jpg';
                 const defaultGroupAvatar = 'https://i.postimg.cc/gc3QYCDy/1-NINE7-Five.jpg';
                 let notificationTimeout;
+                let ruleCache = {}; // 用于缓存渲染规则
 // 在你的JS顶部变量定义区，添加这个新常量
 const DEFAULT_NOTIFICATION_SOUND = 'https://www.myinstants.com/media/sounds/notification-sound-2.mp3'; // 默认的微信提示音
         // ▼▼▼ 在JS顶部，变量定义区，添加这个新变量 ▼▼▼
@@ -12348,7 +12559,7 @@ const DEFAULT_NOTIFICATION_SOUND = 'https://www.myinstants.com/media/sounds/noti
         // ▲▲▲ 新增代码结束 ▲▲▲
         let repostTargetId = null; // 用于存储当前要转发的动态ID
                 const STICKER_REGEX = /(^https:\/\/i\.postimg\.cc\/.+|^https:\/\/files\.catbox\.moe\/.+|^https?:\/\/sharkpan\.xyz\/.+|^data:image|\.(png|jpg|jpeg|gif|webp)\?.*$|\.(png|jpg|jpeg|gif|webp)$)/i;
-                const MESSAGE_RENDER_WINDOW = 50;
+                const MESSAGE_RENDER_WINDOW = 30;
                 let currentRenderedCount = 0;
                 let lastKnownBatteryLevel = 1;
                 let alertFlags = { hasShown40: false, hasShown20: false, hasShown10: false };
@@ -19573,17 +19784,19 @@ function updatePlaylistUI() {
         if(index === musicState.currentIndex) item.classList.add('playing');
 
         // ▼▼▼ 核心修改就在这里 ▼▼▼
-        item.innerHTML = `
-            <div class="playlist-item-info">
-                <div class="title">${track.name}</div>
-                <div class="artist">${track.artist}</div>
-            </div>
-            <div class="playlist-item-actions">
-                <span class="playlist-action-btn album-art-btn" data-index="${index}">专辑</span>
-                <span class="playlist-action-btn lyrics-btn" data-index="${index}">词</span>
-                <span class="playlist-action-btn delete-track-btn" data-index="${index}">×</span>
-            </div>
-        `;
+item.innerHTML = `
+    <div class="playlist-item-info">
+        <div class="title">${track.name}</div>
+        <div class="artist">${track.artist}</div>
+    </div>
+    <div class="playlist-item-actions">
+        <span class="playlist-action-btn album-art-btn" data-index="${index}">专辑</span>
+        <span class="playlist-action-btn lyrics-btn" data-index="${index}">词</span>
+        <!-- 【核心新增】在这里添加“背景”按钮 -->
+        <span class="playlist-action-btn bg-btn" data-index="${index}">背景</span>
+        <span class="playlist-action-btn delete-track-btn" data-index="${index}">×</span>
+    </div>
+`;
         // ▲▲▲ 修改结束 ▲▲▲
 
         item.querySelector('.playlist-item-info').addEventListener('click', () => playSong(index));
@@ -19659,6 +19872,7 @@ async function addSongFromLocal(event) {
 // ▲▲▲ 替换结束 ▲▲▲
 
 // ▼▼▼ 【请用这个已修复的版本】完整替换旧的 playSong 函数 ▼▼▼
+// ▼▼▼ 【请用这个已支持头像显示并修复渲染问题的全新版本】替换旧的 playSong 函数 ▼▼▼
 async function playSong(index) {
     if (index < 0 || index >= musicState.playlist.length) return;
 
@@ -19666,7 +19880,48 @@ async function playSong(index) {
 
     musicState.currentIndex = index;
     const track = musicState.playlist[index];
+    const chat = state.chats[musicState.activeChatId]; // 获取当前聊天对象
 
+    // --- ▼▼▼ 核心修复：加载并填充头像 (使用更可靠的DOM操作) ▼▼▼ ---
+    const avatarDisplay = document.getElementById('music-player-avatar-display');
+    if (chat && avatarDisplay) {
+        // 1. 清空旧内容
+        avatarDisplay.innerHTML = '';
+
+        // 2. 根据聊天类型获取正确的头像URL
+        const charAvatarUrl = chat.isGroup 
+            ? (chat.members.find(m => m.originalName === track.artist)?.avatar || defaultAvatar) 
+            : (chat.settings.aiAvatar || defaultAvatar);
+        const userAvatarUrl = chat.settings.myAvatar || defaultAvatar;
+
+        // 3. 创建角色头像元素并添加
+        const charAvatarEl = document.createElement('img');
+        charAvatarEl.src = charAvatarUrl;
+        charAvatarEl.className = 'participant-display-avatar';
+        charAvatarEl.alt = 'Character Avatar';
+        avatarDisplay.appendChild(charAvatarEl);
+
+        // 4. 创建用户头像元素并添加
+        const userAvatarEl = document.createElement('img');
+        userAvatarEl.src = userAvatarUrl;
+        userAvatarEl.className = 'participant-display-avatar';
+        userAvatarEl.alt = 'User Avatar';
+        avatarDisplay.appendChild(userAvatarEl);
+    }
+    // --- ▲▲▲ 修复结束 ▲▲▲ ---
+
+    const playerWindow = document.querySelector('.music-player-window');
+    const toggleBtn = document.getElementById('toggle-blur-btn');
+
+    if (playerWindow) {
+        playerWindow.style.setProperty('--music-bg-image', track.background ? `url(${track.background})` : 'none');
+        playerWindow.classList.toggle('bg-clear', !!track.isBgClear);
+    }
+    if (toggleBtn) {
+        toggleBtn.classList.toggle('active', !!track.isBgClear);
+    }
+    
+    // (后续的所有播放逻辑保持不变)
     document.getElementById('music-visual-container').classList.remove('lyrics-active');
     const coverEl = document.getElementById('music-player-cover');
     if (coverEl) {
@@ -19686,7 +19941,6 @@ async function playSong(index) {
         }
     }
     
-    // 【核心修复4】优先处理 ArrayBuffer，并根据 fileType 创建 Blob
     if (track.isLocal && track.src instanceof ArrayBuffer) {
         const blob = new Blob([track.src], { type: track.fileType || 'audio/mpeg' });
         audioPlayer.src = URL.createObjectURL(blob);
@@ -19703,7 +19957,13 @@ async function playSong(index) {
     const playPromise = audioPlayer.play();
     if (playPromise !== undefined) {
         playPromise.catch(error => {
-            if (error.name !== 'AbortError') console.error('Playback error:', error);
+            if (error.name === 'NotAllowedError') {
+                console.warn('Autoplay was prevented by the browser.');
+                audioPlayer.pause();
+                showCustomAlert("播放已暂停", "由于浏览器安全限制，AI切换的歌曲无法自动播放。请手动点击播放按钮 ▶ 继续欣赏。");
+            } else if (error.name !== 'AbortError') {
+                console.error('Playback error:', error);
+            }
         });
     }
     updatePlaylistUI();
@@ -19720,14 +19980,48 @@ async function playSong(index) {
 }
 // ▲▲▲ 替换结束 ▲▲▲
 /**
+ * 处理更换指定歌曲背景图片的逻辑
+ * @param {number} trackIndex - 播放列表中歌曲的索引
+ */
+async function handleChangeBackground(trackIndex) {
+    if (trackIndex < 0 || trackIndex >= musicState.playlist.length) return;
+
+    // 1. 弹出选项，让用户选择上传方式
+    const choice = await showChoiceModal("更换歌曲背景", [
+        { text: '📁 从本地上传', value: 'local' },
+        { text: '🌐 使用网络URL', value: 'url' }
+    ]);
+
+    let newBackgroundUrl = null;
+
+    // 2. 根据选择获取图片
+    if (choice === 'local') {
+        newBackgroundUrl = await uploadImageLocally();
+    } else if (choice === 'url') {
+        newBackgroundUrl = await showCustomPrompt("输入图片URL", "请输入新的背景图片链接", "", "url");
+    }
+
+    // 3. 如果成功获取到图片，则更新并保存
+    if (newBackgroundUrl && newBackgroundUrl.trim()) {
+        musicState.playlist[trackIndex].background = newBackgroundUrl.trim();
+        await saveGlobalPlaylist();
+        
+        // 4. 如果正在播放的就是这首歌，则立即应用新背景
+        if (musicState.currentIndex === trackIndex) {
+            const playerWindow = document.querySelector('.music-player-window');
+            playerWindow.style.setProperty('--music-bg-image', `url(${newBackgroundUrl.trim()})`);
+        }
+
+        await showCustomAlert("成功", "歌曲背景已更新！");
+    }
+}
+/**
  * 【全新】处理更换专辑封面的逻辑
  * @param {number} trackIndex - 播放列表中歌曲的索引
  */
 async function handleChangeAlbumArt(trackIndex) {
-    // 安全检查，确保索引有效
     if (trackIndex < 0 || trackIndex >= musicState.playlist.length) return;
 
-    // 弹出选项，让用户选择上传方式
     const choice = await showChoiceModal("更换专辑封面", [
         { text: '📁 从本地上传', value: 'local' },
         { text: '🌐 使用网络URL', value: 'url' }
@@ -19736,23 +20030,21 @@ async function handleChangeAlbumArt(trackIndex) {
     let newCoverUrl = null;
 
     if (choice === 'local') {
-        // 调用一个通用的本地图片上传函数 (假设您已有或将创建它)
-        newCoverUrl = await uploadImageLocally(); 
+        newCoverUrl = await uploadImageLocally();
     } else if (choice === 'url') {
-        // 弹出输入框让用户粘贴URL
         newCoverUrl = await showCustomPrompt("输入图片URL", "请输入新的封面图片链接", "", "url");
     }
 
-    // 如果用户成功提供了新的图片URL
     if (newCoverUrl && newCoverUrl.trim()) {
-        // 更新播放列表中的对应歌曲数据
         musicState.playlist[trackIndex].cover = newCoverUrl.trim();
-        // 将更新后的整个播放列表保存到数据库
         await saveGlobalPlaylist();
-
-        // 如果正在播放的歌曲就是被修改的这首，立即更新播放器UI上的封面
+        
+        // 如果正在播放的歌曲就是被修改的这首，立即更新播放器UI
         if (musicState.currentIndex === trackIndex) {
             document.getElementById('music-player-cover').src = newCoverUrl.trim();
+            // 同时更新黑胶唱片中心的图片
+            const vinylCover = document.querySelector('#vinyl-view #music-player-cover');
+            if(vinylCover) vinylCover.src = newCoverUrl.trim();
         }
 
         await showCustomAlert("成功", "专辑封面已更新！");
@@ -29211,36 +29503,42 @@ ${boardString}
          * @param {string} chatId - 当前聊天的ID
          * @returns {Promise<string>} - 处理后的HTML字符串
          */
-        async function applyRenderingRules(rawContent, chatId) {
-            // 如果内容本身已经是HTML标签，或者不含可能是“暗号”的字符，直接返回，提高性能
-            if (rawContent.trim().startsWith('<') || (!rawContent.includes('[') && !rawContent.includes('{'))) {
-                return rawContent;
+async function applyRenderingRules(rawContent, chatId) {
+    // 如果内容是简单文本或HTML，直接返回以提高性能
+    if (rawContent.trim().startsWith('<') || (!rawContent.includes('[') && !rawContent.includes('{'))) {
+        return rawContent;
+    }
+
+    // --- 核心优化：缓存逻辑 ---
+    if (!ruleCache[chatId]) { // 检查当前聊天的规则是否已被缓存
+        console.log(`Caching rendering rules for chat: ${chatId}`);
+        // 如果没有，就从数据库查询一次
+        const applicableRules = await db.renderingRules
+            .where('chatId').equals('global')
+            .or('chatId').equals(chatId)
+            .toArray();
+        // 将查询结果存入缓存，下次就不用再查了
+        ruleCache[chatId] = applicableRules.filter(r => r.isEnabled);
+    }
+    const rules = ruleCache[chatId]; // 从缓存中读取规则
+    // --- 优化结束 ---
+
+    let processedContent = rawContent;
+
+    for (const rule of rules) {
+        try {
+            const regex = new RegExp(rule.regex, 'g');
+            let testContent = processedContent; 
+            if (regex.test(testContent)) {
+                processedContent = processedContent.replace(regex, rule.template);
             }
-            
-            // 获取所有公用规则和当前角色专属的规则
-            const applicableRules = await db.renderingRules
-                .where('chatId').equals('global')
-                .or('chatId').equals(chatId)
-                .toArray();
-        
-            let processedContent = rawContent;
-            
-            // 只处理启用的规则
-            for (const rule of applicableRules.filter(r => r.isEnabled)) {
-                try {
-                    // 'g'标志是必须的，用于全局替换
-                    const regex = new RegExp(rule.regex, 'g');
-                    if (regex.test(processedContent)) {
-                        processedContent = processedContent.replace(regex, rule.template);
-                    }
-                } catch (e) {
-                    console.error(`渲染规则 [${rule.name}] 的正则表达式无效:`, e);
-                    // 跳过错误的规则，不中断渲染流程
-                }
-            }
-            
-            return processedContent;
+        } catch (e) {
+            console.error(`渲染规则 [${rule.name}] 的正则表达式无效:`, e);
         }
+    }
+
+    return processedContent;
+}
         
         // ▲▲▲ 核心JS代码粘贴结束 ▲▲▲
         /**
@@ -30052,6 +30350,56 @@ async function handleManualLrcImport(trackIndex) {
         await showCustomAlert('成功', `《${musicState.playlist[trackIndex].name}》的歌词已成功保存！`);
     }
 }
+
+/**
+ * 【全新】切换当前播放歌曲的背景模糊效果
+ */
+async function toggleBackgroundBlur() {
+    if (musicState.currentIndex === -1) return;
+
+    const track = musicState.playlist[musicState.currentIndex];
+    if (!track) return;
+
+    // 切换状态，如果之前是清晰的，就变为模糊，反之亦然
+    track.isBgClear = !track.isBgClear;
+
+    // 将这个新的设置保存到数据库
+    await saveGlobalPlaylist();
+
+    // 更新UI
+    const playerWindow = document.querySelector('.music-player-window');
+    const toggleBtn = document.getElementById('toggle-blur-btn');
+    
+    playerWindow.classList.toggle('bg-clear', track.isBgClear);
+    toggleBtn.classList.toggle('active', track.isBgClear);
+}
+
+/**
+ * 【全新】切换音乐播放器全屏模式下的头像显示
+ */
+function toggleMusicPlayerAvatars() {
+    const avatarDisplay = document.getElementById('music-player-avatar-display');
+    const toggleBtn = document.getElementById('show-avatars-btn');
+    if (avatarDisplay && toggleBtn) {
+        avatarDisplay.classList.toggle('visible');
+        toggleBtn.classList.toggle('active');
+    }
+}
+
+/**
+ * 【全新】切换音乐播放器的全屏/窗口模式
+ */
+function togglePlayerFullscreen() {
+    const playerWindow = document.querySelector('.music-player-window');
+    const overlay = document.getElementById('music-player-overlay');
+    if (playerWindow && overlay) {
+        // 核心逻辑：切换 fullscreen 和 fullscreen-active 这两个类
+        playerWindow.classList.toggle('fullscreen');
+        overlay.classList.toggle('fullscreen-active');
+    }
+}
+// 暴露到全局，以便在某些特殊情况下可以从外部调用
+window.togglePlayerFullscreen = togglePlayerFullscreen;
 
 /**
  * 【全新】清理音乐播放列表中的所有无效或无法播放的歌曲链接
@@ -36019,7 +36367,7 @@ document.getElementById('cleanup-data-btn').addEventListener('click', cleanupRed
                     document.getElementById('import-data-input').addEventListener('change', e => importBackup(e.target.files[0]));
                     document.getElementById('import-card-input').addEventListener('change', handleCardImport);
                     document.getElementById('back-to-list-btn').addEventListener('click', () => { 
-
+               ruleCache = {};
             // ▼▼▼ 修改这两行 ▼▼▼
             applyScopedCss('', '#chat-messages', 'custom-bubble-style'); // 清除真实聊天界面的自定义样式
             applyScopedCss('', '#settings-preview-area', 'preview-bubble-style'); // 清除预览区的自定义样式
@@ -36089,6 +36437,29 @@ document.getElementById('cleanup-data-btn').addEventListener('click', cleanupRed
                     document.getElementById('add-song-url-btn').addEventListener('click', addSongFromURL);
                     document.getElementById('add-song-local-btn').addEventListener('click', () => document.getElementById('local-song-upload-input').click());
                     document.getElementById('local-song-upload-input').addEventListener('change', addSongFromLocal);
+// ▼▼▼ 【全新】这是修复按钮点击无响应的核心代码 ▼▼▼
+document.getElementById('playlist-body').addEventListener('click', (e) => {
+    const target = e.target;
+    const trackIndex = parseInt(target.dataset.index);
+
+    if (isNaN(trackIndex)) return;
+
+    if (target.classList.contains('album-art-btn')) {
+        handleChangeAlbumArt(trackIndex);
+    } else if (target.classList.contains('lyrics-btn')) {
+        handleManualLrcImport(trackIndex);
+    } else if (target.classList.contains('bg-btn')) {
+        handleChangeBackground(trackIndex);
+    } else if (target.classList.contains('delete-track-btn')) {
+        deleteTrack(trackIndex);
+    }
+});
+// ▲▲▲ 新增代码粘贴结束 ▲▲▲
+                    audioPlayer.addEventListener('ended', () => {
+    // 歌曲播放结束时，移除旋转样式
+    document.getElementById('vinyl-view').classList.remove('spinning');
+    playNext(); 
+});
                     audioPlayer.addEventListener('ended', () => {
     // 歌曲播放结束时，移除旋转样式
     document.getElementById('vinyl-view').classList.remove('spinning');
@@ -39616,6 +39987,9 @@ document.getElementById('search-results-list').addEventListener('click', (e) => 
 
 // ▼▼▼ 【全新】清理无效歌曲事件绑定 ▼▼▼
 document.getElementById('cleanup-songs-btn').addEventListener('click', cleanupInvalidSongs);
+document.getElementById('toggle-blur-btn').addEventListener('click', toggleBackgroundBlur);
+ document.getElementById('toggle-fullscreen-btn').addEventListener('click', togglePlayerFullscreen);
+document.getElementById('show-avatars-btn').addEventListener('click', toggleMusicPlayerAvatars);
 // ▲▲▲ 新增事件绑定结束 ▲▲▲
 // ▼▼▼ 【全新】为状态栏开关添加实时预览事件 ▼▼▼
 document.getElementById('status-bar-toggle-switch').addEventListener('change', () => {
@@ -40371,5 +40745,6 @@ addLongPressListener(document.getElementById('music-visual-container'), () => { 
 <!-- ▲▲▲ 新增HTML结束 ▲▲▲ -->
 </body>
 </html>
+
 
 
