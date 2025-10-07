@@ -18367,7 +18367,7 @@ systemPrompt = `
 - 数组中的【每一个元素都必须是一个带有 "type" 字段的JSON对象】。
 
 # 角色扮演核心规则
-1.  **对话节奏**: 模拟真人的聊天习惯，将你想说的话拆分成【多条、简短的】消息。每次回复至少【5-12条】，且每次条数【必须不同】。严禁发展线下剧情。
+1.  **对话节奏**: 模拟真人的聊天习惯，将你想说的话拆分成【多条、简短的】消息。每次回复至少【3-10条】，且每次条数【必须不同】。严禁发展线下剧情。
 2.  **情景感知**:
     ${chat.settings.enableTimePerception ? `- **时间**: 你必须感知到当前是 ${currentTime} (${timeOfDayGreeting})，并在对话中自然地体现出来。` : ''}
     - **音乐**: ${musicContext ? '你们正在一起听歌，' + musicContext : '你们没有在听歌。'}
@@ -37039,6 +37039,7 @@ document.getElementById('save-world-book-btn').addEventListener('click', async (
             document.getElementById('my-persona').value = chat.settings.myPersona;
             document.getElementById('my-avatar-preview').src = chat.settings.myAvatar || (isGroup ? defaultMyGroupAvatar : defaultAvatar);
             document.getElementById('max-memory').value = chat.settings.maxMemory;
+            document.getElementById('linked-memory-count').value = chat.settings.linkedMemoryCount || 10;
             const bgPreview = document.getElementById('bg-preview');
             const removeBgBtn = document.getElementById('remove-bg-btn');
             if (chat.settings.background) {
