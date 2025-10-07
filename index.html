@@ -18676,7 +18676,7 @@ if (chat.settings.isOfflineMode) {
     consolidatedMessages = messagesArray;
 }
 // ▲▲▲ 修复结束 ▲▲▲
-// ▼▼▼ 【全新】智能识图优化功能，请将此代码块粘贴到指定位置 ▼▼▼
+/* // ▼▼▼ 【全新】智能识图优化功能，请将此代码块粘贴到指定位置 ▼▼▼
 
 // 1. 检查触发条件：最后一条用户消息是【尚未处理过】的图片
 const lastUserMessage = chat.history.filter(m => m.role === 'user' && !m.isHidden).pop();
@@ -18712,7 +18712,7 @@ if (lastUserMessage &&
         // 注意：此时我们只修改了内存中的 chat.history。
         // 后续的代码会把这个修改后的 history 和新消息一起存入数据库，完成持久化。
     }
-}
+}*/
 // ▲▲▲ 优化功能代码块结束 ▲▲▲
                 const isViewingThisChat = document.getElementById('chat-interface-screen').classList.contains('active') && state.activeChatId === chatId;
                 let callHasBeenHandled = false;
@@ -40842,6 +40842,7 @@ document.getElementById('cancel-douban-settings-btn').addEventListener('click', 
 <!-- ▲▲▲ 新增HTML结束 ▲▲▲ -->
 </body>
 </html>
+
 
 
 
