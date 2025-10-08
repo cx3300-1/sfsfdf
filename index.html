@@ -9358,6 +9358,23 @@ input, textarea, select {
     text-align: center;
 }
 /* ▲▲▲ 新增CSS结束 ▲▲▲ */
+/* ▼▼▼ 【全新】这是为时区搜索框添加的样式 ▼▼▼ */
+#time-zone-search-input {
+    width: 100%;
+    padding: 10px 12px;
+    margin-bottom: 8px; /* 和下方的下拉框拉开一点距离 */
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    box-sizing: border-box;
+    font-size: 16px; /* 避免在iOS上输入时自动放大页面 */
+}
+/* 夜间模式适配 */
+#phone-screen.dark-mode #time-zone-search-input {
+    background-color: #1c1c1e;
+    color: #ffffff;
+    border-color: #38383a;
+}
+/* ▲▲▲ 新增CSS结束 ▲▲▲ */
     </style>
 </head>
 <body>
@@ -11238,6 +11255,12 @@ input, textarea, select {
             </div>
         </div>
         <!-- ▲▲▲ 新增HTML结束 ▲▲▲ -->
+<div class="form-group" id="time-zone-group" style="display: none;">
+    <label for="time-zone-select">选择时区</label>
+    <!-- 【核心新增】这就是我们的搜索框 -->
+    <input type="search" id="time-zone-search-input" placeholder="搜索时区，例如 Shanghai, New York...">
+    <select id="time-zone-select" style="width: 100%;"></select>
+</div>
 <div class="form-group" id="group-background-activity-group">
     <div style="display: flex; justify-content: space-between; align-items: center;">
         <label for="group-background-activity-switch" style="margin-bottom: 0;">
@@ -17524,10 +17547,14 @@ ${membersList}
                 // =========================================================================
          // ▼▼▼ 核心修改1：在这里定义一个新变量，用于存储通话记录上下文 ▼▼▼
         let callTranscriptContext = '';       
-                const now = new Date();
-                const chinaTime = new Date(now.getTime() + (now.getTimezoneOffset() * 60000) + (3600000 * 8));
-                const currentTime = chinaTime.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', dateStyle: 'full', timeStyle: 'short' });
-                const timeOfDayGreeting = getTimeOfDayGreeting(chinaTime);
+const now = new Date();
+// 从当前聊天设置中获取时区，如果未设置，则默认使用上海时间
+const selectedTimeZone = chat.settings.timeZone || 'Asia/Shanghai'; 
+// 使用获取到的时区来格式化当前时间
+const currentTime = now.toLocaleString('zh-CN', { timeZone: selectedTimeZone, dateStyle: 'full', timeStyle: 'short' });
+// 使用 toLocaleString 的强大功能，直接生成对应时区的 Date 对象，用于判断“早上/下午”
+const localizedDate = new Date(now.toLocaleString('en-US', { timeZone: selectedTimeZone }));
+const timeOfDayGreeting = getTimeOfDayGreeting(localizedDate);
                 let systemPrompt, messagesPayload;
          const lastHiddenMessage = chat.history.filter(m => m.isHidden).pop();
         if (lastHiddenMessage && lastHiddenMessage.content.includes('视频通话刚刚结束')) {
@@ -20697,9 +20724,19 @@ ${tasksString}
         
             const userNickname = state.qzoneSettings.nickname;
             const now = new Date();
-            let timeContextText = ''; // 【核心修改】提供一个默认空值
-            let recentContextSummary; 
-            let longTimeNoSee = false;
+    // ▼▼▼ 核心修复：在这里也使用您选择的时区 ▼▼▼
+    const selectedTimeZone = chat.settings.timeZone || 'Asia/Shanghai';
+    const currentTime = now.toLocaleString('zh-CN', { timeZone: selectedTimeZone, dateStyle: 'full', timeStyle: 'short' });
+    const localizedDate = new Date(now.toLocaleString('en-US', { timeZone: selectedTimeZone }));
+    // ▲▲▲ 修复结束 ▲▲▲
+// ▼▼▼ 核心修复就在这里！▼▼▼
+// 1. 在 if 代码块外部提前声明变量，并给定一个默认值
+let timeOfDayGreeting = ''; 
+let timeContextText = '';
+let recentContextSummary; 
+let longTimeNoSee = false;
+
+
     // ==========================================================
     //            ★★★ 核心修复从这里开始 ★★★
     // ==========================================================
@@ -20711,6 +20748,7 @@ ${tasksString}
             const lastMessage = chat.history.filter(m => !m.isHidden).slice(-1)[0];
             
 if (chat.settings.enableTimePerception) {
+    timeOfDayGreeting = getTimeOfDayGreeting(localizedDate); // 现在这里只是赋值，而不是声明
     const lastMessage = chat.history.filter(m => !m.isHidden).slice(-1)[0];
     const now = new Date();
     let timeContextText = '';
@@ -20749,7 +20787,8 @@ if (chat.settings.enableTimePerception) {
     }
 
     if (longTimeNoSee) {
-         recentContextSummary = `[情景提示] ${timeContextText} 当前时间是 ${now.toLocaleString('zh-CN', { dateStyle: 'full', timeStyle: 'short' })}. 你可以参考这个时间，并根据你的角色设定，【考虑】是否开启一个新话题来问候用户。\n${historySummary}`;
+         // ▼▼▼ 核心修复：在这里使用新的 currentTime 变量 ▼▼▼
+         recentContextSummary = `[情景提示] ${timeContextText} 当前时间是 ${currentTime}. 你可以参考这个时间，并根据你的角色设定，【考虑】是否开启一个新话题来问候用户。\n${historySummary}`;
     } else {
         recentContextSummary = `${historySummary}`;
     }
@@ -20951,7 +20990,7 @@ ${longTermMemoryContext}
         **你与用户的关系是最重要的！** 相比于在动态区闲逛，你应该【优先考虑】是否需要主动给用户发消息来维系你们的感情。
 ${chat.settings.enableTimePerception ? `
 # 【情景感知】
-- **时间**: 感知到当前是${now.toLocaleString('zh-CN', { dateStyle: 'full', timeStyle: 'short' })}。
+- **时间**: 感知到当前是${currentTime} (${timeOfDayGreeting})}。
 - **对话状态**: ${timeContextText}
 ${longTimeNoSee ? `【重要提示】你们已经很久没聊天了！你【必须】将本次行动的重点放在使用 'text' 指令给用户发消息，主动开启一个新的、有趣的话题来重新建立联系。绝对不要只是点赞或评论动态，那会显得你很冷漠！` : ''}` : ''}
 
@@ -21006,7 +21045,7 @@ ${longTimeNoSee ? `【重要提示】你们已经很久没聊天了！你【必�
         -   **你的角色设定**: ${chat.settings.aiPersona}
         ${worldBookContent}
         ${linkedMemoryContext}
-        ${chat.settings.enableTimePerception ? `-   **当前时间**: ${now.toLocaleString('zh-CN', { dateStyle: 'full', timeStyle: 'short' })}` : ''}
+        ${chat.settings.enableTimePerception ? `-   **当前时间**:${currentTime} (${timeOfDayGreeting})` : ''}
         ${chat.settings.enableTimePerception ? `-   **对话状态**: ${timeContextText}` : ''}
         -   **你们最后的对话摘要**: ${recentContextSummary}
         ${dynamicContext}`;
@@ -21337,8 +21376,11 @@ for (const action of responseArray) {
             } else {
                 // 3. 如果没有红包事件，才执行原来的通用聊天逻辑
                 let timeContextText = '';
-                const chinaTime = new Date(now.getTime() + (now.getTimezoneOffset() * 60000) + (3600000 * 8));
-                const currentTime = chinaTime.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', dateStyle: 'full', timeStyle: 'short' });
+    // ▼▼▼ 核心修复：在这里也使用您为该群聊选择的时区 ▼▼▼
+    const selectedTimeZone = chat.settings.timeZone || 'Asia/Shanghai';
+    const currentTime = now.toLocaleString('zh-CN', { timeZone: selectedTimeZone, dateStyle: 'full', timeStyle: 'short' });
+    const localizedDate = new Date(now.toLocaleString('en-US', { timeZone: selectedTimeZone }));
+    // ▲▲▲ 修复结束 ▲▲▲
 
                 // 【核心修改】只有当时间感知开启时，才计算时间差
                 if (chat.settings.enableTimePerception) {
@@ -37057,7 +37099,25 @@ document.getElementById('group-background-activity-group').style.display = isGro
 
 // (后续的赋值逻辑，请用下面这整块新代码完整替换)
 // 【新增代码】读取时间感知设置
-document.getElementById('time-perception-toggle').checked = chat.settings.enableTimePerception;
+// 【新增代码】读取时间感知设置并控制时区选择器显隐
+const timePerceptionToggle = document.getElementById('time-perception-toggle');
+const timeZoneGroup = document.getElementById('time-zone-group');
+timePerceptionToggle.checked = chat.settings.enableTimePerception;
+timeZoneGroup.style.display = timePerceptionToggle.checked ? 'block' : 'none';
+
+// 填充时区下拉列表
+const timezoneSelect = document.getElementById('time-zone-select');
+// Intl.supportedValuesOf('timeZone') 是浏览器内置的API，可以获取所有支持的时区
+const timezones = Intl.supportedValuesOf('timeZone');
+timezoneSelect.innerHTML = ''; // 清空旧选项
+timezones.forEach(tz => {
+    const option = document.createElement('option');
+    option.value = tz;
+    option.textContent = tz;
+    timezoneSelect.appendChild(option);
+});
+// 设置当前选中的时区，如果没设置过，则默认为上海
+timezoneSelect.value = chat.settings.timeZone || 'Asia/Shanghai';
 if (isGroup) {
     // 【核心新增】读取并设置群聊开关的状态
     document.getElementById('group-background-activity-switch').checked = chat.settings.enableBackgroundActivity;
@@ -37269,6 +37329,10 @@ await renderOfflinePresetSelector(chat);
             chat.settings.customCss = document.getElementById('custom-css-input').value.trim();
 // 【新增代码】保存时间感知设置
 chat.settings.enableTimePerception = document.getElementById('time-perception-toggle').checked;
+chat.settings.timeZone = document.getElementById('time-zone-select').value;
+document.getElementById('time-perception-toggle').addEventListener('change', (e) => {
+    document.getElementById('time-zone-group').style.display = e.target.checked ? 'block' : 'none';
+});
             chat.settings.myPersona = document.getElementById('my-persona').value;
             chat.settings.myAvatar = document.getElementById('my-avatar-preview').src;
         
@@ -40584,6 +40648,28 @@ document.getElementById('save-douban-settings-btn').addEventListener('click', sa
 document.getElementById('cancel-douban-settings-btn').addEventListener('click', () => {
     document.getElementById('douban-settings-modal').classList.remove('visible');
 });
+// ▼▼▼ 【全新】为时区搜索框添加事件监听 ▼▼▼
+document.getElementById('time-zone-search-input').addEventListener('input', (e) => {
+    const searchTerm = e.target.value.toLowerCase();
+    const selectEl = document.getElementById('time-zone-select');
+    
+    // 遍历下拉列表中的每一个选项
+    for (const option of selectEl.options) {
+        const optionText = option.textContent.toLowerCase();
+        
+        // 如果选项的文本内容包含了用户输入的搜索词，就显示它
+        if (optionText.includes(searchTerm)) {
+            option.style.display = ''; // 恢复显示
+        } else {
+            // 否则就隐藏它
+            option.style.display = 'none';
+        }
+    }
+});
+// ▲▲▲ 新增JS代码结束 ▲▲▲
+
+
+
 
     checkForUpdates();
 
@@ -40843,6 +40929,7 @@ document.getElementById('cancel-douban-settings-btn').addEventListener('click', 
 <!-- ▲▲▲ 新增HTML结束 ▲▲▲ -->
 </body>
 </html>
+
 
 
 
