@@ -41195,45 +41195,12 @@ document.getElementById('icon-settings-grid').addEventListener('click', (e) => {
         
         document.getElementById('theme-toggle-switch').addEventListener('change', toggleTheme);
         
-        // ▼▼▼ 在 init() 的事件监听器区域，粘贴下面这几行 ▼▼▼
-        // 绑定消息操作菜单中的“引用”按钮
-        document.getElementById('quote-message-btn').addEventListener('click', startReplyToMessage);
-        
-        // 绑定回复预览栏中的“取消”按钮
-        document.getElementById('cancel-reply-btn').addEventListener('click', cancelReplyMode);
-        // ▲▲▲ 粘贴结束 ▲▲▲
+
         // ▼▼▼ 在 init() 的事件监听器区域添加这行代码 ▼▼▼
         document.getElementById('share-location-btn').addEventListener('click', sendLocationShare);
         // 在你的 init() 函数的事件监听器区域...
         
-        // ▼▼▼ 用这段代码替换旧的转账卡片点击事件 ▼▼▼
-        document.getElementById('chat-messages').addEventListener('click', (e) => {
-            // 1. 向上查找被点击的元素是否在一个消息气泡内
-            const bubble = e.target.closest('.message-bubble');
-            if (!bubble) return; // 如果不在，就退出
-        
-            // 2. 【核心修正】在这里添加严格的筛选条件
-            // 必须是 AI 的消息 (.ai)
-            // 必须是转账类型 (.is-transfer)
-            // 必须是我们标记为“待处理”的 (data-status="pending")
-            if (bubble.classList.contains('ai') && 
-                bubble.classList.contains('is-transfer') && 
-                bubble.dataset.status === 'pending') {
-                
-                // 3. 只有满足所有条件，才执行后续逻辑
-                const timestamp = parseInt(bubble.dataset.timestamp);
-                if (!isNaN(timestamp)) {
-                    showTransferActionModal(timestamp);
-                }
-            }
-        });
-        // ▲▲▲ 替换结束 ▲▲▲
-        
-        // 在 init() 的事件监听区域添加
-        document.getElementById('transfer-action-accept').addEventListener('click', () => handleUserTransferResponse('accepted'));
-        document.getElementById('transfer-action-decline').addEventListener('click', () => handleUserTransferResponse('declined'));
-        document.getElementById('transfer-action-cancel').addEventListener('click', hideTransferActionModal);
-        
+
         // ▼▼▼ 用这段【新代码】替换旧的通话记录事件绑定 ▼▼▼
         
         document.getElementById('chat-list-title').addEventListener('click', renderCallHistoryScreen);
@@ -42999,7 +42966,3 @@ document.getElementById('manual-werewolf-summary-btn').addEventListener('click',
 
 </body>
 </html>
-
-
-
-
