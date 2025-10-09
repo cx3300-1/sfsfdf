@@ -11240,137 +11240,55 @@ input, textarea, select {
         <button id="douban-send-comment-btn" class="comment-send-btn">发送</button>
     </div>
 </div>
-
-<!-- =================================================================== -->
-<!-- ▲▲▲ 替换结束 ▲▲▲ -->
-<!-- =================================================================== -->
-        <!-- ▼▼▼ 【全新】购物功能相关页面与弹窗 (V4.0 - 仿淘宝终极版) ▼▼▼ -->
-        <div id="shopping-screen" class="screen">
+        <div id="werewolf-game-screen" class="screen">
             <div class="header">
-                <span class="back-btn" id="shopping-back-btn">‹</span>
-                <span>购物中心</span>
+                <span id="werewolf-game-title">狼人杀</span>
                 <div class="header-actions">
-                    <!-- “管理”按钮已替换为SVG图标 -->
-                    <span class="action-btn" id="manage-products-btn" title="管理商品">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
-                        </svg>
-                    </span>
-                    <!-- 新增的“添加商品”SVG图标按钮 -->
-                    <span class="action-btn" id="add-new-product-btn" title="添加新商品">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <line x1="12" y1="8" x2="12" y2="16"></line>
-                            <line x1="8" y1="12" x2="16" y2="12"></line>
-                        </svg>
-                    </span>
-                    <!-- 购物车按钮保持不变 -->
-                    <!-- ▼▼▼ 【全新SVG图标版】请用这整块代码替换旧的购物车图标 ▼▼▼ -->
-                    <span class="action-btn" id="go-to-cart-btn" title="查看购物车">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="9" cy="21" r="1"></circle>
-                            <circle cx="20" cy="21" r="1"></circle>
-                            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-                        </svg>
-                        <span id="cart-count">0</span>
-                    </span>
-                    <!-- ▲▲▲ 替换结束 ▲▲▲ -->
+<span class="action-btn" id="werewolf-retry-btn" title="重试上一步AI操作" style="display: none;">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 11A8.1 8.1 0 0 0 4.5 9M4 5v4h4"></path>
+        <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"></path>
+    </svg>
+</span>
+                    <span class="action-btn" id="exit-werewolf-game-btn">退出</span>
                 </div>
             </div>
-            <!-- ▲▲▲ 替换结束 ▲▲▲ -->
-            <div id="product-grid" class="list-container">
-                <!-- 商品将在这里动态生成 -->
-            </div>
-        </div>
-        <!-- 【核心新增】商品详情页 -->
-        <div id="product-detail-screen" class="screen">
-            <div class="header">
-                <span class="back-btn" id="product-detail-back-btn">‹</span>
-                <span>商品详情</span>
-                <span style="width: 30px;"></span>
-            </div>
-            <div id="product-detail-content" class="list-container">
-                <!-- 详情内容将在这里动态生成 -->
-            </div>
-            <div id="product-detail-footer">
-                <button class="footer-btn add-to-cart-detail-btn">加入购物车</button>
-                <button class="footer-btn buy-now-btn">立即购买</button>
-            </div>
-        </div>
-        <div id="cart-screen" class="screen">
-            <!-- ▼▼▼ 请用这段新代码替换购物车页面的Header ▼▼▼ -->
-            <div class="header">
-                <span class="back-btn" id="cart-back-btn">‹</span>
-                <span id="cart-title">购物车(0)</span>
-                <span class="action-btn" id="clear-cart-btn">清空</span> <!-- 将“管理”替换为“清空”功能 -->
-            </div>
-            <!-- ▲▲▲ 替换结束 ▲▲▲ -->
-            <div id="cart-items-list" class="list-container">
-                <!-- 购物车商品将在这里动态生成 -->
-            </div>
-            <div id="cart-footer">
-                <label class="select-all-label"><input type="checkbox" id="select-all-cart-items"> 全选</label>
-                <div class="cart-summary">
-                    <div id="cart-total">合计: ¥0.00</div>
-                    <span class="cart-subtext">不含运费</span>
-                </div>
-                <button id="checkout-btn">结算(0)</button>
-            </div>
-        </div>
-        <div id="product-editor-modal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <span id="product-editor-title">添加商品</span>
-                </div>
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label>商品图片</label>
-                        <div class="avatar-upload">
-                            <img id="product-image-preview" src="https://s3plus.meituan.net/opapisdk/op_ticket_885190757_1756206115802_qdqqd_0c99bh.jpeg">
-                            <button onclick="document.getElementById('product-image-input').click()">上传图片</button>
-                            <input type="file" id="product-image-input" accept="image/*" hidden>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="product-name-input">商品名称</label>
-                        <input type="text" id="product-name-input">
-                    </div>
-                    <div class="form-group">
-                        <label for="product-price-input">价格 (元)</label>
-                        <input type="number" id="product-price-input" min="0" step="0.01">
-                    </div>
-                    <!-- 【核心新增】商品描述输入框 -->
-                    <div class="form-group">
-                        <label for="product-description-input">商品描述</label>
-                        <textarea id="product-description-input" rows="4" placeholder="详细介绍一下这个商品..."></textarea>
+            <!-- 玩家头像区 (保持不变) -->
+            <div id="werewolf-player-grid"></div>
+            <!-- 游戏日志/对话区 (保持不变) -->
+            <div id="werewolf-log" class="list-container"></div>
+            
+            <!-- 【核心修改】全新的、常驻的底部操作栏 -->
+            <div id="werewolf-action-bar">
+                <div id="chat-input-main-row" style="width: 100%;">
+                    <textarea id="werewolf-user-input" rows="1" placeholder="轮到你发言了..."></textarea>
+                    <div id="input-actions-wrapper" style="gap: 5px;">
+                        <!-- 发言阶段的按钮 -->
+                        <button id="werewolf-wait-reply-btn" class="action-button" style="display: none; background-color: #007bff; height: 40px; padding: 0 10px; font-size: 13px;">等待回应</button>
+                        <button id="werewolf-finish-speech-btn" class="action-button" style="display: none; background-color: var(--accent-color); height: 40px; padding: 0 10px; font-size: 13px;">结束发言</button>
+                        <!-- 非发言阶段的按钮 -->
+                        <button id="werewolf-next-step-btn" class="form-button" style="margin-top:0; display: none;">下一步</button>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button class="cancel" id="cancel-product-editor-btn">取消</button>
-                    <button class="save" id="save-product-btn">保存</button>
-                </div>
             </div>
         </div>
-        <div id="gift-receipt-modal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <span>购物小票</span>
-                </div>
-                <div class="modal-body" id="gift-receipt-body">
-                    <!-- 小票内容将在这里动态生成 -->
-                </div>
-                <div class="modal-footer">
-                    <button class="save" id="close-receipt-btn" style="width:100%;">关闭</button>
-                </div>
+        <!-- ▲▲▲ 替换结束 ▲▲▲ -->
+    <!-- ▼▼▼ 【全新】长期记忆管理全屏页面 ▼▼▼ -->
+    <div id="long-term-memory-screen" class="screen">
+        <div class="header">
+            <span class="back-btn" id="memory-screen-back-btn">‹</span>
+            <span>长期记忆</span>
+            <div class="header-actions">
+                <span class="action-btn" id="refine-memory-btn-header">精炼</span>
+                <span class="action-btn" id="summarize-recent-btn-header">总结</span>
+                <span class="action-btn" id="add-manual-memory-btn-header">+</span>
             </div>
         </div>
-        <!-- ▲▲▲ 新增HTML结束 ▲▲▲ -->
+        <div class="list-container" id="memory-list-container" style="padding: 15px; display: flex; flex-direction: column; gap: 15px; background-color: #f0f2f5;">
+            <!-- 长期记忆列表将由JS动态生成在这里 -->
+        </div>
     </div>
-
-    </div>
-
-    <input type="file" id="import-card-input" accept=".json,.png" style="display: none;">
-   <input type="file" id="import-world-book-input" accept=".json" style="display: none;">
+    <!-- ▲▲▲ 新HTML粘贴结束 ▲▲▲ -->
 <!-- ▼▼▼ 【全新】聊天设置页面结构 ▼▼▼ -->
 <div id="chat-settings-screen" class="screen">
     <!-- 1. 页面的头部，包含返回和保存按钮 -->
@@ -11670,6 +11588,194 @@ input, textarea, select {
     </div>
 </div>
 <!-- ▲▲▲ 替换结束 ▲▲▲ -->
+    <!-- ▼▼▼ 【全新】请用这整块代码，完整替换旧的 rendering-rules-screen ▼▼▼ -->
+    <div id="rendering-rules-screen" class="screen">
+        <div class="header">
+            <span class="back-btn" onclick="showScreen('home-screen')">‹</span>
+            <span>渲染规则</span>
+            <span class="action-btn" id="add-new-rule-btn">+</span>
+        </div>
+        <!-- 【核心修改1】全新的页签和内容区结构 -->
+        <div id="rules-tabs">
+            <!-- JS 会在这里动态生成页签 -->
+        </div>
+        <div id="rules-content-container">
+            <!-- JS 会在这里动态生成内容面板 -->
+        </div>
+    </div>
+    <!-- ▲▲▲ 替换结束 ▲▲▲ -->
+    <!-- 2. 规则编辑器模态框 -->
+    <div id="rule-editor-modal" class="modal">
+        <div class="modal-content" style="height: 85%;">
+            <div class="modal-header">
+                <span id="rule-editor-title">创建新规则</span>
+            </div>
+            <div class="modal-body" style="display: flex; flex-direction: column; gap: 15px;">
+                <div class="form-group" style="flex-shrink: 0;">
+                    <label for="rule-name-input">规则名称</label>
+                    <input type="text" id="rule-name-input" placeholder="例如：美团外卖卡片">
+                </div>
+                <div class="form-group" style="flex-shrink: 0;">
+                    <label for="rule-chat-id-select">绑定范围</label>
+                    <select id="rule-chat-id-select">
+                        <option value="global">公用 (所有角色)</option>
+                        <!-- 角色列表将由JS动态填充 -->
+                    </select>
+                </div>
+                <div class="form-group" style="flex-grow: 1; display: flex; flex-direction: column;">
+                    <label for="rule-regex-input">正则表达式 (使用g作为标志)</label>
+                    <textarea id="rule-regex-input" rows="3" style="font-family: monospace; resize: vertical;" placeholder="例如：MTR\[(.*?)\]\[(.*?)\|(.*?)\]"></textarea>
+                </div>
+                <div class="form-group" style="flex-grow: 2; display: flex; flex-direction: column;">
+                    <label for="rule-template-input">HTML 模板 (用 $1, $2 引用)</label>
+                    <textarea id="rule-template-input" rows="6" style="font-family: monospace; resize: vertical;" placeholder="例如：<div class=`waimai-card`>...<span>$2</span>...</div>"></textarea>
+                </div>
+                <div class="form-group" style="display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
+                    <label for="rule-enabled-switch" style="margin-bottom: 0;">启用规则</label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="rule-enabled-switch" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="cancel" id="cancel-rule-editor-btn">取消</button>
+                <button class="save" id="save-rule-btn">保存规则</button>
+            </div>
+        </div>
+    </div>
+    <!-- ▲▲▲ 新HTML粘贴结束 ▲▲▲ -->
+<!-- =================================================================== -->
+<!-- ▲▲▲ 替换结束 ▲▲▲ -->
+<!-- =================================================================== -->
+        <!-- ▼▼▼ 【全新】购物功能相关页面与弹窗 (V4.0 - 仿淘宝终极版) ▼▼▼ -->
+        <div id="shopping-screen" class="screen">
+            <div class="header">
+                <span class="back-btn" id="shopping-back-btn">‹</span>
+                <span>购物中心</span>
+                <div class="header-actions">
+                    <!-- “管理”按钮已替换为SVG图标 -->
+                    <span class="action-btn" id="manage-products-btn" title="管理商品">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+                        </svg>
+                    </span>
+                    <!-- 新增的“添加商品”SVG图标按钮 -->
+                    <span class="action-btn" id="add-new-product-btn" title="添加新商品">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="16"></line>
+                            <line x1="8" y1="12" x2="16" y2="12"></line>
+                        </svg>
+                    </span>
+                    <!-- 购物车按钮保持不变 -->
+                    <!-- ▼▼▼ 【全新SVG图标版】请用这整块代码替换旧的购物车图标 ▼▼▼ -->
+                    <span class="action-btn" id="go-to-cart-btn" title="查看购物车">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="9" cy="21" r="1"></circle>
+                            <circle cx="20" cy="21" r="1"></circle>
+                            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                        </svg>
+                        <span id="cart-count">0</span>
+                    </span>
+                    <!-- ▲▲▲ 替换结束 ▲▲▲ -->
+                </div>
+            </div>
+            <!-- ▲▲▲ 替换结束 ▲▲▲ -->
+            <div id="product-grid" class="list-container">
+                <!-- 商品将在这里动态生成 -->
+            </div>
+        </div>
+        <!-- 【核心新增】商品详情页 -->
+        <div id="product-detail-screen" class="screen">
+            <div class="header">
+                <span class="back-btn" id="product-detail-back-btn">‹</span>
+                <span>商品详情</span>
+                <span style="width: 30px;"></span>
+            </div>
+            <div id="product-detail-content" class="list-container">
+                <!-- 详情内容将在这里动态生成 -->
+            </div>
+            <div id="product-detail-footer">
+                <button class="footer-btn add-to-cart-detail-btn">加入购物车</button>
+                <button class="footer-btn buy-now-btn">立即购买</button>
+            </div>
+        </div>
+        <div id="cart-screen" class="screen">
+            <!-- ▼▼▼ 请用这段新代码替换购物车页面的Header ▼▼▼ -->
+            <div class="header">
+                <span class="back-btn" id="cart-back-btn">‹</span>
+                <span id="cart-title">购物车(0)</span>
+                <span class="action-btn" id="clear-cart-btn">清空</span> <!-- 将“管理”替换为“清空”功能 -->
+            </div>
+            <!-- ▲▲▲ 替换结束 ▲▲▲ -->
+            <div id="cart-items-list" class="list-container">
+                <!-- 购物车商品将在这里动态生成 -->
+            </div>
+            <div id="cart-footer">
+                <label class="select-all-label"><input type="checkbox" id="select-all-cart-items"> 全选</label>
+                <div class="cart-summary">
+                    <div id="cart-total">合计: ¥0.00</div>
+                    <span class="cart-subtext">不含运费</span>
+                </div>
+                <button id="checkout-btn">结算(0)</button>
+            </div>
+        </div>
+        <div id="product-editor-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <span id="product-editor-title">添加商品</span>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>商品图片</label>
+                        <div class="avatar-upload">
+                            <img id="product-image-preview" src="https://s3plus.meituan.net/opapisdk/op_ticket_885190757_1756206115802_qdqqd_0c99bh.jpeg">
+                            <button onclick="document.getElementById('product-image-input').click()">上传图片</button>
+                            <input type="file" id="product-image-input" accept="image/*" hidden>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="product-name-input">商品名称</label>
+                        <input type="text" id="product-name-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="product-price-input">价格 (元)</label>
+                        <input type="number" id="product-price-input" min="0" step="0.01">
+                    </div>
+                    <!-- 【核心新增】商品描述输入框 -->
+                    <div class="form-group">
+                        <label for="product-description-input">商品描述</label>
+                        <textarea id="product-description-input" rows="4" placeholder="详细介绍一下这个商品..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="cancel" id="cancel-product-editor-btn">取消</button>
+                    <button class="save" id="save-product-btn">保存</button>
+                </div>
+            </div>
+        </div>
+        <div id="gift-receipt-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <span>购物小票</span>
+                </div>
+                <div class="modal-body" id="gift-receipt-body">
+                    <!-- 小票内容将在这里动态生成 -->
+                </div>
+                <div class="modal-footer">
+                    <button class="save" id="close-receipt-btn" style="width:100%;">关闭</button>
+                </div>
+            </div>
+        </div>
+        <!-- ▲▲▲ 新增HTML结束 ▲▲▲ -->
+    </div>
+
+    </div>
+
+    <input type="file" id="import-card-input" accept=".json,.png" style="display: none;">
+   <input type="file" id="import-world-book-input" accept=".json" style="display: none;">
+
 <!-- ▼▼▼ 【全新】这是聊天记录搜索功能的HTML代码 ▼▼▼ -->
 <div id="search-history-screen" class="screen">
     <div class="header">
@@ -11771,183 +11877,6 @@ input, textarea, select {
             <p id="battery-alert-text"></p>
         </div>
     </div>
-    <audio id="audio-player" style="display:none;"></audio>
-    <!-- ▼▼▼ 用下面这段【完整】的模态框代码，替换掉你现有的 id="create-post-modal" 的整个 div ▼▼▼ -->
-    <div id="create-post-modal" class="modal">
-        <div class="modal-content" style="height: auto; max-height: 90%;">
-            <div class="modal-header">
-                <span>发布动态</span>
-            </div>
-            <div class="modal-body">
-                <!-- 公开文字输入区 -->
-                <div class="form-group">
-                    <textarea id="post-public-text" rows="3" placeholder="分享新鲜事...（非必填的公开文字）"></textarea>
-                </div>
-                <!-- === 模式切换开关 (新增) === -->
-                <div class="post-mode-switcher">
-                    <button id="switch-to-image-mode" class="mode-btn active">上传图片</button>
-                    <button id="switch-to-text-image-mode" class="mode-btn">使用文字图</button>
-                </div>
-                <!-- ▼▼▼ 【修正后】的可见范围设置 ▼▼▼ -->
-                <div class="form-group">
-                    <label>可见范围</label>
-                    <div id="post-visibility-options" style="display: flex; gap: 15px; margin-bottom: 10px;">
-                        <label><input type="radio" name="visibility" value="public" checked> 公开</label>
-                        <label><input type="radio" name="visibility" value="include"> 指定分组可见</label>
-                    </div>
-                    <div id="post-visibility-groups" style="display: none; max-height: 120px; overflow-y: auto; background: #f9f9f9; padding: 10px; border-radius: 8px;">
-                        <!-- 分组多选框将由JS动态生成 -->
-                    </div>
-                </div>
-                <!-- ▲▲▲ 修正结束 ▲▲▲ -->
-                <!-- === 图片模式区域 === -->
-                <div id="image-mode-content" class="post-mode-content active">
-                    <div class="form-group">
-                        <div id="post-image-preview-container" class="post-image-preview-container">
-                            <img id="post-image-preview" src="" alt="图片预览">
-                            <button id="post-remove-image-btn">×</button>
-                        </div>
-                        <div class="post-image-upload-options">
-                            <button id="post-upload-local-btn" class="form-button-secondary">本地上传</button>
-                            <button id="post-use-url-btn" class="form-button-secondary">网络URL</button>
-                            <input type="file" id="post-local-image-input" accept="image/*" hidden>
-                        </div>
-                    </div>
-                    <div id="post-image-desc-group" class="form-group" style="display: none;">
-                        <label>图片描述 (必填，给AI看)</label>
-                        <input type="text" id="post-image-description" placeholder="简单描述图片内容，帮助AI理解">
-                    </div>
-                </div>
-                <!-- === 文字图模式区域 (新增) === -->
-                <div id="text-image-mode-content" class="post-mode-content">
-                    <div class="form-group">
-                        <label>文字图 (给AI理解用的描述，点击图片后可见)</label>
-                        <textarea id="post-hidden-text" rows="4" placeholder="在这里写下图片描述..."></textarea>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="cancel" id="cancel-create-post-btn">取消</button>
-                <button class="save" id="confirm-create-post-btn">发布</button>
-            </div>
-        </div>
-    </div>
-    <!-- ▲▲▲ 替换结束 ▲▲▲ -->
-    <!-- ▼▼▼ 请将这个新的模态框HTML粘贴到所有其他模态框之后 ▼▼▼ -->
-    <div id="group-management-modal" class="modal">
-        <div class="modal-content" style="height: 60%;">
-            <div class="modal-header">
-                <span>管理好友分组</span>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label>新建分组</label>
-                    <div style="display: flex; gap: 10px;">
-                        <input type="text" id="new-group-name-input" placeholder="输入分组名..." style="flex-grow: 1;">
-                        <button id="add-new-group-btn" class="form-button" style="width: auto; margin-top: 0; padding: 0 15px;">添加</button>
-                    </div>
-                </div>
-                <hr style="opacity: 0.2;">
-                <div id="existing-groups-list" style="display: flex; flex-direction: column; gap: 10px;">
-                    <!-- 分组列表将由JS动态生成 -->
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="save" id="close-group-manager-btn" style="width: 100%;">完成</button>
-            </div>
-        </div>
-    </div>
-    <!-- ▲▲▲ 新代码粘贴结束 ▲▲▲ -->
-    <!-- ▼▼▼ 请将这段新HTML粘贴到所有模态框的末尾 ▼▼▼ -->
-    <div id="message-actions-modal" class="modal">
-        <div id="custom-modal" style="width: 250px;">
-            <div class="custom-modal-footer">
-                <!-- 新的操作按钮 -->
-                <button id="edit-message-btn">编辑消息</button>
-                <button id="copy-message-btn">复制文本</button>
-            <button id="copy-timestamp-btn">复制时间戳</button>
-                <button id="recall-message-btn">撤回</button>
-                <button id="publish-to-announcement-btn" style="display: none;">发布到公告板</button>
-                <button id="quote-message-btn">引用</button>
-                <button id="select-message-btn">进入多选</button>
-                <!-- 取消按钮 -->
-                <button id="cancel-message-action-btn" style="margin-top: 8px; border-radius: 8px; background-color: #f0f0f0;">取消</button>
-            </div>
-        </div>
-    </div>
-    <!-- ▲▲▲ 新HTML粘贴结束 ▲▲▲ -->
-    <!-- ▼▼▼ 请将这段新HTML粘贴到所有模态框的末尾 ▼▼▼ -->
-    <div id="post-actions-modal" class="modal">
-        <div id="custom-modal" style="width: 250px;">
-            <div class="custom-modal-footer">
-                <button id="edit-post-btn">编辑动态</button>
-                <button id="copy-post-btn">复制内容</button>
-                <button id="cancel-post-action-btn">取消</button>
-            </div>
-        </div>
-    </div>
-    <!-- ▲▲▲ 新HTML粘贴结束 ▲▲▲ -->
-    <!-- ▼▼▼ 【全新】可视化消息编辑器模态框 ▼▼▼ -->
-    <div id="message-editor-modal" class="modal">
-        <div class="modal-content" style="height: 75%;">
-            <div class="modal-header">
-                <span>编辑与拆分消息</span>
-            </div>
-            <div class="modal-body" id="message-editor-body">
-                <!-- 编辑器容器，JS会在这里动态生成文本框 -->
-                <div id="message-editor-container"></div>
-                <!-- 添加新消息的按钮 -->
-                <button id="add-message-editor-block-btn" class="form-button form-button-secondary" style="margin-top: 15px;"> [+] 添加下一条消息 </button>
-            </div>
-            <div class="modal-footer">
-                <button class="cancel" id="cancel-advanced-editor-btn">取消</button>
-                <button class="save" id="save-advanced-editor-btn">保存更改</button>
-            </div>
-        </div>
-    </div>
-    <!-- ▼▼▼ 【全新】“导演剪辑室”模态框 ▼▼▼ -->
-    <div id="ai-response-editor-modal" class="modal">
-        <div class="modal-content" style="height: 80%;">
-            <div class="modal-header">
-                <span>导演剪辑室 (AI上一轮响应)</span>
-            </div>
-            <div class="modal-body" id="ai-response-editor-body">
-                <!-- 导演剪辑器容器，JS会在这里动态生成文本框 -->
-                <div id="ai-response-editor-container" style="display: flex; flex-direction: column; gap: 15px;"></div>
-                <!-- 添加新消息的按钮 -->
-                <button id="add-ai-response-block-btn" class="form-button form-button-secondary" style="margin-top: 15px;"> [+] 添加一个新动作 </button>
-            </div>
-            <div class="modal-footer">
-                <button class="cancel" id="cancel-ai-response-editor-btn">取消</button>
-                <button class="save" id="save-ai-response-editor-btn">应用修改</button>
-            </div>
-        </div>
-    </div>
-    <!-- ▲▲▲ 新HTML粘贴结束 ▲▲▲ -->
-    <div id="repost-modal" class="modal">
-        <div id="custom-modal" style="width: 280px;">
-            <div class="custom-modal-header">转发动态</div>
-            <div class="custom-modal-body">
-                <textarea id="repost-comment-input" placeholder="请输入转发评论 (可选)" style="width: 100%; min-height: 60px; resize: vertical; border: 1px solid #ccc; border-radius: 6px; padding: 8px; font-size: 16px; box-sizing: border-box;"></textarea>
-            </div>
-            <div class="custom-modal-footer">
-                <button id="repost-cancel-btn">取消</button>
-                <button id="repost-confirm-btn" class="confirm-btn">确定</button>
-            </div>
-        </div>
-    </div>
-    <!-- ▲▲▲ 新HTML粘贴结束 ▲▲▲ -->
-    <!-- ▼▼▼ 【全新】视频通话消息操作菜单 ▼▼▼ -->
-    <div id="call-message-actions-modal" class="modal">
-        <div id="custom-modal" style="width: 250px;">
-            <div class="custom-modal-footer">
-                <button id="edit-call-message-btn">编辑</button>
-                <button id="delete-call-message-btn" class="btn-danger">删除</button>
-                <button id="cancel-call-message-action-btn" style="margin-top: 8px; border-radius: 8px; background-color: #f0f0f0;">取消</button>
-            </div>
-        </div>
-    </div>
-    <!-- ▲▲▲ 新HTML粘贴结束 ▲▲▲ -->
     <!-- ▼▼▼ 【全新】外卖请求模态框 ▼▼▼ -->
     <div id="waimai-request-modal" class="modal">
         <div class="modal-content" style="width: 290px;">
@@ -12312,22 +12241,189 @@ input, textarea, select {
             </div>
         </div>
     </div>
-    <!-- ▼▼▼ 【全新】长期记忆管理全屏页面 ▼▼▼ -->
-    <div id="long-term-memory-screen" class="screen">
-        <div class="header">
-            <span class="back-btn" id="memory-screen-back-btn">‹</span>
-            <span>长期记忆</span>
-            <div class="header-actions">
-                <span class="action-btn" id="refine-memory-btn-header">精炼</span>
-                <span class="action-btn" id="summarize-recent-btn-header">总结</span>
-                <span class="action-btn" id="add-manual-memory-btn-header">+</span>
+    <!-- ▼▼▼ 请将这个新的模态框HTML粘贴到所有其他模态框之后 ▼▼▼ -->
+    <div id="group-management-modal" class="modal">
+        <div class="modal-content" style="height: 60%;">
+            <div class="modal-header">
+                <span>管理好友分组</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>新建分组</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="new-group-name-input" placeholder="输入分组名..." style="flex-grow: 1;">
+                        <button id="add-new-group-btn" class="form-button" style="width: auto; margin-top: 0; padding: 0 15px;">添加</button>
+                    </div>
+                </div>
+                <hr style="opacity: 0.2;">
+                <div id="existing-groups-list" style="display: flex; flex-direction: column; gap: 10px;">
+                    <!-- 分组列表将由JS动态生成 -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="save" id="close-group-manager-btn" style="width: 100%;">完成</button>
             </div>
         </div>
-        <div class="list-container" id="memory-list-container" style="padding: 15px; display: flex; flex-direction: column; gap: 15px; background-color: #f0f2f5;">
-            <!-- 长期记忆列表将由JS动态生成在这里 -->
+    </div>
+    <!-- ▲▲▲ 新代码粘贴结束 ▲▲▲ -->
+    <!-- ▼▼▼ 请将这段新HTML粘贴到所有模态框的末尾 ▼▼▼ -->
+    <div id="message-actions-modal" class="modal">
+        <div id="custom-modal" style="width: 250px;">
+            <div class="custom-modal-footer">
+                <!-- 新的操作按钮 -->
+                <button id="edit-message-btn">编辑消息</button>
+                <button id="copy-message-btn">复制文本</button>
+            <button id="copy-timestamp-btn">复制时间戳</button>
+                <button id="recall-message-btn">撤回</button>
+                <button id="publish-to-announcement-btn" style="display: none;">发布到公告板</button>
+                <button id="quote-message-btn">引用</button>
+                <button id="select-message-btn">进入多选</button>
+                <!-- 取消按钮 -->
+                <button id="cancel-message-action-btn" style="margin-top: 8px; border-radius: 8px; background-color: #f0f0f0;">取消</button>
+            </div>
         </div>
     </div>
     <!-- ▲▲▲ 新HTML粘贴结束 ▲▲▲ -->
+    <!-- ▼▼▼ 请将这段新HTML粘贴到所有模态框的末尾 ▼▼▼ -->
+    <div id="post-actions-modal" class="modal">
+        <div id="custom-modal" style="width: 250px;">
+            <div class="custom-modal-footer">
+                <button id="edit-post-btn">编辑动态</button>
+                <button id="copy-post-btn">复制内容</button>
+                <button id="cancel-post-action-btn">取消</button>
+            </div>
+        </div>
+    </div>
+    <!-- ▲▲▲ 新HTML粘贴结束 ▲▲▲ -->
+    <!-- ▼▼▼ 【全新】可视化消息编辑器模态框 ▼▼▼ -->
+    <div id="message-editor-modal" class="modal">
+        <div class="modal-content" style="height: 75%;">
+            <div class="modal-header">
+                <span>编辑与拆分消息</span>
+            </div>
+            <div class="modal-body" id="message-editor-body">
+                <!-- 编辑器容器，JS会在这里动态生成文本框 -->
+                <div id="message-editor-container"></div>
+                <!-- 添加新消息的按钮 -->
+                <button id="add-message-editor-block-btn" class="form-button form-button-secondary" style="margin-top: 15px;"> [+] 添加下一条消息 </button>
+            </div>
+            <div class="modal-footer">
+                <button class="cancel" id="cancel-advanced-editor-btn">取消</button>
+                <button class="save" id="save-advanced-editor-btn">保存更改</button>
+            </div>
+        </div>
+    </div>
+    <!-- ▼▼▼ 【全新】“导演剪辑室”模态框 ▼▼▼ -->
+    <div id="ai-response-editor-modal" class="modal">
+        <div class="modal-content" style="height: 80%;">
+            <div class="modal-header">
+                <span>导演剪辑室 (AI上一轮响应)</span>
+            </div>
+            <div class="modal-body" id="ai-response-editor-body">
+                <!-- 导演剪辑器容器，JS会在这里动态生成文本框 -->
+                <div id="ai-response-editor-container" style="display: flex; flex-direction: column; gap: 15px;"></div>
+                <!-- 添加新消息的按钮 -->
+                <button id="add-ai-response-block-btn" class="form-button form-button-secondary" style="margin-top: 15px;"> [+] 添加一个新动作 </button>
+            </div>
+            <div class="modal-footer">
+                <button class="cancel" id="cancel-ai-response-editor-btn">取消</button>
+                <button class="save" id="save-ai-response-editor-btn">应用修改</button>
+            </div>
+        </div>
+    </div>
+    <!-- ▲▲▲ 新HTML粘贴结束 ▲▲▲ -->
+    <div id="repost-modal" class="modal">
+        <div id="custom-modal" style="width: 280px;">
+            <div class="custom-modal-header">转发动态</div>
+            <div class="custom-modal-body">
+                <textarea id="repost-comment-input" placeholder="请输入转发评论 (可选)" style="width: 100%; min-height: 60px; resize: vertical; border: 1px solid #ccc; border-radius: 6px; padding: 8px; font-size: 16px; box-sizing: border-box;"></textarea>
+            </div>
+            <div class="custom-modal-footer">
+                <button id="repost-cancel-btn">取消</button>
+                <button id="repost-confirm-btn" class="confirm-btn">确定</button>
+            </div>
+        </div>
+    </div>
+    <!-- ▲▲▲ 新HTML粘贴结束 ▲▲▲ -->
+    <!-- ▼▼▼ 【全新】视频通话消息操作菜单 ▼▼▼ -->
+    <div id="call-message-actions-modal" class="modal">
+        <div id="custom-modal" style="width: 250px;">
+            <div class="custom-modal-footer">
+                <button id="edit-call-message-btn">编辑</button>
+                <button id="delete-call-message-btn" class="btn-danger">删除</button>
+                <button id="cancel-call-message-action-btn" style="margin-top: 8px; border-radius: 8px; background-color: #f0f0f0;">取消</button>
+            </div>
+        </div>
+    </div>
+    <!-- ▲▲▲ 新HTML粘贴结束 ▲▲▲ -->
+
+
+
+    <audio id="audio-player" style="display:none;"></audio>
+    <!-- ▼▼▼ 用下面这段【完整】的模态框代码，替换掉你现有的 id="create-post-modal" 的整个 div ▼▼▼ -->
+    <div id="create-post-modal" class="modal">
+        <div class="modal-content" style="height: auto; max-height: 90%;">
+            <div class="modal-header">
+                <span>发布动态</span>
+            </div>
+            <div class="modal-body">
+                <!-- 公开文字输入区 -->
+                <div class="form-group">
+                    <textarea id="post-public-text" rows="3" placeholder="分享新鲜事...（非必填的公开文字）"></textarea>
+                </div>
+                <!-- === 模式切换开关 (新增) === -->
+                <div class="post-mode-switcher">
+                    <button id="switch-to-image-mode" class="mode-btn active">上传图片</button>
+                    <button id="switch-to-text-image-mode" class="mode-btn">使用文字图</button>
+                </div>
+                <!-- ▼▼▼ 【修正后】的可见范围设置 ▼▼▼ -->
+                <div class="form-group">
+                    <label>可见范围</label>
+                    <div id="post-visibility-options" style="display: flex; gap: 15px; margin-bottom: 10px;">
+                        <label><input type="radio" name="visibility" value="public" checked> 公开</label>
+                        <label><input type="radio" name="visibility" value="include"> 指定分组可见</label>
+                    </div>
+                    <div id="post-visibility-groups" style="display: none; max-height: 120px; overflow-y: auto; background: #f9f9f9; padding: 10px; border-radius: 8px;">
+                        <!-- 分组多选框将由JS动态生成 -->
+                    </div>
+                </div>
+                <!-- ▲▲▲ 修正结束 ▲▲▲ -->
+                <!-- === 图片模式区域 === -->
+                <div id="image-mode-content" class="post-mode-content active">
+                    <div class="form-group">
+                        <div id="post-image-preview-container" class="post-image-preview-container">
+                            <img id="post-image-preview" src="" alt="图片预览">
+                            <button id="post-remove-image-btn">×</button>
+                        </div>
+                        <div class="post-image-upload-options">
+                            <button id="post-upload-local-btn" class="form-button-secondary">本地上传</button>
+                            <button id="post-use-url-btn" class="form-button-secondary">网络URL</button>
+                            <input type="file" id="post-local-image-input" accept="image/*" hidden>
+                        </div>
+                    </div>
+                    <div id="post-image-desc-group" class="form-group" style="display: none;">
+                        <label>图片描述 (必填，给AI看)</label>
+                        <input type="text" id="post-image-description" placeholder="简单描述图片内容，帮助AI理解">
+                    </div>
+                </div>
+                <!-- === 文字图模式区域 (新增) === -->
+                <div id="text-image-mode-content" class="post-mode-content">
+                    <div class="form-group">
+                        <label>文字图 (给AI理解用的描述，点击图片后可见)</label>
+                        <textarea id="post-hidden-text" rows="4" placeholder="在这里写下图片描述..."></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="cancel" id="cancel-create-post-btn">取消</button>
+                <button class="save" id="confirm-create-post-btn">发布</button>
+            </div>
+        </div>
+    </div>
+    <!-- ▲▲▲ 替换结束 ▲▲▲ -->
+
+
+
     <input type="file" id="ai-avatar-upload-input" accept="image/*" hidden>
     <input type="file" id="group-avatar-upload-input" accept="image/*" hidden>
     <script>
@@ -42664,63 +42760,7 @@ document.getElementById('manual-werewolf-summary-btn').addEventListener('click',
         </div>
     </div>
     <!-- ▲▲▲ 新增HTML结束 ▲▲▲ -->
-    <!-- ▼▼▼ 【全新】请用这整块代码，完整替换旧的 rendering-rules-screen ▼▼▼ -->
-    <div id="rendering-rules-screen" class="screen">
-        <div class="header">
-            <span class="back-btn" onclick="showScreen('home-screen')">‹</span>
-            <span>渲染规则</span>
-            <span class="action-btn" id="add-new-rule-btn">+</span>
-        </div>
-        <!-- 【核心修改1】全新的页签和内容区结构 -->
-        <div id="rules-tabs">
-            <!-- JS 会在这里动态生成页签 -->
-        </div>
-        <div id="rules-content-container">
-            <!-- JS 会在这里动态生成内容面板 -->
-        </div>
-    </div>
-    <!-- ▲▲▲ 替换结束 ▲▲▲ -->
-    <!-- 2. 规则编辑器模态框 -->
-    <div id="rule-editor-modal" class="modal">
-        <div class="modal-content" style="height: 85%;">
-            <div class="modal-header">
-                <span id="rule-editor-title">创建新规则</span>
-            </div>
-            <div class="modal-body" style="display: flex; flex-direction: column; gap: 15px;">
-                <div class="form-group" style="flex-shrink: 0;">
-                    <label for="rule-name-input">规则名称</label>
-                    <input type="text" id="rule-name-input" placeholder="例如：美团外卖卡片">
-                </div>
-                <div class="form-group" style="flex-shrink: 0;">
-                    <label for="rule-chat-id-select">绑定范围</label>
-                    <select id="rule-chat-id-select">
-                        <option value="global">公用 (所有角色)</option>
-                        <!-- 角色列表将由JS动态填充 -->
-                    </select>
-                </div>
-                <div class="form-group" style="flex-grow: 1; display: flex; flex-direction: column;">
-                    <label for="rule-regex-input">正则表达式 (使用g作为标志)</label>
-                    <textarea id="rule-regex-input" rows="3" style="font-family: monospace; resize: vertical;" placeholder="例如：MTR\[(.*?)\]\[(.*?)\|(.*?)\]"></textarea>
-                </div>
-                <div class="form-group" style="flex-grow: 2; display: flex; flex-direction: column;">
-                    <label for="rule-template-input">HTML 模板 (用 $1, $2 引用)</label>
-                    <textarea id="rule-template-input" rows="6" style="font-family: monospace; resize: vertical;" placeholder="例如：<div class=`waimai-card`>...<span>$2</span>...</div>"></textarea>
-                </div>
-                <div class="form-group" style="display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
-                    <label for="rule-enabled-switch" style="margin-bottom: 0;">启用规则</label>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="rule-enabled-switch" checked>
-                        <span class="slider"></span>
-                    </label>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="cancel" id="cancel-rule-editor-btn">取消</button>
-                <button class="save" id="save-rule-btn">保存规则</button>
-            </div>
-        </div>
-    </div>
-    <!-- ▲▲▲ 新HTML粘贴结束 ▲▲▲ -->
+
 <!-- ▼▼▼ 请将这个【全新的 <audio> 标签】粘贴到 <body> 标签的最末尾，紧邻 </body> 之前 ▼▼▼ -->
 <audio id="notification-sound-player" preload="auto"></audio>
 <!-- ▲▲▲ 粘贴结束 ▲▲▲ -->
@@ -42834,39 +42874,7 @@ document.getElementById('manual-werewolf-summary-btn').addEventListener('click',
 </div>
 
 <!-- ▼▼▼ 【全新V2.0 | 交互修复版】请用这整块代码，完整替换旧的 werewolf-game-screen ▼▼▼ -->
-        <div id="werewolf-game-screen" class="screen">
-            <div class="header">
-                <span id="werewolf-game-title">狼人杀</span>
-                <div class="header-actions">
-<span class="action-btn" id="werewolf-retry-btn" title="重试上一步AI操作" style="display: none;">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M20 11A8.1 8.1 0 0 0 4.5 9M4 5v4h4"></path>
-        <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"></path>
-    </svg>
-</span>
-                    <span class="action-btn" id="exit-werewolf-game-btn">退出</span>
-                </div>
-            </div>
-            <!-- 玩家头像区 (保持不变) -->
-            <div id="werewolf-player-grid"></div>
-            <!-- 游戏日志/对话区 (保持不变) -->
-            <div id="werewolf-log" class="list-container"></div>
-            
-            <!-- 【核心修改】全新的、常驻的底部操作栏 -->
-            <div id="werewolf-action-bar">
-                <div id="chat-input-main-row" style="width: 100%;">
-                    <textarea id="werewolf-user-input" rows="1" placeholder="轮到你发言了..."></textarea>
-                    <div id="input-actions-wrapper" style="gap: 5px;">
-                        <!-- 发言阶段的按钮 -->
-                        <button id="werewolf-wait-reply-btn" class="action-button" style="display: none; background-color: #007bff; height: 40px; padding: 0 10px; font-size: 13px;">等待回应</button>
-                        <button id="werewolf-finish-speech-btn" class="action-button" style="display: none; background-color: var(--accent-color); height: 40px; padding: 0 10px; font-size: 13px;">结束发言</button>
-                        <!-- 非发言阶段的按钮 -->
-                        <button id="werewolf-next-step-btn" class="form-button" style="margin-top:0; display: none;">下一步</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- ▲▲▲ 替换结束 ▲▲▲ -->
+
 
 <div id="werewolf-role-modal" class="modal">
     <div class="modal-content" style="width: 280px; height: auto; text-align: center; padding: 20px;">
@@ -42979,14 +42987,3 @@ document.getElementById('manual-werewolf-summary-btn').addEventListener('click',
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
