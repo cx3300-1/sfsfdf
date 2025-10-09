@@ -22692,8 +22692,13 @@ function createMessageEditorBlock(initialContent = '') {
         }
         
         
-// ▼▼▼ 【请用这个【最终修复版】完整替换旧的 saveEditedMessage 函数 ▼▼▼
+// ▼▼▼ 【最终修复版】请用这个全新的函数，完整替换旧的 saveEditedMessage 函数 ▼▼▼
 
+/**
+ * 【V4.0 | 终极修复版】保存编辑或拆分后的消息，并正确处理类型转换
+ * @param {number} timestamp - 被编辑的原始消息的时间戳
+ * @param {string|null} simpleContent - (可选) 如果是从简单编辑器传来，则为单个内容字符串
+ */
 async function saveEditedMessage(timestamp, simpleContent = null) {
     if (!timestamp) return;
 
@@ -22701,12 +22706,12 @@ async function saveEditedMessage(timestamp, simpleContent = null) {
     const messageIndex = chat.history.findIndex(m => m.timestamp === timestamp);
     if (messageIndex === -1) return;
     
-    // 1. 获取原始消息的完整对象，这是继承所有属性的关键
+    // 1. 获取原始消息的完整对象，这是继承发送者、时间戳等基础属性的关键
     const originalMessage = chat.history[messageIndex];
 
     let newMessages = [];
 
-    // 处理来自“编辑消息”和“导演剪辑室”的输入
+    // 根据是来自简单编辑器还是高级编辑器，获取内容块
     const blocks = simpleContent !== null 
         ? [simpleContent] 
         : Array.from(document.querySelectorAll('#message-editor-container textarea')).map(ta => ta.value);
@@ -22714,76 +22719,79 @@ async function saveEditedMessage(timestamp, simpleContent = null) {
     for (const rawContent of blocks) {
         if (!rawContent.trim()) continue;
 
+        // 使用辅助函数解析每个编辑框的内容
         const parsedResult = parseEditedContent(rawContent.trim());
         
         // 2. 【【【这就是本次修复的核心！】】】
-        //    先创建一个包含所有原始属性的副本
-        const newMessage = { ...originalMessage };
+        //    先创建一个只包含最基础属性的副本，而不是全部复制！
+        const newMessage = {
+            role: originalMessage.role,
+            senderName: originalMessage.senderName,
+            timestamp: originalMessage.timestamp // 时间戳将在后面被重新分配
+        };
 
-        // 3. 根据解析结果，智能地更新消息
-        if (parsedResult.type === 'text') {
-            // 如果只是普通文本，就【只更新内容】，保持原始类型和其他所有属性不变！
-            newMessage.content = parsedResult.content;
-        } else {
-            // 如果是特殊类型（如语音、转账、引用等），才更新所有相关属性
-            newMessage.type = parsedResult.type;
-            newMessage.content = parsedResult.content || '';
-            
-            // 清理掉可能存在的旧格式残留
-            delete newMessage.dialogue;
-            delete newMessage.description;
-            
-            // 根据不同类型，添加或更新特定属性
-            if (parsedResult.type === 'offline_text') {
+        // 3. 根据解析出的新类型，智能地构建新的消息对象
+        //    这确保了旧的、不相关的属性（如 .quote, .amount 等）不会被错误地继承
+        switch (parsedResult.type) {
+            case 'text':
+                newMessage.type = 'text';
+                newMessage.content = parsedResult.content;
+                break;
+            case 'offline_text':
+                newMessage.type = 'offline_text';
                 if (parsedResult.content) {
                     newMessage.content = parsedResult.content;
-                } else {
+                } else { 
                     newMessage.dialogue = parsedResult.dialogue;
                     newMessage.description = parsedResult.description;
-                    delete newMessage.content;
                 }
-            }
-            else if (parsedResult.meaning) newMessage.meaning = parsedResult.meaning;
-            else if (parsedResult.amount) newMessage.amount = parsedResult.amount;
-            else if (parsedResult.note) newMessage.note = parsedResult.note;
-            else if (parsedResult.title) newMessage.title = parsedResult.title;
-            else if (parsedResult.description && parsedResult.type === 'ai_image') {
-                 newMessage.content = parsedResult.description;
-            } 
-            else if (parsedResult.description) newMessage.description = parsedResult.description; // for share_link
-            else if (parsedResult.source_name) newMessage.source_name = parsedResult.source_name; // for share_link
-                        // ==========================================================
-            else if (parsedResult.type === 'quote_reply') {
+                break;
+            case 'quote_reply':
+                newMessage.type = 'quote_reply';
                 newMessage.content = parsedResult.reply_content;
-
-                // 1. 根据时间戳查找被引用的原始消息
                 const originalQuotedMsg = chat.history.find(m => m.timestamp === parsedResult.target_timestamp);
-
                 if (originalQuotedMsg) {
-                    // 2. 如果找到了，就提取正确的信息
-                    let originalSenderName;
+                    let originalSenderName = originalQuotedMsg.senderName;
                     if (originalQuotedMsg.role === 'user') {
-                        // 如果是用户，使用用户的本名
                         originalSenderName = state.qzoneSettings.nickname || '{{user}}';
-                    } else {
-                        // 如果是AI，使用消息中记录的本名
-                        originalSenderName = originalQuotedMsg.senderName;
                     }
-                    
                     newMessage.quote = {
                         timestamp: parsedResult.target_timestamp,
-                        senderName: originalSenderName, // 使用正确的发送者本名
-                        content: String(originalQuotedMsg.content || '') // 使用正确的原始内容
+                        senderName: originalSenderName,
+                        content: String(originalQuotedMsg.content || '')
                     };
                 } else {
-                    // 3. 如果找不到（例如时间戳填错了），就使用安全的占位符
                     newMessage.quote = {
                         timestamp: parsedResult.target_timestamp,
                         senderName: '未知用户',
                         content: '原始消息已删除或不存在'
                     };
                 }
-            }
+                break;
+            case 'voice_message':
+            case 'sticker':
+            case 'ai_image':
+            case 'user_photo':
+                newMessage.type = parsedResult.type;
+                newMessage.content = parsedResult.content || parsedResult.description;
+                if (parsedResult.meaning) newMessage.meaning = parsedResult.meaning;
+                break;
+            case 'transfer':
+                newMessage.type = 'transfer';
+                newMessage.amount = parsedResult.amount;
+                newMessage.note = parsedResult.note;
+                break;
+            case 'share_link':
+                newMessage.type = 'share_link';
+                newMessage.title = parsedResult.title;
+                newMessage.description = parsedResult.description;
+                newMessage.source_name = parsedResult.source_name;
+                newMessage.content = parsedResult.content;
+                break;
+            default:
+                // 对于其他所有未知或复杂的类型，直接将解析结果作为消息主体
+                Object.assign(newMessage, parsedResult);
+                break;
         }
         
         newMessages.push(newMessage);
@@ -22794,13 +22802,17 @@ async function saveEditedMessage(timestamp, simpleContent = null) {
         return;
     }
 
-    // (后续的替换、重排时间戳、保存和刷新逻辑保持不变)
+    // 4. (后续的替换、重排时间戳、保存和刷新逻辑保持不变)
+    //    用新构建的消息数组替换掉原来的那条消息
     chat.history.splice(messageIndex, 1, ...newMessages);
+    
+    // 重新分配时间戳以保证顺序
     let reassignTimestamp = timestamp;
     for (let i = messageIndex; i < chat.history.length; i++) {
         chat.history[i].timestamp = reassignTimestamp;
         reassignTimestamp++; 
     }
+    
     await db.chats.put(chat);
     document.getElementById('message-editor-modal').classList.remove('visible');
     renderChatInterface(state.activeChatId);
@@ -42987,3 +42999,7 @@ document.getElementById('manual-werewolf-summary-btn').addEventListener('click',
 
 </body>
 </html>
+
+
+
+
