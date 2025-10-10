@@ -20904,7 +20904,7 @@ async function runBackgroundSimulationTick() {
 
             // 筛选出与该NPC相关的、且NPC还未“说最后一句话”的帖子作为任务
             const tasks = allRecentPosts.filter(post => {
-                const isAssociated = npc.associatedWith.includes(post.authorId) || post.authorId === 'user';
+                const isAssociated = npc.associatedWith.includes(post.authorId);
                 const isRepliedTo = post.comments?.some(c => c.replyTo === npc.name);
                 const lastCommenter = post.comments?.slice(-1)[0]?.commenterName;
 
