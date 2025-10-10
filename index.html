@@ -12894,6 +12894,8 @@ let werewolfGameState = {
                 let editingMemberId = null;
                 let editingWorldBookId = null;
                let editingRuleId = null; // 用于存储正在编辑的规则ID
+             let isLoadingMoreChats = false; // 防止在加载时重复触发
+            let sortedChatListItems = [];   // 用于存储完整的、已排序的聊天列表项
                 let editingPersonaPresetId = null;
                 let currentReplyContext = null;
         let waimaiTimers = {}; // 用于存储外卖倒计时
@@ -15762,20 +15764,7 @@ function createChatGroupContainer(group) {
     return groupContainer;
 }
 
-/**
- * 创建并添加“加载更多”按钮
- */
-function appendLoadMoreChatsButton(container, sortedItems) {
-    const button = document.createElement('button');
-    button.id = 'load-more-chats-btn';
-    button.textContent = '加载更早的会话';
-    button.className = 'load-more-btn'; // 复用样式
-    
-    // 【重要】为按钮绑定加载下一页的事件
-    button.addEventListener('click', () => loadMoreChats(sortedItems), { once: true });
-    
-    container.appendChild(button); // 将按钮添加到列表底部
-}
+
 
 /**
  * 加载并渲染下一批次的聊天记录
@@ -15853,16 +15842,16 @@ async function renderChatList() {
     });
     allGroups.sort((a, b) => b.latestTimestamp - a.latestTimestamp);
     
-    // 【核心修改】将排序后的所有聊天项（包括分组和非分组）合并到一个有序数组中
-    const sortedRenderableItems = [];
+    // 2. 【核心修改】将所有可渲染项存入全局变量，而不是立即渲染
+    sortedChatListItems = []; // 先清空
     const processedChatIds = new Set();
 
     allGroups.forEach(group => {
         const groupChats = allChats.filter(chat => !chat.isGroup && chat.groupId === group.id);
         if (groupChats.length > 0) {
-            sortedRenderableItems.push({ type: 'groupHeader', group });
+            sortedChatListItems.push({ type: 'groupHeader', group });
             groupChats.forEach(chat => {
-                sortedRenderableItems.push({ type: 'chatItem', chat });
+                sortedChatListItems.push({ type: 'chatItem', chat });
                 processedChatIds.add(chat.id);
             });
         }
@@ -15870,50 +15859,13 @@ async function renderChatList() {
 
     allChats.forEach(chat => {
         if (!processedChatIds.has(chat.id)) {
-            sortedRenderableItems.push({ type: 'chatItem', chat });
+            sortedChatListItems.push({ type: 'chatItem', chat });
         }
     });
 
-    // 2. 【核心修改】只渲染第一批次的聊天项
-    const initialItems = sortedRenderableItems.slice(0, CHAT_LIST_RENDER_WINDOW);
+    // 3. 【核心修改】重置渲染计数器，并只渲染第一批次的聊天项
     chatListRenderCount = 0;
-
-    const fragment = document.createDocumentFragment();
-    let currentGroupContent = null;
-
-    initialItems.forEach(item => {
-        if (item.type === 'groupHeader') {
-            const groupContainer = createChatGroupContainer(item.group);
-            fragment.appendChild(groupContainer);
-            currentGroupContent = groupContainer.querySelector('.chat-group-content');
-        } else if (item.type === 'chatItem') {
-            const listItem = createChatListItem(item.chat);
-            if (currentGroupContent && item.chat.groupId) {
-                currentGroupContent.appendChild(listItem);
-            } else {
-                fragment.appendChild(listItem);
-                currentGroupContent = null;
-            }
-        }
-    });
-    chatListEl.appendChild(fragment);
-    chatListRenderCount = initialItems.length;
-
-    // 3. 【核心修改】如果还有更多，则添加“加载更多”按钮
-    if (sortedRenderableItems.length > chatListRenderCount) {
-        appendLoadMoreChatsButton(chatListEl, sortedRenderableItems);
-    }
-    
-    // 为所有新渲染的分组标题添加折叠事件
-    document.querySelectorAll('.chat-group-header').forEach(header => {
-        // (为避免重复绑定，先移除旧的)
-        const newHeader = header.cloneNode(true);
-        header.parentNode.replaceChild(newHeader, header);
-        newHeader.addEventListener('click', () => {
-            newHeader.classList.toggle('collapsed');
-            newHeader.nextElementSibling.classList.toggle('collapsed');
-        });
-    });
+    loadMoreChats(); // 直接调用 loadMoreChats 来渲染第一页
 }
 // ▲▲▲ 替换结束 ▲▲▲
 // ▼▼▼ 【全新】这是为“分批加载”新增的所有辅助函数 ▼▼▼
@@ -15949,71 +15901,75 @@ async function renderChatList() {
             container.prepend(button); // 将按钮添加到列表顶部
         }
 
-        /**
-         * 加载并渲染下一批次的聊天记录
-         */
-        function loadMoreChats(sortedItems) {
-            const chatListEl = document.getElementById('chat-list');
-            const loadMoreBtn = document.getElementById('load-more-chats-btn');
-            if (loadMoreBtn) loadMoreBtn.remove();
-            
-            const nextSliceStart = chatListRenderCount;
-            const nextSliceEnd = chatListRenderCount + CHAT_LIST_RENDER_WINDOW;
-            const itemsToAppend = sortedItems.slice(nextSliceStart, nextSliceEnd);
+// ▼▼▼ 【全新 | 无限滚动版】请用这个全新版本替换旧的 loadMoreChats 函数 ▼▼▼
+function loadMoreChats() {
+    // 【核心修改1】如果正在加载，则直接返回，防止重复触发
+    if (isLoadingMoreChats) return;
 
-            // 使用 DocumentFragment 提高性能
-            const fragment = document.createDocumentFragment();
-            let currentGroupContent = chatListEl.querySelector('.chat-group-content:last-of-type');
+    const chatListEl = document.getElementById('chat-list');
+    if (!chatListEl) return;
+    
+    // 【核心修改2】设置加载状态为 true
+    isLoadingMoreChats = true;
+    
+    const nextSliceStart = chatListRenderCount;
+    const nextSliceEnd = chatListRenderCount + CHAT_LIST_RENDER_WINDOW;
+    const itemsToAppend = sortedChatListItems.slice(nextSliceStart, nextSliceEnd);
 
-            itemsToAppend.forEach(item => {
-                if (item.type === 'groupHeader') {
-                    const groupContainer = createChatGroupContainer(item.group);
-                    fragment.appendChild(groupContainer);
-                    currentGroupContent = groupContainer.querySelector('.chat-group-content');
-                } else if (item.type === 'chatItem') {
-                    const listItem = createChatListItem(item.chat);
-                    if (currentGroupContent && item.chat.groupId) {
-                        currentGroupContent.appendChild(listItem);
-                    } else {
-                        fragment.appendChild(listItem);
-                        currentGroupContent = null;
-                    }
-                }
-            });
-            
-            // 将新生成的项一次性添加到列表中
-            chatListEl.appendChild(fragment);
-            chatListRenderCount += itemsToAppend.length;
+    // 如果没有更多内容了，就结束加载
+    if (itemsToAppend.length === 0) {
+        isLoadingMoreChats = false; // 别忘了重置状态
+        return;
+    }
 
-            if (sortedItems.length > chatListRenderCount) {
-                appendLoadMoreChatsButton(chatListEl, sortedItems);
+    const fragment = document.createDocumentFragment();
+    let currentGroupContent = chatListEl.querySelector('.chat-group-content:last-of-type');
+
+    itemsToAppend.forEach(item => {
+        if (item.type === 'groupHeader') {
+            const groupContainer = createChatGroupContainer(item.group);
+            fragment.appendChild(groupContainer);
+            currentGroupContent = groupContainer.querySelector('.chat-group-content');
+        } else if (item.type === 'chatItem') {
+            const listItem = createChatListItem(item.chat);
+            if (currentGroupContent && item.chat.groupId) {
+                currentGroupContent.appendChild(listItem);
+            } else {
+                fragment.appendChild(listItem);
+                currentGroupContent = null;
             }
-            
-            // 重新为所有分组标题绑定事件
-            document.querySelectorAll('.chat-group-header').forEach(header => {
-                const newHeader = header.cloneNode(true);
-                header.parentNode.replaceChild(newHeader, header);
-                newHeader.addEventListener('click', () => {
-                    newHeader.classList.toggle('collapsed');
-                    newHeader.nextElementSibling.classList.toggle('collapsed');
-                });
-            });
         }
-        // ▲▲▲ 新增函数结束 ▲▲▲        
-        // ▼▼▼ 请用这个【已升级HTML结构并修复点击问题】的全新版本，完整替换您现有的 createChatListItem 函数 ▼▼▼
-        function createChatListItem(chat) {
-            const lastMsgObj = chat.history.filter(msg => !msg.isHidden).slice(-1)[0] || {};
-            let lastMsgDisplay;
-        
-            if (!chat.isGroup && chat.relationship?.status === 'pending_user_approval') {
-                lastMsgDisplay = `<span style="color: #ff8c00;">[好友申请] ${chat.relationship.applicationReason || '请求添加你为好友'}</span>`;
-            }
-            else if (!chat.isGroup && chat.relationship?.status === 'blocked_by_ai') {
-                lastMsgDisplay = `<span style="color: #dc3545;">[你已被对方拉黑]</span>`;
-            }
-           // 在 createChatListItem 函数中...
-        // ▼▼▼ 请用下面这一整块代码，替换旧的 if(chat.isGroup) {...} else {...} 判断 ▼▼▼
-        if (chat.isGroup) {
+    });
+    
+    chatListEl.appendChild(fragment);
+    chatListRenderCount += itemsToAppend.length;
+    
+    // (重新绑定分组折叠事件的逻辑保持不变)
+    document.querySelectorAll('.chat-group-header').forEach(header => {
+        const newHeader = header.cloneNode(true);
+        header.parentNode.replaceChild(newHeader, header);
+        newHeader.addEventListener('click', () => {
+            newHeader.classList.toggle('collapsed');
+            newHeader.nextElementSibling.classList.toggle('collapsed');
+        });
+    });
+
+    // 【核心修改3】加载完成后，将状态重置为 false
+    isLoadingMoreChats = false;
+}
+// ▲▲▲ 替换结束 ▲▲▲    
+// ▼▼▼ 【全新 | V2.0 容错增强版】请用这个新版本替换旧的 createChatListItem 函数 ▼▼▼
+function createChatListItem(chat) {
+    // 【核心新增】使用 try...catch 包裹整个函数
+    try {
+        const lastMsgObj = chat.history.filter(msg => !msg.isHidden).slice(-1)[0] || {};
+        let lastMsgDisplay;
+
+        if (!chat.isGroup && chat.relationship?.status === 'pending_user_approval') {
+            lastMsgDisplay = `<span style="color: #ff8c00;">[好友申请] ${chat.relationship.applicationReason || '请求添加你为好友'}</span>`;
+        } else if (!chat.isGroup && chat.relationship?.status === 'blocked_by_ai') {
+            lastMsgDisplay = `<span style="color: #dc3545;">[你已被对方拉黑]</span>`;
+        } else if (chat.isGroup) {
             if (lastMsgObj.type === 'pat_message') { lastMsgDisplay = `[系统消息] ${lastMsgObj.content}`; }
             else if (lastMsgObj.type === 'transfer') { lastMsgDisplay = '[转账]'; }
             else if (lastMsgObj.type === 'ai_image' || lastMsgObj.type === 'user_photo') { lastMsgDisplay = '[照片]'; }
@@ -16021,123 +15977,105 @@ async function renderChatList() {
             else if (typeof lastMsgObj.content === 'string' && STICKER_REGEX.test(lastMsgObj.content)) { lastMsgDisplay = lastMsgObj.meaning ? `[表情: ${lastMsgObj.meaning}]` : '[表情]'; }
             else if (Array.isArray(lastMsgObj.content)) { lastMsgDisplay = `[图片]`; }
             else { lastMsgDisplay = String(lastMsgObj.content || '...').substring(0, 20); }
-        
-            // 【核心修改】在这里，我们根据AI的本名(senderName)找到它在群里的昵称(groupNickname)
+
             if (lastMsgObj.senderName && lastMsgObj.type !== 'pat_message') {
-                const senderMember = chat.members.find(m => m.originalName === lastMsgObj.senderName);
-                const senderDisplayName = senderMember ? senderMember.groupNickname : lastMsgObj.senderName;
+                const senderDisplayName = getDisplayNameInGroup(chat, lastMsgObj.senderName);
                 lastMsgDisplay = `${senderDisplayName}: ${lastMsgDisplay}`;
             }
         } else {
-            // 单聊的逻辑保持不变
             const statusText = chat.status?.text || '在线';
             lastMsgDisplay = `[${statusText}]`;
         }
-        
-            const item = document.createElement('div');
-            item.className = 'chat-list-item';
-            item.dataset.chatId = chat.id;
-            if (chat.isPinned) {
-                item.classList.add('pinned');
-            }
-        
-            // ▼▼▼ 从这里开始是核心修改：为聊天列表也生成带框头像的HTML结构 ▼▼▼
-            const avatar = chat.isGroup ? chat.settings.groupAvatar : chat.settings.aiAvatar;
-            // 群聊列表项暂时不显示头像框，只为单聊显示
-            const avatarFrameSrc = chat.isGroup ? '' : (chat.settings.aiAvatarFrame || '');
-        
-            let avatarHtml;
-            if (avatarFrameSrc) {
-                avatarHtml = `
-                    <div class="avatar-with-frame">
-                        <img src="${avatar || defaultAvatar}" class="avatar-img">
-                        <img src="${avatarFrameSrc}" class="avatar-frame">
-                    </div>
-                `;
-            } else {
-                // 注意：这里的 class 依然是 'avatar'，以兼容旧的CSS样式
-                avatarHtml = `<img src="${avatar || defaultAvatar}" class="avatar">`;
-            }
-        
-            const hasFrameClass = avatarFrameSrc ? 'has-frame' : '';
-            // 使用与聊天界面一致的 .avatar-group 容器
-            const avatarGroupHtml = `<div class="avatar-group ${hasFrameClass}">${avatarHtml}</div>`;
-            // ▲▲▲ HTML结构升级结束 ▲▲▲
-        
-            item.innerHTML = `
-                ${avatarGroupHtml}
-                <div class="info">
-                    <div class="name-line">
-                        <span class="name">${chat.name}</span>
-                        ${chat.isGroup ? '<span class="group-tag">群聊</span>' : ''}
-                    </div>
-                    <div class="last-msg" style="color: ${chat.isGroup ? 'var(--text-secondary)' : '#b5b5b5'}; font-style: italic;">${lastMsgDisplay}</div>
-                </div>
-                <div class="unread-count-wrapper">
-                    <span class="unread-count" style="display: none;">0</span>
-                </div>
-            `;
-            
-            const unreadCount = chat.unreadCount || 0;
-            const unreadEl = item.querySelector('.unread-count');
-            if (unreadCount > 0) {
-                unreadEl.textContent = unreadCount > 99 ? '99+' : unreadCount;
-                unreadEl.style.display = 'inline-flex';
-            } else {
-                unreadEl.style.display = 'none';
-            }
-            
-            // ▼▼▼ 在这里开始修改 ▼▼▼
-            const avatarGroupEl = item.querySelector('.avatar-group');
-            if (avatarGroupEl) {
-                avatarGroupEl.style.cursor = 'pointer';
-                // 将 'click' 事件改为 'dblclick'
-               avatarGroupEl.addEventListener('dblclick', (e) => { // <--- 把 'click' 改为 'dblclick'
-        e.stopPropagation();
-        const nameToPat = chat.isGroup ? chat.name : chat.originalName;
-        handleUserPat(chat.id, nameToPat);
-    });
-            }
-            // ▲▲▲ 修改结束 ▲▲▲
-            
-            const infoEl = item.querySelector('.info');
-            if (infoEl) {
-                infoEl.addEventListener('click', () => openChat(chat.id));
-            }
-        
-            addLongPressListener(item, async (e) => {
-                const action = await showChatListActions(chat);
-                switch (action) {
-                    case 'pin':
-                        chat.isPinned = !chat.isPinned;
-                        await db.chats.put(chat);
-                        renderChatList();
-                        break;
-                    case 'delete':
-                        const deleteConfirmed = await showCustomConfirm(
-                            '删除对话', 
-                            `确定要删除与 "${chat.name}" 的整个对话吗？此操作不可撤销。`, 
-                            { confirmButtonClass: 'btn-danger' }
-                        );
-                        if (deleteConfirmed) {
-                            if (musicState.isActive && musicState.activeChatId === chat.id) {
-                                await endListenTogetherSession(false);
-                            }
-                            delete state.chats[chat.id];
-                            if (state.activeChatId === chat.id) {
-                                state.activeChatId = null;
-                            }
-                            await db.chats.delete(chat.id);
-                            renderChatList();
-                        }
-                        break;
-                    default:
-                        break;
-                }
-            });
-            return item;
+
+        const item = document.createElement('div');
+        item.className = 'chat-list-item';
+        item.dataset.chatId = chat.id;
+        if (chat.isPinned) {
+            item.classList.add('pinned');
         }
-        // ▲▲▲ 替换结束 ▲▲▲
+
+        const avatar = chat.isGroup ? chat.settings.groupAvatar : chat.settings.aiAvatar;
+        const avatarFrameSrc = chat.isGroup ? '' : (chat.settings.aiAvatarFrame || '');
+        let avatarHtml;
+        if (avatarFrameSrc) {
+            avatarHtml = `<div class="avatar-with-frame"><img src="${avatar || defaultAvatar}" class="avatar-img"><img src="${avatarFrameSrc}" class="avatar-frame"></div>`;
+        } else {
+            avatarHtml = `<img src="${avatar || defaultAvatar}" class="avatar">`;
+        }
+        const hasFrameClass = avatarFrameSrc ? 'has-frame' : '';
+        const avatarGroupHtml = `<div class="avatar-group ${hasFrameClass}">${avatarHtml}</div>`;
+
+        item.innerHTML = `
+            ${avatarGroupHtml}
+            <div class="info">
+                <div class="name-line">
+                    <span class="name">${chat.name}</span>
+                    ${chat.isGroup ? '<span class="group-tag">群聊</span>' : ''}
+                </div>
+                <div class="last-msg" style="color: ${chat.isGroup ? 'var(--text-secondary)' : '#b5b5b5'}; font-style: italic;">${lastMsgDisplay}</div>
+            </div>
+            <div class="unread-count-wrapper">
+                <span class="unread-count" style="display: none;">0</span>
+            </div>
+        `;
+        
+        const unreadCount = chat.unreadCount || 0;
+        const unreadEl = item.querySelector('.unread-count');
+        if (unreadCount > 0) {
+            unreadEl.textContent = unreadCount > 99 ? '99+' : unreadCount;
+            unreadEl.style.display = 'inline-flex';
+        } else {
+            unreadEl.style.display = 'none';
+        }
+        
+        const avatarGroupEl = item.querySelector('.avatar-group');
+        if (avatarGroupEl) {
+            avatarGroupEl.style.cursor = 'pointer';
+            avatarGroupEl.addEventListener('dblclick', (e) => {
+                e.stopPropagation();
+                const nameToPat = chat.isGroup ? chat.name : chat.originalName;
+                handleUserPat(chat.id, nameToPat);
+            });
+        }
+        
+        const infoEl = item.querySelector('.info');
+        if (infoEl) {
+            infoEl.addEventListener('click', () => openChat(chat.id));
+        }
+    
+        addLongPressListener(item, async (e) => {
+            const action = await showChatListActions(chat);
+            switch (action) {
+                case 'pin':
+                    chat.isPinned = !chat.isPinned;
+                    await db.chats.put(chat);
+                    renderChatList();
+                    break;
+                case 'delete':
+                    const deleteConfirmed = await showCustomConfirm('删除对话', `确定要删除与 "${chat.name}" 的整个对话吗？此操作不可撤销。`, { confirmButtonClass: 'btn-danger' });
+                    if (deleteConfirmed) {
+                        if (musicState.isActive && musicState.activeChatId === chat.id) {
+                            await endListenTogetherSession(false);
+                        }
+                        delete state.chats[chat.id];
+                        if (state.activeChatId === chat.id) state.activeChatId = null;
+                        await db.chats.delete(chat.id);
+                        renderChatList();
+                    }
+                    break;
+                default:
+                    break;
+            }
+        });
+        return item;
+
+    } catch (error) {
+        // 【核心新增】如果渲染过程中出错，就在控制台打印错误，并返回 null
+        console.error(`渲染聊天项 [${chat.name || '未知'}] (ID: ${chat.id}) 时出错:`, error);
+        return null; // 返回 null，这样就不会把一个坏掉的元素添加到页面上
+    }
+}
+// ▲▲▲ 替换结束 ▲▲▲
         
 /**
          * 【V3.1 | 旁观模式兼容版】渲染聊天界面
@@ -38902,6 +38840,23 @@ document.getElementById('send-btn').addEventListener('click', () => { // 注意�
             showScreen('home-screen');
         });
         // ▲▲▲ 替换结束 ▲▲▲
+// ▼▼▼ 【核心修复】请用这段新代码，替换旧的滚动事件监听器 ▼▼▼
+const messagesView = document.getElementById('messages-view'); // <--- 核心修改1：获取正确的滚动容器
+messagesView.addEventListener('scroll', () => { // <--- 核心修改2：在 messages-view 上监听
+    // 解构赋值获取滚动相关的属性
+    const { scrollTop, scrollHeight, clientHeight } = messagesView;
+
+    // 判断条件：当滚动条距离底部的距离小于一个屏幕的高度时
+    // 这个条件保持不变，是可靠的
+    if (scrollHeight - scrollTop - clientHeight < clientHeight) {
+        // 并且当前不处于加载状态
+        if (!isLoadingMoreChats) {
+            // 就触发加载下一页
+            loadMoreChats();
+        }
+    }
+});
+// ▲▲▲ 替换结束 ▲▲▲
         // ▼▼▼ 【请用这个新版本】替换旧的 save-api-settings-btn 事件监听器 ▼▼▼
         document.getElementById('save-api-settings-btn').addEventListener('click', async () => {
             // 保存主API
