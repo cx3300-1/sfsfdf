@@ -9549,6 +9549,55 @@ input, textarea, select {
         }
 
         /* ▲▲▲ 新增CSS粘贴结束 ▲▲▲ */
+/* ▼▼▼ 【全新】表情包搜索栏样式 ▼▼▼ */
+
+#sticker-search-container {
+    padding: 10px 15px; /* 在搜索框周围留出一些内边距 */
+    flex-shrink: 0; /* 防止被压缩 */
+    border-bottom: 1px solid var(--border-color); /* 在下方添加分割线 */
+    background-color: var(--secondary-bg); /* 确保背景色能适配夜间模式 */
+}
+
+#sticker-search-input {
+    width: 100%;
+    padding: 10px 15px;
+    font-size: 16px; /* 避免在iOS上输入时自动放大页面 */
+    border: 1px solid var(--border-color);
+    border-radius: 18px; /* 圆角矩形 */
+    background-color: #f0f2f5; /* 默认的浅灰色背景 */
+    box-sizing: border-box;
+    outline: none; /* 移除选中时的外框 */
+    -webkit-appearance: none; /* 移除iOS上的默认样式 */
+}
+
+#sticker-search-input:focus {
+    border-color: var(--accent-color); /* 选中时边框变为主题色 */
+    background-color: var(--secondary-bg); /* 选中时背景变为白色 */
+}
+
+/* 夜间模式适配 */
+#phone-screen.dark-mode #sticker-search-input {
+    background-color: #2c2c2e;
+    color: #f0f0f0;
+    border-color: #38383a;
+}
+#phone-screen.dark-mode #sticker-search-input:focus {
+    background-color: #38383a;
+}
+/* ▲▲▲ 新增CSS结束 ▲▲▲ */
+/* ▼▼▼ 【全新】引用跳转高亮效果 ▼▼▼ */
+
+/* 1. 为消息气泡的内容区添加一个平滑的背景色过渡效果 */
+.message-bubble .content {
+    transition: background-color 0.5s ease-out;
+}
+
+/* 2. 定义高亮时的背景色 */
+/*    我们使用 !important 来确保它能覆盖掉所有主题的默认颜色 */
+.message-bubble.highlighted .content {
+    background-color: rgba(0, 123, 255, 0.2) !important;
+}
+/* ▲▲▲ 新样式粘贴结束 ▲▲▲
     </style>
 </head>
 <body>
@@ -10267,6 +10316,7 @@ input, textarea, select {
 <button class="form-button form-button-secondary" id="cleanup-data-btn" style="background-color: #ffebee; color: #c62828; border-color: #ef9a9a; margin-top: 10px;">清理冗余数据</button>
 <!-- ▲▲▲ 粘贴结束 ▲▲▲ -->
 <button class="form-button form-button-secondary" id="clear-specific-data-btn" style="background-color: #ffcdd2; color: #b71c1c; border-color: #ef9a9a; margin-top: 10px;">高级数据清理</button>
+<button class="form-button form-button-secondary" id="check-and-fix-data-btn" style="background-color: #e3f2fd; color: #0d47a1; border-color: #bbdefb; margin-top: 10px;">数据检查与修复</button>
                 <input id="import-data-input" type="file" accept="application/json" hidden>
 
             </div>
@@ -10761,6 +10811,9 @@ input, textarea, select {
                 </div>
             </div>
             <div id="sticker-category-tabs"></div>
+<div id="sticker-search-container">
+    <input type="search" id="sticker-search-input" placeholder="搜索表情名称...">
+</div>
             <div id="sticker-grid"></div>
 
             <!-- 【核心修改】将旧的单个删除按钮，升级为一个包含“全选”和“删除”的操作栏 -->
@@ -11645,6 +11698,31 @@ input, textarea, select {
         </div>
     </div>
     <!-- ▲▲▲ 新HTML粘贴结束 ▲▲▲ -->
+<!-- ▼▼▼ 【全新】这是聊天记录搜索功能的HTML代码 ▼▼▼ -->
+<div id="search-history-screen" class="screen">
+    <div class="header">
+        <span class="back-btn" id="search-history-back-btn">‹</span>
+        <span>搜索聊天记录</span>
+        <span style="width: 30px;"></span>
+    </div>
+    <!-- 搜索条件输入区 -->
+    <div id="search-bar" style="padding: 10px 15px; border-bottom: 1px solid var(--border-color); background-color: var(--secondary-bg); flex-shrink: 0;">
+        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+            <input type="search" id="keyword-search-input" placeholder="输入关键词..." style="flex-grow: 1; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 16px;">
+            <input type="date" id="date-search-input" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 16px;">
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button id="execute-search-btn" class="form-button" style="margin-top: 0; flex-grow: 1;">搜索</button>
+            <button id="clear-search-btn" class="form-button form-button-secondary" style="margin-top: 0; flex-grow: 1;">重置</button>
+        </div>
+    </div>
+    <!-- 搜索结果显示区 -->
+ 
+    <div id="chat-search-results-list" class="list-container" style="padding: 15px; display: flex; flex-direction: column; gap: 15px;">
+        <!-- 聊天记录的搜索结果将在这里显示 -->
+    </div>
+</div>
+<!-- ▲▲▲ 新增HTML结束 ▲▲▲ -->
 <!-- =================================================================== -->
 <!-- ▲▲▲ 替换结束 ▲▲▲ -->
 <!-- =================================================================== -->
@@ -11776,31 +11854,7 @@ input, textarea, select {
     <input type="file" id="import-card-input" accept=".json,.png" style="display: none;">
    <input type="file" id="import-world-book-input" accept=".json" style="display: none;">
 
-<!-- ▼▼▼ 【全新】这是聊天记录搜索功能的HTML代码 ▼▼▼ -->
-<div id="search-history-screen" class="screen">
-    <div class="header">
-        <span class="back-btn" id="search-history-back-btn">‹</span>
-        <span>搜索聊天记录</span>
-        <span style="width: 30px;"></span>
-    </div>
-    <!-- 搜索条件输入区 -->
-    <div id="search-bar" style="padding: 10px 15px; border-bottom: 1px solid var(--border-color); background-color: var(--secondary-bg); flex-shrink: 0;">
-        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-            <input type="search" id="keyword-search-input" placeholder="输入关键词..." style="flex-grow: 1; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 16px;">
-            <input type="date" id="date-search-input" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 16px;">
-        </div>
-        <div style="display: flex; gap: 10px;">
-            <button id="execute-search-btn" class="form-button" style="margin-top: 0; flex-grow: 1;">搜索</button>
-            <button id="clear-search-btn" class="form-button form-button-secondary" style="margin-top: 0; flex-grow: 1;">重置</button>
-        </div>
-    </div>
-    <!-- 搜索结果显示区 -->
- 
-    <div id="chat-search-results-list" class="list-container" style="padding: 15px; display: flex; flex-direction: column; gap: 15px;">
-        <!-- 聊天记录的搜索结果将在这里显示 -->
-    </div>
-</div>
-<!-- ▲▲▲ 新增HTML结束 ▲▲▲ -->
+
     <div id="persona-library-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header"><span>我的人设库</span><button id="add-persona-preset-btn" class="action-button">添加</button></div>
@@ -16576,91 +16630,88 @@ async function renderChatList() {
         }
         // ▲▲▲ 替换结束 ▲▲▲
         
-        // ▼▼▼ 【请用这个支持分类的 V2.0 版本】替换旧的 renderStickerPanel 函数 ▼▼▼
-        /**
-         * 【V2.0 | 分类支持版】渲染表情面板
-         * @param {boolean} rerenderTabs - 是否需要重新渲染顶部的分类页签
-         */
-        async function renderStickerPanel(rerenderTabs = true) {
-            const grid = document.getElementById('sticker-grid');
-            const tabsContainer = document.getElementById('sticker-category-tabs');
-            
-            // --- 1. 渲染分类页签 (仅在需要时) ---
-            if (rerenderTabs) {
-                tabsContainer.innerHTML = '';
-                const categories = await db.stickerCategories.toArray();
-                
-                // 添加“全部”和“未分类”页签
-                tabsContainer.innerHTML += `
-                    <button class="sticker-category-tab ${activeStickerCategoryId === 'all' ? 'active' : ''}" data-category-id="all">全部</button>
-                `;
-                categories.forEach(cat => {
-                     tabsContainer.innerHTML += `
-                        <button class="sticker-category-tab ${activeStickerCategoryId === cat.id ? 'active' : ''}" data-category-id="${cat.id}">${cat.name}</button>
-                    `;
-                });
-                tabsContainer.innerHTML += `
-                    <button class="sticker-category-tab ${activeStickerCategoryId === 'uncategorized' ? 'active' : ''}" data-category-id="uncategorized">未分类</button>
-                `;
-            }
+// ▼▼▼ 【请用这个支持搜索的 V3.0 版本】替换旧的 renderStickerPanel 函数 ▼▼▼
+/**
+ * 【V3.0 | 搜索支持版】渲染表情面板
+ * @param {boolean} rerenderTabs - 是否需要重新渲染顶部的分类页签
+ */
+async function renderStickerPanel(rerenderTabs = true) {
+    const grid = document.getElementById('sticker-grid');
+    const tabsContainer = document.getElementById('sticker-category-tabs');
+    const searchInput = document.getElementById('sticker-search-input');
+    const searchTerm = searchInput.value.trim().toLowerCase();
 
-            // --- 2. 渲染表情网格 ---
-            grid.innerHTML = '';
-            
-            // 根据当前选中的分类筛选表情
-            let stickersToShow;
-            if (activeStickerCategoryId === 'all') {
-                stickersToShow = state.userStickers;
-            } else if (activeStickerCategoryId === 'uncategorized') {
-                stickersToShow = state.userStickers.filter(s => !s.categoryId);
+    // --- 1. 渲染分类页签 (仅在需要时) ---
+    if (rerenderTabs) {
+        tabsContainer.innerHTML = '';
+        const categories = await db.stickerCategories.toArray();
+        
+        tabsContainer.innerHTML += `<button class="sticker-category-tab ${activeStickerCategoryId === 'all' ? 'active' : ''}" data-category-id="all">全部</button>`;
+        categories.forEach(cat => {
+             tabsContainer.innerHTML += `<button class="sticker-category-tab ${activeStickerCategoryId === cat.id ? 'active' : ''}" data-category-id="${cat.id}">${cat.name}</button>`;
+        });
+        tabsContainer.innerHTML += `<button class="sticker-category-tab ${activeStickerCategoryId === 'uncategorized' ? 'active' : ''}" data-category-id="uncategorized">未分类</button>`;
+    }
+
+    // --- 2. 【核心修改】筛选表情 ---
+    grid.innerHTML = '';
+    
+    // 步骤 a: 先根据当前选中的分类筛选
+    let stickersByCategory;
+    if (activeStickerCategoryId === 'all') {
+        stickersByCategory = state.userStickers;
+    } else if (activeStickerCategoryId === 'uncategorized') {
+        stickersByCategory = state.userStickers.filter(s => !s.categoryId);
+    } else {
+        stickersByCategory = state.userStickers.filter(s => s.categoryId === activeStickerCategoryId);
+    }
+
+    // 步骤 b: 如果有搜索词，在分类结果的基础上进一步筛选
+    const stickersToShow = searchTerm
+        ? stickersByCategory.filter(sticker => sticker.name.toLowerCase().includes(searchTerm))
+        : stickersByCategory;
+
+    // --- 3. 渲染最终结果 (这部分逻辑不变) ---
+    if (stickersToShow.length === 0) {
+        const message = searchTerm ? '找不到匹配的表情' : '这个分类下还没有表情哦~';
+        grid.innerHTML = `<p style="text-align:center; color: var(--text-secondary); grid-column: 1 / -1; padding-top: 20px;">${message}</p>`;
+        return;
+    }
+
+    stickersToShow.forEach(sticker => {
+        const item = document.createElement('div');
+        item.className = 'sticker-item';
+        item.title = sticker.name;
+        item.dataset.stickerId = sticker.id;
+        item.innerHTML = `
+            <div class="sticker-image-container" style="background-image: url(${sticker.url})"></div>
+            <span class="sticker-name">${sticker.name}</span>
+        `;
+        item.addEventListener('click', () => {
+            if (isStickerManagementMode) {
+                handleStickerSelection(item);
             } else {
-                stickersToShow = state.userStickers.filter(s => s.categoryId === activeStickerCategoryId);
+                sendSticker(sticker);
             }
-
-            if (stickersToShow.length === 0) {
-                grid.innerHTML = '<p style="text-align:center; color: var(--text-secondary); grid-column: 1 / -1; padding-top: 20px;">这个分类下还没有表情哦~</p>';
-                return;
+        });
+        const deleteBtn = document.createElement('div');
+        deleteBtn.className = 'delete-btn';
+        deleteBtn.innerHTML = '&times;';
+        deleteBtn.onclick = async (e) => {
+            e.stopPropagation();
+            const confirmed = await showCustomConfirm('删除表情', `确定要删除表情 "${sticker.name}" 吗？`, { confirmButtonClass: 'btn-danger' });
+            if (confirmed) {
+                await db.userStickers.delete(sticker.id);
+                state.userStickers = state.userStickers.filter(s => s.id !== sticker.id);
+                renderStickerPanel();
             }
+        };
+        item.appendChild(deleteBtn);
+        grid.appendChild(item);
+    });
+}
+// ▲▲▲ 替换结束 ▲▲▲
 
-            stickersToShow.forEach(sticker => {
-                const item = document.createElement('div');
-                item.className = 'sticker-item';
-                item.title = sticker.name;
-                item.dataset.stickerId = sticker.id;
-
-                // 创建图片容器和名称标签
-                item.innerHTML = `
-                    <div class="sticker-image-container" style="background-image: url(${sticker.url})"></div>
-                    <span class="sticker-name">${sticker.name}</span>
-                `;
-
-                item.addEventListener('click', () => {
-                    if (isStickerManagementMode) {
-                        handleStickerSelection(item);
-                    } else {
-                        sendSticker(sticker);
-                    }
-                });
-
-                const deleteBtn = document.createElement('div');
-                deleteBtn.className = 'delete-btn';
-                deleteBtn.innerHTML = '&times;';
-                deleteBtn.onclick = async (e) => {
-                    e.stopPropagation();
-                    const confirmed = await showCustomConfirm('删除表情', `确定要删除表情 "${sticker.name}" 吗？`, { confirmButtonClass: 'btn-danger' });
-                    if (confirmed) {
-                        await db.userStickers.delete(sticker.id);
-                        state.userStickers = state.userStickers.filter(s => s.id !== sticker.id);
-                        renderStickerPanel(); // Refresh the panel after deletion
-                    }
-                };
-                
-                // 将删除按钮添加到总容器的右上角
-                item.appendChild(deleteBtn);
-                grid.appendChild(item);
-            });
-        }
-        // ▲▲▲ 替换结束 ▲▲▲
         // ▼▼▼ 【全新】表情批量删除核心功能 ▼▼▼
         let isStickerManagementMode = false;
         let selectedStickers = new Set();
@@ -16887,37 +16938,35 @@ async function renderChatList() {
             }
         }
         // ▲▲▲ 替换结束 ▲▲▲
-        /**
-         * 【全新】滚动到并高亮显示原始消息
-         * @param {number} originalTimestamp - 要跳转到的原始消息的时间戳
-         */
-        function scrollToOriginalMessage(originalTimestamp) {
-            // 1. 构建选择器，精确查找原始消息的 DOM 元素
-            const selector = `.message-bubble[data-timestamp="${originalTimestamp}"]`;
-            const originalMessageBubble = document.querySelector(selector);
-        
-            // 2. 检查消息是否在当前屏幕上
-            if (originalMessageBubble) {
-                // 3. 如果找到了，就平滑地滚动到它的位置
-                originalMessageBubble.scrollIntoView({
-                    behavior: 'smooth', // 平滑滚动
-                    block: 'center'     // 尽量让它停在屏幕中央
-                });
-        
-                // 4. 添加高亮效果，并在1.5秒后自动移除
-                originalMessageBubble.classList.add('highlighted');
-                setTimeout(() => {
-                    // 在移除前再次检查元素是否存在，避免在用户快速切换页面时出错
-                    if (document.body.contains(originalMessageBubble)) {
-                        originalMessageBubble.classList.remove('highlighted');
-                    }
-                }, 1500); // 高亮持续1.5秒
-        
-            } else {
-                // 5. 如果在当前加载的消息中找不到，给用户一个提示
-                alert("原始消息尚未加载，请向上滑动加载更早的记录后再试。");
+/**
+ * 【辅助函数】滚动到并高亮显示原始消息
+ * @param {number} originalTimestamp - 要跳转到的原始消息的时间戳
+ */
+function scrollToOriginalMessage(originalTimestamp) {
+    const selector = `.message-bubble[data-timestamp="${originalTimestamp}"]`;
+    const originalMessageBubble = document.querySelector(selector);
+
+    if (originalMessageBubble) {
+        originalMessageBubble.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+        });
+
+        originalMessageBubble.classList.add('highlighted');
+        setTimeout(() => {
+            if (document.body.contains(originalMessageBubble)) {
+                originalMessageBubble.classList.remove('highlighted');
             }
-        }
+        }, 1500); // 高亮持续1.5秒
+
+    } else {
+        // 只有在所有尝试都失败后才提示用户
+        alert("找不到原始消息。可能已被删除或位于更早的历史记录中。");
+    }
+}
+
+
+// ▲▲▲ 新增代码粘贴结束 ▲▲▲
         // ▼▼▼ 【最终修复版】请用这个全新的函数，完整替换旧的 createMessageElement 函数 ▼▼▼
         async function createMessageElement(msg, chat) {
         
@@ -26251,9 +26300,8 @@ function robustJsonParse(rawContent) {
 }
 
 
-        // ▼▼▼ 【请用这个全新的、增加了“用户确认”安全机制的版本】完整替换旧函数 ▼▼▼
-        /**
-         * 【全新V3.0 | 支持自定义字数 | 记忆互通版 | 终极容错 | 用户确认】手动触发对【现有长期记忆】的总结和精炼
+/**
+         * 【V3.0 | 支持自定义字数 | 记忆互通版 | 终极容错 | 用户确认 | 可选条数 | 最终修复版】手动触发对【现有长期记忆】的总结和精炼
          * @param {string} chatId - 当前聊天的ID (可能是群聊ID)
          */
         async function summarizeExistingLongTermMemory(chatId) {
@@ -26291,12 +26339,46 @@ function robustJsonParse(rawContent) {
                 alert(`“${targetChatForRefine.name}”的长期记忆少于2条，无需进行精炼。`);
                 return;
             }
-        
-            // ▼▼▼ 核心修改1：在这里获取原始记忆的数量，用于后续提示 ▼▼▼
-            const originalMemoryCount = targetChatForRefine.longTermMemory.length;
+            
+            const totalMemories = targetChatForRefine.longTermMemory.length;
+            const choice = await showChoiceModal('选择精炼范围', [
+                { text: `全部记忆 (${totalMemories}条)`, value: 'all' },
+                { text: `最近 20 条`, value: '20' },
+                { text: `最近 50 条`, value: '50' },
+                { text: `最近 100 条`, value: '100' },
+                { text: '自定义数量...', value: 'custom' }
+            ].filter(opt => opt.value === 'all' || opt.value === 'custom' || parseInt(opt.value) < totalMemories)
+            );
 
+            if (choice === null) return;
+
+            let memoriesToRefine;
+            let countToRefine = totalMemories;
+
+            if (choice === 'all') {
+                memoriesToRefine = [...targetChatForRefine.longTermMemory];
+            } else if (choice === 'custom') {
+                const customCountStr = await showCustomPrompt('自定义数量', `请输入要精炼的最近记忆条数 (最多 ${totalMemories} 条)`);
+                if (customCountStr === null) return;
+                const customCount = parseInt(customCountStr);
+                if (isNaN(customCount) || customCount < 2 || customCount > totalMemories) {
+                    alert(`请输入一个 2 到 ${totalMemories} 之间的有效数字。`);
+                    return;
+                }
+                countToRefine = customCount;
+                memoriesToRefine = targetChatForRefine.longTermMemory.slice(-countToRefine);
+            } else {
+                countToRefine = parseInt(choice);
+                if (countToRefine >= totalMemories) {
+                    memoriesToRefine = [...targetChatForRefine.longTermMemory];
+                    countToRefine = totalMemories;
+                } else {
+                    memoriesToRefine = targetChatForRefine.longTermMemory.slice(-countToRefine);
+                }
+            }
+            
             const wordCountStr = await showCustomPrompt(
-                `为“${targetChatForRefine.name}”精炼记忆`,
+                "设置精炼字数",
                 "请输入精炼后核心记忆的大致字数：",
                 "150"
             );
@@ -26311,82 +26393,80 @@ function robustJsonParse(rawContent) {
         
             const confirmed = await showCustomConfirm(
                 '确认精炼记忆？',
-                `此操作会将“${targetChatForRefine.name}”的 ${originalMemoryCount} 条长期记忆总结成大约 ${wordCount} 字的核心记忆。旧的记忆将被替换，此操作不可撤销。确定要继续吗？`,
+                `此操作会将选定的 ${countToRefine} 条长期记忆发送给AI，总结成大约 ${wordCount} 字的核心记忆。这些旧记忆将被替换，此操作不可撤销。确定要继续吗？`,
                 { confirmButtonClass: 'btn-danger', confirmText: '确认精炼' }
             );
         
             if (!confirmed) return;
         
-            const memoryContent = targetChatForRefine.longTermMemory.map(mem => `- ${mem.content}`).join('\n');
+            const memoryContent = memoriesToRefine.map(mem => `- ${mem.content}`).join('\n');
             const userNickname = state.qzoneSettings.nickname || '用户';
         
-            const systemPrompt = `
-# 你的任务
-你就是角色“${targetChatForRefine.originalName}”。现在，请你静下心来，回顾一下你脑海中这些零散的记忆片段。你的任务是将它们整合成一段【第一人称 ("我")】的、流畅连贯的内心独白或回忆录。
+            const systemPrompt = ` 
+     # 你的任务 
+     你是一个记忆整合专家。你的唯一任务是阅读下面提供的、已经经过初步总结的“记忆要点列表”，并将它们整合成一个更加精炼、连贯、更高层次的核心记忆摘要。 
+      
+     # 核心规则 
+     1.  **保留关键信息**: 必须保留所有关键的人物、事件、设定和情感关系。绝对不能遗忘任何重要细节。 
+     2.  **消除冗余**: 移除重复的、或已经不再重要的旧信息。 
+     3.  **建立联系**: 将孤立的记忆点串联起来，形成一个有逻辑、有因果关系的故事线或人物档案。 
+     4.  **客观视角**: 使用客观的第三人称进行总结。请严格使用“${userNickname}”（代表用户）和“${targetChatForRefine.originalName}”（代表AI角色）来指代对话双方。 
+     5.  **长度铁律**: 最终的摘要总长度应严格控制在【${wordCount}个字】左右。 
+     6.  **输出格式**: 你的回复【必须且只能】是一个JSON对象，格式如下： 
+         \`{"summary": "在这里写下你整合并精炼后的核心记忆摘要。"}\` 
 
-# 核心要求
-1.  **视角铁律**: 你的总结【必须】使用【主观的第一人称视角 ("我")】来写。
-2.  **内容核心**: 你的回忆录应该包含：
-    *   **剧情回顾**: 提炼出关键的事件和情节。
-    *   **心理活动**: 描述“我”在这些事件中的真实感受、想法和情感变化。
-    *   **关系梳理**: 提及“我”与“${userNickname}”（用户）或其他重要人物的关系发展。
-3.  **口吻与人设**: 你的行文风格和语气【必须】严格符合你的角色设定。
-4.  **长度要求**: 最终的回忆录总长度应控制在 **${wordCount} 个字** 左右。
-5.  **格式要求**: 你的回复【必须且只能】是一个JSON对象，格式如下：
-    \`{"summary": "在这里写下你以第一人称视角，整合并精炼后的核心回忆录。"}\`
+     # 情感处理铁律 (新增的核心规则)
+     -   **注重微妙之处**: 在描述心理活动时，请注重情感的复杂性和微妙之处。避免将短暂的、轻微的情绪总结为角色的主要心态。
+     -   **禁止夸大**: 【绝对禁止】夸大或扭曲记忆中的情绪。如果只是轻微的情绪，就必须如实反映，不能将其强化。
+     -   **举例**: 如果多条记忆中只有一条提到了“有点不开心”，而其他都在描述日常，那么你的总结应该是平和的，并只在适当的时候提及“有过一丝不快”，而不是将“愤怒”作为总结的核心情绪。
 
-# 你的角色设定
-${targetChatForRefine.settings.aiPersona}
-
-# 待整理的记忆片段
-${memoryContent}
-
-现在，请以“${targetChatForRefine.originalName}”的身份，开始你的回忆与思考。
-`;
-        
+     # 待整合的记忆要点列表 
+     ${memoryContent} 
+      
+     现在，请根据以上所有规则，开始你的整合工作。`;
+      
             await showCustomAlert("请稍候...", "正在请求AI进行记忆精炼...");
         
             try {
                 const useSecondaryApi = state.apiConfig.secondaryProxyUrl && state.apiConfig.secondaryApiKey && state.apiConfig.secondaryModel;
-                const { proxyUrl, apiKey, model } = useSecondaryApi
-                    ? { proxyUrl: state.apiConfig.secondaryProxyUrl, apiKey: state.apiConfig.secondaryApiKey, model: state.apiConfig.secondaryModel }
+                const { proxyUrl, apiKey, model } = useSecondaryApi 
+                    ? { proxyUrl: state.apiConfig.secondaryProxyUrl, apiKey: state.apiConfig.secondaryApiKey, model: state.apiConfig.secondaryModel } 
                     : state.apiConfig;
         
-                if (!proxyUrl || !apiKey || !model) throw new Error('API未配置');
+                if (!proxyUrl || !apiKey || !model) {
+                    throw new Error('请先在API设置中配置好（主或副）API以进行总结。');
+                }
         
                 let isGemini = proxyUrl.includes('generativelanguage');
                 let geminiConfig = toGeminiRequestData(model, apiKey, systemPrompt, [{ role: 'user', content: "请开始整合。" }]);
         
-                const response = isGemini
-                    ? await fetch(geminiConfig.url, geminiConfig.data)
+                const response = isGemini 
+                    ? await fetch(geminiConfig.url, geminiConfig.data) 
                     : await fetch(`${proxyUrl}/v1/chat/completions`, {
                         method: 'POST',
-                        headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}`},
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
                         body: JSON.stringify({
                             model: model,
-                            messages: [{role: 'system', content: systemPrompt}, {role: 'user', content: "请开始整合。"}],
-                            temperature: 0.1,
-                            max_tokens: wordCount + 500 // 留出一些余量
+                            messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: "请开始整合。" }],
+                            temperature: 0.2,
                         })
                     });
         
                 if (!response.ok) throw new Error(`API 错误: ${response.statusText}`);
         
                 const data = await response.json();
-                const rawContent = isGemini ? getGeminiResponseText(data) : data.choices[0].message.content;
+                let rawContent = isGemini ? getGeminiResponseText(data) : data.choices[0].message.content;
+                rawContent = rawContent.replace(/^```json\s*/, '').replace(/```$/, '').trim();
+                const result = JSON.parse(rawContent);
         
-                const result = robustJsonParse(rawContent);
-        
-                if (result && result.summary && result.summary.trim().length > 10) {
+                if (result.summary && typeof result.summary === 'string' && result.summary.trim()) {
                     
-                    // ▼▼▼ 核心修改2：不再立即保存，而是弹出新的确认框让用户审核 ▼▼▼
                     const userConfirmedReplacement = await showCustomConfirm(
-    '精炼完成，请确认',
-    `AI已将您的 ${originalMemoryCount} 条旧记忆总结为以下核心记忆：<br><br><div class="scrollable-content-preview">${result.summary.trim()}</div><br>是否用这条新记忆替换掉旧的记忆？`,
-    { confirmText: '确认替换', cancelText: '保留旧的', confirmButtonClass: 'btn-danger' }
-);
+                        '精炼完成，请确认',
+                        `AI已将您的 ${countToRefine} 条旧记忆总结为以下核心记忆：<br><br><div class="scrollable-content-preview">${result.summary.trim()}</div><br>是否用这条新记忆替换掉这些旧记忆？`,
+                        { confirmText: '确认替换', cancelText: '保留旧的', confirmButtonClass: 'btn-danger' }
+                    );
 
-                    // ▼▼▼ 核心修改3：只有当用户明确点击“确认替换”后，才执行覆盖操作 ▼▼▼
                     if (userConfirmedReplacement) {
                         const newMemoryEntry = {
                             content: result.summary.trim(),
@@ -26394,26 +26474,37 @@ ${memoryContent}
                             source: 'refined'
                         };
             
-                        targetChatForRefine.longTermMemory = [newMemoryEntry];
+                        // ▼▼▼ 【核心修改 ④】全新的、更可靠的替换逻辑 ▼▼▼
+                        
+                        // 计算需要保留的旧记忆的起始索引。
+                        const startIndex = totalMemories - countToRefine;
+                        
+                        // 提取出不需要被替换的、更早的记忆。
+                        const memoriesToKeep = startIndex > 0 ? targetChatForRefine.longTermMemory.slice(0, startIndex) : [];
+
+                        // 构建全新的记忆数组：由“保留的旧记忆”和“新生成的精炼记忆”组成。
+                        targetChatForRefine.longTermMemory = [...memoriesToKeep, newMemoryEntry];
+                        
+                        // ▲▲▲ 【核心修改 ④】结束 ▲▲▲
+                        
                         targetChatForRefine.lastMemorySummaryTimestamp = Date.now();
                         await db.chats.put(targetChatForRefine);
                         
                         if (document.getElementById('long-term-memory-screen').classList.contains('active')) {
                             renderLongTermMemoryList();
                         }
-                        await showCustomAlert('精炼成功', `已成功将“${targetChatForRefine.name}”的记忆精炼为 1 条核心记忆！`);
+                        await showCustomAlert('精炼成功', `已成功将 ${countToRefine} 条记忆精炼为 1 条核心记忆！`);
                     } else {
-                        // ▼▼▼ 核心修改4：如果用户取消，给出明确提示 ▼▼▼
                         await showCustomAlert('操作已取消', '您的旧有记忆已被完整保留，未作任何修改。');
                     }
                     
                 } else {
-                    throw new Error(`AI返回了空的或无效的总结内容。您的原始记忆已被保留。\n\n原始返回: ${rawContent}`);
+                    throw new Error("AI返回了空的或格式不正确的总结内容。");
                 }
         
             } catch (error) {
                 console.error("精炼长期记忆时出错:", error);
-                await showCustomAlert('精炼失败', `操作失败，您的记忆未被修改: ${error.message}`);
+                await showCustomAlert('精炼失败', `操作失败，请检查API配置或稍后重试。\n错误信息: ${error.message}`);
             }
         }
         // ▲▲▲ 替换结束 ▲▲▲
@@ -34916,7 +35007,6 @@ async function handleSearchHistory() {
  * @param {Array} results - 筛选后的消息对象数组
  */
 async function renderSearchResults(results) {
-    // ★★★ 核心修改：指向新的ID ★★★
     const listEl = document.getElementById('chat-search-results-list');
     const chat = state.chats[state.activeChatId];
     listEl.innerHTML = '';
@@ -34931,7 +35021,6 @@ async function renderSearchResults(results) {
         const msgDate = new Date(msg.timestamp);
         const currentDateString = msgDate.toLocaleDateString();
 
-        // 如果是新的一天，添加日期分隔符
         if (currentDateString !== lastDateString) {
             const dateSeparator = document.createElement('div');
             dateSeparator.className = 'date-separator';
@@ -34940,31 +35029,60 @@ async function renderSearchResults(results) {
             lastDateString = currentDateString;
         }
 
-        // 复用现有的 createMessageElement 函数来创建消息气泡
         const messageEl = await createMessageElement(msg, chat);
         if (messageEl) {
-            // 为结果项添加点击事件，以便跳转
+            // ▼▼▼ 核心修改就在这里 ▼▼▼
+            // 1. 添加手型光标，提示用户这是可以点击的
             messageEl.style.cursor = 'pointer';
+            // 2. 为消息元素绑定点击事件，调用我们新的跳转函数
             messageEl.addEventListener('click', () => jumpToOriginalMessage(msg.timestamp));
+            // ▲▲▲ 修改结束 ▲▲▲
             listEl.appendChild(messageEl);
         }
     }
 }
 
+// ▼▼▼ 【全新】这是聊天记录搜索跳转功能的核心代码，请完整粘贴 ▼▼▼
+
 /**
- * 从搜索结果跳转回原始消息位置
+ * 【总入口】从搜索结果跳转回原始消息位置
  * @param {number} timestamp - 目标消息的时间戳
  */
-function jumpToOriginalMessage(timestamp) {
-    // 1. 切换回聊天界面
+async function jumpToOriginalMessage(timestamp) {
+    const chatId = state.activeChatId;
+    if (!chatId) return;
+
+    // 1. 切换到聊天界面 (这会触发 renderChatInterface 渲染最新的消息)
     showScreen('chat-interface-screen');
-    
-    // 2. 延迟一小段时间，确保UI已切换完成
-    setTimeout(() => {
-        // 3. 调用我们之前已有的高亮滚动函数
+
+    // 2. 使用一个短暂的延迟来确保屏幕切换和初始渲染已完成
+    setTimeout(async () => {
+        const messagesContainer = document.getElementById('chat-messages');
+        const selector = `.message-bubble[data-timestamp="${timestamp}"]`;
+        let targetMessage = messagesContainer.querySelector(selector);
+        let attempts = 0; // 防止无限循环
+        const maxAttempts = 20; // 最多向上加载20次
+
+        // 3. 循环检查：如果目标消息不在当前DOM中，就模拟点击“加载更早记录”
+        while (!targetMessage && attempts < maxAttempts) {
+            const loadMoreBtn = document.getElementById('load-more-btn');
+            if (loadMoreBtn) {
+                console.log(`目标消息未找到, 正在加载更多历史记录... (尝试 ${attempts + 1})`);
+                await loadMoreMessages(); // 等待加载完成
+                targetMessage = messagesContainer.querySelector(selector);
+                attempts++;
+            } else {
+                // 如果没有“加载更多”按钮了，说明所有消息都已加载
+                break;
+            }
+        }
+
+        // 4. 调用最终的滚动和高亮函数
         scrollToOriginalMessage(timestamp);
-    }, 100);
+
+    }, 200); // 延迟200毫秒足以确保UI准备就绪
 }
+
 
 
 /**
@@ -38091,7 +38209,58 @@ function checkGameOver() {
 }
 
 // ▲▲▲ 新增函数粘贴结束 ▲▲▲
+/**
+ * 【全新】检查并修复数据库与内存状态不一致的问题
+ */
+async function checkAndFixData() {
+    // 1. 弹出警告，让用户确认操作
+    const confirmed = await showCustomConfirm(
+        '确认操作',
+        '此功能将扫描数据库，尝试找出并修复“角色在数据库中存在，但未在聊天列表显示”的问题。<br><br><strong>操作通常是安全的，但仍建议在操作前备份数据。</strong>',
+        { confirmText: '开始检查' }
+    );
 
+    if (!confirmed) return;
+
+    // 2. 显示处理中的提示
+    await showCustomAlert("请稍候...", "正在扫描和对比数据...");
+
+    try {
+        // 3. 从数据库中获取所有聊天记录
+        const chatsFromDB = await db.chats.toArray();
+        // 4. 获取当前内存中已加载的所有聊天ID
+        const chatsInMemoryIds = new Set(Object.keys(state.chats));
+        
+        let fixedCount = 0;
+        
+        // 5. 遍历数据库中的每一条聊天记录
+        for (const chat of chatsFromDB) {
+            // 6. 如果发现某条记录不在内存中，就进行修复
+            if (!chatsInMemoryIds.has(chat.id)) {
+                console.warn(`发现不一致数据：聊天 "${chat.name}" (ID: ${chat.id}) 存在于数据库但未加载到内存中。正在修复...`);
+                // 7. 修复操作：将这条“丢失”的数据重新加回内存中的 state.chats 对象
+                state.chats[chat.id] = chat;
+                fixedCount++;
+            }
+        }
+
+        // 8. 根据修复结果，向用户反馈
+        if (fixedCount > 0) {
+            await showCustomAlert(
+                '修复完成！',
+                `成功找到了 ${fixedCount} 个“丢失”的角色并已将其恢复到列表中！\n\n建议刷新页面以确保所有更改完全生效。`
+            );
+            // 重新渲染聊天列表，让修复的角色立刻显示出来
+            await renderChatList(); 
+        } else {
+            await showCustomAlert('检查完成', '未发现任何数据不一致的问题。');
+        }
+
+    } catch (error) {
+        console.error("数据检查与修复失败:", error);
+        await showCustomAlert('操作失败', `执行检查时发生错误: ${error.message}`);
+    }
+}
 
 
               // ===================================================================
@@ -42621,8 +42790,27 @@ document.getElementById('cancel-werewolf-lobby-btn').addEventListener('click', (
 // ▲▲▲ 新增代码结束 ▲▲▲
 document.getElementById('werewolf-retry-btn').addEventListener('click', handleWerewolfRetry);
 document.getElementById('manual-werewolf-summary-btn').addEventListener('click', handleManualWerewolfSummary);
+document.getElementById('check-and-fix-data-btn').addEventListener('click', checkAndFixData);
+// ▼▼▼ 【全新】表情包搜索功能事件绑定 ▼▼▼
+document.getElementById('sticker-search-input').addEventListener('input', () => {
+    // 用户输入时，只需要重绘表情网格，不需要重绘顶部的页签
+    renderStickerPanel(false); 
+});
 
-
+// 【修正】当切换分类时，清空搜索框并刷新
+document.getElementById('sticker-category-tabs').addEventListener('click', (e) => {
+    if (e.target.classList.contains('sticker-category-tab')) {
+        const categoryId = e.target.dataset.categoryId;
+        const finalId = (categoryId !== 'all' && categoryId !== 'uncategorized') ? parseInt(categoryId) : categoryId;
+        
+        // 清空搜索框的值
+        document.getElementById('sticker-search-input').value = ''; 
+        
+        // 调用我们现有的切换函数
+        switchStickerCategory(finalId);
+    }
+});
+// ▲▲▲ 新增代码结束 ▲▲▲
 
 
 
