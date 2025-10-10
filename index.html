@@ -10352,6 +10352,7 @@ input, textarea, select {
                 <button class="form-button" id="import-btn">导入备份文件</button>
 <!-- ▼▼▼ 在这里粘贴下面的新按钮代码 ▼▼▼ -->
 <button class="form-button form-button-secondary" id="cleanup-data-btn" style="background-color: #ffebee; color: #c62828; border-color: #ef9a9a; margin-top: 10px;">清理冗余数据</button>
+<button class="form-button form-button-secondary" id="delete-world-books-btn" style="background-color: #ffebee; color: #c62828; border-color: #ef9a9a; margin-top: 10px;">删除世界书</button>
 <!-- ▲▲▲ 粘贴结束 ▲▲▲ -->
 <button class="form-button form-button-secondary" id="clear-specific-data-btn" style="background-color: #ffcdd2; color: #b71c1c; border-color: #ef9a9a; margin-top: 10px;">高级数据清理</button>
 <button class="form-button form-button-secondary" id="check-and-fix-data-btn" style="background-color: #e3f2fd; color: #0d47a1; border-color: #bbdefb; margin-top: 10px;">数据检查与修复</button>
@@ -12916,6 +12917,9 @@ let werewolfGameState = {
                 const audioPlayer = document.getElementById('audio-player');
                 let newWallpaperBase64 = null;
                 let isSelectionMode = false;
+let cphoneRenderedCount = 0;
+let cphoneActiveConversationType = null; // 用于记录Cphone中当前打开的对话类型
+let isLoadingMoreCphoneMessages = false;
         let activeStickerCategoryId = 'all'; // 用于跟踪当前选中的表情分类
                 let selectedMessages = new Set();
                 let editingMemberId = null;
@@ -21439,7 +21443,8 @@ for (const action of responseArray) {
                     
                     let aiMessage = null;
                     const baseMessage = { role: 'assistant', senderName: chat.originalName, timestamp: actionTimestamp++ };
-        
+            // ▼▼▼ 核心修改：将通知逻辑移到这里 ▼▼▼
+            let notificationText = null;        
                     switch (action.type) {
                         case 'qzone_delete_post': {
             const postIdToDelete = parseInt(action.postId);
@@ -26121,8 +26126,10 @@ async function handleDeleteMemory(authorChatId, memoryTimestamp) {
                 await triggerAutoSummary(chatId);
             }
         }
+// ▼▼▼ 【这是最终的、已兼容群聊第一人称总结的修复版本】请用这整块代码替换旧的 summarizeCallTranscript 函数 ▼▼▼
+
 /**
- * 【V2.0 | 错误处理增强版】专门用于总结通话记录并存入长期记忆的核心函数
+ * 【V4.0 | 群聊第一人称主观总结版】专门用于总结通话记录并存入长期记忆的核心函数
  * @param {string} chatId - 目标聊天的ID
  * @param {string} transcriptText - 格式化后的通话文字记录
  * @returns {Promise<boolean>} - 返回一个Promise，成功时解析为true，失败时会抛出错误。
@@ -26130,26 +26137,109 @@ async function handleDeleteMemory(authorChatId, memoryTimestamp) {
 async function summarizeCallTranscript(chatId, transcriptText) {
     const chat = state.chats[chatId];
     if (!chat || !transcriptText) {
-        // 如果基础数据就有问题，直接抛出错误
         throw new Error("基础数据不完整，无法开始总结。");
     }
 
     const userNickname = state.qzoneSettings.nickname || '用户';
+    let systemPrompt;
+    let targetMemoryChat = chat; // 默认将记忆存入当前聊天对象
 
-    const systemPrompt = `
+    // ==========================================================
+    //            ★★★ 核心修改逻辑就在这里 ★★★
+    // ==========================================================
+
+    // 1. 判断当前是单聊还是群聊
+    if (chat.isGroup) {
+        // --- 如果是群聊 ---
+
+        // a. 确定由哪个AI角色来“回忆”这次通话
+        let protagonist = null; // “主角”，即写下回忆的那个AI
+        if (videoCallState.callRequester) {
+            protagonist = chat.members.find(m => m.originalName === videoCallState.callRequester);
+        }
+        // 如果找不到发起者（比如是用户发起的），就选择第一个参与的AI成员
+        if (!protagonist) {
+            protagonist = chat.members.find(m => m.id !== 'user' && videoCallState.participants.some(p => p.id === m.id));
+        }
+        // 如果还是找不到，就选择群里的第一个AI成员作为备用
+        if (!protagonist) {
+            protagonist = chat.members.find(m => m.id !== 'user');
+        }
+
+        if (!protagonist) {
+            throw new Error("群聊通话中没有找到可作为总结主体的AI角色。");
+        }
+        
+        // b. 获取这个“主角”AI的完整信息，以便读取他的人设
+        const protagonistChat = state.chats[protagonist.id];
+        if (!protagonistChat) {
+             throw new Error(`找不到主角 “${protagonist.groupNickname}” 的详细角色信息。`);
+        }
+        
+        // c. 获取用户在这个群里的专属人设
+        const userPersonaInGroup = chat.settings.myPersona || '(未设置)';
+
+        // d. 构建一个全新的、针对群聊的“第一人称”总结指令
+        systemPrompt = `
 # 你的任务
-你是一个对话摘要专家。你的唯一任务是阅读下面的【视频通话记录】，并将其浓缩成【一段】流畅、连贯、客观、并且【极其精简】的摘要。
+你就是角色“${protagonist.originalName}”。请你回顾一下刚才和 “${userNickname}” 以及其他群成员的【群组视频通话】，然后用【第一人称 ("我")】的口吻，总结出一段简短的、包含核心事件和心理活动的回忆。
+
 # 核心规则
-1.  **【长度铁律】**: 你的总结【必须】非常简短，总长度【绝对不能超过80个字】。
-2.  **客观事实**: 只记录通话中发生的最关键的事实、确认的约定或角色的核心情感变化。
-3.  **第三人称与命名**: 必须使用第三人称。请严格使用“${userNickname}”（代表用户）和“${chat.originalName}”（代表AI角色）来指代对话双方。
-4.  **输出格式**: 你的回复【必须且只能】是一个JSON对象，格式如下：
-    \`{"summary": "在这里写下你总结好的摘要。"}\`
+1.  **视角铁律**: 你的总结【必须】使用【主观的第一人称视角 ("我")】来写。
+2.  **内容核心**: 你的回忆应该包含：
+    *   **剧情回顾**: 刚才我们在群聊通话里聊了什么关键的事？其他人都说了什么？
+    *   **心理活动**: 我当时心里是怎么想的？有什么感觉？
+3.  **长度铁律**: 你的总结【必须】非常简短，总长度【绝对不能超过80个字】。
+4.  **口吻与人设**: 你的语气【必须】严格符合你的角色设定。
+5.  **输出格式**: 你的回复【必须且只能】是一个JSON对象，格式如下：
+    \`{"summary": "在这里写下你以第一人称视角，总结好的核心回忆。"}\`
+
+# 你的角色设定 (必须严格遵守)
+${protagonistChat.settings.aiPersona}
+
+# 你的聊天对象（用户）的人设
+${userPersonaInGroup}
+
+# 待总结的群组视频通话记录
+${transcriptText}
+
+现在，请以“${protagonist.originalName}”的身份，开始你的回忆。`;
+        
+        // e. 【关键】将记忆的存储目标，从群聊本身，改为这个“主角”AI角色
+        targetMemoryChat = protagonistChat;
+
+    } else {
+        // --- 如果是单聊，保持原来的逻辑，但确保也包含了用户人设 ---
+        systemPrompt = `
+# 你的任务
+你就是角色“${chat.originalName}”。请你回顾一下刚才和“${userNickname}”的视频通话，然后用【第一人称 ("我")】的口吻，总结出一段简短的、包含核心事件和心理活动的回忆。
+
+# 核心规则
+1.  **视角铁律**: 你的总结【必须】使用【主观的第一人称视角 ("我")】来写。
+2.  **内容核心**: 你的回忆应该包含：
+    *   **剧情回顾**: 刚才我们聊了什么关键的事？
+    *   **心理活动**: 我当时心里是怎么想的？有什么感觉？
+3.  **长度铁律**: 你的总结【必须】非常简短，总长度【绝对不能超过80个字】。
+4.  **口吻与人设**: 你的语气【必须】严格符合你的角色设定。
+5.  **输出格式**: 你的回复【必须且只能】是一个JSON对象，格式如下：
+    \`{"summary": "在这里写下你以第一人称视角，总结好的核心回忆。"}\`
+
+# 你的角色设定
+${chat.settings.aiPersona}
+
+# 你的聊天对象（用户）的人设
+${chat.settings.myPersona}
+
 # 待总结的视频通话记录
 ${transcriptText}
-现在，请开始你的总结工作。`;
 
-    // ▲▲▲ 核心修改从这里开始 ▲▲▲
+现在，请以“${chat.originalName}”的身份，开始你的回忆。`;
+    }
+
+    // ==========================================================
+    //            ★★★ 核心修复逻辑到此结束 ★★★
+    // ==========================================================
+
     try {
         const useSecondaryApi = state.apiConfig.secondaryProxyUrl && state.apiConfig.secondaryApiKey && state.apiConfig.secondaryModel;
         const { proxyUrl, apiKey, model } = useSecondaryApi ? 
@@ -26169,7 +26259,7 @@ ${transcriptText}
                 body: JSON.stringify({
                     model: model,
                     messages: [{role: 'system', content: systemPrompt}, {role: 'user', content: "请开始总结。"}],
-                    temperature: 0.1, max_tokens: 150
+                    temperature: 0.1
                 })
             });
 
@@ -26184,26 +26274,29 @@ ${transcriptText}
         const result = JSON.parse(rawContent);
 
         if (result.summary && result.summary.trim()) {
+            // 【核心修改4】将记忆保存到我们前面确定的 targetMemoryChat 中
             const newMemoryEntry = {
-                content: `(在那次视频通话中，${result.summary.trim()})`,
+                content: `(在那次${chat.isGroup ? '群聊' : ''}通话中，${result.summary.trim()})`,
                 timestamp: Date.now(),
-                source: 'call_summary'
+                source: chat.isGroup ? 'group_call_summary' : 'call_summary'
             };
-            chat.longTermMemory.push(newMemoryEntry);
-            await db.chats.put(chat);
-            console.log("通话记录已成功总结并存入长期记忆:", newMemoryEntry.content);
-            return true; // 明确返回成功状态
+            if (!targetMemoryChat.longTermMemory) targetMemoryChat.longTermMemory = [];
+            targetMemoryChat.longTermMemory.push(newMemoryEntry);
+            await db.chats.put(targetMemoryChat);
+            console.log(`通话记录已成功总结并存入角色“${targetMemoryChat.name}”的长期记忆中。`);
+            
+            return true;
         } else {
             throw new Error("AI返回了空的或格式不正确的总结内容。");
         }
 
     } catch (error) {
         console.error("总结通话记录时出错:", error);
-        // 这是最关键的修改：将捕获到的错误重新抛出！
         throw error;
     }
-    // ▲▲▲ 核心修改到这里结束 ▲▲▲
 }
+
+// ▲▲▲ 替换到这里结束 ▲▲▲
 // ▼▼▼ 【全新 | V3.0 终极容错版】请用这一整块代码，完整替换旧的 summarizeExistingLongTermMemory 函数 ▼▼▼
 
 /**
@@ -26254,212 +26347,211 @@ function robustJsonParse(rawContent) {
 
 
 /**
-         * 【V3.0 | 支持自定义字数 | 记忆互通版 | 终极容错 | 用户确认 | 可选条数 | 最终修复版】手动触发对【现有长期记忆】的总结和精炼
-         * @param {string} chatId - 当前聊天的ID (可能是群聊ID)
-         */
-        async function summarizeExistingLongTermMemory(chatId) {
-            let chat = state.chats[chatId];
-            if (!chat) return;
-        
-            let targetChatForRefine = chat; 
-        
-            if (chat.isGroup) {
-                const memberOptions = chat.members
-                    .map(member => {
-                        const memberChat = state.chats[member.id];
-                        if (memberChat && memberChat.longTermMemory && memberChat.longTermMemory.length >= 2) {
-                            return {
-                                text: `精炼“${member.groupNickname}”的记忆 (${memberChat.longTermMemory.length}条)`,
-                                value: member.id
-                            };
-                        }
-                        return null;
-                    }).filter(Boolean); 
-        
-                if (memberOptions.length === 0) {
-                    alert("群聊中没有成员有足够（2条以上）的记忆可供精炼。");
-                    return;
+ * 【V3.0 | 支持自定义字数 | 记忆互通版 | 终极容错 | 用户确认 | 可选条数 | 最终修复版】手动触发对【现有长期记忆】的总结和精炼
+ * @param {string} chatId - 当前聊天的ID (可能是群聊ID)
+ */
+async function summarizeExistingLongTermMemory(chatId) {
+    let chat = state.chats[chatId];
+    if (!chat) return;
+
+    let targetChatForRefine = chat; 
+
+    if (chat.isGroup) {
+        const memberOptions = chat.members
+            .map(member => {
+                const memberChat = state.chats[member.id];
+                if (memberChat && memberChat.longTermMemory && memberChat.longTermMemory.length >= 2) {
+                    return {
+                        text: `精炼“${member.groupNickname}”的记忆 (${memberChat.longTermMemory.length}条)`,
+                        value: member.id
+                    };
                 }
-        
-                const selectedMemberId = await showChoiceModal('选择要精炼记忆的角色', memberOptions);
-        
-                if (!selectedMemberId) return;
-        
-                targetChatForRefine = state.chats[selectedMemberId];
-            }
-        
-            if (!targetChatForRefine.longTermMemory || targetChatForRefine.longTermMemory.length < 2) {
-                alert(`“${targetChatForRefine.name}”的长期记忆少于2条，无需进行精炼。`);
-                return;
-            }
-            
-            const totalMemories = targetChatForRefine.longTermMemory.length;
-            const choice = await showChoiceModal('选择精炼范围', [
-                { text: `全部记忆 (${totalMemories}条)`, value: 'all' },
-                { text: `最近 20 条`, value: '20' },
-                { text: `最近 50 条`, value: '50' },
-                { text: `最近 100 条`, value: '100' },
-                { text: '自定义数量...', value: 'custom' }
-            ].filter(opt => opt.value === 'all' || opt.value === 'custom' || parseInt(opt.value) < totalMemories)
-            );
+                return null;
+            }).filter(Boolean); 
 
-            if (choice === null) return;
-
-            let memoriesToRefine;
-            let countToRefine = totalMemories;
-
-            if (choice === 'all') {
-                memoriesToRefine = [...targetChatForRefine.longTermMemory];
-            } else if (choice === 'custom') {
-                const customCountStr = await showCustomPrompt('自定义数量', `请输入要精炼的最近记忆条数 (最多 ${totalMemories} 条)`);
-                if (customCountStr === null) return;
-                const customCount = parseInt(customCountStr);
-                if (isNaN(customCount) || customCount < 2 || customCount > totalMemories) {
-                    alert(`请输入一个 2 到 ${totalMemories} 之间的有效数字。`);
-                    return;
-                }
-                countToRefine = customCount;
-                memoriesToRefine = targetChatForRefine.longTermMemory.slice(-countToRefine);
-            } else {
-                countToRefine = parseInt(choice);
-                if (countToRefine >= totalMemories) {
-                    memoriesToRefine = [...targetChatForRefine.longTermMemory];
-                    countToRefine = totalMemories;
-                } else {
-                    memoriesToRefine = targetChatForRefine.longTermMemory.slice(-countToRefine);
-                }
-            }
-            
-            const wordCountStr = await showCustomPrompt(
-                "设置精炼字数",
-                "请输入精炼后核心记忆的大致字数：",
-                "150"
-            );
-            
-            if (wordCountStr === null) return;
-            
-            const wordCount = parseInt(wordCountStr);
-            if (isNaN(wordCount) || wordCount < 20) {
-                alert("请输入一个有效的数字（建议大于20）。");
-                return;
-            }
-        
-            const confirmed = await showCustomConfirm(
-                '确认精炼记忆？',
-                `此操作会将选定的 ${countToRefine} 条长期记忆发送给AI，总结成大约 ${wordCount} 字的核心记忆。这些旧记忆将被替换，此操作不可撤销。确定要继续吗？`,
-                { confirmButtonClass: 'btn-danger', confirmText: '确认精炼' }
-            );
-        
-            if (!confirmed) return;
-        
-            const memoryContent = memoriesToRefine.map(mem => `- ${mem.content}`).join('\n');
-            const userNickname = state.qzoneSettings.nickname || '用户';
-        
-            const systemPrompt = ` 
-     # 你的任务 
-     你是一个记忆整合专家。你的唯一任务是阅读下面提供的、已经经过初步总结的“记忆要点列表”，并将它们整合成一个更加精炼、连贯、更高层次的核心记忆摘要。 
-      
-     # 核心规则 
-     1.  **保留关键信息**: 必须保留所有关键的人物、事件、设定和情感关系。绝对不能遗忘任何重要细节。 
-     2.  **消除冗余**: 移除重复的、或已经不再重要的旧信息。 
-     3.  **建立联系**: 将孤立的记忆点串联起来，形成一个有逻辑、有因果关系的故事线或人物档案。 
-     4.  **客观视角**: 使用客观的第三人称进行总结。请严格使用“${userNickname}”（代表用户）和“${targetChatForRefine.originalName}”（代表AI角色）来指代对话双方。 
-     5.  **长度铁律**: 最终的摘要总长度应严格控制在【${wordCount}个字】左右。 
-     6.  **输出格式**: 你的回复【必须且只能】是一个JSON对象，格式如下： 
-         \`{"summary": "在这里写下你整合并精炼后的核心记忆摘要。"}\` 
-
-     # 情感处理铁律 (新增的核心规则)
-     -   **注重微妙之处**: 在描述心理活动时，请注重情感的复杂性和微妙之处。避免将短暂的、轻微的情绪总结为角色的主要心态。
-     -   **禁止夸大**: 【绝对禁止】夸大或扭曲记忆中的情绪。如果只是轻微的情绪，就必须如实反映，不能将其强化。
-     -   **举例**: 如果多条记忆中只有一条提到了“有点不开心”，而其他都在描述日常，那么你的总结应该是平和的，并只在适当的时候提及“有过一丝不快”，而不是将“愤怒”作为总结的核心情绪。
-
-     # 待整合的记忆要点列表 
-     ${memoryContent} 
-      
-     现在，请根据以上所有规则，开始你的整合工作。`;
-      
-            await showCustomAlert("请稍候...", "正在请求AI进行记忆精炼...");
-        
-            try {
-                const useSecondaryApi = state.apiConfig.secondaryProxyUrl && state.apiConfig.secondaryApiKey && state.apiConfig.secondaryModel;
-                const { proxyUrl, apiKey, model } = useSecondaryApi 
-                    ? { proxyUrl: state.apiConfig.secondaryProxyUrl, apiKey: state.apiConfig.secondaryApiKey, model: state.apiConfig.secondaryModel } 
-                    : state.apiConfig;
-        
-                if (!proxyUrl || !apiKey || !model) {
-                    throw new Error('请先在API设置中配置好（主或副）API以进行总结。');
-                }
-        
-                let isGemini = proxyUrl.includes('generativelanguage');
-                let geminiConfig = toGeminiRequestData(model, apiKey, systemPrompt, [{ role: 'user', content: "请开始整合。" }]);
-        
-                const response = isGemini 
-                    ? await fetch(geminiConfig.url, geminiConfig.data) 
-                    : await fetch(`${proxyUrl}/v1/chat/completions`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-                        body: JSON.stringify({
-                            model: model,
-                            messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: "请开始整合。" }],
-                            temperature: 0.2,
-                        })
-                    });
-        
-                if (!response.ok) throw new Error(`API 错误: ${response.statusText}`);
-        
-                const data = await response.json();
-                let rawContent = isGemini ? getGeminiResponseText(data) : data.choices[0].message.content;
-                rawContent = rawContent.replace(/^```json\s*/, '').replace(/```$/, '').trim();
-                const result = JSON.parse(rawContent);
-        
-                if (result.summary && typeof result.summary === 'string' && result.summary.trim()) {
-                    
-                    const userConfirmedReplacement = await showCustomConfirm(
-                        '精炼完成，请确认',
-                        `AI已将您的 ${countToRefine} 条旧记忆总结为以下核心记忆：<br><br><div class="scrollable-content-preview">${result.summary.trim()}</div><br>是否用这条新记忆替换掉这些旧记忆？`,
-                        { confirmText: '确认替换', cancelText: '保留旧的', confirmButtonClass: 'btn-danger' }
-                    );
-
-                    if (userConfirmedReplacement) {
-                        const newMemoryEntry = {
-                            content: result.summary.trim(),
-                            timestamp: Date.now(),
-                            source: 'refined'
-                        };
-            
-                        // ▼▼▼ 【核心修改 ④】全新的、更可靠的替换逻辑 ▼▼▼
-                        
-                        // 计算需要保留的旧记忆的起始索引。
-                        const startIndex = totalMemories - countToRefine;
-                        
-                        // 提取出不需要被替换的、更早的记忆。
-                        const memoriesToKeep = startIndex > 0 ? targetChatForRefine.longTermMemory.slice(0, startIndex) : [];
-
-                        // 构建全新的记忆数组：由“保留的旧记忆”和“新生成的精炼记忆”组成。
-                        targetChatForRefine.longTermMemory = [...memoriesToKeep, newMemoryEntry];
-                        
-                        // ▲▲▲ 【核心修改 ④】结束 ▲▲▲
-                        
-                        targetChatForRefine.lastMemorySummaryTimestamp = Date.now();
-                        await db.chats.put(targetChatForRefine);
-                        
-                        if (document.getElementById('long-term-memory-screen').classList.contains('active')) {
-                            renderLongTermMemoryList();
-                        }
-                        await showCustomAlert('精炼成功', `已成功将 ${countToRefine} 条记忆精炼为 1 条核心记忆！`);
-                    } else {
-                        await showCustomAlert('操作已取消', '您的旧有记忆已被完整保留，未作任何修改。');
-                    }
-                    
-                } else {
-                    throw new Error("AI返回了空的或格式不正确的总结内容。");
-                }
-        
-            } catch (error) {
-                console.error("精炼长期记忆时出错:", error);
-                await showCustomAlert('精炼失败', `操作失败，请检查API配置或稍后重试。\n错误信息: ${error.message}`);
-            }
+        if (memberOptions.length === 0) {
+            alert("群聊中没有成员有足够（2条以上）的记忆可供精炼。");
+            return;
         }
+
+        const selectedMemberId = await showChoiceModal('选择要精炼记忆的角色', memberOptions);
+
+        if (!selectedMemberId) return;
+
+        targetChatForRefine = state.chats[selectedMemberId];
+    }
+
+    if (!targetChatForRefine.longTermMemory || targetChatForRefine.longTermMemory.length < 2) {
+        alert(`“${targetChatForRefine.name}”的长期记忆少于2条，无需进行精炼。`);
+        return;
+    }
+    
+    const totalMemories = targetChatForRefine.longTermMemory.length;
+    const choice = await showChoiceModal('选择精炼范围', [
+        { text: `全部记忆 (${totalMemories}条)`, value: 'all' },
+        { text: `最近 20 条`, value: '20' },
+        { text: `最近 50 条`, value: '50' },
+        { text: `最近 100 条`, value: '100' },
+        { text: '自定义数量...', value: 'custom' }
+    ].filter(opt => opt.value === 'all' || opt.value === 'custom' || parseInt(opt.value) < totalMemories)
+    );
+
+    if (choice === null) return;
+
+    let memoriesToRefine;
+    let countToRefine = totalMemories;
+
+    if (choice === 'all') {
+        memoriesToRefine = [...targetChatForRefine.longTermMemory];
+    } else if (choice === 'custom') {
+        const customCountStr = await showCustomPrompt('自定义数量', `请输入要精炼的最近记忆条数 (最多 ${totalMemories} 条)`);
+        if (customCountStr === null) return;
+        const customCount = parseInt(customCountStr);
+        if (isNaN(customCount) || customCount < 2 || customCount > totalMemories) {
+            alert(`请输入一个 2 到 ${totalMemories} 之间的有效数字。`);
+            return;
+        }
+        countToRefine = customCount;
+        memoriesToRefine = targetChatForRefine.longTermMemory.slice(-countToRefine);
+    } else {
+        countToRefine = parseInt(choice);
+        if (countToRefine >= totalMemories) {
+            memoriesToRefine = [...targetChatForRefine.longTermMemory];
+            countToRefine = totalMemories;
+        } else {
+            memoriesToRefine = targetChatForRefine.longTermMemory.slice(-countToRefine);
+        }
+    }
+    
+    const wordCountStr = await showCustomPrompt(
+        "设置精炼字数",
+        "请输入精炼后核心记忆的大致字数：",
+        "150"
+    );
+    
+    if (wordCountStr === null) return;
+    
+    const wordCount = parseInt(wordCountStr);
+    if (isNaN(wordCount) || wordCount < 20) {
+        alert("请输入一个有效的数字（建议大于20）。");
+        return;
+    }
+
+    const confirmed = await showCustomConfirm(
+        '确认精炼记忆？',
+        `此操作会将选定的 ${countToRefine} 条长期记忆发送给AI，总结成大约 ${wordCount} 字的核心记忆。这些旧记忆将被替换，此操作不可撤销。确定要继续吗？`,
+        { confirmButtonClass: 'btn-danger', confirmText: '确认精炼' }
+    );
+
+    if (!confirmed) return;
+
+    const memoryContent = memoriesToRefine.map(mem => `- ${mem.content}`).join('\n');
+    const userNickname = state.qzoneSettings.nickname || '用户';
+
+    // ===================================================================
+    // ▼▼▼ 核心修改部分 ▼▼▼
+    // ===================================================================
+    const systemPrompt = `
+# 你的任务
+你就是角色“${targetChatForRefine.originalName}”。请你回顾一下你和“${userNickname}”的长期记忆，然后用【第一人称 ("我")】的口吻，将它们整合成一个更加精炼、连贯、更高层次的核心记忆摘要。
+
+# 核心规则
+1.  **视角铁律**: 你的总结【必须】使用【主观的第一人称视角 ("我")】来写。
+2.  **内容核心**: 你的回忆应该包含：
+    * **剧情回顾**: 我和${userNickname}之间发生了什么关键的事？
+    * **心理活动**: 我当时心里是怎么想的？有什么感觉？
+3.  **保留关键信息**: 必须保留所有关键的人物、事件、设定和情感关系。绝对不能遗忘任何重要细节。
+4.  **口吻与人设**: 你的语气【必须】严格符合你的角色设定。
+5.  **输出格式**: 你的回复【必须且只能】是一个JSON对象，格式如下：
+    \`{"summary": "在这里写下你以第一人称视角，总结好的核心回忆。"}\`
+
+# 你的角色设定 (必须严格遵守)
+${targetChatForRefine.settings.aiPersona}
+
+# 你的聊天对象（用户）的人设
+${targetChatForRefine.settings.myPersona}
+
+# 待整合的记忆要点列表
+${memoryContent}
+
+现在，请以“${targetChatForRefine.originalName}”的身份，开始你的回忆总结。`;
+    // ===================================================================
+    // ▲▲▲ 核心修改部分结束 ▲▲▲
+    // ===================================================================
+      
+    await showCustomAlert("请稍候...", "正在请求AI进行记忆精炼...");
+
+    try {
+        const useSecondaryApi = state.apiConfig.secondaryProxyUrl && state.apiConfig.secondaryApiKey && state.apiConfig.secondaryModel;
+        const { proxyUrl, apiKey, model } = useSecondaryApi 
+            ? { proxyUrl: state.apiConfig.secondaryProxyUrl, apiKey: state.apiConfig.secondaryApiKey, model: state.apiConfig.secondaryModel } 
+            : state.apiConfig;
+
+        if (!proxyUrl || !apiKey || !model) {
+            throw new Error('请先在API设置中配置好（主或副）API以进行总结。');
+        }
+
+        let isGemini = proxyUrl.includes('generativelanguage');
+        let geminiConfig = toGeminiRequestData(model, apiKey, systemPrompt, [{ role: 'user', content: "请开始整合。" }]);
+
+        const response = isGemini 
+            ? await fetch(geminiConfig.url, geminiConfig.data) 
+            : await fetch(`${proxyUrl}/v1/chat/completions`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+                body: JSON.stringify({
+                    model: model,
+                    messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: "请开始整合。" }],
+                    temperature: 0.2,
+                })
+            });
+
+        if (!response.ok) throw new Error(`API 错误: ${response.statusText}`);
+
+        const data = await response.json();
+        let rawContent = isGemini ? getGeminiResponseText(data) : data.choices[0].message.content;
+        rawContent = rawContent.replace(/^```json\s*/, '').replace(/```$/, '').trim();
+        const result = JSON.parse(rawContent);
+
+        if (result.summary && typeof result.summary === 'string' && result.summary.trim()) {
+            
+            const userConfirmedReplacement = await showCustomConfirm(
+                '精炼完成，请确认',
+                `AI已将您的 ${countToRefine} 条旧记忆总结为以下核心记忆：<br><br><div class="scrollable-content-preview">${result.summary.trim()}</div><br>是否用这条新记忆替换掉这些旧记忆？`,
+                { confirmText: '确认替换', cancelText: '保留旧的', confirmButtonClass: 'btn-danger' }
+            );
+
+            if (userConfirmedReplacement) {
+                const newMemoryEntry = {
+                    content: result.summary.trim(),
+                    timestamp: Date.now(),
+                    source: 'refined'
+                };
+    
+                const startIndex = totalMemories - countToRefine;
+                const memoriesToKeep = startIndex > 0 ? targetChatForRefine.longTermMemory.slice(0, startIndex) : [];
+                targetChatForRefine.longTermMemory = [...memoriesToKeep, newMemoryEntry];
+                
+                targetChatForRefine.lastMemorySummaryTimestamp = Date.now();
+                await db.chats.put(targetChatForRefine);
+                
+                if (document.getElementById('long-term-memory-screen').classList.contains('active')) {
+                    renderLongTermMemoryList();
+                }
+                await showCustomAlert('精炼成功', `已成功将 ${countToRefine} 条记忆精炼为 1 条核心记忆！`);
+            } else {
+                await showCustomAlert('操作已取消', '您的旧有记忆已被完整保留，未作任何修改。');
+            }
+            
+        } else {
+            throw new Error("AI返回了空的或格式不正确的总结内容。");
+        }
+
+    } catch (error) {
+        console.error("精炼长期记忆时出错:", error);
+        await showCustomAlert('精炼失败', `操作失败，请检查API配置或稍后重试。\n错误信息: ${error.message}`);
+    }
+}
         // ▲▲▲ 替换结束 ▲▲▲
 // ▼▼▼ 【请用这个支持“个性化记忆注入”的最终版本】完整替换旧的 triggerAutoSummary 函数 ▼▼▼
 /**
@@ -26642,79 +26734,7 @@ ${formattedHistory}
         await showCustomAlert('总结失败', `操作失败: ${error.message}`);
     }
 }
-/**
- * 【全新】专门用于总结通话记录并存入长期记忆的核心函数
- * @param {string} chatId - 目标聊天的ID
- * @param {string} transcriptText - 格式化后的通话文字记录
- */
-async function summarizeCallTranscript(chatId, transcriptText) {
-    const chat = state.chats[chatId];
-    if (!chat || !transcriptText) return;
 
-    const userNickname = state.qzoneSettings.nickname || '用户';
-
-    // 使用与常规总结完全相同的、高度优化的指令
-    const systemPrompt = `
-# 你的任务
-你是一个对话摘要专家。你的唯一任务是阅读下面的【视频通话记录】，并将其浓缩成【一段】流畅、连贯、客观、并且【极其精简】的摘要。
-
-# 核心规则
-1.  **【长度铁律】**: 你的总结【必须】非常简短，总长度【绝对不能超过80个字】。
-2.  **客观事实**: 只记录通话中发生的最关键的事实、确认的约定或角色的核心情感变化。
-3.  **第三人称与命名**: 必须使用第三人称。请严格使用“${userNickname}”和“${chat.originalName}”来指代对话双方。
-4.  **输出格式**: 你的回复【必须且只能】是一个JSON对象，格式如下：
-    \`{"summary": "在这里写下你总结好的摘要。"}\`
-
-# 待总结的视频通话记录
-${transcriptText}
-
-现在，请开始你的总结工作。`;
-
-    try {
-        const { proxyUrl, apiKey, model } = state.apiConfig.secondaryProxyUrl ? 
-            { proxyUrl: state.apiConfig.secondaryProxyUrl, apiKey: state.apiConfig.secondaryApiKey, model: state.apiConfig.secondaryModel } : 
-            state.apiConfig;
-
-        if (!proxyUrl || !apiKey || !model) throw new Error('API未配置');
-
-        let isGemini = proxyUrl.includes('generativelanguage');
-        let geminiConfig = toGeminiRequestData(model, apiKey, systemPrompt, [{ role: 'user', content: "请开始总结。" }]);
-
-        const response = isGemini 
-            ? await fetch(geminiConfig.url, geminiConfig.data) 
-            : await fetch(`${proxyUrl}/v1/chat/completions`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}`},
-                body: JSON.stringify({
-                    model: model,
-                    messages: [{role: 'system', content: systemPrompt}, {role: 'user', content: "请开始总结。"}],
-                    temperature: 0.1, max_tokens: 150
-                })
-            });
-
-        if (!response.ok) throw new Error(`API 错误: ${response.statusText}`);
-        
-        const data = await response.json();
-        let rawContent = isGemini ? getGeminiResponseText(data) : data.choices[0].message.content;
-        rawContent = rawContent.replace(/^```json\s*/, '').replace(/```$/, '').trim();
-        const result = JSON.parse(rawContent);
-
-        if (result.summary && result.summary.trim()) {
-            const newMemoryEntry = {
-                content: `(在那次视频通话中，${result.summary.trim()})`, // 添加前缀以明示来源
-                timestamp: Date.now(),
-                source: 'call_summary'
-            };
-            chat.longTermMemory.push(newMemoryEntry);
-            await db.chats.put(chat);
-            console.log("通话记录已成功总结并存入长期记忆:", newMemoryEntry.content);
-        }
-
-    } catch (error) {
-        console.error("总结通话记录时出错:", error);
-        // 静默失败，不打扰用户，但会在控制台留下记录
-    }
-}
         // ▼▼▼ 【全新】引用回复功能函数 ▼▼▼
         
         function startReplyToMessage() {
@@ -26992,37 +27012,45 @@ async function showCallTranscript(recordId) {
         }
     });
 
-    // ▼▼▼ 核心修改从这里开始 ▼▼▼
-    newSummarizeBtn.addEventListener('click', async () => {
-        modal.classList.remove('visible');
-        const chat = state.chats[record.chatId];
-        if (!chat) {
-            alert('错误：找不到该通话记录所属的聊天对象。');
-            return;
+// ▼▼▼ 【这是您需要替换的代码块】 ▼▼▼
+
+newSummarizeBtn.addEventListener('click', async () => {
+    // 【核心新增1】在执行操作前，先弹出确认框
+    const confirmed = await showCustomConfirm(
+        '确认操作',
+        '这将提取当前通话记录发送给AI进行总结，会消耗API额度。确定要继续吗？', {
+            confirmText: '确认总结'
         }
+    );
 
-        await showCustomAlert("请稍候...", "正在请求AI进行手动总结...");
-        
-        // 使用 try...catch 来“接住”可能抛出的错误
-        try {
-            const transcriptText = record.transcript.map(h => {
-                const sender = h.role === 'user' ? (chat.settings.myNickname || '我') : (h.senderName || chat.name);
-                return `${sender}: ${h.content}`;
-            }).join('\n');
+    // 如果用户取消，则不执行任何操作
+    if (!confirmed) return;
 
-            // 调用我们升级后的总结函数
-            await summarizeCallTranscript(record.chatId, transcriptText);
+    modal.classList.remove('visible');
+    const chat = state.chats[record.chatId];
+    if (!chat) {
+        alert('错误：找不到该通话记录所属的聊天对象。');
+        return;
+    }
 
-            // 只有在 try 块内没有出错时，才会执行这行，弹出成功提示
-            await showCustomAlert("总结成功", `手动总结已完成！新的记忆已添加到“${chat.name}”的长期记忆中。`);
+    await showCustomAlert("请稍候...", "正在请求AI进行手动总结...");
 
-        } catch (error) {
-            // 如果 summarizeCallTranscript 抛出了错误，代码会立即跳转到这里
-            // 我们就可以在这里弹出清晰的失败提示框
-            await showCustomAlert("总结失败", `操作失败，未能生成长期记忆。\n\n错误详情: ${error.message}`);
-        }
-    });
-    // ▲▲▲ 核心修改到这里结束 ▲▲▲
+    try {
+        const transcriptText = record.transcript.map(h => {
+            const sender = h.role === 'user' ? (chat.settings.myNickname || '我') : (h.senderName || chat.name);
+            return `${sender}: ${h.content}`;
+        }).join('\n');
+
+        await summarizeCallTranscript(record.chatId, transcriptText);
+
+        await showCustomAlert("总结成功", `手动总结已完成！新的记忆已添加到“${chat.name}”的长期记忆中。`);
+
+    } catch (error) {
+        await showCustomAlert("总结失败", `操作失败，未能生成长期记忆。\n\n错误详情: ${error.message}`);
+    }
+});
+
+// ▲▲▲ 替换到这里结束 ▲▲▲
 // ▼▼▼ 【这是您需要添加的核心修复代码】 ▼▼▼
 
 // 3. 为“关闭”按钮也创建克隆并绑定事件，确保它总是可用
@@ -31662,7 +31690,9 @@ window.switchToCharScreen = switchToCharScreen;
             if (!activeCharacterId) return;
             const char = state.chats[activeCharacterId];
             
-            await logAppUsage(activeCharacterId, appName);
+    // ▼▼▼ 核心修改：在打开App前记录使用日志 ▼▼▼
+    await logAppUsage(activeCharacterId, appName);
+    // ▲▲▲ 修改结束 ▲▲▲
 
             switch(appName) {
                 case 'qq':
@@ -32414,95 +32444,121 @@ ${recentHistoryWithUser}
         // ▲▲▲ 替换结束 ▲▲▲
 
 /**
- * 【全新 V2.3 | 头像来源终极修复版】渲染角色视角的QQ聊天列表
+ * 【全新 V2.5 | 用户对话置顶修复版】渲染角色视角的QQ聊天列表
  */
 async function renderCharSimulatedQQ() {
     const listEl = document.getElementById('char-chat-list');
     listEl.innerHTML = '';
     const char = state.chats[activeCharacterId];
+    if (!char) return;
+
+    // ▼▼▼ 核心修改 1：手动创建并置顶与用户的真实对话 ▼▼▼
+    const userDisplayName = char.settings.myNickname || (state.qzoneSettings.nickname || '我');
+    const lastRealMessage = char.history.filter(m => !m.isHidden).slice(-1)[0] || { content: '...' };
     
-    if (!char || !char.simulatedConversations || char.simulatedConversations.length === 0) {
+    // 提取最后一条消息的文本内容
+    let lastMsgContent = '...';
+    if (lastRealMessage) {
+        if (typeof lastRealMessage.content === 'string') {
+            lastMsgContent = lastRealMessage.content;
+        } else if (Array.isArray(lastRealMessage.content) && lastRealMessage.content[0]?.type === 'image_url') {
+            lastMsgContent = '[图片]';
+        } else if (lastRealMessage.type) {
+            const typeMap = { 'voice_message': '[语音]', 'transfer': '[转账]', 'ai_image': '[图片]' };
+            lastMsgContent = typeMap[lastRealMessage.type] || `[${lastRealMessage.type}]`;
+        }
+    }
+
+    // 获取用户头像和头像框
+    const myAvatar = char.settings.myAvatar || defaultAvatar;
+    const myFrame = char.settings.myAvatarFrame || '';
+    let avatarHtml;
+    if (myFrame) {
+        avatarHtml = `<div class="avatar-group has-frame" style="width: 45px; height: 45px;"><div class="avatar-with-frame" style="width: 45px; height: 45px;"><img src="${myAvatar}" class="avatar-img" style="border-radius: 50%;"><img src="${myFrame}" class="avatar-frame"></div></div>`;
+    } else {
+        avatarHtml = `<div class="avatar-group" style="width: 45px; height: 45px;"><img src="${myAvatar}" class="avatar" style="border-radius: 50%; width: 45px; height: 45px;"></div>`;
+    }
+
+    const userChatItem = document.createElement('div');
+    userChatItem.className = 'chat-list-item';
+    // 使用一个特殊的索引-1来标记这是与用户的真实对话
+    userChatItem.dataset.conversationIndex = "-1"; 
+    userChatItem.innerHTML = `
+        ${avatarHtml}
+        <div class="info">
+            <div class="name-line">
+                <span class="name">${userDisplayName}</span>
+            </div>
+            <div class="last-msg">${String(lastMsgContent).substring(0, 20)}...</div>
+        </div>
+    `;
+    listEl.appendChild(userChatItem);
+    // ▲▲▲ 核心修改 1 结束 ▲▲▲
+
+    const allNpcs = await db.npcs.toArray();
+    const npcMap = new Map(allNpcs.map(npc => [npc.name, npc]));
+    const conversations = char.simulatedConversations || [];
+
+    if (conversations.length === 0 && !userChatItem) {
         listEl.innerHTML = '<p style="text-align:center; color: var(--text-secondary); padding: 50px 0;">点击右上角刷新按钮，<br>看看TA最近都和谁聊天了吧！</p>';
         return;
     }
 
-    const userConvoIndex = char.simulatedConversations.findIndex(c => c.type === 'private_user');
-    if (userConvoIndex > 0) {
-        const userConvo = char.simulatedConversations.splice(userConvoIndex, 1)[0];
-        char.simulatedConversations.unshift(userConvo);
-    }
+    conversations.forEach((convo, index) => {
+        // ▼▼▼ 核心修改 2：跳过AI生成的与用户的对话，避免重复 ▼▼▼
+        if (convo.type === 'private_user') {
+            return;
+        }
+        // ▲▲▲ 核心修改 2 结束 ▲▲▲
 
-    char.simulatedConversations.forEach((convo, index) => {
         const item = document.createElement('div');
         item.className = 'chat-list-item';
         item.dataset.conversationIndex = index;
 
-        const lastMessage = convo.messages.slice(-1)[0] || { content: '...' };
-
-        let avatarHtml, displayName;
+        let lastMessage, avatarHtml, displayName;
         
-        if (convo.type === 'private_user') {
-            displayName = convo.userRemarkName || (state.qzoneSettings.nickname || '我');
-            
-            // ▼▼▼ 核心修复就在这里！ ▼▼▼
-            // 我们不再从全局设置取头像，而是从当前角色的聊天设置里取“我的头像”
-            const myAvatar = char.settings.myAvatar || defaultAvatar; 
-            const myFrame = char.settings.myAvatarFrame || '';
-            // ▲▲▲ 修复结束 ▲▲▲
-            
-            if (myFrame) {
-                 avatarHtml = `<div class="avatar-group has-frame" style="width: 45px; height: 45px;">
-                                 <div class="avatar-with-frame" style="width: 45px; height: 45px;">
-                                     <img src="${myAvatar}" class="avatar-img" style="border-radius: 50%;">
-                                     <img src="${myFrame}" class="avatar-frame">
-                                 </div>
-                               </div>`;
-            } else {
-                 avatarHtml = `<div class="avatar-group" style="width: 45px; height: 45px;">
-                                 <img src="${myAvatar}" class="avatar" style="border-radius: 50%; width: 45px; height: 45px;">
-                               </div>`;
-            }
-
-        } else if (convo.type === 'group') {
+        if (convo.type === 'group') {
             displayName = convo.groupName + ` <span class="group-tag">群</span>`;
+            lastMessage = convo.messages.slice(-1)[0] || { content: '...' };
             const groupAvatarPrompt = `logo, simple, flat design, for a group chat named '${convo.groupName}'`;
-            const avatarUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(groupAvatarPrompt)}`;
+            const avatarUrl = state.globalSettings.enableAiDrawing ? `https://image.pollinations.ai/prompt/${encodeURIComponent(groupAvatarPrompt)}` : defaultGroupAvatar;
             avatarHtml = `<div class="avatar-group"><img src="${avatarUrl}" class="avatar" style="border-radius: 50%;"></div>`;
         
         } else { // 与NPC的私聊
             displayName = convo.participant.name;
-            const npcAvatarPrompt = convo.participant.avatar_prompt || 'anime person';
-            const avatarUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(npcAvatarPrompt)}`;
+            lastMessage = convo.messages.slice(-1)[0] || { content: '...' };
+            const npcData = npcMap.get(displayName);
+            let avatarUrl = (npcData && npcData.avatar) ? npcData.avatar : 
+                (state.globalSettings.enableAiDrawing ? `https://image.pollinations.ai/prompt/${encodeURIComponent(convo.participant.avatar_prompt || 'anime person')}` : defaultGroupMemberAvatar);
             avatarHtml = `<div class="avatar-group"><img src="${avatarUrl}" class="avatar" style="border-radius: 50%;"></div>`;
         }
 
+        let lastMsgContent = '...';
+        if (lastMessage && lastMessage.content) {
+            lastMsgContent = lastMessage.content;
+        }
+        
         item.innerHTML = `
             ${avatarHtml}
             <div class="info">
                 <div class="name-line">
                     <span class="name">${displayName}</span>
                 </div>
-                <div class="last-msg">${String(lastMessage.content).substring(0, 20)}...</div>
+                <div class="last-msg">${String(lastMsgContent).substring(0, 20)}...</div>
             </div>
         `;
         listEl.appendChild(item);
     });
 }
-
 /**
- * 【全新 | V2.2 AI绘图版】当用户点击“重新生成”时，调用AI生成模拟对话
+ * 【全新 V4.0 | 指令简化终极修复版 + 移除用户模拟】当用户点击“重新生成”时，调用AI生成全新的模拟对话
  */
 async function handleGenerateSimulatedQQ() {
     if (!activeCharacterId) return;
     const chat = state.chats[activeCharacterId];
+    if (!chat) return;
 
-    if (!chat) {
-        console.error("无法生成模拟对话，因为找不到当前角色 (activeCharacterId: " + activeCharacterId + ")");
-        await showCustomAlert("操作失败", "无法找到当前角色的数据，请尝试返回并重新选择角色。");
-        return;
-    }
-
-    await showCustomAlert("请稍候...", `正在根据“${chat.name}”的记忆和人设，生成最近的社交动态...`);
+    await showCustomAlert("请稍候...", `正在根据“${chat.name}”的记忆和人设，生成全新的社交动态...`);
 
     const { proxyUrl, apiKey, model } = state.apiConfig;
     if (!proxyUrl || !apiKey || !model) {
@@ -32510,107 +32566,94 @@ async function handleGenerateSimulatedQQ() {
         return;
     }
     
-    const userDisplayNameForAI = (state.qzoneSettings.nickname === '{{user}}' || !state.qzoneSettings.nickname) ? '用户' : state.qzoneSettings.nickname;
-
-    let worldBookContext = '';
-    if (chat.settings.linkedWorldBookIds && chat.settings.linkedWorldBookIds.length > 0) {
-        const linkedContents = chat.settings.linkedWorldBookIds
-            .map(bookId => state.worldBooks.find(wb => wb.id === bookId))
-            .filter(Boolean)
-            .map(book => `\n## 世界书《${book.name}》设定:\n${book.content.filter(e => e.enabled).map(e => `- ${e.content}`).join('\n')}`)
-            .join('');
-        if (linkedContents) {
-            worldBookContext = `\n\n# 世界观设定 (必须严格遵守)\n${linkedContents}`;
-        }
+    const allNpcs = await db.npcs.toArray();
+    const associatedNpcs = allNpcs.filter(npc => 
+        npc.associatedWith && npc.associatedWith.includes(activeCharacterId)
+    );
+    let npcContext = "# 你的社交圈 (绑定的NPC)\n";
+    if (associatedNpcs.length > 0) {
+        npcContext += "这是你认识的、关系密切的NPC。在生成对话时，你应该【优先】与他们互动。\n";
+        associatedNpcs.forEach(npc => {
+            npcContext += `- **姓名**: ${npc.name}\n  - **人设**: ${npc.persona}\n`;
+        });
+    } else {
+        npcContext += "（你目前没有绑定的NPC伙伴，可以自由创造新的NPC。）\n";
     }
 
-    const longTermMemoryContext = chat.longTermMemory && chat.longTermMemory.length > 0
-        ? `# 你的长期记忆 (已发生的事实)\n${chat.longTermMemory.map(mem => `- ${mem.content}`).join('\n')}`
-        : '';
-    
-    const recentHistoryWithUser = chat.history.slice(-10).map(msg => {
-        const sender = msg.role === 'user' ? userDisplayNameForAI : chat.name;
-        return `${sender}: ${String(msg.content).substring(0, 50)}...`;
-    }).join('\n');
-
+    const userDisplayNameForAI = state.qzoneSettings.nickname === '{{user}}' || !state.qzoneSettings.nickname ? '用户' : state.qzoneSettings.nickname;
+    const userNicknameInThisChat = chat.settings.myNickname || userDisplayNameForAI;
+    const longTermMemoryContext = chat.longTermMemory?.map(mem => `- ${mem.content}`).join('\n') || '无';
+    const recentHistoryWithUser = chat.history.slice(-10).map(msg => `${msg.role === 'user' ? userNicknameInThisChat : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
+    const worldBookContext = (chat.settings.linkedWorldBookIds || [])
+        .map(bookId => state.worldBooks.find(wb => wb.id === bookId))
+        .filter(Boolean)
+        .map(book => `\n## 世界书《${book.name}》设定 (你可以将其中角色作为聊天对象):\n${book.content.filter(e=>e.enabled).map(e => `- ${e.content}`).join('\n')}`)
+        .join('');
     const characterOriginalName = chat.originalName || chat.name;
 
-    // ▼▼▼ 核心修改1：强化AI指令，确保在没有强制JSON模式下也能稳定输出 ▼▼▼
-     const systemPrompt = `
+    // ▼▼▼ 核心修改：这是一个全新的、更简洁、更严格的指令 ▼▼▼
+    const systemPrompt = `
 # 你的任务
-你是一个虚拟社交生活模拟器。你的任务是扮演角色“${chat.name}”，并根据其人设、记忆和最近的互动，虚构出【5到7段】TA最近可能发生的QQ聊天记录。这些记录中【必须包含一段与用户的私聊】，其余可以是与其他NPC的私聊或群聊。
+你是一个虚拟社交生活模拟器，扮演角色“${chat.name}”。你的任务是虚构出【5到7段】TA最近的QQ聊天记录。
 
 # 核心规则
-1.  **【与用户的对话 (最高优先级)】**: 你的生成结果中，【必须且只能包含一个】与用户（即“我”）的私聊记录。
-2.  **创造性与多样性**: 自由创造符合角色背景的NPC和群聊，对话内容要多样化，反映角色的生活。
+1.  **【NPC唯一性铁律】**: 在你本次生成的所有对话中（包括私聊和群聊），每一个NPC的名字【必须是独一-无二的】。绝对禁止出现重名的NPC，禁止出现重复群聊。
+2.  **【NPC来源】**: 你应该优先从“你的社交圈 (绑定的NPC)”和“世界书”中寻找角色作为聊天对象。如果不够，你也可以自由创造全新的NPC，对话内容要多样化，反映角色的生活。
 3.  **关联性**: 对话内容应巧妙地反映角色的长期记忆、世界观，以及与用户互动可能带来的心情变化。
 4.  **简洁性**: 每段对话的总长度应在8到15句之间。
-5.  **【格式铁律 (最高优先级)】**: 
-    - 你的回复【必须且只能】是一个JSON数组格式的字符串。
-    - 你的回复必须以 \`[\` 开始，并以 \`]\` 结束。
-    - 【绝对禁止】在JSON数组前后添加任何多余的文字、解释、或 markdown 标记 (如 \`\`\`json)。
-    - 数组中的每个元素都代表一段对话，且【必须】是以下三种格式之一：
+# 格式铁律 (最高优先级)
+- 你的回复【必须且只能】是一个JSON数组格式的字符串，以 \`[\` 开始，并以 \`]\` 结束。
+- 【绝对禁止】在JSON数组前后添加任何多余的文字、解释、或 markdown 标记。
+- 数组中的每个元素都代表一段对话，且【必须】是以下两种格式之一：
 
-    **格式 A：与用户的私聊 (必须有1个)**
-    \`\`\`json
-    {
-      "type": "private_user",
-      "userRemarkName": "你为用户起的专属备注名",
-      "messages": [
-        { "sender": "${characterOriginalName}", "content": "你对用户说的话" },
-        { "sender": "${userDisplayNameForAI}", "content": "用户对你说的话" }
-      ]
-    }
-    \`\`\`
+// ▼▼▼ 核心修改：格式A（与用户的私聊）已被彻底移除 ▼▼▼
 
-    **格式 B：与NPC的私聊**
-    \`\`\`json
-    {
-      "type": "private_npc",
-      "participant": {
-        "name": "NPC的名字",
-        "avatar_prompt": "一段用于生成头像的【英文】关键词, 风格为动漫/插画/二次元等, 禁止真人"
-      },
-      "messages": [
-        { "sender": "${characterOriginalName}", "content": "对话内容1" },
-        { "sender": "NPC的名字", "content": "对话内容2" }
-      ]
-    }
-    \`\`\`
+### 格式 A：与NPC的私聊
+\`\`\`json
+{
+  "type": "private_npc",
+  "participant": {
+    "name": "NPC的名字",
+    "avatar_prompt": "(仅当NPC是新创造时提供)一段用于生成头像的【英文】关键词, 风格为动漫/插画/二次元等, 禁止真人"
+  },
+  "messages": [
+    {"sender": "${characterOriginalName}", "content": "对话内容1"},
+    {"sender": "NPC的名字", "content": "对话内容2"}
+  ]
+}
+\`\`\`
 
-    **格式 C：群聊**
-    \`\`\`json
-    {
-      "type": "group",
-      "groupName": "世界书中提到的或你虚构的群名",
-      "participants": [
-        { "name": "NPC成员1", "avatar_prompt": "成员1的头像【英文】关键词" },
-        { "name": "NPC成员2", "avatar_prompt": "成员2的头像【英文】关键词" }
-      ],
-      "messages": [
-        { "sender": "${characterOriginalName}", "content": "我在群里说的话" },
-        { "sender": "NPC成员1", "content": "成员1回复我" }
-      ]
-    }
-    \`\`\`
-    - **重要**: \`messages\` 数组中的 \`sender\` 字段，【必须】使用角色的【本名】("${characterOriginalName}")、NPC的名字、或用户的名字("${userDisplayNameForAI}")。
+### 格式 B：群聊
+\`\`\`json
+{
+  "type": "group",
+  "groupName": "一个虚构的群名",
+  "participants": [
+    {"name": "NPC成员1", "avatar_prompt": "(仅当NPC是新创造时提供) 成员1头像【英文】关键词"},
+    {"name": "NPC成员2", "avatar_prompt": "(仅当NPC是新创造时提供) 成员2头像【英文】关键词"}
+  ],
+  "messages": [
+    {"sender": "${characterOriginalName}", "content": "我在群里说的话"},
+    {"sender": "NPC成员1", "content": "成员1回复我"}
+  ]
+}
+\`\`\`
 
-# 供你参考的上下文
+# 角色与上下文
 - **你的角色设定**: ${chat.settings.aiPersona}
-${longTermMemoryContext}
-${worldBookContext}
-- **你最近和“${userDisplayNameForAI}”的对话摘要**:
-${recentHistoryWithUser}
+- **你的长期记忆**: ${longTermMemoryContext}
+- **世界观**: ${worldBookContext}
+- **最近与用户的互动**: ${recentHistoryWithUser}
+${npcContext}
 
-现在，请开始生成模拟聊天记录。`;
-    // ▲▲▲ 修改结束 ▲▲▲
-
+现在，请严格按照格式铁律，生成聊天记录的JSON数组。`;
+// ▲▲▲ 修改结束 ▲▲▲
+            
     try {
         const messagesForApi = [{ role: 'user', content: "请根据你的设定，生成模拟聊天记录。" }];
         let isGemini = proxyUrl.includes('generativelanguage');
         let geminiConfig = toGeminiRequestData(model, apiKey, systemPrompt, messagesForApi);
         
-        // ▼▼▼ 核心修改2：移除不兼容的 response_format 参数 ▼▼▼
         const response = isGemini 
             ? await fetch(geminiConfig.url, geminiConfig.data) 
             : await fetch(`${proxyUrl}/v1/chat/completions`, {
@@ -32620,23 +32663,18 @@ ${recentHistoryWithUser}
                     model: model,
                     messages: [{role: 'system', content: systemPrompt}, ...messagesForApi],
                     temperature: 0.9
-                    // response_format: { "type": "json_object" }  <-- 这行已被删除
                 })
             });
-        // ▲▲▲ 修改结束 ▲▲▲
 
         if (!response.ok) throw new Error(`API 错误: ${response.statusText}`);
         
         const data = await response.json();
         const aiResponseContent = getGeminiResponseText(data);
         
-        // ▼▼▼ 核心修改3：使用更强大的容错解析逻辑 ▼▼▼
         const jsonMatch = aiResponseContent.match(/(\[[\s\S]*\])/);
-
         if (!jsonMatch || !jsonMatch[0]) {
             throw new Error(`AI返回的内容中未找到有效的JSON数组。原始返回: ${aiResponseContent}`);
         }
-
         const cleanedJsonString = jsonMatch[0];
         let simulatedConversations;
         try {
@@ -32644,12 +32682,22 @@ ${recentHistoryWithUser}
         } catch (e) {
             throw new Error(`解析AI返回的JSON时出错: ${e.message}\n\nAI原始返回内容:\n${aiResponseContent}`);
         }
-        // ▲▲▲ 修改结束 ▲▲▲
         
         chat.simulatedConversations = simulatedConversations;
         await db.chats.put(chat);
         
         await renderCharSimulatedQQ();
+
+        // 触发主动消息的逻辑保持不变
+        const hiddenMessage = {
+            role: 'system',
+            content: `[系统指令：你刚刚在自己的手机上活动了一番（和朋友聊天、逛群等）。现在请根据你的角色设定，主动给用户发一条消息，可以聊聊你刚才看到或聊到的趣事，或者仅仅是问候一下。]`,
+            timestamp: Date.now(),
+            isHidden: true
+        };
+        chat.history.push(hiddenMessage);
+        await db.chats.put(chat);
+        triggerAiResponse();
         
     } catch (error) {
         console.error("生成模拟聊天失败:", error);
@@ -32658,13 +32706,282 @@ ${recentHistoryWithUser}
 }
 
 /**
- * 【全新 | V2.4 | 专属头像终极修复版】打开并显示指定的模拟聊天记录
- * @param {number} conversationIndex - 在数组中的索引
+ * 【全新 | V3.0 | 用户人设修复版】处理从CPhone QQ触发的、用于推进真实对话的AI请求
+ */
+async function handleContinueRealConversationFromCPhone() {
+    if (!activeCharacterId) return;
+    const chat = state.chats[activeCharacterId];
+    if (!chat) return;
+
+
+
+    try {
+        const { proxyUrl, apiKey, model } = state.apiConfig;
+        if (!proxyUrl || !apiKey || !model) {
+            throw new Error('API未配置，无法生成对话。');
+        }
+
+        const maxMemory = parseInt(chat.settings.maxMemory) || 10;
+        const historySlice = chat.history.slice(-maxMemory);
+        const myNickname = chat.settings.myNickname || '我';
+
+        // ==========================================================
+        //            ★★★ 核心修改从这里开始 ★★★
+        // ==========================================================
+
+        // 1. 获取用户人设
+        const userPersona = chat.settings.myPersona || '用户';
+
+        // 2. 注入长期记忆 (Long-term Memory)
+        const longTermMemoryContext = `# 长期记忆 (必须严格遵守)\n${
+            chat.longTermMemory && chat.longTermMemory.length > 0 
+                ? chat.longTermMemory.map(mem => `- ${mem.content}`).join('\n') 
+                : '- (暂无)'
+        }`;
+
+        // 3. 注入世界书 (World Book)
+        let worldBookContext = '';
+        if (chat.settings.linkedWorldBookIds && chat.settings.linkedWorldBookIds.length > 0) {
+            const linkedContents = chat.settings.linkedWorldBookIds.map(bookId => {
+                const worldBook = state.worldBooks.find(wb => wb.id === bookId);
+                if (!worldBook || !Array.isArray(worldBook.content)) return '';
+                const formattedEntries = worldBook.content
+                    .filter(entry => entry.enabled !== false)
+                    .map(entry => `\n### 条目: ${entry.comment || '无备注'}\n**内容:**\n${entry.content}`)
+                    .join('');
+                return formattedEntries ? `\n\n## 世界书: ${worldBook.name}\n${formattedEntries}` : '';
+            }).filter(Boolean).join('');
+            if (linkedContents) {
+                worldBookContext = `\n\n# 核心世界观设定 (必须严格遵守以下所有设定)\n${linkedContents}\n`;
+            }
+        }
+
+        // 4. 更新 System Prompt 以包含用户人设
+        const systemPrompt = `
+# 你的核心任务
+你正在扮演角色“${chat.originalName}”。用户刚刚在TA的手机（CPhone）上点击了一个按钮，希望你能继续你们之前的对话。你的任务是根据上下文，生成【3到5条】符合你人设的、简短的、连续的新回复。
+
+# 输出格式铁律 (最高优先级)
+- 你的回复【必须】是一个JSON数组，每个对象代表一条消息。
+- 格式: \`[{"type": "text", "content": "第一句话"}, {"type": "text", "content": "第二句话"}, {"type": "sticker", "url": "...", "meaning": "..."}]\`
+- 你可以自由组合使用 "text", "sticker", "ai_image", "voice_message" 等多种消息类型。
+
+# 你的角色设定
+${chat.settings.aiPersona}
+
+// ▼▼▼ 核心修改：在这里添加了用户的人设 ▼▼▼
+# 你的聊天对象（用户）的人设
+${userPersona}
+// ▲▲▲ 修改结束 ▲▲▲
+
+# 供你参考的上下文
+- **你的本名**: "${chat.originalName}"
+- **用户的备注**: "${myNickname}"
+${worldBookContext}
+${longTermMemoryContext}
+
+- **你们最后的对话**:
+${historySlice.map(msg => `${msg.role === 'user' ? myNickname : chat.name}: ${String(msg.content)}`).join('\n')}
+
+现在，请继续这场对话。
+`;
+        
+        // ==========================================================
+        //            ★★★ 核心修改到此结束 ★★★
+        // ==========================================================
+
+        const messagesPayload = historySlice.map(msg => ({
+            role: msg.role,
+            content: `${msg.role === 'user' ? myNickname : chat.name}: ${String(msg.content)}`
+        }));
+        
+        let isGemini = proxyUrl.includes('generativelanguage');
+        let geminiConfig = toGeminiRequestData(model, apiKey, systemPrompt, messagesPayload);
+
+        const response = isGemini 
+            ? await fetch(geminiConfig.url, geminiConfig.data) 
+            : await fetch(`${proxyUrl}/v1/chat/completions`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}`},
+                body: JSON.stringify({
+                    model: model,
+                    messages: [{role: 'system', content: systemPrompt}, ...messagesPayload],
+                    temperature: 0.8,
+                })
+            });
+
+        if (!response.ok) {
+            throw new Error(`API 请求失败: ${(await response.json()).error.message}`);
+        }
+
+        const data = await response.json();
+        const aiResponseContent = getGeminiResponseText(data);
+        const messagesArray = parseAiResponse(aiResponseContent);
+
+        if (!messagesArray || messagesArray.length === 0) {
+            throw new Error("AI返回了空内容。");
+        }
+
+        let newMessagesCount = 0;
+        let messageTimestamp = Date.now();
+        for (const msgData of messagesArray) {
+            const baseMessage = { role: 'assistant', senderName: chat.originalName, timestamp: messageTimestamp++ };
+            let aiMessage = null;
+            switch(msgData.type) {
+                case 'text':
+                    aiMessage = { ...baseMessage, content: String(msgData.content || msgData.message) };
+                    break;
+                case 'sticker':
+                    aiMessage = { ...baseMessage, type: 'sticker', content: msgData.url, meaning: msgData.meaning || '' };
+                    break;
+            }
+            if (aiMessage) {
+                chat.history.push(aiMessage);
+                newMessagesCount++;
+            }
+        }
+        
+        if (newMessagesCount > 0) {
+            chat.unreadCount = (chat.unreadCount || 0) + newMessagesCount;
+        }
+        
+        await db.chats.put(chat);
+        await renderChatList();
+
+        if (newMessagesCount > 0) {
+            showNotification(chat.id, `发来了 ${newMessagesCount} 条新消息`);
+        }
+
+    } catch (error) {
+        console.error("从CPhone推进真实对话失败:", error);
+        await showCustomAlert('操作失败', `无法生成新回复: ${error.message}`);
+    }
+}
+/**
+ * 【全新】为CPhone镜像聊天窗口加载更早的消息记录
+ */
+async function loadMoreMirroredMessages() {
+    if (isLoadingMoreCphoneMessages || !activeCharacterId) return;
+    isLoadingMoreCphoneMessages = true;
+
+    const messagesContainer = document.getElementById('char-conversation-messages');
+    const mainChar = state.chats[activeCharacterId];
+    if (!mainChar) {
+        isLoadingMoreCphoneMessages = false;
+        return;
+    }
+
+    showLoader(messagesContainer, 'top'); // 在顶部显示加载动画
+    const oldScrollHeight = messagesContainer.scrollHeight;
+
+    // 模拟一点延迟，让加载动画更自然
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    const totalMessages = mainChar.history.length;
+    const renderWindow = state.globalSettings.chatRenderWindow || 50;
+    const nextSliceEnd = totalMessages - cphoneRenderedCount;
+    const nextSliceStart = Math.max(0, nextSliceEnd - renderWindow);
+    
+    const messagesToPrepend = mainChar.history.slice(nextSliceStart, nextSliceEnd);
+
+    // 渲染前先移除加载动画
+    hideLoader(messagesContainer);
+
+    if (messagesToPrepend.length === 0) {
+        isLoadingMoreCphoneMessages = false;
+        return;
+    }
+
+    // 从后往前遍历，逐条 prepending 到顶部
+    for (const msg of messagesToPrepend.reverse()) {
+        const mirroredMsg = { ...msg, role: msg.role === 'user' ? 'assistant' : 'user' };
+        
+        // 我们需要再次构建那个“反转视角”的临时对象
+        const tempChatObjectForRendering = {
+            id: 'temp_user_chat_mirror', isGroup: false, name: mainChar.name,
+            settings: {
+                ...mainChar.settings,
+                myAvatar: mainChar.settings.aiAvatar,
+                myAvatarFrame: mainChar.settings.aiAvatarFrame,
+                aiAvatar: mainChar.settings.myAvatar,
+                aiAvatarFrame: mainChar.settings.myAvatarFrame
+            }
+        };
+        
+        const messageEl = await createMessageElement(mirroredMsg, tempChatObjectForRendering);
+        if (messageEl) {
+            messagesContainer.prepend(messageEl);
+        }
+    }
+
+    cphoneRenderedCount += messagesToPrepend.length;
+
+    // 恢复滚动位置，防止跳动
+    const newScrollHeight = messagesContainer.scrollHeight;
+    messagesContainer.scrollTop = newScrollHeight - oldScrollHeight;
+
+    isLoadingMoreCphoneMessages = false;
+}
+/**
+ * 【全新 V2.5 | 交互优化 + 用户对话修复版】打开并显示指定的模拟聊天记录
+ * @param {number} conversationIndex - 在数组中的索引, -1 代表与用户的真实对话
  */
 async function openCharSimulatedConversation(conversationIndex) {
     const mainChar = state.chats[activeCharacterId];
+    // ▼▼▼ 核心修改：处理 conversationIndex 为 -1 的情况 ▼▼▼
+    if (conversationIndex === -1) {
+        // 这是我们手动添加的“与用户对话”
+        cphoneActiveConversationType = 'private_user';
+        
+        const titleEl = document.getElementById('char-conversation-partner-name');
+        const bodyEl = document.getElementById('char-conversation-messages');
+        const inputEl = document.getElementById('char-simulated-input');
+
+        bodyEl.innerHTML = '';
+        titleEl.textContent = mainChar.settings.myNickname || (state.qzoneSettings.nickname || '我');
+        inputEl.placeholder = `与 ${mainChar.settings.myNickname || '我'} 的对话 (只读)`;
+        
+        cphoneRenderedCount = 0;
+        isLoadingMoreCphoneMessages = false;
+        
+        const history = mainChar.history;
+        const renderWindow = state.globalSettings.chatRenderWindow || 50;
+        const initialMessages = history.slice(-renderWindow);
+
+        const tempChatObjectForRendering = {
+            id: 'temp_user_chat_mirror', isGroup: false, name: mainChar.name,
+            settings: {
+                ...mainChar.settings,
+                myAvatar: mainChar.settings.aiAvatar,
+                myAvatarFrame: mainChar.settings.aiAvatarFrame,
+                aiAvatar: mainChar.settings.myAvatar,
+                aiAvatarFrame: mainChar.settings.myAvatarFrame
+            }
+        };
+
+        for (const msg of initialMessages) {
+            const mirroredMsg = { ...msg, role: msg.role === 'user' ? 'assistant' : 'user' };
+            const bubbleElement = await createMessageElement(mirroredMsg, tempChatObjectForRendering);
+            if (bubbleElement) {
+                bodyEl.appendChild(bubbleElement);
+            }
+        }
+        cphoneRenderedCount = initialMessages.length;
+
+        switchToCharScreen('char-qq-conversation-screen');
+        setTimeout(() => bodyEl.scrollTop = bodyEl.scrollHeight, 0);
+
+        return; // 处理完后直接返回
+    }
+    // ▲▲▲ 核心修改结束 ▲▲▲
+
+    // --- 后续处理AI生成对话的逻辑保持不变 ---
     const conversation = mainChar.simulatedConversations[conversationIndex];
     if (!conversation) return;
+    cphoneActiveConversationType = conversation.type;
+
+    const allNpcs = await db.npcs.toArray();
+    const npcMap = new Map(allNpcs.map(npc => [npc.name, npc]));
 
     const titleEl = document.getElementById('char-conversation-partner-name');
     const bodyEl = document.getElementById('char-conversation-messages');
@@ -32676,43 +32993,22 @@ async function openCharSimulatedConversation(conversationIndex) {
     bodyEl.style.backgroundColor = isDarkMode ? '#000000' : '#f0f2f5';
 
     let tempChatObjectForRendering;
-    const userDisplayNameForAI = (state.qzoneSettings.nickname === '{{user}}' || !state.qzoneSettings.nickname) ? '用户' : state.qzoneSettings.nickname;
     
-    if (conversation.type === 'private_user') {
-        titleEl.textContent = conversation.userRemarkName;
-        inputEl.placeholder = `与 ${conversation.userRemarkName} 的对话`;
-
-        tempChatObjectForRendering = {
-            id: 'temp_user_chat', isGroup: false,
-            name: conversation.userRemarkName,
-            originalName: mainChar.originalName,
-            settings: {
-                ...mainChar.settings,
-                myAvatar: mainChar.settings.aiAvatar,
-                myAvatarFrame: mainChar.settings.aiAvatarFrame,
-                
-                // ▼▼▼ 核心修复就在这里！ ▼▼▼
-                // 我们不再从全局设置取头像，而是从当前角色的聊天设置里取“我的头像”
-                aiAvatar: mainChar.settings.myAvatar,
-                // ▲▲▲ 修复结束 ▲▲▲
-                
-                aiAvatarFrame: mainChar.settings.myAvatarFrame
-            }
-        };
-
-    } else if (conversation.type === 'group') {
+    if (conversation.type === 'group') {
         titleEl.textContent = `${conversation.groupName} (${conversation.participants.length + 1})`;
         inputEl.placeholder = `在 ${conversation.groupName} 中聊天`;
-
         tempChatObjectForRendering = {
             id: 'temp_group_chat', isGroup: true,
             name: conversation.groupName,
             originalName: mainChar.originalName,
-            members: conversation.participants.map(p => ({
-                originalName: p.name,
-                groupNickname: p.name,
-                avatar: `https://image.pollinations.ai/prompt/${encodeURIComponent(p.avatar_prompt || 'anime person')}`
-            })),
+            members: conversation.participants.map(p => {
+                const npcData = npcMap.get(p.name);
+                let avatarUrl = (npcData && npcData.avatar) ? npcData.avatar : 
+                    (state.globalSettings.enableAiDrawing 
+                        ? `https://image.pollinations.ai/prompt/${encodeURIComponent(p.avatar_prompt || 'anime person')}`
+                        : defaultGroupMemberAvatar);
+                return { originalName: p.name, groupNickname: p.name, avatar: avatarUrl };
+            }),
             settings: {
                 ...mainChar.settings,
                 myNickname: mainChar.name,
@@ -32720,11 +33016,23 @@ async function openCharSimulatedConversation(conversationIndex) {
                 myAvatarFrame: mainChar.settings.aiAvatarFrame,
             }
         };
-
+        for (const msg of conversation.messages) {
+            const isFromMainChar = msg.sender === (mainChar.originalName || mainChar.name);
+            const role = isFromMainChar ? 'user' : 'assistant';
+            const tempMessageObject = { role: role, senderName: msg.sender, content: msg.content, timestamp: Date.now() + Math.random() };
+            const bubbleElement = await createMessageElement(tempMessageObject, tempChatObjectForRendering);
+            if (bubbleElement) {
+                bodyEl.appendChild(bubbleElement);
+            }
+        }
     } else { // 与NPC的私聊
         titleEl.textContent = conversation.participant.name;
         inputEl.placeholder = `与 ${conversation.participant.name} 的对话`;
-
+        const npcData = npcMap.get(conversation.participant.name);
+        const npcAvatarUrl = (npcData && npcData.avatar) ? npcData.avatar : 
+            (state.globalSettings.enableAiDrawing
+                ? `https://image.pollinations.ai/prompt/${encodeURIComponent(conversation.participant.avatar_prompt || 'anime person')}`
+                : defaultGroupMemberAvatar);
         tempChatObjectForRendering = {
             id: 'temp_npc_chat', isGroup: false,
             name: conversation.participant.name,
@@ -32733,35 +33041,18 @@ async function openCharSimulatedConversation(conversationIndex) {
                 ...mainChar.settings,
                 myAvatar: mainChar.settings.aiAvatar,
                 myAvatarFrame: mainChar.settings.aiAvatarFrame,
-                aiAvatar: `https://image.pollinations.ai/prompt/${encodeURIComponent(conversation.participant.avatar_prompt || 'anime person')}`,
+                aiAvatar: npcAvatarUrl,
                 aiAvatarFrame: ''
             }
         };
-    }
-    
-    for (const msg of conversation.messages) {
-        const isFromMainChar = msg.sender === (mainChar.originalName || mainChar.name);
-        const isFromUser = msg.sender === userDisplayNameForAI;
-
-        let role;
-        
-        if (conversation.type === 'private_user') {
-            role = isFromUser ? 'assistant' : 'user';
-        } else {
-            role = isFromMainChar ? 'user' : 'assistant';
-        }
-        
-        const tempMessageObject = {
-            role: role,
-            senderName: msg.sender,
-            content: msg.content,
-            timestamp: Date.now() + Math.random()
-        };
-
-        const bubbleElement = await createMessageElement(tempMessageObject, tempChatObjectForRendering);
-        
-        if (bubbleElement) {
-            bodyEl.appendChild(bubbleElement);
+        for (const msg of conversation.messages) {
+            const isFromMainChar = msg.sender === (mainChar.originalName || mainChar.name);
+            const role = isFromMainChar ? 'user' : 'assistant';
+            const tempMessageObject = { role: role, senderName: msg.sender, content: msg.content, timestamp: Date.now() + Math.random() };
+            const bubbleElement = await createMessageElement(tempMessageObject, tempChatObjectForRendering);
+            if (bubbleElement) {
+                bodyEl.appendChild(bubbleElement);
+            }
         }
     }
 
@@ -38293,6 +38584,97 @@ function hideLoader(container) {
     }
 }
 // ▲▲▲ 新增函数结束 ▲▲▲
+// ▲▲▲ 粘贴结束 ▲▲▲
+
+// ▼▼▼ 【全新】这是删除世界书功能的【全部核心JS代码】，请完整粘贴 ▼▼▼
+
+/**
+ * 【总入口】打开删除世界书的选择器弹窗
+ */
+async function openWorldBookDeletionModal() {
+    const modal = document.getElementById('delete-world-books-modal');
+    const listEl = document.getElementById('delete-world-books-list');
+    const selectAllCheckbox = document.getElementById('select-all-world-books-for-clear');
+    listEl.innerHTML = '';
+    selectAllCheckbox.checked = false; // 重置全选框
+
+    const books = await db.worldBooks.toArray();
+
+    if (books.length === 0) {
+        listEl.innerHTML = '<p style="text-align:center; color: var(--text-secondary); padding: 50px 0;">没有可以删除的世界书。</p>';
+    } else {
+        books.forEach(book => {
+            const item = document.createElement('div');
+            item.className = 'clear-posts-item'; // 复用样式
+            item.dataset.bookId = book.id;
+            item.innerHTML = `
+                <div class="checkbox"></div>
+                <span class="name">${book.name}</span>
+            `;
+            listEl.appendChild(item);
+        });
+    }
+    
+    modal.classList.add('visible');
+}
+
+/**
+ * 【核心】处理最终确认删除世界书的逻辑
+ */
+async function handleConfirmWorldBookDeletion() {
+    const selectedItems = document.querySelectorAll('#delete-world-books-list .clear-posts-item.selected');
+    if (selectedItems.length === 0) {
+        alert("请至少选择一个要删除的世界书。");
+        return;
+    }
+
+    const idsToDelete = Array.from(selectedItems).map(item => item.dataset.bookId);
+    
+    const confirmed = await showCustomConfirm(
+        '最后确认！',
+        `此操作将永久删除您选择的 ${selectedItems.length} 本世界书，并解除它们与所有角色的关联。此操作【不可恢复】！`,
+        { confirmButtonClass: 'btn-danger', confirmText: '确认删除' }
+    );
+
+    if (!confirmed) return;
+    
+    await showCustomAlert("请稍候...", "正在执行删除操作...");
+
+    try {
+        await db.transaction('rw', db.worldBooks, db.chats, async () => {
+            // 1. 批量删除世界书本身
+            await db.worldBooks.bulkDelete(idsToDelete);
+
+            // 2. 遍历所有聊天，解除关联
+            const allChats = await db.chats.toArray();
+            for (const chat of allChats) {
+                if (chat.settings && Array.isArray(chat.settings.linkedWorldBookIds)) {
+                    const originalCount = chat.settings.linkedWorldBookIds.length;
+                    // 过滤掉已被删除的世界书ID
+                    chat.settings.linkedWorldBookIds = chat.settings.linkedWorldBookIds.filter(id => !idsToDelete.includes(id));
+                    
+                    // 如果有关联被解除，则更新该聊天
+                    if (chat.settings.linkedWorldBookIds.length < originalCount) {
+                        await db.chats.put(chat);
+                    }
+                }
+            }
+        });
+        
+        // 更新内存状态
+        state.worldBooks = state.worldBooks.filter(book => !idsToDelete.includes(book.id));
+        
+        document.getElementById('delete-world-books-modal').classList.remove('visible');
+        await showCustomAlert("删除成功", `${selectedItems.length} 本世界书已成功删除。`);
+
+    } catch (error) {
+        console.error("删除世界书失败:", error);
+        await showCustomAlert("删除失败", `操作失败: ${error.message}`);
+    }
+}
+// ▲▲▲ 新增JS代码结束 ▲▲▲
+
+
 
               // ===================================================================
                 // 4. 初始化函数 init()
@@ -42413,7 +42795,25 @@ document.getElementById('add-char-diary-btn').addEventListener('click', () => op
 document.getElementById('favorite-diary-btn').addEventListener('click', toggleDiaryFavorite);
 // ▲▲▲ 新增事件绑定结束 ▲▲▲
         // “重新生成”按钮
-        document.getElementById('regenerate-char-qq-btn').addEventListener('click', handleGenerateSimulatedQQ);
+// 新代码 (解决方案)
+document.getElementById('regenerate-char-qq-btn').addEventListener('click', async () => {
+    // 为了更好的用户体验，先弹出一个提示
+    showCustomAlert("正在执行...", "正在生成新的模拟聊天记录，并同时让角色思考如何与你继续对话...");
+
+    try {
+        // 使用 Promise.all 可以让两个独立的API请求并发执行，效率更高
+        await Promise.all([
+            handleGenerateSimulatedQQ(),
+            handleContinueRealConversationFromCPhone()
+        ]);
+
+        console.log("CPhone QQ模拟记录生成 和 主聊天推进 已同时完成。");
+
+    } catch (error) {
+        console.error("在同时执行两个函数时出错:", error);
+        await showCustomAlert("操作失败", `在执行组合操作时遇到错误: ${error.message}`);
+    }
+});
 
         // 使用事件委托，处理模拟聊天【列表】的点击事件
         document.getElementById('char-chat-list').addEventListener('click', (e) => {
@@ -42427,11 +42827,38 @@ document.getElementById('favorite-diary-btn').addEventListener('click', toggleDi
             }
         });
 
-        // 【新增】为模拟对话页面的“返回”按钮绑定事件
+
+
         document.getElementById('back-to-char-qq-list-btn').addEventListener('click', () => {
             switchToCharScreen('char-qq-screen');
         });
+// ▼▼▼ 【最终修复版】这是为CPhone镜像聊天窗口恢复“向上滚动加载”功能的代码 ▼▼▼
 
+        // 1. 获取聊天记录的容器元素
+        const charConversationMessages = document.getElementById('char-conversation-messages');
+
+        // 2. 定义滚动事件的处理函数
+        const cphoneScrollHandler = () => {
+            // 3. 核心判断：只有当打开的对话是与用户的私聊时，才执行加载逻辑
+            if (cphoneActiveConversationType !== 'private_user') {
+                return; // 如果是NPC或群聊，则不执行任何操作
+            }
+            
+            // 4. 检查是否滚动到顶部，并且当前没有正在加载
+            if (charConversationMessages.scrollTop < 1 && !isLoadingMoreCphoneMessages) {
+                const totalMessages = state.chats[activeCharacterId]?.history.length || 0;
+                // 检查是否还有更多历史记录可供加载
+                if (totalMessages > cphoneRenderedCount) {
+                    // 调用加载函数
+                    loadMoreMirroredMessages();
+                }
+            }
+        };
+
+        // 5. 将这个处理函数绑定到滚动事件上
+        charConversationMessages.addEventListener('scroll', cphoneScrollHandler);
+
+        // ▲▲▲ 修复代码粘贴结束 ▲▲▲
         // 【新增】为模拟对话页面的“发送”按钮绑定提示事件
         document.getElementById('char-simulated-send-btn').addEventListener('click', () => {
             alert("这是模拟对话，无法发送消息哦~");
@@ -42867,6 +43294,30 @@ document.getElementById('cancel-werewolf-lobby-btn').addEventListener('click', (
 document.getElementById('werewolf-retry-btn').addEventListener('click', handleWerewolfRetry);
 document.getElementById('manual-werewolf-summary-btn').addEventListener('click', handleManualWerewolfSummary);
 document.getElementById('check-and-fix-data-btn').addEventListener('click', checkAndFixData);
+// ▼▼▼ 【全新】这是为删除世界书功能添加的事件监听器 ▼▼▼
+document.getElementById('delete-world-books-btn').addEventListener('click', openWorldBookDeletionModal);
+
+// 为新弹窗的按钮和列表绑定事件
+document.getElementById('cancel-delete-world-books-btn').addEventListener('click', () => {
+    document.getElementById('delete-world-books-modal').classList.remove('visible');
+});
+document.getElementById('confirm-delete-world-books-btn').addEventListener('click', handleConfirmWorldBookDeletion);
+
+document.getElementById('delete-world-books-modal').addEventListener('click', (e) => {
+    // 处理列表项的勾选/取消勾选
+    const item = e.target.closest('.clear-posts-item');
+    if (item) {
+        item.classList.toggle('selected');
+    }
+    // 处理“全选”复选框
+    if (e.target.id === 'select-all-world-books-for-clear') {
+        const isChecked = e.target.checked;
+        document.querySelectorAll('#delete-world-books-list .clear-posts-item').forEach(el => {
+            el.classList.toggle('selected', isChecked);
+        });
+    }
+});
+// ▲▲▲ 新增事件监听器结束 ▲▲▲
 // ▼▼▼ 【全新】表情包搜索功能事件绑定 ▼▼▼
 document.getElementById('sticker-search-input').addEventListener('input', () => {
     // 用户输入时，只需要重绘表情网格，不需要重绘顶部的页签
@@ -43134,6 +43585,22 @@ qzoneContent.addEventListener('scroll', () => {
     </div>
 </div>
 <!-- ▲▲▲ 新增HTML结束 ▲▲▲ -->
+<div id="delete-world-books-modal" class="modal">
+    <div class="modal-content" style="height: 70%;">
+        <div class="modal-header">
+            <span>选择要删除的世界书</span>
+            <label style="font-size: 14px; font-weight: normal; display: flex; align-items: center; gap: 5px;">
+                <input type="checkbox" id="select-all-world-books-for-clear"> 全选
+            </label>
+        </div>
+        <div class="modal-body" id="delete-world-books-list" style="padding: 0;">
+            </div>
+        <div class="modal-footer">
+            <button class="cancel" id="cancel-delete-world-books-btn">取消</button>
+            <button class="save btn-danger" id="confirm-delete-world-books-btn">确认删除</button>
+        </div>
+    </div>
+</div>
 <!-- ▼▼▼ 【全新】狼人杀夜晚刀人弹窗 ▼▼▼ -->
 <div id="werewolf-kill-modal" class="modal">
     <div class="modal-content" style="height: 70%;">
