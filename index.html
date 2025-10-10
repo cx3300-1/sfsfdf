@@ -15828,16 +15828,20 @@ function loadMoreChats(sortedItems) {
     });
 }
 // ▲▲▲ 新增函数结束 ▲▲▲
-// ▼▼▼ 【全新 | 已升级“分批加载”功能】请用这个全新版本替换旧的 renderChatList 函数 ▼▼▼
+/**
+ * 【V2.1 | 容错增强版】渲染聊天列表
+ */
 async function renderChatList() {
     const chatListEl = document.getElementById('chat-list');
     chatListEl.innerHTML = '';
 
-    // 1. 获取并排序所有聊天数据（这部分逻辑不变）
     const allChats = Object.values(state.chats).sort((a, b) => {
         const pinDiff = (b.isPinned || false) - (a.isPinned || false);
         if (pinDiff !== 0) return pinDiff;
-        return (b.history.slice(-1)[0]?.timestamp || 0) - (a.history.slice(-1)[0]?.timestamp || 0);
+        // 安全地获取时间戳
+        const lastTimestampA = a.history && a.history.length > 0 ? a.history.slice(-1)[0]?.timestamp || 0 : 0;
+        const lastTimestampB = b.history && b.history.length > 0 ? b.history.slice(-1)[0]?.timestamp || 0 : 0;
+        return lastTimestampB - lastTimestampA;
     });
     
     const allGroups = await db.qzoneGroups.toArray();
@@ -15848,12 +15852,13 @@ async function renderChatList() {
     }
 
     allGroups.forEach(group => {
-        const latestChatInGroup = allChats.find(chat => chat.groupId === group.id);
+        const latestChatInGroup = allChats
+            .filter(chat => chat.groupId === group.id && chat.history && chat.history.length > 0)
+            .sort((a, b) => (b.history.slice(-1)[0]?.timestamp || 0) - (a.history.slice(-1)[0]?.timestamp || 0))[0];
         group.latestTimestamp = latestChatInGroup ? (latestChatInGroup.history.slice(-1)[0]?.timestamp || 0) : 0;
     });
     allGroups.sort((a, b) => b.latestTimestamp - a.latestTimestamp);
     
-    // 【核心修改】将排序后的所有聊天项（包括分组和非分组）合并到一个有序数组中
     const sortedRenderableItems = [];
     const processedChatIds = new Set();
 
@@ -15874,39 +15879,45 @@ async function renderChatList() {
         }
     });
 
-    // 2. 【核心修改】只渲染第一批次的聊天项
-    const initialItems = sortedRenderableItems.slice(0, CHAT_LIST_RENDER_WINDOW);
     chatListRenderCount = 0;
-
+    const initialItems = sortedRenderableItems.slice(0, CHAT_LIST_RENDER_WINDOW);
     const fragment = document.createDocumentFragment();
     let currentGroupContent = null;
 
     initialItems.forEach(item => {
-        if (item.type === 'groupHeader') {
-            const groupContainer = createChatGroupContainer(item.group);
-            fragment.appendChild(groupContainer);
-            currentGroupContent = groupContainer.querySelector('.chat-group-content');
-        } else if (item.type === 'chatItem') {
-            const listItem = createChatListItem(item.chat);
-            if (currentGroupContent && item.chat.groupId) {
-                currentGroupContent.appendChild(listItem);
-            } else {
-                fragment.appendChild(listItem);
-                currentGroupContent = null;
+        // --- 核心容错逻辑 ---
+        try {
+            if (item.type === 'groupHeader') {
+                const groupContainer = createChatGroupContainer(item.group);
+                fragment.appendChild(groupContainer);
+                currentGroupContent = groupContainer.querySelector('.chat-group-content');
+            } else if (item.type === 'chatItem') {
+                const listItem = createChatListItem(item.chat);
+                if (currentGroupContent && item.chat.groupId) {
+                    currentGroupContent.appendChild(listItem);
+                } else {
+                    fragment.appendChild(listItem);
+                    currentGroupContent = null;
+                }
             }
+        } catch (error) {
+            // 如果渲染某个聊天项时出错，就在控制台打印错误，并跳过它，继续渲染下一个
+            console.error(`渲染聊天项失败: ${item.chat?.name || '未知聊天'}`, error);
+            const errorItem = document.createElement('div');
+            errorItem.className = 'chat-list-item';
+            errorItem.innerHTML = `<div style="color:red;">渲染失败: ${item.chat?.name || '未知'}</div>`;
+            fragment.appendChild(errorItem);
         }
+        // --- 容错逻辑结束 ---
     });
     chatListEl.appendChild(fragment);
     chatListRenderCount = initialItems.length;
 
-    // 3. 【核心修改】如果还有更多，则添加“加载更多”按钮
     if (sortedRenderableItems.length > chatListRenderCount) {
         appendLoadMoreChatsButton(chatListEl, sortedRenderableItems);
     }
     
-    // 为所有新渲染的分组标题添加折叠事件
     document.querySelectorAll('.chat-group-header').forEach(header => {
-        // (为避免重复绑定，先移除旧的)
         const newHeader = header.cloneNode(true);
         header.parentNode.replaceChild(newHeader, header);
         newHeader.addEventListener('click', () => {
@@ -15915,7 +15926,6 @@ async function renderChatList() {
         });
     });
 }
-// ▲▲▲ 替换结束 ▲▲▲
 // ▼▼▼ 【全新】这是为“分批加载”新增的所有辅助函数 ▼▼▼
 
         /**
@@ -38256,51 +38266,105 @@ async function handleWerewolfRetry() {
 
 // ▲▲▲ 新增函数粘贴结束 ▲▲▲
 /**
- * 【全新】检查并修复数据库与内存状态不一致的问题
+ * 【全新 | V2.0 深度修复版】检查并修复数据库与内存状态不一致的问题
  */
 async function checkAndFixData() {
     // 1. 弹出警告，让用户确认操作
     const confirmed = await showCustomConfirm(
         '确认操作',
-        '此功能将扫描数据库，尝试找出并修复“角色在数据库中存在，但未在聊天列表显示”的问题。<br><br><strong>操作通常是安全的，但仍建议在操作前备份数据。</strong>',
-        { confirmText: '开始检查' }
+        '此功能将深度扫描数据库，尝试修复“角色在列表中不显示”等问题。操作会验证并修正每个角色的数据结构，通常是安全的，但仍建议在操作前备份数据。',
+        { confirmText: '开始检查与修复' }
     );
 
     if (!confirmed) return;
 
     // 2. 显示处理中的提示
-    await showCustomAlert("请稍候...", "正在扫描和对比数据...");
+    await showCustomAlert("请稍候...", "正在进行深度扫描和修复，请不要关闭页面...");
+    console.log("数据深度检查与修复流程已启动...");
+
+    let fixedCount = 0;
+    let issuesFound = [];
 
     try {
-        // 3. 从数据库中获取所有聊天记录
         const chatsFromDB = await db.chats.toArray();
-        // 4. 获取当前内存中已加载的所有聊天ID
-        const chatsInMemoryIds = new Set(Object.keys(state.chats));
-        
-        let fixedCount = 0;
-        
-        // 5. 遍历数据库中的每一条聊天记录
+        const allCharacterIds = new Set(chatsFromDB.filter(c => !c.isGroup).map(c => c.id));
+
         for (const chat of chatsFromDB) {
-            // 6. 如果发现某条记录不在内存中，就进行修复
-            if (!chatsInMemoryIds.has(chat.id)) {
-                console.warn(`发现不一致数据：聊天 "${chat.name}" (ID: ${chat.id}) 存在于数据库但未加载到内存中。正在修复...`);
-                // 7. 修复操作：将这条“丢失”的数据重新加回内存中的 state.chats 对象
-                state.chats[chat.id] = chat;
+            let needsUpdate = false;
+            const originalChatName = chat.name || `(ID: ${chat.id})`;
+
+            // 修复 1: 确保基础属性存在且类型正确
+            if (!Array.isArray(chat.history)) {
+                chat.history = [];
+                needsUpdate = true;
+                issuesFound.push(`为“${originalChatName}”创建了缺失的 history 数组。`);
+            }
+            if (typeof chat.settings !== 'object' || chat.settings === null) {
+                chat.settings = {};
+                needsUpdate = true;
+                issuesFound.push(`为“${originalChatName}”创建了缺失的 settings 对象。`);
+            }
+            if (typeof chat.isGroup !== 'boolean') {
+                chat.isGroup = false; // 默认为非群聊
+                needsUpdate = true;
+                issuesFound.push(`修正了“${originalChatName}”的 isGroup 状态。`);
+            }
+            if (typeof chat.isPinned !== 'boolean') {
+                chat.isPinned = false;
+                needsUpdate = true;
+            }
+             if (typeof chat.unreadCount !== 'number') {
+                chat.unreadCount = 0;
+                needsUpdate = true;
+            }
+
+
+            // 修复 2: 确保群聊专属属性正确
+            if (chat.isGroup) {
+                if (!Array.isArray(chat.members)) {
+                    chat.members = [];
+                    needsUpdate = true;
+                    issuesFound.push(`为群聊“${originalChatName}”创建了缺失的 members 数组。`);
+                }
+                // 移除已不存在的群成员引用
+                const originalMemberCount = chat.members.length;
+                chat.members = chat.members.filter(member => allCharacterIds.has(member.id));
+                if (chat.members.length !== originalMemberCount) {
+                    needsUpdate = true;
+                    issuesFound.push(`清理了群聊“${originalChatName}”中已删除的成员。`);
+                }
+            } else { 
+            // 修复 3: 确保单聊专属属性正确
+                if (typeof chat.originalName !== 'string' || !chat.originalName) {
+                    chat.originalName = chat.name; // 用备注名作为备用本名
+                    needsUpdate = true;
+                    issuesFound.push(`为“${originalChatName}”补充了缺失的本名(originalName)。`);
+                }
+                if (typeof chat.relationship !== 'object' || chat.relationship === null) {
+                    chat.relationship = { status: 'friend' }; // 默认为好友关系
+                    needsUpdate = true;
+                }
+            }
+
+            if (needsUpdate) {
+                console.log(`正在修复角色: ${originalChatName}`);
+                await db.chats.put(chat);
                 fixedCount++;
             }
         }
+        
+        // 修复完成后，强制从数据库重新加载所有数据到内存
+        await loadAllDataFromDB();
+        // 重新渲染聊天列表
+        await renderChatList();
 
-        // 8. 根据修复结果，向用户反馈
+        let summaryMessage = '';
         if (fixedCount > 0) {
-            await showCustomAlert(
-                '修复完成！',
-                `成功找到了 ${fixedCount} 个“丢失”的角色并已将其恢复到列表中！\n\n建议刷新页面以确保所有更改完全生效。`
-            );
-            // 重新渲染聊天列表，让修复的角色立刻显示出来
-            await renderChatList(); 
+            summaryMessage = `修复完成！\n\n成功检查并修复了 ${fixedCount} 个角色的数据问题！\n\n发现的问题包括：\n- ${issuesFound.slice(0, 3).join('\n- ')}\n${issuesFound.length > 3 ? '...等' : ''}\n\n聊天列表已刷新，请检查您的问题是否已解决。`;
         } else {
-            await showCustomAlert('检查完成', '未发现任何数据不一致的问题。');
+            summaryMessage = '检查完成，未发现任何可自动修复的数据结构问题。如果问题仍然存在，可能是由更深层次的原因导致。';
         }
+        await showCustomAlert('操作完成', summaryMessage);
 
     } catch (error) {
         console.error("数据检查与修复失败:", error);
@@ -38657,7 +38721,14 @@ window.openNpcEditor = openNpcEditor; // <-- 新增这一行
 // ▼▼▼ 在这里粘贴下面的新代码 ▼▼▼
 document.getElementById('cleanup-data-btn').addEventListener('click', cleanupRedundantData);
 // ▲▲▲ 粘贴结束 ▲▲▲
+document.getElementById('offline-mode-toggle').addEventListener('change', (e) => {
+    // 根据开关的选中状态，立即显示或隐藏下方的“线下模式选项”区域
+    document.getElementById('offline-mode-options').style.display = e.target.checked ? 'block' : 'none';
+});
                     document.getElementById('import-btn').addEventListener('click', () => document.getElementById('import-data-input').click());
+    document.getElementById('time-perception-toggle').addEventListener('change', (e) => {
+        document.getElementById('time-zone-group').style.display = e.target.checked ? 'block' : 'none';
+    });
                     document.getElementById('import-data-input').addEventListener('change', e => importBackup(e.target.files[0]));
                     document.getElementById('import-card-input').addEventListener('change', handleCardImport);
                     document.getElementById('back-to-list-btn').addEventListener('click', () => { 
@@ -39484,9 +39555,7 @@ await renderOfflinePresetSelector(chat);
 // 【新增代码】保存时间感知设置
 chat.settings.enableTimePerception = document.getElementById('time-perception-toggle').checked;
 chat.settings.timeZone = document.getElementById('time-zone-select').value;
-document.getElementById('time-perception-toggle').addEventListener('change', (e) => {
-    document.getElementById('time-zone-group').style.display = e.target.checked ? 'block' : 'none';
-});
+
             chat.settings.myPersona = document.getElementById('my-persona').value;
             chat.settings.myAvatar = document.getElementById('my-avatar-preview').src;
         
