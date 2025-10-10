@@ -10282,6 +10282,17 @@ input, textarea, select {
                     </label>
                     <input type="number" id="block-cooldown-input" min="0.1" step="0.1" value="1" style="width: 80px; text-align: center;">
                 </div>
+<hr style="margin: 30px 0; opacity: 0.3;">
+                <h3 style="border-bottom: 1px solid #eee; padding-bottom: 10px;">性能与显示设置</h3>
+                <div class="form-group" style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                    <label for="chat-render-window-input" style="margin-bottom: 0;">
+                        聊天界面初始加载条数
+                        <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;">
+                            打开聊天时默认显示的最近消息数量。值越大，初次加载越慢。
+                        </p>
+                    </label>
+                    <input type="number" id="chat-render-window-input" min="10" value="50" style="width: 80px; text-align: center;">
+                </div>
                 <hr style="margin: 30px 0; opacity: 0.3;">
                 <h3 style="border-bottom: 1px solid #eee; padding-bottom: 10px;">生图功能设置</h3>
                 <div class="form-group" style="display: flex; justify-content: space-between; align-items: center;">
@@ -12962,7 +12973,7 @@ const DEFAULT_NOTIFICATION_SOUND = 'https://www.myinstants.com/media/sounds/noti
         // ▲▲▲ 新增代码结束 ▲▲▲
         let repostTargetId = null; // 用于存储当前要转发的动态ID
                 const STICKER_REGEX = /(^https:\/\/i\.postimg\.cc\/.+|^https:\/\/files\.catbox\.moe\/.+|^https?:\/\/sharkpan\.xyz\/.+|^data:image|\.(png|jpg|jpeg|gif|webp)\?.*$|\.(png|jpg|jpeg|gif|webp)$)/i;
-                const MESSAGE_RENDER_WINDOW = 25;
+                
                 let currentRenderedCount = 0;
                 let lastKnownBatteryLevel = 1;
                 let alertFlags = { hasShown40: false, hasShown20: false, hasShown10: false };
@@ -15170,7 +15181,8 @@ async function loadAllDataFromDB() {
         widgetData: {},
         globalChatBackground: '',
         enableAiDrawing: true,
-    chatActionButtonsOrder: null
+    chatActionButtonsOrder: null,
+        chatRenderWindow: 50
     };
     state.globalSettings = { ...defaultGlobalSettings, ...(loadedGlobalSettings || {}) };
     state.globalSettings.appIcons = { ...defaultGlobalSettings.appIcons, ...(state.globalSettings.appIcons || {}) };
@@ -15564,7 +15576,8 @@ async function loadAllDataFromDB() {
             document.getElementById('background-activity-switch').checked = state.globalSettings.enableBackgroundActivity || false;
             document.getElementById('background-interval-input').value = state.globalSettings.backgroundActivityInterval || 60;
             document.getElementById('block-cooldown-input').value = state.globalSettings.blockCooldownHours || 1;
-            document.getElementById('enable-ai-drawing-switch').checked = state.globalSettings.enableAiDrawing;        
+            document.getElementById('enable-ai-drawing-switch').checked = state.globalSettings.enableAiDrawing; 
+            document.getElementById('chat-render-window-input').value = state.globalSettings.chatRenderWindow || 50;       
             // 2. 【核心新增】加载并渲染预设下拉菜单
             loadApiPresetsDropdown();
         }
@@ -16273,9 +16286,10 @@ async function renderChatList() {
             // --- (这部分渲染消息历史的逻辑保持不变) ---
             messagesContainer.innerHTML = '';
             const history = chat.history;
-            const totalMessages = history.length;
+const totalMessages = history.length;
             currentRenderedCount = 0;
-            const initialMessages = history.slice(-MESSAGE_RENDER_WINDOW);
+            const renderWindow = state.globalSettings.chatRenderWindow || 50; // 获取设置值
+            const initialMessages = history.slice(-renderWindow); // 使用新值
             let lastTimestamp = 0;
             const fragment = document.createDocumentFragment();
             for (const msg of initialMessages) {
@@ -16314,7 +16328,8 @@ async function renderChatList() {
             if (loadMoreBtn) loadMoreBtn.remove();
             
             const totalMessages = chat.history.length;
-            const nextSliceStart = totalMessages - currentRenderedCount - MESSAGE_RENDER_WINDOW;
+            const renderWindow = state.globalSettings.chatRenderWindow || 50; // 获取设置值
+            const nextSliceStart = totalMessages - currentRenderedCount - renderWindow; // 使用新值
             const nextSliceEnd = totalMessages - currentRenderedCount;
             const messagesToPrepend = chat.history.slice(Math.max(0, nextSliceStart), nextSliceEnd);
             
@@ -18240,9 +18255,7 @@ ${chat.settings.enableTimePerception ? `4.  **情景感知**: 你的对话【必
 -   **制造戏剧性 (使用撤回)**: 作为导演，你可以让某个角色“手滑”发错消息后【立即撤回】，以此制造互动点。
     -   **核心原则**: 一旦有角色撤回消息，其他角色【必须】对此做出反应，例如起哄、追问或开玩笑说“已截图”，以此来推动剧情。
 
-# 长期记忆 (所有角色必须严格遵守)
-${longTermMemoryContext}
-${chat.longTermMemory && chat.longTermMemory.length > 0 ? chat.longTermMemory.map(mem => `- ${mem.content}`).join('\n') : '- (暂无)'}
+
 
 # 当前群聊信息
 - **群名称**: ${chat.name}
@@ -18256,6 +18269,9 @@ ${membersWithContacts}
 
 # 可用资源与上下文
 ${worldBookContent}
+# 长期记忆 (所有角色必须严格遵守)
+${longTermMemoryContext}
+${chat.longTermMemory && chat.longTermMemory.length > 0 ? chat.longTermMemory.map(mem => `- ${mem.content}`).join('\n') : '- (暂无)'}
 ${linkedMemoryContext}
 ${musicContext}
 ${sharedContext}
@@ -18505,8 +18521,7 @@ ${enabledEntries}
 # 对话者的角色设定
 ${chat.settings.myPersona}
 
-# 长期记忆 (你必须严格遵守的事实)
-${chat.longTermMemory && chat.longTermMemory.length > 0 ? chat.longTermMemory.map(mem => `- ${mem.content}`).join('\n') : '- (暂无)'}
+
 
 # 供你参考的信息
 ${chat.settings.enableTimePerception ? `- **当前时间**: ${currentTime} (${timeOfDayGreeting})` : ''}
@@ -18522,6 +18537,8 @@ ${historySlice.map(msg => {
     return line;
 }).join('\n')}
 你必须严格遵守${worldBookContent}
+# 长期记忆 (你必须严格遵守的事实)
+${chat.longTermMemory && chat.longTermMemory.length > 0 ? chat.longTermMemory.map(mem => `- ${mem.content}`).join('\n') : '- (暂无)'}
 ${linkedMemoryContext}
 
 现在，请根据以上所有规则和对话历史，继续这场线下互动。
@@ -18755,9 +18772,6 @@ systemPrompt = `
     - **散记 (random_jottings)**: 一段50字以上的、符合人设的思考或心情记录，禁止OOC。
 
 
-# 长期记忆 (必须严格遵守)
-${chat.longTermMemory && chat.longTermMemory.length > 0 ? chat.longTermMemory.map(mem => `- ${mem.content}`).join('\n') : '- (暂无)'}
-
 # 你的角色设定
 你必须严格遵守${chat.settings.aiPersona}
 
@@ -18797,6 +18811,26 @@ ${chat.longTermMemory && chat.longTermMemory.length > 0 ? chat.longTermMemory.ma
 -  **Emoji 使用习惯**:
     -   根据你的人设，你【必须】在对话中自然地使用 emoji 来辅助表达你的心情和语气，例如开心的时候会用😂、🎉，难过的时候会用😭，思考的时候会用🤔。
 -  **回应撤回**: 当系统提示用户撤回了消息时，你【必须】对此作出反应。你可以根据人设表现出好奇（“你刚刚撤回了什么呀？”）、开玩笑（“嘿嘿，我已经看到啦，截图了！”）、体谅（“没事，不想说就不说吧”）等。
+# 对话者的角色设定
+${chat.settings.myPersona}
+
+# 社交圈与动态
+${contactsList}
+${postsContext}
+
+# 当前情景
+${chat.settings.enableTimePerception ? `- **当前时间**: ${currentTime} (${timeOfDayGreeting})` : ''}
+${timeContext}
+你必须严格遵守${worldBookContent}
+${linkedMemoryContext}
+# 长期记忆 (必须严格遵守)
+${chat.longTermMemory && chat.longTermMemory.length > 0 ? chat.longTermMemory.map(mem => `- ${mem.content}`).join('\n') : '- (暂无)'}
+# 当前音乐情景
+${musicContext}
+${sharedContext}
+${shoppingContext}
+${callTranscriptContext} 
+
 # 可用指令列表
 ### 核心聊天指令
 -   **发文本**: \`{"type": "text", "content": "你好呀！"}\`
@@ -18841,23 +18875,6 @@ ${chat.longTermMemory && chat.longTermMemory.length > 0 ? chat.longTermMemory.ma
 -   **下五子棋**: \`{"type": "gomoku_move", "name": "${chat.originalName}", "x": (0-14), "y": (0-14)}\`
 -   **送礼物**: \`{"type": "gift", "productId": 商品ID, "quantity": 1}\`
 
-# 对话者的角色设定
-${chat.settings.myPersona}
-
-# 社交圈与动态
-${contactsList}
-${postsContext}
-
-# 当前情景
-${chat.settings.enableTimePerception ? `- **当前时间**: ${currentTime} (${timeOfDayGreeting})` : ''}
-${timeContext}
-你必须严格遵守${worldBookContent}
-${linkedMemoryContext}
-# 当前音乐情景
-${musicContext}
-${sharedContext}
-${shoppingContext}
-${callTranscriptContext} 
 
 现在，请根据以上规则和下面的对话历史，继续进行对话。`;
             
@@ -21930,12 +21947,12 @@ ${longTermMemoryContext}
 - 当你想明确地针对群内【任何成员】（包括用户或其他AI角色）之前的某一句具体的话进行回复时，你就应该使用这个功能。
 - 这会让你的回复上方出现一个灰色的小框，里面是被你引用的那句话，这样对话就不会乱了。
 - 指令格式: '{"type": "quote_reply", "target_timestamp": (你想引用的那句话的时间戳), "reply_content": "你的回复内容"}'
-        # 长期记忆 (最高优先级，这是群内已经确立的事实，所有角色必须严格遵守)
-        ${chat.longTermMemory && chat.longTermMemory.length > 0 ? chat.longTermMemory.map(mem => `- ${mem.content}`).join('\n') : '- (暂无)'}
+
         # 当前群聊信息
         - **群名称**: ${chat.name}
         ${worldBookContent}
-       
+        # 长期记忆 (最高优先级，这是群内已经确立的事实，所有角色必须严格遵守)
+        ${chat.longTermMemory && chat.longTermMemory.length > 0 ? chat.longTermMemory.map(mem => `- ${mem.content}`).join('\n') : '- (暂无)'}       
         ${linkedMemoryContext}
         
         # 群成员列表及人设
@@ -37355,145 +37372,169 @@ ${secretInfo}
             return prompt;
         }
 /**
- * 【全新】创建一个详细的狼人杀游戏总结文本
- * @param {object} gameState - 当前的游戏状态对象
- * @returns {string} - 格式化后的游戏总结字符串
- */
-function createWerewolfGameSummary(gameState) {
-    let summary = `--- 狼人杀对局回顾 ---\n`;
-    const winner = gameState.gameLog.find(log => log.content.includes('胜利'))?.content || '胜负未分';
-    summary += `游戏结果: ${winner}\n\n`;
+         * 【全新 | V2.1 无编号版】创建一个详细的、供AI分析的狼人杀游戏完整日志
+         * @param {object} gameState - 当前的游戏状态对象
+         * @returns {string} - 格式化后的游戏完整日志字符串
+         */
+        function createWerewolfGameSummary(gameState) {
+            let summary = `--- 狼人杀对局完整复盘 ---\n\n`;
+            const winner = gameState.gameLog.find(log => log.content.includes('胜利'))?.content || '胜负未分';
+            summary += `### 最终结果: ${winner}\n\n`;
 
-    summary += "本局玩家身份配置:\n";
-    gameState.players.forEach((player, index) => {
-        const status = player.isAlive ? "存活" : "已死亡";
-        summary += `- ${index + 1}号玩家 ${player.name}: ${player.role} (${status})\n`;
-    });
+            summary += "### 玩家身份配置:\n";
+            // ▼▼▼ 核心修改就在这里 ▼▼▼
+            // 移除了 forEach 中的 index 和 "号玩家" 的字样
+            gameState.players.forEach(player => {
+                const status = player.isAlive ? "存活" : "已死亡";
+                summary += `- ${player.name}: ${player.role} (${status})\n`;
+            });
+            // ▲▲▲ 修改结束 ▲▲▲
 
-    summary += "\n关键事件回顾:\n";
-    const eventLog = gameState.gameLog.filter(entry => entry.content.includes('死亡') || entry.content.includes('放逐'));
-    let lastDay = 0;
-    eventLog.forEach(entry => {
-        if (entry.day > lastDay) {
-            summary += `第${entry.day}天: `;
-            lastDay = entry.day;
+            summary += "\n### 详细对局流程:\n";
+            for (let day = 1; day <= gameState.currentDay; day++) {
+                summary += `\n**--- 第 ${day} 天 ---**\n`;
+
+                // 夜晚事件
+                const nightEvents = gameState.gameLog.filter(entry => entry.day === day && (entry.content.includes('死亡')));
+                if (nightEvents.length > 0) {
+                    summary += `**[夜晚]** ${nightEvents.map(e => e.content).join(' ')}\n`;
+                } else if (day > 1 || (day === 1 && gameState.currentDay > 1)) {
+                    summary += `**[夜晚]** 平安夜。\n`;
+                }
+                
+                // 白天讨论
+                const discussionsThisDay = gameState.discussionLog.filter(entry => entry.day === day);
+                if (discussionsThisDay.length > 0) {
+                    summary += `**[讨论环节]**\n${discussionsThisDay.map(d => `- ${d.speaker}: ${d.content}`).join('\n')}\n`;
+                }
+
+                // 投票与放逐
+                const voteLog = gameState.gameLog.find(entry => entry.day === day && entry.content.includes('被投票放逐'));
+                if(voteLog) {
+                    summary += `**[投票结果]** ${voteLog.content}\n`;
+                }
+            }
+
+            summary += "\n--- 复盘结束 ---";
+            return summary;
         }
-        summary += `${entry.content.replace(/昨晚|/g, '')} `;
-    });
-    if(eventLog.length === 0){
-        summary += "本局游戏风平浪静，无人出局。\n"
-    }
-
-    summary += "\n--- 回顾结束 ---";
-    return summary;
-}
 
 /**
- * 【全新】将游戏总结注入到所有参与的AI角色的长期记忆中
- * @param {string} summary - 游戏总结文本
- */
-async function injectSummaryIntoMemories(summary) {
-    let injectedCount = 0;
-    for (const player of werewolfGameState.players) {
-        // 只为AI角色（非用户、非纯NPC）注入记忆
-        if (player.type === 'character') {
-            const chat = state.chats[player.id];
-            if (chat) {
-                const newMemory = {
-                    content: summary,
-                    timestamp: Date.now(),
-                    source: 'werewolf_summary'
-                };
-                if (!chat.longTermMemory) {
-                    chat.longTermMemory = [];
+         * 【全新 V3.0 | 统一客观复盘版】将完整的游戏总结注入到所有参与的AI角色的长期记忆中
+         * @param {string} summary - 完整的游戏总结文本
+         * @returns {Promise<number>} - 返回成功注入记忆的角色数量
+         */
+        async function injectSummaryIntoMemories(summary) {
+            let injectedCount = 0;
+            // 1. 遍历所有参与过游戏的玩家
+            for (const player of werewolfGameState.players) {
+                // 2. 只为AI角色（非用户、非纯NPC）注入记忆
+                if (player.type === 'character') {
+                    const chat = state.chats[player.id];
+                    if (chat) {
+                        // 3. 创建新的记忆对象，内容就是完整的、未经修改的总结
+                        const newMemory = {
+                            content: summary, // Directly use the full summary
+                            timestamp: Date.now(),
+                            source: 'werewolf_summary'
+                        };
+                        if (!chat.longTermMemory) {
+                            chat.longTermMemory = [];
+                        }
+                        chat.longTermMemory.push(newMemory);
+                        // 4. 更新数据库
+                        await db.chats.put(chat);
+                        injectedCount++;
+                    }
                 }
-                chat.longTermMemory.push(newMemory);
-                await db.chats.put(chat);
-                injectedCount++;
+            }
+            return injectedCount;
+        }
+
+/**
+         * 【全新 | V2.0 已修复】手动触发狼人杀游戏总结的入口函数
+         */
+        async function handleManualWerewolfSummary() {
+            if (!werewolfGameState.isActive && werewolfGameState.currentPhase === 'gameover') {
+                await showCustomAlert("请稍候...", "正在为所有AI角色生成并注入游戏记忆...");
+                try {
+                    const summary = createWerewolfGameSummary(werewolfGameState);
+                    
+                    // ▼▼▼ 核心修复就在这里！▼▼▼
+                    // 调用了新的、正确的函数名
+                    const count = await injectSummaryIntoMemories(summary); 
+                    // ▲▲▲ 修复结束 ▲▲▲
+
+                    await showCustomAlert("成功", `游戏记忆已成功注入到 ${count} 位AI角色的长期记忆中！`);
+                } catch (error) {
+                    console.error("手动注入狼人杀记忆失败:", error);
+                    await showCustomAlert("失败", `手动注入记忆时出错: ${error.message}`);
+                }
+            } else {
+                alert("游戏尚未结束，无法进行总结。");
             }
         }
-    }
-    return injectedCount;
-}
-
 /**
- * 【全新】手动触发狼人杀游戏总结的入口函数
- */
-async function handleManualWerewolfSummary() {
-    if (!werewolfGameState.isActive && werewolfGameState.currentPhase === 'gameover') {
-        await showCustomAlert("请稍候...", "正在为所有AI角色生成并注入游戏记忆...");
-        try {
-            const summary = createWerewolfGameSummary(werewolfGameState);
-            const count = await injectSummaryIntoMemories(summary);
-            await showCustomAlert("成功", `游戏记忆已成功注入到 ${count} 位AI角色的长期记忆中！`);
-        } catch (error) {
-            console.error("手动注入狼人杀记忆失败:", error);
-            await showCustomAlert("失败", `手动注入记忆时出错: ${error.message}`);
+         * 【全新 V2.1 | 已集成自动总结】结束游戏并显示结果
+         * @param {string} winner - 获胜方, '好人' 或 '狼人'
+         */
+        async function endGame(winner) {
+            werewolfGameState.isActive = false;
+            werewolfGameState.currentPhase = 'gameover';
+
+            // 记录胜利日志，以便总结时使用
+            addGameLog(`${winner}阵营胜利！`);
+            
+            document.getElementById('werewolf-game-over-title').textContent = `${winner}胜利！`;
+            let reason = '';
+            if (winner === '好人') {
+                reason = '所有狼人已被放逐，好人阵营获得了胜利！';
+            } else {
+                reason = '狼人数量已达到胜利条件，狼人阵营获得了胜利！';
+            }
+            const reasonEl = document.getElementById('werewolf-game-over-reason');
+            reasonEl.textContent = reason;
+
+            const roleListEl = document.getElementById('werewolf-role-reveal-list');
+            roleListEl.innerHTML = ''; 
+
+            const sortedPlayers = [...werewolfGameState.players].sort((a, b) => {
+                const aIndex = werewolfGameState.players.findIndex(p => p.id === a.id);
+                const bIndex = werewolfGameState.players.findIndex(p => p.id === b.id);
+                return aIndex - bIndex;
+            });
+
+            sortedPlayers.forEach((player, index) => {
+                const itemEl = document.createElement('div');
+                itemEl.style.cssText = `display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid #444; color: white;`;
+                if (index === sortedPlayers.length - 1) itemEl.style.borderBottom = 'none';
+                const roleColor = player.role === '狼人' ? '#ff4d4d' : '#52c41a';
+                itemEl.innerHTML = `
+                    <img src="${player.avatar}" style="width: 30px; height: 30px; border-radius: 50%; margin-right: 12px; filter: ${player.isAlive ? 'none' : 'grayscale(100%)'};">
+                    <span style="flex-grow: 1; text-align: left; text-decoration: ${player.isAlive ? 'none' : 'line-through'};">${index + 1}. ${player.name}</span>
+                    <strong style="color: ${roleColor};">${player.role}</strong>
+                `;
+                roleListEl.appendChild(itemEl);
+            });
+
+            document.getElementById('werewolf-game-over-modal').classList.add('visible');
+
+            // ▼▼▼ 【核心修改：调用新的总结流程】 ▼▼▼
+            try {
+                console.log("游戏结束，开始自动总结并注入记忆...");
+                // 1. 生成完整的游戏日志
+                const summaryContext = createWerewolfGameSummary(werewolfGameState);
+                // 2. 将日志交给AI生成个性化记忆并注入
+                const count = await generateAndInjectWerewolfMemories(summaryContext);
+                console.log(`狼人杀游戏总结已自动存入 ${count} 位角色的记忆中。`);
+            } catch (error) {
+                console.error("自动总结狼人杀游戏失败:", error);
+                if (reasonEl) {
+                    reasonEl.innerHTML += '<br><small style="color: #ff8a80; margin-top: 10px; display: block;">自动记忆总结失败，可稍后手动尝试。</small>';
+                }
+            }
+            // ▲▲▲ 修改结束 ▲▲▲
         }
-    } else {
-        alert("游戏尚未结束，无法进行总结。");
-    }
-}
-/**
- * 【V2.1 | 已集成自动总结】结束游戏并显示结果
- * @param {string} winner - 获胜方, '好人' 或 '狼人'
- */
-async function endGame(winner) {
-    werewolfGameState.isActive = false;
-    werewolfGameState.currentPhase = 'gameover';
-
-    // 记录胜利日志，以便总结时使用
-    addGameLog(`${winner}阵营胜利！`);
-    
-    document.getElementById('werewolf-game-over-title').textContent = `${winner}胜利！`;
-    let reason = '';
-    if (winner === '好人') {
-        reason = '所有狼人已被放逐，好人阵营获得了胜利！';
-    } else {
-        reason = '所有神职或平民已被刀，狼人阵营获得了胜利！';
-    }
-    const reasonEl = document.getElementById('werewolf-game-over-reason');
-    reasonEl.textContent = reason;
-
-    const roleListEl = document.getElementById('werewolf-role-reveal-list');
-    roleListEl.innerHTML = ''; 
-
-    const sortedPlayers = [...werewolfGameState.players].sort((a, b) => {
-        const aIndex = werewolfGameState.players.findIndex(p => p.id === a.id);
-        const bIndex = werewolfGameState.players.findIndex(p => p.id === b.id);
-        return aIndex - bIndex;
-    });
-
-    sortedPlayers.forEach((player, index) => {
-        const itemEl = document.createElement('div');
-        itemEl.style.cssText = `display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid #444; color: white;`;
-        if (index === sortedPlayers.length - 1) itemEl.style.borderBottom = 'none';
-        const roleColor = player.role === '狼人' ? '#ff4d4d' : '#52c41a';
-        itemEl.innerHTML = `
-            <img src="${player.avatar}" style="width: 30px; height: 30px; border-radius: 50%; margin-right: 12px; filter: ${player.isAlive ? 'none' : 'grayscale(100%)'};">
-            <span style="flex-grow: 1; text-align: left; text-decoration: ${player.isAlive ? 'none' : 'line-through'};">${index + 1}. ${player.name}</span>
-            <strong style="color: ${roleColor};">${player.role}</strong>
-        `;
-        roleListEl.appendChild(itemEl);
-    });
-
-    document.getElementById('werewolf-game-over-modal').classList.add('visible');
-
-    // ▼▼▼ 【核心新增：自动总结与错误处理】 ▼▼▼
-    try {
-        console.log("游戏结束，开始自动总结并注入记忆...");
-        const summary = createWerewolfGameSummary(werewolfGameState);
-        const count = await injectSummaryIntoMemories(summary);
-        console.log(`狼人杀游戏总结已自动存入 ${count} 位角色的记忆中。`);
-    } catch (error) {
-        console.error("自动总结狼人杀游戏失败:", error);
-        // 如果自动总结失败，在界面上给用户一个温和的提示
-        if (reasonEl) {
-            reasonEl.innerHTML += '<br><small style="color: #ff8a80; margin-top: 10px; display: block;">自动记忆总结失败，可稍后手动尝试。</small>';
-        }
-    }
-    // ▲▲▲ 新增功能结束 ▲▲▲
-}
 
 // ▼▼▼ 【最终修复版】请用这整块代码，完整替换旧的 addGameLog 和 addDialogueLog 函数 ▼▼▼
 
@@ -38170,43 +38211,48 @@ async function handleWerewolfRetry() {
 // ▼▼▼ 【全新 | 缺失的函数】这是检查游戏是否结束的核心逻辑，请完整粘贴 ▼▼▼
 
 /**
- * 检查游戏是否结束，并宣布胜利者
- * @returns {boolean} - 如果游戏结束则返回 true，否则返回 false
- */
-function checkGameOver() {
-    const alivePlayers = werewolfGameState.players.filter(p => p.isAlive);
-    const aliveWolves = alivePlayers.filter(p => p.role === '狼人');
-    const aliveGods = alivePlayers.filter(p => ['预言家', '女巫', '猎人', '守卫'].includes(p.role));
-    const aliveVillagers = alivePlayers.filter(p => p.role === '平民');
+         * 【全新 | 已添加屠城判定】检查游戏是否结束，并宣布胜利者
+         * @returns {boolean} - 如果游戏结束则返回 true，否则返回 false
+         */
+        function checkGameOver() {
+            const alivePlayers = werewolfGameState.players.filter(p => p.isAlive);
+            const aliveWolves = alivePlayers.filter(p => p.role === '狼人');
+            const aliveGods = alivePlayers.filter(p => ['预言家', '女巫', '猎人', '守卫'].includes(p.role));
+            const aliveVillagers = alivePlayers.filter(p => p.role === '平民');
 
-    let winner = null;
+            let winner = null;
 
-    // 好人胜利条件：所有狼人都已出局
-    if (aliveWolves.length === 0) {
-        winner = '好人';
-    } 
-    // 狼人胜利条件
-    else if (werewolfGameState.gameMode === '12p') { 
-        // 12人局屠边：神职全部死亡 或 平民全部死亡
-        if (aliveGods.length === 0 || aliveVillagers.length === 0) {
-            winner = '狼人';
+            // 1. 好人胜利条件：所有狼人都已出局
+            if (aliveWolves.length === 0) {
+                winner = '好人';
+            }
+            // 2. 新增的狼人胜利条件：狼人数量等于或超过好人数量
+            else if (aliveWolves.length >= (aliveGods.length + aliveVillagers.length)) {
+                winner = '狼人';
+            }
+            // 3. 原有的狼人胜利条件 (作为备用)
+            else if (werewolfGameState.gameMode === '12p') {
+                // 12人局屠边：神职全部死亡 或 平民全部死亡
+                if (aliveGods.length === 0 || aliveVillagers.length === 0) {
+                    winner = '狼人';
+                }
+            } else {
+                // 6人或9人局屠城：所有好人（神职+平民）都已死亡
+                if (aliveGods.length === 0 && aliveVillagers.length === 0) {
+                    winner = '狼人';
+                }
+            }
+
+
+            if (winner) {
+                // 如果有胜利者，则调用结束游戏的函数
+                endGame(winner);
+                return true; // 返回 true，表示游戏已结束
+            }
+
+            // 如果没有胜利者，返回 false
+            return false;
         }
-    } else { 
-        // 6人或9人局屠城：所有好人（神职+平民）都已死亡
-        if (aliveGods.length === 0 && aliveVillagers.length === 0) {
-            winner = '狼人';
-        }
-    }
-
-    if (winner) {
-        // 如果有胜利者，则调用结束游戏的函数
-        endGame(winner);
-        return true; // 返回 true，表示游戏已结束
-    }
-    
-    // 如果没有胜利者，返回 false
-    return false;
-}
 
 // ▲▲▲ 新增函数粘贴结束 ▲▲▲
 /**
@@ -38827,6 +38873,7 @@ document.getElementById('send-btn').addEventListener('click', () => { // 注意�
             state.globalSettings.backgroundActivityInterval = parseInt(intervalInput.value) || 60;
             state.globalSettings.blockCooldownHours = parseFloat(cooldownInput.value) || 1;
             state.globalSettings.enableAiDrawing = document.getElementById('enable-ai-drawing-switch').checked;
+           state.globalSettings.chatRenderWindow = parseInt(document.getElementById('chat-render-window-input').value) || 50;
             await db.globalSettings.put(state.globalSettings);
         
             stopBackgroundSimulation(); 
