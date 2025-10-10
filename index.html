@@ -12923,6 +12923,7 @@ let isLoadingMoreCphoneMessages = false;
         let activeStickerCategoryId = 'all'; // 用于跟踪当前选中的表情分类
                 let selectedMessages = new Set();
                 let editingMemberId = null;
+let isAddingNpcToGroup = false; // 用于跟踪是否正在为群聊创建新NPC
                 let editingWorldBookId = null;
                let editingRuleId = null; // 用于存储正在编辑的规则ID
 let isLoadingMoreChats = false; // 防止在加载时重复触发
@@ -14784,116 +14785,58 @@ function loadMoreQzonePosts() {
                     document.getElementById('post-hidden-text').value = '';
                     document.getElementById('switch-to-image-mode').click();
                 }
-// ▼▼▼ 【全新】这是清理冗余数据的核心功能，请完整粘贴 ▼▼▼
 /**
- * 【全新】一键清理数据库中所有与已删除角色或聊天相关的孤立数据
+ * 【V2.0 | NPC保护版】一键清理数据库中所有与已删除角色或聊天相关的孤立数据
  */
 async function cleanupRedundantData() {
-    // 1. 首先，向用户显示一个带有严重警告的确认框
     const confirmed = await showCustomConfirm(
         '确认清理冗余数据？',
-        '此操作将扫描整个数据库，移除所有与已删除角色或聊天相关的孤立数据（如动态、评论、记忆等）。<br><br><strong>此操作不可撤销，但通常是安全的。</strong><br><br>建议在操作前先导出数据备份。',
+        '此操作将扫描数据库，移除所有与已删除角色相关的孤立数据（如动态、评论、记忆等）。<br><br><strong>此操作不可撤销，但通常是安全的。NPC数据不会被删除。</strong><br><br>建议在操作前先导出数据备份。',
         { confirmButtonClass: 'btn-danger', confirmText: '确认清理' }
     );
 
-    if (!confirmed) return; // 如果用户取消，则中止操作
+    if (!confirmed) return;
 
     await showCustomAlert("请稍候...", "正在开始清理冗余数据，请不要关闭页面...");
     console.log("冗余数据清理流程已启动...");
 
-    // 用于统计清理结果的对象
     let cleanupCounts = {
-        posts: 0,
-        likes: 0,
-        comments: 0,
-        memories: 0,
-        callRecords: 0,
-        renderingRules: 0,
-        groupMembers: 0,
-        chatLinks: 0,
+        posts: 0, likes: 0, comments: 0, memories: 0,
+        callRecords: 0, renderingRules: 0, groupMembers: 0, chatLinks: 0,
     };
 
     try {
-        // 使用数据库事务来确保所有操作要么全部成功，要么全部失败，保证数据一致性
         await db.transaction('rw', db.tables, async () => {
-            // 步骤 A: 建立所有有效聊天和角色的“白名单”
+            // 步骤 A: 建立所有有效聊天、角色和NPC的“白名单”
             const allChats = await db.chats.toArray();
+            const allNpcs = await db.npcs.toArray(); // <-- 【核心新增】从数据库读取NPC列表
+
             const existingChatIds = new Set(allChats.map(c => c.id));
+            const existingNpcIds = new Set(allNpcs.map(n => `npc_${n.id}`)); // <-- 【核心新增】创建NPC的ID白名单
+
             const existingOriginalNames = new Set(allChats.filter(c => !c.isGroup).map(c => c.originalName));
-            existingOriginalNames.add(state.qzoneSettings.nickname || '{{user}}'); // 把用户自己也加到白名单
+            existingOriginalNames.add(state.qzoneSettings.nickname || '{{user}}');
+            // 【核心新增】将NPC的名字也加入“有效名称”白名单，用于清理点赞和评论
+            allNpcs.forEach(npc => existingOriginalNames.add(npc.name));
 
-            // 步骤 B: 逐一清理各个数据表
-            
-            // 清理动态 (QZone Posts)
-            const allPosts = await db.qzonePosts.toArray();
-            for (const post of allPosts) {
-                let postModified = false;
-                // 删除作者不存在的动态
-                if (post.authorId !== 'user' && !existingChatIds.has(post.authorId)) {
-                    await db.qzonePosts.delete(post.id);
-                    cleanupCounts.posts++;
-                    console.log(`删除了孤立动态 (ID: ${post.id})，作者 ${post.authorId} 已不存在。`);
-                    continue; // 帖子已删除，跳过后续处理
-                }
-
-                // 清理点赞列表中的无效用户
-                if (post.likes && post.likes.length > 0) {
-                    const originalLikeCount = post.likes.length;
-                    post.likes = post.likes.filter(name => existingOriginalNames.has(name));
-                    if (post.likes.length < originalLikeCount) {
-                        cleanupCounts.likes += (originalLikeCount - post.likes.length);
-                        postModified = true;
-                    }
-                }
-
-                // 清理评论列表中的无效用户
-                if (post.comments && post.comments.length > 0) {
-                    const originalCommentCount = post.comments.length;
-                    post.comments = post.comments.filter(comment => {
-                        if (typeof comment === 'object' && comment.commenterName) {
-                            return existingOriginalNames.has(comment.commenterName);
-                        }
-                        return true; // 保留无法判断的旧格式评论
-                    });
-                     if (post.comments.length < originalCommentCount) {
-                        cleanupCounts.comments += (originalCommentCount - post.comments.length);
-                        postModified = true;
-                    }
-                }
-                
-                if (postModified) {
-                    await db.qzonePosts.put(post);
-                }
-            }
-
-            // 清理记忆 (Memories)
-            await db.memories.where('chatId').noneOf([...existingChatIds]).delete().then(c => cleanupCounts.memories += c);
-            
-            // 清理通话记录 (Call Records)
-            await db.callRecords.where('chatId').noneOf([...existingChatIds]).delete().then(c => cleanupCounts.callRecords += c);
-
-            // 清理渲染规则 (Rendering Rules)
-            const allRules = await db.renderingRules.toArray();
-            for(const rule of allRules) {
-                if (rule.chatId !== 'global' && !existingChatIds.has(rule.chatId)) {
-                    await db.renderingRules.delete(rule.id);
-                    cleanupCounts.renderingRules++;
-                }
-            }
-
-            // 清理群聊中的无效成员和聊天中的无效链接
+            // 步骤 B: 清理群聊中的无效成员
             for (const chat of allChats) {
                  let chatModified = false;
-                 // 清理群成员
                  if (chat.isGroup && chat.members) {
                      const originalMemberCount = chat.members.length;
-                     chat.members = chat.members.filter(member => existingChatIds.has(member.id));
+                     
+                     // 【【【核心修复逻辑】】】
+                     // 现在我们同时检查成员ID是否存在于 角色白名单 或 NPC白名单 中
+                     chat.members = chat.members.filter(member => 
+                        existingChatIds.has(member.id) || existingNpcIds.has(member.id)
+                     );
+                     
                      if (chat.members.length < originalMemberCount) {
                         cleanupCounts.groupMembers += (originalMemberCount - chat.members.length);
                         chatModified = true;
                      }
                  }
-                 // 清理无效的挂载记忆链接
+                 // (清理挂载记忆的逻辑保持不变)
                  if (chat.settings?.linkedMemoryChatIds?.length > 0) {
                      const originalLinkCount = chat.settings.linkedMemoryChatIds.length;
                      chat.settings.linkedMemoryChatIds = chat.settings.linkedMemoryChatIds.filter(id => existingChatIds.has(id));
@@ -14906,9 +14849,58 @@ async function cleanupRedundantData() {
                      await db.chats.put(chat);
                  }
             }
-        }); // 事务结束
 
-        // 2. 向用户报告清理结果
+            // 步骤 C: 清理动态、点赞和评论
+            const allPosts = await db.qzonePosts.toArray();
+            for (const post of allPosts) {
+                let postModified = false;
+                
+                // 【【【核心修复逻辑】】】
+                // 检查发帖人是否是用户、角色或NPC
+                const isAuthorValid = post.authorId === 'user' || existingChatIds.has(post.authorId) || existingNpcIds.has(post.authorId);
+
+                if (!isAuthorValid) {
+                    await db.qzonePosts.delete(post.id);
+                    cleanupCounts.posts++;
+                    continue; // 帖子已删除，跳过后续处理
+                }
+                
+                if (post.likes && post.likes.length > 0) {
+                    const originalLikeCount = post.likes.length;
+                    post.likes = post.likes.filter(name => existingOriginalNames.has(name));
+                    if (post.likes.length < originalLikeCount) {
+                        cleanupCounts.likes += (originalLikeCount - post.likes.length);
+                        postModified = true;
+                    }
+                }
+                if (post.comments && post.comments.length > 0) {
+                    const originalCommentCount = post.comments.length;
+                    post.comments = post.comments.filter(comment => {
+                        if (typeof comment === 'object' && comment.commenterName) {
+                            return existingOriginalNames.has(comment.commenterName);
+                        }
+                        return true; // 保留旧格式的评论
+                    });
+                     if (post.comments.length < originalCommentCount) {
+                        cleanupCounts.comments += (originalCommentCount - post.comments.length);
+                        postModified = true;
+                    }
+                }
+                if (postModified) { await db.qzonePosts.put(post); }
+            }
+
+            // (其他清理逻辑保持不变)
+            await db.memories.where('chatId').noneOf([...existingChatIds]).delete().then(c => cleanupCounts.memories += c);
+            await db.callRecords.where('chatId').noneOf([...existingChatIds]).delete().then(c => cleanupCounts.callRecords += c);
+            const allRules = await db.renderingRules.toArray();
+            for(const rule of allRules) {
+                if (rule.chatId !== 'global' && !existingChatIds.has(rule.chatId)) {
+                    await db.renderingRules.delete(rule.id);
+                    cleanupCounts.renderingRules++;
+                }
+            }
+        });
+
         let summary = "✅ 清理完成！\n\n";
         let cleanedSomething = false;
         Object.entries(cleanupCounts).forEach(([key, value]) => {
@@ -14929,7 +14921,6 @@ async function cleanupRedundantData() {
 
         await showCustomAlert("操作成功", summary);
         
-        // 3. 建议用户刷新页面
         const confirmedReload = await showCustomConfirm("刷新页面？", "为了确保所有数据同步，建议立即刷新页面。");
         if(confirmedReload) {
             location.reload();
@@ -14940,7 +14931,6 @@ async function cleanupRedundantData() {
         await showCustomAlert('清理失败', `发生了一个错误: ${error.message}`);
     }
 }
-// ▲▲▲ 粘贴结束 ▲▲▲        
         // ▼▼▼ 【这是导出函数修复版】 ▼▼▼
         async function exportBackup() {
             try {
@@ -15699,43 +15689,65 @@ async function renderNpcListScreen() {
             modal.classList.add('visible');
         }
 
-        /**
-         * 【已更新】保存NPC信息
-         */
-        async function saveNpc() {
-            const name = document.getElementById('npc-name-input').value.trim();
-            const persona = document.getElementById('npc-persona-input').value.trim();
-            if (!name || !persona) {
-                alert("NPC的昵称和人设都不能为空！");
-                return;
+// ▼▼▼ 【V2.1 | 头像修复版】请用这个新版本替换旧的 saveNpc 函数 ▼▼▼
+/**
+ * 【已更新】保存NPC信息，并能处理“创建后直接加入群聊”的流程
+ */
+async function saveNpc() {
+    const name = document.getElementById('npc-name-input').value.trim();
+    const persona = document.getElementById('npc-persona-input').value.trim();
+    if (!name || !persona) {
+        alert("NPC的昵称和人设都不能为空！");
+        return;
+    }
+
+    const selectedAssociations = Array.from(document.querySelectorAll('#npc-association-list input:checked')).map(cb => cb.value);
+    const enableBackgroundActivity = document.getElementById('npc-background-activity-switch').checked;
+    const actionCooldownMinutes = parseInt(document.getElementById('npc-action-cooldown-input').value) || 15;
+
+    const npcData = {
+        name,
+        persona,
+        avatar: document.getElementById('npc-avatar-preview').src,
+        associatedWith: selectedAssociations,
+        enableBackgroundActivity: enableBackgroundActivity,
+        actionCooldownMinutes: actionCooldownMinutes
+    };
+
+    if (editingNpcId) {
+        await db.npcs.update(editingNpcId, npcData);
+    } else {
+        // 新建NPC
+        const newNpcId = await db.npcs.add(npcData);
+
+        if (isAddingNpcToGroup && state.activeChatId) {
+            const chat = state.chats[state.activeChatId];
+            if (chat.isGroup) {
+                // 【【【这就是最关键的修复！】】】
+                // 在这里，我们也把 npcData.avatar 添加到了成员对象中
+                chat.members.push({
+                    id: `npc_${newNpcId}`,
+                    originalName: name,
+                    groupNickname: name,
+                    persona: persona,
+                    avatar: npcData.avatar, // <-- 核心新增
+                    isNpc: true
+                });
+                await db.chats.put(chat);
             }
-
-            const selectedAssociations = Array.from(document.querySelectorAll('#npc-association-list input:checked')).map(cb => cb.value);
-
-            // 【核心新增】从表单中获取新设置的值
-            const enableBackgroundActivity = document.getElementById('npc-background-activity-switch').checked;
-            const actionCooldownMinutes = parseInt(document.getElementById('npc-action-cooldown-input').value) || 15;
-
-            // 【核心新增】将新设置添加到要保存的数据对象中
-            const npcData = {
-                name,
-                persona,
-                avatar: document.getElementById('npc-avatar-preview').src,
-                associatedWith: selectedAssociations,
-                enableBackgroundActivity: enableBackgroundActivity,
-                actionCooldownMinutes: actionCooldownMinutes
-            };
-
-            if (editingNpcId) {
-                // 更新时，不会覆盖 lastActionTimestamp 字段，这很重要
-                await db.npcs.update(editingNpcId, npcData);
-            } else {
-                await db.npcs.add(npcData);
-            }
-
-            document.getElementById('npc-editor-modal').classList.remove('visible');
-            await renderNpcListScreen();
         }
+    }
+    
+    document.getElementById('npc-editor-modal').classList.remove('visible');
+    
+    if (isAddingNpcToGroup) {
+        isAddingNpcToGroup = false; 
+        openMemberManagementScreen();
+    } else {
+        await renderNpcListScreen();
+    }
+}
+// ▲▲▲ 替换结束 ▲▲▲
 
 /**
  * 删除NPC
@@ -23150,35 +23162,51 @@ async function handleCreateSpectatorGroup() {
     openChat(newChatId);
 }
 // ▲▲▲ 全新JS代码粘贴结束 ▲▲▲        
-        /**
-         * 渲染联系人选择列表
-         */
-        async function renderContactPicker() {
-            const listEl = document.getElementById('contact-picker-list');
-            listEl.innerHTML = '';
-        
-            // 只选择单聊角色作为群成员候选
-            const contacts = Object.values(state.chats).filter(chat => !chat.isGroup);
-        
-            if (contacts.length === 0) {
-                listEl.innerHTML = '<p style="text-align:center; color:#8a8a8a; margin-top:50px;">还没有可以拉进群的联系人哦~</p>';
-                return;
-            }
-        
-            contacts.forEach(contact => {
-                const item = document.createElement('div');
-                item.className = 'contact-picker-item';
-                item.dataset.contactId = contact.id;
-                item.innerHTML = `
-                    <div class="checkbox"></div>
-                    <img src="${contact.settings.aiAvatar || defaultAvatar}" class="avatar">
-                    <span class="name">${contact.name}</span>
-                `;
-                listEl.appendChild(item);
-            });
-        
-            updateContactPickerConfirmButton();
-        }
+/**
+ * 【全新 | 支持NPC】渲染一个包含所有可选联系人（角色+NPC）的列表
+ */
+async function renderContactPicker() {
+    const listEl = document.getElementById('contact-picker-list');
+    listEl.innerHTML = '';
+
+    // 1. 同时获取所有单聊角色和所有NPC
+    const characters = Object.values(state.chats).filter(chat => !chat.isGroup);
+    const npcs = await db.npcs.toArray();
+
+    if (characters.length === 0 && npcs.length === 0) {
+        listEl.innerHTML = '<p style="text-align:center; color:#8a8a8a; margin-top:50px;">还没有可以拉进群的联系人哦~</p>';
+        return;
+    }
+
+    // 2. 渲染角色列表
+    characters.forEach(contact => {
+        const item = document.createElement('div');
+        item.className = 'contact-picker-item';
+        item.dataset.contactId = contact.id; // 使用角色的聊天ID
+        item.innerHTML = `
+            <div class="checkbox"></div>
+            <img src="${contact.settings.aiAvatar || defaultAvatar}" class="avatar">
+            <span class="name">${contact.name} <small style="color:#888;">(角色)</small></span>
+        `;
+        listEl.appendChild(item);
+    });
+    
+    // 3. 渲染NPC列表
+    npcs.forEach(npc => {
+        const item = document.createElement('div');
+        item.className = 'contact-picker-item';
+        // 使用 "npc_" 前缀创建唯一ID，以便后续区分
+        item.dataset.contactId = `npc_${npc.id}`; 
+        item.innerHTML = `
+            <div class="checkbox"></div>
+            <img src="${npc.avatar || defaultGroupMemberAvatar}" class="avatar">
+            <span class="name">${npc.name} <small style="color:#007722;">(NPC)</small></span>
+        `;
+        listEl.appendChild(item);
+    });
+
+    updateContactPickerConfirmButton();
+}
         
         /**
          * 更新“完成”按钮的计数
@@ -23189,65 +23217,80 @@ async function handleCreateSpectatorGroup() {
             btn.disabled = selectedContacts.size < 2; // 至少需要2个人才能创建群聊
         }
         
-        // ▼▼▼ 用这个【已彻底修复】的版本，完整替换旧的 handleCreateGroup 函数 ▼▼▼
-        /**
-         * 【重构版】处理创建群聊的最终逻辑
-         */
-        async function handleCreateGroup() {
-            if (selectedContacts.size < 2) {
-                alert("创建群聊至少需要选择2个联系人。");
-                return;
+/**
+ * 【全新 | 支持NPC】处理创建群聊的最终逻辑
+ */
+async function handleCreateGroup() {
+    if (selectedContacts.size < 2) {
+        alert("创建群聊至少需要选择2个联系人。");
+        return;
+    }
+
+    const groupName = await showCustomPrompt('设置群名', '请输入群聊的名字', '我们的群聊');
+    if (!groupName || !groupName.trim()) return;
+
+    const newChatId = 'group_' + Date.now();
+    const members = [];
+    const allNpcs = await db.npcs.toArray(); // 提前获取所有NPC数据，提高效率
+
+    for (const contactId of selectedContacts) {
+        // 检查ID前缀，判断是NPC还是角色
+        if (contactId.startsWith('npc_')) {
+            const npcId = parseInt(contactId.replace('npc_', ''));
+            const npcData = allNpcs.find(n => n.id === npcId);
+            if (npcData) {
+                members.push({
+                    id: contactId, // 保留带前缀的唯一ID
+                    originalName: npcData.name,
+                    groupNickname: npcData.name,
+                    persona: npcData.persona,
+                    avatar: npcData.avatar || defaultGroupMemberAvatar,
+                    isNpc: true // 标记为NPC
+                });
             }
-        
-            const groupName = await showCustomPrompt('设置群名', '请输入群聊的名字', '我们的群聊');
-            if (!groupName || !groupName.trim()) return;
-        
-            const newChatId = 'group_' + Date.now();
-            const members = [];
-            
-            // 遍历选中的联系人ID
-            for (const contactId of selectedContacts) {
-                const contactChat = state.chats[contactId];
-                if (contactChat) {
-                    // 【核心修正】确保 originalName 来自 contactChat.originalName
-                    members.push({
-                        id: contactId, 
-                        originalName: contactChat.originalName, // <-- 之前的BUG在这里，现在已修复
-                        groupNickname: contactChat.name,
-                        persona: contactChat.settings.aiPersona
-                    });
-                }
+        } else { // 如果不是NPC，就是普通角色
+            const contactChat = state.chats[contactId];
+            if (contactChat) {
+                members.push({
+                    id: contactId,
+                    originalName: contactChat.originalName,
+                    groupNickname: contactChat.name,
+                    persona: contactChat.settings.aiPersona,
+                    avatar: contactChat.settings.aiAvatar || defaultAvatar,
+                    isNpc: false // 标记为非NPC
+                });
             }
-        
-            const newGroupChat = {
-                id: newChatId,
-                name: groupName.trim(),
-                isGroup: true,
-                members: members,
-                settings: {
-                    myPersona: '我是谁呀。',
-                    myNickname: '我',
-                    maxMemory: 10,
-                    groupAvatar: defaultGroupAvatar,
-                    myAvatar: defaultMyGroupAvatar,
-                    background: '',
-                    theme: 'default',
-                    fontSize: 13,
-                    customCss: '',
-                    linkedWorldBookIds: [],
-                },
-                history: [],
-                musicData: { totalTime: 0 }
-            };
-        
-            state.chats[newChatId] = newGroupChat;
-            await db.chats.put(newGroupChat);
-            
-            await renderChatList();
-            showScreen('chat-list-screen');
-            openChat(newChatId); 
         }
-        // ▲▲▲ 替换结束 ▲▲▲
+    }
+
+    const newGroupChat = {
+        id: newChatId,
+        name: groupName.trim(),
+        isGroup: true,
+        members: members,
+        settings: {
+            myPersona: '我是谁呀。',
+            myNickname: '我',
+            maxMemory: 10,
+            groupAvatar: defaultGroupAvatar,
+            myAvatar: defaultMyGroupAvatar,
+            background: '',
+            theme: 'default',
+            fontSize: 13,
+            customCss: '',
+            linkedWorldBookIds: [],
+        },
+        history: [],
+        musicData: { totalTime: 0 }
+    };
+
+    state.chats[newChatId] = newGroupChat;
+    await db.chats.put(newGroupChat);
+    
+    await renderChatList();
+    showScreen('chat-list-screen');
+    openChat(newChatId); 
+}
         
         // ▼▼▼ 【全新】群成员管理核心函数 ▼▼▼
         
@@ -23309,115 +23352,147 @@ async function handleCreateSpectatorGroup() {
             }
         }
         
-        /**
-         * 打开联系人选择器，用于拉人入群
-         */
-        async function openContactPickerForAddMember() {
-            selectedContacts.clear(); // 清空选择
-            
-            const chat = state.chats[state.activeChatId];
-            const existingMemberIds = new Set(chat.members.map(m => m.id));
+/**
+ * 【总入口 | V2.0】打开联系人选择器，用于拉人入群（现在会同时显示角色和NPC）
+ */
+async function openContactPickerForAddMember() {
+    // 1. 为“完成”按钮绑定正确的处理函数
+    const confirmBtn = document.getElementById('confirm-contact-picker-btn');
+    // 使用克隆节点技巧，确保每次都绑定最新的事件，防止重复执行
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+    newConfirmBtn.addEventListener('click', handleAddMembersToGroup);
+    
+    // 2. 渲染一个包含所有可选联系人的列表
+    await renderUnifiedContactPicker();
+    
+    // 3. 显示选择器屏幕
+    showScreen('contact-picker-screen');
+}
+
+/**
+ * 【全新】渲染一个统一的联系人选择列表，包含角色和NPC
+ */
+async function renderUnifiedContactPicker() {
+    const listEl = document.getElementById('contact-picker-list');
+    listEl.innerHTML = '';
+    selectedContacts.clear(); // 清空上次的选择
+
+    const chat = state.chats[state.activeChatId];
+    const existingMemberIds = new Set(chat.members.map(m => m.id));
+
+    // a. 获取所有可选的 “角色” (排除自己和已在群内的)
+    const characters = Object.values(state.chats).filter(c => !c.isGroup && !existingMemberIds.has(c.id));
+    
+    // b. 获取所有可选的 “NPC” (排除已在群内的)
+    const npcs = (await db.npcs.toArray()).filter(n => !existingMemberIds.has(`npc_${n.id}`));
+
+    if (characters.length === 0 && npcs.length === 0) {
+        listEl.innerHTML = '<p style="text-align:center; color:#8a8a8a; margin-top:50px;">没有更多可以邀请的联系人了。</p>';
+        document.getElementById('confirm-contact-picker-btn').style.display = 'none';
+    } else {
+        document.getElementById('confirm-contact-picker-btn').style.display = 'block';
         
-            // 渲染联系人列表，并自动排除已在群内的成员
-            const listEl = document.getElementById('contact-picker-list');
-            listEl.innerHTML = '';
-            const contacts = Object.values(state.chats).filter(c => !c.isGroup && !existingMemberIds.has(c.id));
+        // 渲染角色列表
+        characters.forEach(contact => {
+            const item = document.createElement('div');
+            item.className = 'contact-picker-item';
+            item.dataset.contactId = contact.id;
+            item.dataset.contactType = 'character'; // 标记为角色
+            item.innerHTML = `
+                <div class="checkbox"></div>
+                <img src="${contact.settings.aiAvatar || defaultAvatar}" class="avatar">
+                <span class="name">${contact.name} <small style="color:#888;">(角色)</small></span>
+            `;
+            listEl.appendChild(item);
+        });
+
+        // 渲染NPC列表
+        npcs.forEach(npc => {
+            const item = document.createElement('div');
+            item.className = 'contact-picker-item';
+            item.dataset.contactId = `npc_${npc.id}`; // 使用带前缀的唯一ID
+            item.dataset.contactType = 'npc'; // 标记为NPC
+            item.dataset.npcId = npc.id; // 保存原始NPC ID
+            item.innerHTML = `
+                <div class="checkbox"></div>
+                <img src="${npc.avatar || defaultGroupMemberAvatar}" class="avatar">
+                <span class="name">${npc.name} <small style="color:#007722;">(NPC)</small></span>
+            `;
+            listEl.appendChild(item);
+        });
+    }
+
+    updateContactPickerConfirmButton();
+}
         
-            if (contacts.length === 0) {
-                listEl.innerHTML = '<p style="text-align:center; color:#8a8a8a; margin-top:50px;">没有更多可以邀请的好友了。</p>';
-                document.getElementById('confirm-contact-picker-btn').style.display = 'none'; // 没有人可选，隐藏完成按钮
-            } else {
-                document.getElementById('confirm-contact-picker-btn').style.display = 'block';
-                contacts.forEach(contact => {
-                    const item = document.createElement('div');
-                    item.className = 'contact-picker-item';
-                    item.dataset.contactId = contact.id;
-                    item.innerHTML = `
-                        <div class="checkbox"></div>
-                        <img src="${contact.settings.aiAvatar || defaultAvatar}" class="avatar">
-                        <span class="name">${contact.name}</span>
-                    `;
-                    listEl.appendChild(item);
+// ▼▼▼ 【V2.1 | 头像修复版】请用这个新版本替换旧的 handleAddMembersToGroup 函数 ▼▼▼
+/**
+ * 【核心处理 | V2.1】处理将选中的联系人（角色或NPC）加入群聊的逻辑
+ */
+async function handleAddMembersToGroup() {
+    if (selectedContacts.size === 0) {
+        alert("请至少选择一个要添加的联系人。");
+        return;
+    }
+    
+    const chat = state.chats[state.activeChatId];
+    const allNpcs = await db.npcs.toArray(); // 提前获取所有NPC数据
+
+    for (const contactId of selectedContacts) {
+        const itemEl = document.querySelector(`.contact-picker-item[data-contact-id="${contactId}"]`);
+        if (!itemEl) continue;
+
+        const contactType = itemEl.dataset.contactType;
+
+        if (contactType === 'character') {
+            const contactChat = state.chats[contactId];
+            if (contactChat) {
+                chat.members.push({
+                    id: contactId,
+                    originalName: contactChat.originalName,
+                    groupNickname: contactChat.name,
+                    persona: contactChat.settings.aiPersona,
+                    // 【核心修正】确保新加入的角色也能获取到正确的头像
+                    avatar: contactChat.settings.aiAvatar || defaultAvatar,
+                    isNpc: false // 标记这不是一个纯NPC
                 });
             }
-        
-            // 更新按钮状态并显示屏幕
-            updateContactPickerConfirmButton();
-            showScreen('contact-picker-screen');
-        }
-        
-        // ▼▼▼ 请用这个【已修复错误】的全新版本，完整替换旧的 handleAddMembersToGroup 函数 ▼▼▼
-        /**
-         * 处理将选中的联系人加入群聊的逻辑
-         */
-        async function handleAddMembersToGroup() {
-            if (selectedContacts.size === 0) {
-                alert("请至少选择一个要添加的联系人。");
-                return;
+        } else if (contactType === 'npc') {
+            const npcId = parseInt(itemEl.dataset.npcId);
+            const npcData = allNpcs.find(n => n.id === npcId);
+            if (npcData) {
+                // 【【【这就是最关键的修复！】】】
+                // 在这里，我们把 npcData.avatar 也一并添加到了成员对象中
+                chat.members.push({
+                    id: `npc_${npcId}`,
+                    originalName: npcData.name,
+                    groupNickname: npcData.name,
+                    persona: npcData.persona,
+                    avatar: npcData.avatar || defaultGroupMemberAvatar, // <-- 核心新增
+                    isNpc: true
+                });
             }
-            
-            const chat = state.chats[state.activeChatId];
-        
-            for (const contactId of selectedContacts) {
-                const contactChat = state.chats[contactId];
-                if (contactChat) {
-                    // 这个部分的数据结构是正确的，保持不变
-                    chat.members.push({
-                        id: contactId,
-                        originalName: contactChat.originalName,
-                        groupNickname: contactChat.name,
-                        persona: contactChat.settings.aiPersona,
-                        // 注意：我们不再在这里存储 avatar 和 avatarFrame，因为它们是动态获取的
-                    });
-                }
-            }
-        
-            await db.chats.put(chat);
-            
-            // --- 【核心修复】 ---
-            // 之前这里错误地调用了 renderGroupMemberSettings，导致报错。
-            // 正确的逻辑是：直接返回到“群成员管理”屏幕，
-            // 而 openMemberManagementScreen 函数会自动调用 renderMemberManagementList 来刷新列表。
-            openMemberManagementScreen(); 
-            // --- 【修复结束】 ---
         }
+    }
+
+    await db.chats.put(chat);
+    
+    // 操作完成后，返回成员管理屏幕
+    openMemberManagementScreen();
+}
+// ▲▲▲ 替换结束 ▲▲▲
         
-        // ▼▼▼ 请用这个【已修复错误】的全新版本，完整替换旧的 createNewMemberInGroup 函数 ▼▼▼
-        /**
-         * 【重构版】在群聊中创建一个全新的虚拟成员
-         */
-        async function createNewMemberInGroup() {
-            const name = await showCustomPrompt('创建新成员', '请输入新成员的名字 (这将是TA的“本名”，不可更改)');
-            if (!name || !name.trim()) return;
-        
-            const chat = state.chats[state.activeChatId];
-            if (chat.members.some(m => m.originalName === name.trim())) {
-                alert(`错误：群内已存在名为“${name.trim()}”的成员！`);
-                return;
-            }
-        
-            const persona = await showCustomPrompt('设置人设', `请输入“${name}”的人设`, '', 'textarea');
-            if (persona === null) return; 
-        
-            const newMember = {
-                id: 'npc_' + Date.now(),
-                originalName: name.trim(),
-                groupNickname: name.trim(),
-                // 注意：avatar 和 avatarFrame 也是动态获取的，无需在此处存储
-                persona: persona,
-            };
-        
-            chat.members.push(newMember);
-            await db.chats.put(chat);
-        
-            // --- 【核心修复】 ---
-            // 之前这里调用了两个刷新函数，其中一个会报错。
-            // 正确的逻辑是：只需要刷新当前用户正在看的“成员管理”列表即可。
-            renderMemberManagementList();
-            // --- 【修复结束】 ---
-        
-            alert(`新成员“${name}”已成功加入群聊！`);
-        }
+/**
+ * 【重构版】点击“创建新成员”按钮，现在会打开NPC编辑器
+ */
+function createNewMemberInGroup() {
+    // 1. 设置一个全局标志，告诉 saveNpc 函数我们当前的意图
+    isAddingNpcToGroup = true; 
+    // 2. 直接打开通用的NPC编辑器
+    openNpcEditor(null);
+}
+
         
         // ▼▼▼ 【全新】外卖请求倒计时函数 ▼▼▼
         function startWaimaiCountdown(element, endTime) {
@@ -39796,26 +39871,64 @@ await renderOfflinePresetSelector(chat);
         });
         // ▲▲▲ 替换结束 ▲▲▲
                     
-        // ▼▼▼ 【请用这个新版本】替换旧的 renderGroupMemberSettings 函数 ▼▼▼
-        function renderGroupMemberSettings(members) { 
-            const container = document.getElementById('group-members-settings'); 
-            container.innerHTML = ''; 
-            members.forEach(member => { 
-                const div = document.createElement('div'); 
-                div.className = 'member-editor'; 
-                div.dataset.memberId = member.id; 
-                
-                // ★★★★★ 这就是【核心修复 ①】★★★★★
-                // 优先使用成员自己独立的头像(member.avatar)，如果没有，再尝试去单聊配置里找，
-                // 如果还没有，最后才用默认头像。这套逻辑能完美兼容所有类型的成员。
-                const memberAvatar = member.avatar || (state.chats[member.id] ? state.chats[member.id].settings.aiAvatar : defaultGroupMemberAvatar);
+// ▼▼▼ 【V2.0 | 头像最终修复版】请用这个新版本替换旧的 renderGroupMemberSettings 函数 ▼▼▼
+function renderGroupMemberSettings(members) { 
+    const container = document.getElementById('group-members-settings'); 
+    container.innerHTML = ''; 
+    members.forEach(member => { 
+        const div = document.createElement('div'); 
+        div.className = 'member-editor'; 
+        div.dataset.memberId = member.id; 
         
-                div.innerHTML = `<img src="${memberAvatar}" alt="${member.groupNickname}"><div class="member-name">${member.groupNickname}</div>`;
-                div.addEventListener('click', () => openMemberEditor(member.id)); 
-                container.appendChild(div); 
-            }); 
-        }
-        // ▲▲▲ 替换结束 ▲▲▲
+        // ★★★★★ 这就是【核心修复 ①】★★★★★
+        // 优先使用成员自己独立的头像(member.avatar)，如果没有，再尝试去单聊配置里找，
+        // 如果还没有，最后才用默认头像。这套逻辑能完美兼容所有类型的成员。
+        const memberAvatar = member.avatar || (state.chats[member.id] ? state.chats[member.id].settings.aiAvatar : defaultGroupMemberAvatar);
+
+        div.innerHTML = `<img src="${memberAvatar}" alt="${member.groupNickname}"><div class="member-name">${member.groupNickname}</div>`;
+        div.addEventListener('click', () => openMemberEditor(member.id)); 
+        container.appendChild(div); 
+    }); 
+}
+// ▲▲▲ 替换结束 ▲▲▲
+
+// ▼▼▼ 【V2.0 | 头像最终修复版】请用这个新版本替换旧的 saveMemberSettings 函数 ▼▼▼
+document.getElementById('save-member-settings-btn').addEventListener('click', async () => {
+    if (!editingMemberId) return; 
+    const chat = state.chats[state.activeChatId]; 
+    const member = chat.members.find(m => m.id === editingMemberId); 
+    if (!member) return;
+
+    const newNickname = document.getElementById('member-name-input').value.trim();
+    if (!newNickname) {
+        alert("群昵称不能为空！");
+        return;
+    }
+    member.groupNickname = newNickname; 
+    member.persona = document.getElementById('member-persona-input').value; 
+    
+    const newAvatarUrl = document.getElementById('member-avatar-preview').src;
+
+    // ★★★★★ 这就是【核心修复 ②】 ★★★★★
+    // 无论成员是“真角色”还是“纯NPC”，都【必须】将新头像URL直接保存在群聊的成员信息里。
+    member.avatar = newAvatarUrl;
+
+    // 同时，如果这个成员是一个“真角色”，我们依然更新他的主配置，保持数据同步。
+    const characterProfile = state.chats[member.id];
+    if (characterProfile) {
+        characterProfile.settings.aiAvatar = newAvatarUrl;
+        await db.chats.put(characterProfile);
+    }
+    
+    // 将包含最新成员信息的【整个群聊对象】存回数据库，让NPC的头像得以永久保存。
+    await db.chats.put(chat);
+    
+    // 刷新UI并关闭弹窗
+    renderGroupMemberSettings(chat.members); 
+    document.getElementById('member-settings-modal').classList.remove('visible'); 
+    editingMemberId = null;
+});
+// ▲▲▲ 替换结束 ▲▲▲
         
         // ▼▼▼ 【请用这个新版本】替换旧的 openMemberEditor 函数 ▼▼▼
         function openMemberEditor(memberId) { 
