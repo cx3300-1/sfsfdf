@@ -9598,6 +9598,33 @@ input, textarea, select {
     background-color: rgba(0, 123, 255, 0.2) !important;
 }
 /* ▲▲▲ 新样式粘贴结束 ▲▲▲
+/* ▼▼▼ 【全新】无限滚动加载动画 ▼▼▼ */
+
+.loader-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 0;
+    width: 100%;
+    height: 44px; /* 给予一个固定高度来防止加载时页面跳动 */
+    box-sizing: border-box;
+}
+
+.spinner {
+    width: 24px;
+    height: 24px;
+    border: 3px solid rgba(0, 0, 0, 0.1); /* 旋转轨道的浅灰色 */
+    border-top-color: var(--accent-color); /* 旋转部分的颜色，会跟随主题色变化 */
+    border-radius: 50%;
+    animation: spin 1s linear infinite; /* 复用您已有的 spin 动画 */
+}
+
+/* 夜间模式下的适配 */
+#phone-screen.dark-mode .spinner {
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    border-top-color: #fff; /* 夜间模式下旋转部分为白色 */
+}
+/* ▲▲▲ 新增CSS结束 ▲▲▲ */
     </style>
 </head>
 <body>
@@ -12894,8 +12921,11 @@ let werewolfGameState = {
                 let editingMemberId = null;
                 let editingWorldBookId = null;
                let editingRuleId = null; // 用于存储正在编辑的规则ID
-             let isLoadingMoreChats = false; // 防止在加载时重复触发
-            let sortedChatListItems = [];   // 用于存储完整的、已排序的聊天列表项
+let isLoadingMoreChats = false; // 防止在加载时重复触发
+let isLoadingMoreMessages = false; // 【全新】为聊天记录添加独立的加载状态
+let isLoadingMoreThoughts = false; // 【全新】为心声历史添加独立的加载状态
+let isLoadingMorePosts = false;    // 【全新】为动态列表添加独立的加载状态
+let sortedChatListItems = [];   // 用于存储完整的、已排序的聊天列表项
                 let editingPersonaPresetId = null;
                 let currentReplyContext = null;
         let waimaiTimers = {}; // 用于存储外卖倒计时
@@ -14295,92 +14325,66 @@ function renderOriginalPostContent(targetPost) {
         
         // ▲▲▲ 新函数粘贴结束 ▲▲▲
         
-        // ▼▼▼ 【全新 | 高性能版】请用这个函数完整替换旧的 renderQzonePosts ▼▼▼
-        /**
-         * 【全新 | 分页加载版】渲染动态列表
-         */
-        async function renderQzonePosts() {
-            const postsListEl = document.getElementById('qzone-posts-list');
-            if (!postsListEl) return;
+// ▼▼▼ 【无限滚动修复版】请用这个新版本替换旧的 renderQzonePosts 函数 ▼▼▼
+async function renderQzonePosts() {
+    const postsListEl = document.getElementById('qzone-posts-list');
+    if (!postsListEl) return;
+
+    const [postsFromDb, favorites] = await Promise.all([
+        db.qzonePosts.orderBy('timestamp').reverse().filter(post => !post.isDeleted).toArray(),
+        db.favorites.where('type').equals('qzone_post').toArray()
+    ]);
+    qzonePostsCache = postsFromDb;
+    state.favoritedPostIds = new Set(favorites.map(fav => fav.content.id));
+
+    postsListEl.innerHTML = '';
+    qzonePostsRenderCount = 0; // 重置计数器
+
+    if (qzonePostsCache.length === 0) {
+        postsListEl.innerHTML = '<p style="text-align:center; color: var(--text-secondary); padding: 30px 0;">这里空空如也，快来发布第一条说说吧！</p>';
+        return;
+    }
+
+    // 初始加载第一页
+    loadMoreQzonePosts();
+}
+// ▲▲▲ 替换结束 ▲▲▲
+
         
-            // 1. 从数据库加载所有数据到缓存中，但不立即渲染
-            const [postsFromDb, favorites] = await Promise.all([
-                db.qzonePosts.orderBy('timestamp').reverse().filter(post => !post.isDeleted).toArray(),
-                db.favorites.where('type').equals('qzone_post').toArray()
-            ]);
-            qzonePostsCache = postsFromDb;
-            state.favoritedPostIds = new Set(favorites.map(fav => fav.content.id));
-        
-            // 2. 清空列表
-            postsListEl.innerHTML = '';
-        
-            if (qzonePostsCache.length === 0) {
-                postsListEl.innerHTML = '<p style="text-align:center; color: var(--text-secondary); padding: 30px 0;">这里空空如也，快来发布第一条说说吧！</p>';
-                return;
-            }
-        
-            // 3. 只渲染第一页的动态
-            const initialPosts = qzonePostsCache.slice(0, QZONE_RENDER_WINDOW);
-            const fragment = document.createDocumentFragment();
-            initialPosts.forEach(post => {
-                const postElement = createOrUpdatePostElement(post);
-                fragment.appendChild(postElement);
-            });
-            postsListEl.appendChild(fragment);
-            
-            // 4. 更新已渲染的数量
-            qzonePostsRenderCount = initialPosts.length;
-        
-            // 5. 如果还有更多动态，就添加“加载更多”按钮
-            if (qzonePostsCache.length > qzonePostsRenderCount) {
-                appendLoadMorePostsButton(postsListEl);
-            }
-        }
-        // ▲▲▲ 替换结束 ▲▲▲
-        /**
-         * 【全新】创建一个“加载更多”按钮并添加到列表末尾
-         * @param {HTMLElement} container - 要添加按钮的容器
-         */
-        function appendLoadMorePostsButton(container) {
-            const button = document.createElement('button');
-            button.id = 'load-more-qzone-btn'; // 使用新ID，避免与聊天记录的按钮冲突
-            button.textContent = '加载更多动态';
-            button.className = 'load-more-btn'; // 复用聊天页面的按钮样式
-            container.appendChild(button);
-        }
-        
-        /**
-         * 【全新】加载更多动态记录
-         */
-        function loadMoreQzonePosts() {
-            const postsListEl = document.getElementById('qzone-posts-list');
-            if (!postsListEl) return;
-        
-            // 移除旧的“加载更多”按钮
-            const loadMoreBtn = document.getElementById('load-more-qzone-btn');
-            if (loadMoreBtn) loadMoreBtn.remove();
-            
-            // 计算下一页要加载的数据
-            const nextSliceStart = qzonePostsRenderCount;
-            const nextSliceEnd = qzonePostsRenderCount + QZONE_RENDER_WINDOW;
-            const postsToAppend = qzonePostsCache.slice(nextSliceStart, nextSliceEnd);
-            
-            // 渲染并追加到列表末尾
-            const fragment = document.createDocumentFragment();
-            postsToAppend.forEach(post => {
-                const postElement = createOrUpdatePostElement(post);
-                fragment.appendChild(postElement);
-            });
-            postsListEl.appendChild(fragment);
-        
-            // 更新已渲染的数量
-            qzonePostsRenderCount += postsToAppend.length;
-        
-            // 如果还有更多，再次添加按钮
-            if (qzonePostsCache.length > qzonePostsRenderCount) {
-                appendLoadMorePostsButton(postsListEl);
-            }
-        }
+// ▼▼▼ 【无限滚动修复版】请用这个新版本替换旧的 loadMoreQzonePosts 函数 ▼▼▼
+function loadMoreQzonePosts() {
+    if (isLoadingMorePosts) return;
+    isLoadingMorePosts = true;
+
+    const postsListEl = document.getElementById('qzone-posts-list');
+    if (!postsListEl) {
+        isLoadingMorePosts = false;
+        return;
+    }
+
+    showLoader(postsListEl, 'bottom'); // 在底部显示加载动画
+
+    // 模拟网络延迟
+    setTimeout(() => {
+        hideLoader(postsListEl); // 先移除加载动画
+
+        const nextSliceStart = qzonePostsRenderCount;
+        const nextSliceEnd = qzonePostsRenderCount + QZONE_RENDER_WINDOW;
+        const postsToAppend = qzonePostsCache.slice(nextSliceStart, nextSliceEnd);
+
+        const fragment = document.createDocumentFragment();
+        postsToAppend.forEach(post => {
+            const postElement = createOrUpdatePostElement(post);
+            fragment.appendChild(postElement);
+        });
+        postsListEl.appendChild(fragment);
+
+        qzonePostsRenderCount += postsToAppend.length;
+
+        isLoadingMorePosts = false;
+    }, 500);
+}
+// ▲▲▲ 替换结束 ▲▲▲
         // ▼▼▼ 【全新】动态评论区表情面板管理函数 ▼▼▼
         
         function openQzoneStickerPanel(postId, buttonElement) {
@@ -16077,216 +16081,210 @@ function createChatListItem(chat) {
 }
 // ▲▲▲ 替换结束 ▲▲▲
         
-/**
-         * 【V3.1 | 旁观模式兼容版】渲染聊天界面
-         */
-        async function renderChatInterface(chatId) {
-            applyButtonOrder();
-            cleanupWaimaiTimers();
-            const chat = state.chats[chatId];
-            if (!chat) return;
-        
-            exitSelectionMode();
-            
-            const messagesContainer = document.getElementById('chat-messages');
-            const chatInputArea = document.getElementById('chat-input-area');
-            const lockOverlay = document.getElementById('chat-lock-overlay');
-            const lockContent = document.getElementById('chat-lock-content');
-            
-            // --- (这部分渲染逻辑保持不变, 用于设置主题、字体、背景等) ---
-            messagesContainer.dataset.theme = chat.settings.theme || 'default';
-            const fontSize = chat.settings.fontSize || 13;
-            messagesContainer.style.setProperty('--chat-font-size', `${fontSize}px`);
-            applyScopedCss(chat.settings.customCss || '', '#chat-messages', 'custom-bubble-style');
-            
-            document.getElementById('chat-header-title').textContent = chat.name;
-            const statusContainer = document.getElementById('chat-header-status');
-            const statusTextEl = statusContainer.querySelector('.status-text');
-        
-            if (chat.isGroup) {
-                statusContainer.style.display = 'none';
-                document.getElementById('chat-header-title-wrapper').style.justifyContent = 'center';
-            } else {
-                statusContainer.style.display = 'flex';
-                document.getElementById('chat-header-title-wrapper').style.justifyContent = 'flex-start';
-                statusTextEl.textContent = chat.status?.text || '在线';
-                statusContainer.classList.toggle('busy', chat.status?.isBusy || false);
-            }
-            
-            const chatScreen = document.getElementById('chat-interface-screen');
-            const individualBg = chat.settings.background;
-            const globalBg = state.globalSettings.globalChatBackground;
-            const isDarkMode = document.getElementById('phone-screen').classList.contains('dark-mode');
-            const defaultColor = isDarkMode ? '#000000' : '#f0f2f5';
+// ▼▼▼ 【无限滚动修复版】请用这个新版本替换旧的 renderChatInterface 函数 ▼▼▼
+async function renderChatInterface(chatId) {
+    applyButtonOrder();
+    cleanupWaimaiTimers();
+    const chat = state.chats[chatId];
+    if (!chat) return;
 
-            if (individualBg) {
-                chatScreen.style.backgroundImage = `url(${individualBg})`;
-                chatScreen.style.backgroundColor = 'transparent';
-            } else if (globalBg) {
-                chatScreen.style.backgroundImage = `url(${globalBg})`;
-                chatScreen.style.backgroundColor = 'transparent';
-            } else {
-                chatScreen.style.backgroundImage = 'none';
-                chatScreen.style.backgroundColor = defaultColor;
-            }
+    exitSelectionMode();
+    
+    const messagesContainer = document.getElementById('chat-messages');
+    const chatInputArea = document.getElementById('chat-input-area');
+    const lockOverlay = document.getElementById('chat-lock-overlay');
+    const lockContent = document.getElementById('chat-lock-content');
+    
+    messagesContainer.dataset.theme = chat.settings.theme || 'default';
+    const fontSize = chat.settings.fontSize || 13;
+    messagesContainer.style.setProperty('--chat-font-size', `${fontSize}px`);
+    applyScopedCss(chat.settings.customCss || '', '#chat-messages', 'custom-bubble-style');
+    
+    document.getElementById('chat-header-title').textContent = chat.name;
+    const statusContainer = document.getElementById('chat-header-status');
+    const statusTextEl = statusContainer.querySelector('.status-text');
 
-            // --- 【【【核心修改就在这里！】】】 ---
-            // 根据 isSpectatorGroup 标记来决定显示哪个UI
-            if (chat.isSpectatorGroup) {
-                // 如果是旁观模式群聊
-                chatInputArea.style.display = 'none'; // 1. 隐藏整个输入区域
-                lockOverlay.style.display = 'flex';   // 2. 显示遮罩层作为背景
-                lockContent.innerHTML = `
-                    <span class="lock-text">正在围观AI们的群聊...</span>
-        <div class="spectator-actions-container">
-           <button id="spectator-reroll-btn" class="lock-action-btn secondary" title="重新生成上一轮对话">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M20 11A8.1 8.1 0 0 0 4.5 9M4 5v4h4"></path>
-                    <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"></path>
-                </svg>
-            </button>
-            <button id="spectator-propel-btn" class="lock-action-btn">🎬 推进剧情</button>
-            <button id="spectator-edit-btn" class="lock-action-btn secondary" title="导演剪辑室：编辑AI上一轮的响应">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path>
-                    <line x1="16" y1="8" x2="2" y2="22"></line>
-                    <line x1="17.5" y1="15" x2="9" y2="15"></line>
-                </svg>
-            </button>
-        </div>
-                `; // 3. 在遮罩层里显示新的UI
-                
-                // 4. 为新的“推进剧情”按钮绑定专属函数
-                document.getElementById('spectator-propel-btn').onclick = triggerSpectatorGroupAiAction;
+    if (chat.isGroup) {
+        statusContainer.style.display = 'none';
+        document.getElementById('chat-header-title-wrapper').style.justifyContent = 'center';
+    } else {
+        statusContainer.style.display = 'flex';
+        document.getElementById('chat-header-title-wrapper').style.justifyContent = 'flex-start';
+        statusTextEl.textContent = chat.status?.text || '在线';
+        statusContainer.classList.toggle('busy', chat.status?.isBusy || false);
+    }
+    
+    const chatScreen = document.getElementById('chat-interface-screen');
+    const individualBg = chat.settings.background;
+    const globalBg = state.globalSettings.globalChatBackground;
+    const isDarkMode = document.getElementById('phone-screen').classList.contains('dark-mode');
+    const defaultColor = isDarkMode ? '#000000' : '#f0f2f5';
 
-            } else {
-                // 如果是普通聊天
-                chatInputArea.style.display = 'flex'; // 1. 确保输入区域是可见的
-                lockOverlay.style.display = 'none';   // 2. 隐藏遮罩层
-                lockContent.innerHTML = '';
-                
-                // 3. (这部分是您原来就有的逻辑，保持不变) 处理好友申请、拉黑等状态
-                if (!chat.isGroup && chat.relationship.status !== 'friend') {
-                    lockOverlay.style.display = 'flex';
-                    chatInputArea.style.visibility = 'hidden';
-                    
-                    let lockHtml = '';
-                    switch (chat.relationship.status) {
-                         case 'blocked_by_user':
-                            const isSimulationRunning = simulationIntervalId !== null;
-                            const blockedTimestamp = chat.relationship.blockedTimestamp;
-                            const cooldownHours = state.globalSettings.blockCooldownHours || 1;
-                            const cooldownMilliseconds = cooldownHours * 60 * 60 * 1000;
-                            const timeSinceBlock = Date.now() - blockedTimestamp;
-                            const isCooldownOver = timeSinceBlock > cooldownMilliseconds;
-                            const timeRemainingMinutes = Math.max(0, Math.ceil((cooldownMilliseconds - timeSinceBlock) / (1000 * 60)));
+    if (individualBg) {
+        chatScreen.style.backgroundImage = `url(${individualBg})`;
+        chatScreen.style.backgroundColor = 'transparent';
+    } else if (globalBg) {
+        chatScreen.style.backgroundImage = `url(${globalBg})`;
+        chatScreen.style.backgroundColor = 'transparent';
+    } else {
+        chatScreen.style.backgroundImage = 'none';
+        chatScreen.style.backgroundColor = defaultColor;
+    }
+
+    if (chat.isSpectatorGroup) {
+        chatInputArea.style.display = 'none';
+        lockOverlay.style.display = 'flex';
+        lockContent.innerHTML = `
+            <span class="lock-text">正在围观AI们的群聊...</span>
+            <div class="spectator-actions-container">
+                <button id="spectator-reroll-btn" class="lock-action-btn secondary" title="重新生成上一轮对话">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 11A8.1 8.1 0 0 0 4.5 9M4 5v4h4"></path>
+                        <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"></path>
+                    </svg>
+                </button>
+                <button id="spectator-propel-btn" class="lock-action-btn">🎬 推进剧情</button>
+                <button id="spectator-edit-btn" class="lock-action-btn secondary" title="导演剪辑室：编辑AI上一轮的响应">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path>
+                        <line x1="16" y1="8" x2="2" y2="22"></line>
+                        <line x1="17.5" y1="15" x2="9" y2="15"></line>
+                    </svg>
+                </button>
+            </div>
+        `;
+        document.getElementById('spectator-propel-btn').onclick = triggerSpectatorGroupAiAction;
+    } else {
+        chatInputArea.style.display = 'flex';
+        lockOverlay.style.display = 'none';
+        lockContent.innerHTML = '';
+        if (!chat.isGroup && chat.relationship.status !== 'friend') {
+            lockOverlay.style.display = 'flex';
+            chatInputArea.style.visibility = 'hidden';
             
-                            lockHtml = `
-                                <span class="lock-text">你已将“${chat.name}”拉黑。</span>
-                                <button id="unblock-btn" class="lock-action-btn">解除拉黑</button>
-                                <div style="margin-top: 20px; padding: 10px; border: 1px dashed #ccc; border-radius: 8px; font-size: 11px; text-align: left; color: #666; background: rgba(0,0,0,0.02);">
-                                    <strong style="color: #333;">【开发者诊断面板】</strong><br>
-                                    - 后台活动总开关: ${state.globalSettings.enableBackgroundActivity ? '<span style="color: green;">已开启</span>' : '<span style="color: red;">已关闭</span>'}<br>
-                                    - 系统心跳计时器: ${isSimulationRunning ? '<span style="color: green;">运行中</span>' : '<span style="color: red;">未运行</span>'}<br>
-                                    - 当前角色状态: <strong>${chat.relationship.status}</strong><br>
-                                    - 需要冷静(小时): <strong>${cooldownHours}</strong><br>
-                                    - 冷静期是否结束: ${isCooldownOver ? '<span style="color: green;">是</span>' : `<span style="color: orange;">否 (还剩约 ${timeRemainingMinutes} 分钟)</span>`}<br>
-                                    - 触发条件: ${isCooldownOver && state.globalSettings.enableBackgroundActivity ? '<span style="color: green;">已满足，等待下次系统心跳</span>' : '<span style="color: red;">未满足</span>'}
-                                </div>
-                                <button id="force-apply-check-btn" class="lock-action-btn secondary" style="margin-top: 10px;">强制触发一次好友申请检测</button>
-                            `;
-                            break;
-                        case 'blocked_by_ai':
-                            lockHtml = `
-                                <span class="lock-text">你被对方拉黑了。</span>
-                                <button id="apply-friend-btn" class="lock-action-btn">重新申请加为好友</button>
-                            `;
-                            break;
-                        case 'pending_user_approval':
-                            lockHtml = `
-                                <span class="lock-text">“${chat.name}”请求添加你为好友：<br><i>“${chat.relationship.applicationReason}”</i></span>
-                                <button id="accept-friend-btn" class="lock-action-btn">接受</button>
-                                <button id="reject-friend-btn" class="lock-action-btn secondary">拒绝</button>
-                            `;
-                            break;
-                        case 'pending_ai_approval':
-                            lockHtml = `<span class="lock-text">好友申请已发送，等待对方通过...</span>`;
-                            break;
-                    }
-                    lockContent.innerHTML = lockHtml;
-                } else {
-                     lockOverlay.style.display = 'none';
-                     chatInputArea.style.visibility = 'visible';
-                }
+            let lockHtml = '';
+            switch (chat.relationship.status) {
+                 case 'blocked_by_user':
+                    const isSimulationRunning = simulationIntervalId !== null;
+                    const blockedTimestamp = chat.relationship.blockedTimestamp;
+                    const cooldownHours = state.globalSettings.blockCooldownHours || 1;
+                    const cooldownMilliseconds = cooldownHours * 60 * 60 * 1000;
+                    const timeSinceBlock = Date.now() - blockedTimestamp;
+                    const isCooldownOver = timeSinceBlock > cooldownMilliseconds;
+                    const timeRemainingMinutes = Math.max(0, Math.ceil((cooldownMilliseconds - timeSinceBlock) / (1000 * 60)));
+    
+                    lockHtml = `
+                        <span class="lock-text">你已将“${chat.name}”拉黑。</span>
+                        <button id="unblock-btn" class="lock-action-btn">解除拉黑</button>
+                        <div style="margin-top: 20px; padding: 10px; border: 1px dashed #ccc; border-radius: 8px; font-size: 11px; text-align: left; color: #666; background: rgba(0,0,0,0.02);">
+                            <strong style="color: #333;">【开发者诊断面板】</strong><br>
+                            - 后台活动总开关: ${state.globalSettings.enableBackgroundActivity ? '<span style="color: green;">已开启</span>' : '<span style="color: red;">已关闭</span>'}<br>
+                            - 系统心跳计时器: ${isSimulationRunning ? '<span style="color: green;">运行中</span>' : '<span style="color: red;">未运行</span>'}<br>
+                            - 当前角色状态: <strong>${chat.relationship.status}</strong><br>
+                            - 需要冷静(小时): <strong>${cooldownHours}</strong><br>
+                            - 冷静期是否结束: ${isCooldownOver ? '<span style="color: green;">是</span>' : `<span style="color: orange;">否 (还剩约 ${timeRemainingMinutes} 分钟)</span>`}<br>
+                            - 触发条件: ${isCooldownOver && state.globalSettings.enableBackgroundActivity ? '<span style="color: green;">已满足，等待下次系统心跳</span>' : '<span style="color: red;">未满足</span>'}
+                        </div>
+                        <button id="force-apply-check-btn" class="lock-action-btn secondary" style="margin-top: 10px;">强制触发一次好友申请检测</button>
+                    `;
+                    break;
+                case 'blocked_by_ai':
+                    lockHtml = `
+                        <span class="lock-text">你被对方拉黑了。</span>
+                        <button id="apply-friend-btn" class="lock-action-btn">重新申请加为好友</button>
+                    `;
+                    break;
+                case 'pending_user_approval':
+                    lockHtml = `
+                        <span class="lock-text">“${chat.name}”请求添加你为好友：<br><i>“${chat.relationship.applicationReason}”</i></span>
+                        <button id="accept-friend-btn" class="lock-action-btn">接受</button>
+                        <button id="reject-friend-btn" class="lock-action-btn secondary">拒绝</button>
+                    `;
+                    break;
+                case 'pending_ai_approval':
+                    lockHtml = `<span class="lock-text">好友申请已发送，等待对方通过...</span>`;
+                    break;
             }
-            // --- 【修改结束】 ---
-
-            // --- (这部分渲染消息历史的逻辑保持不变) ---
-            messagesContainer.innerHTML = '';
-            const history = chat.history;
-const totalMessages = history.length;
-            currentRenderedCount = 0;
-            const renderWindow = state.globalSettings.chatRenderWindow || 50; // 获取设置值
-            const initialMessages = history.slice(-renderWindow); // 使用新值
-            let lastTimestamp = 0;
-            const fragment = document.createDocumentFragment();
-            for (const msg of initialMessages) {
-                if (lastTimestamp > 0 && (msg.timestamp - lastTimestamp > 3600000)) {
-                    fragment.appendChild(createSystemTimestampElement(msg.timestamp));
-                }
-                const messageEl = await createMessageElement(msg, chat, true);
-                if (messageEl) {
-                    fragment.appendChild(messageEl);
-                }
-                lastTimestamp = msg.timestamp;
-            }
-            messagesContainer.appendChild(fragment);
-            currentRenderedCount = initialMessages.length;
-            if (totalMessages > currentRenderedCount) {
-                prependLoadMoreButton(messagesContainer);
-            }
-            const typingIndicator = document.createElement('div');
-            typingIndicator.id = 'typing-indicator';
-            typingIndicator.style.display = 'none';
-            typingIndicator.textContent = '对方正在输入...';
-            messagesContainer.appendChild(typingIndicator);
-            setTimeout(() => messagesContainer.scrollTop = messagesContainer.scrollHeight, 0);
+            lockContent.innerHTML = lockHtml;
+        } else {
+             lockOverlay.style.display = 'none';
+             chatInputArea.style.visibility = 'visible';
         }
+    }
+
+    messagesContainer.innerHTML = '';
+    const history = chat.history;
+    const totalMessages = history.length;
+    currentRenderedCount = 0;
+    const renderWindow = state.globalSettings.chatRenderWindow || 50;
+    const initialMessages = history.slice(-renderWindow); 
+    let lastTimestamp = 0;
+    const fragment = document.createDocumentFragment();
+    for (const msg of initialMessages) {
+        if (lastTimestamp > 0 && (msg.timestamp - lastTimestamp > 3600000)) {
+            fragment.appendChild(createSystemTimestampElement(msg.timestamp));
+        }
+        const messageEl = await createMessageElement(msg, chat, true);
+        if (messageEl) {
+            fragment.appendChild(messageEl);
+        }
+        lastTimestamp = msg.timestamp;
+    }
+    messagesContainer.appendChild(fragment);
+    currentRenderedCount = initialMessages.length;
+    
+    // 【【【核心修复：彻底删除 prependLoadMoreButton 的调用】】】
+    // 旧的 if (totalMessages > currentRenderedCount) { ... } 代码块已删除
+    
+    const typingIndicator = document.createElement('div');
+    typingIndicator.id = 'typing-indicator';
+    typingIndicator.style.display = 'none';
+    typingIndicator.textContent = '对方正在输入...';
+    messagesContainer.appendChild(typingIndicator);
+    setTimeout(() => messagesContainer.scrollTop = messagesContainer.scrollHeight, 0);
+}
 // ▲▲▲ 替换结束 ▲▲▲
         
-                function prependLoadMoreButton(container) { const button = document.createElement('button'); button.id = 'load-more-btn'; button.textContent = '加载更早的记录'; button.addEventListener('click', loadMoreMessages); container.prepend(button); }
+                
         
-        // ▼▼▼ 【预防性修复】请用这个新版本替换旧的 loadMoreMessages 函数 ▼▼▼
-        async function loadMoreMessages() { // <--- 关键修改1：将函数声明为 async
-            const messagesContainer = document.getElementById('chat-messages');
-            const chat = state.chats[state.activeChatId];
-            if (!chat) return;
-        
-            const loadMoreBtn = document.getElementById('load-more-btn');
-            if (loadMoreBtn) loadMoreBtn.remove();
-            
-            const totalMessages = chat.history.length;
-            const renderWindow = state.globalSettings.chatRenderWindow || 50; // 获取设置值
-            const nextSliceStart = totalMessages - currentRenderedCount - renderWindow; // 使用新值
-            const nextSliceEnd = totalMessages - currentRenderedCount;
-            const messagesToPrepend = chat.history.slice(Math.max(0, nextSliceStart), nextSliceEnd);
-            
-            const oldScrollHeight = messagesContainer.scrollHeight;
-            
-            // ▼▼▼ 关键修改2：将 forEach 替换为 for...of 循环 ▼▼▼
-            for (const msg of messagesToPrepend.reverse()) {
-                await prependMessage(msg, chat); // <-- 使用 await 等待
-            }
-            // ▲▲▲ 修改结束 ▲▲▲
-        
-            currentRenderedCount += messagesToPrepend.length;
-            const newScrollHeight = messagesContainer.scrollHeight;
-            messagesContainer.scrollTop += (newScrollHeight - oldScrollHeight);
-            
-            if (totalMessages > currentRenderedCount) {
-                prependLoadMoreButton(messagesContainer);
-            }
-        }
+// ▼▼▼ 【无限滚动修复版】请用这个新版本替换旧的 loadMoreMessages 函数 ▼▼▼
+async function loadMoreMessages() {
+    if (isLoadingMoreMessages) return;
+    isLoadingMoreMessages = true;
+
+    const messagesContainer = document.getElementById('chat-messages');
+    const chat = state.chats[state.activeChatId];
+    if (!chat) {
+        isLoadingMoreMessages = false;
+        return;
+    }
+
+    showLoader(messagesContainer, 'top'); // 在顶部显示加载动画
+    const oldScrollHeight = messagesContainer.scrollHeight;
+
+    // 模拟网络延迟，让动画更明显
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    const totalMessages = chat.history.length;
+    const renderWindow = state.globalSettings.chatRenderWindow || 50;
+    const nextSliceStart = totalMessages - currentRenderedCount - renderWindow;
+    const nextSliceEnd = totalMessages - currentRenderedCount;
+    const messagesToPrepend = chat.history.slice(Math.max(0, nextSliceStart), nextSliceEnd);
+
+    for (const msg of messagesToPrepend.reverse()) {
+        await prependMessage(msg, chat);
+    }
+
+    currentRenderedCount += messagesToPrepend.length;
+
+    // 恢复滚动位置，防止跳动
+    const newScrollHeight = messagesContainer.scrollHeight;
+    messagesContainer.scrollTop = newScrollHeight - oldScrollHeight;
+
+    hideLoader(messagesContainer); // 加载完成后隐藏动画
+    isLoadingMoreMessages = false;
+}
+// ▲▲▲ 替换结束 ▲▲▲
         
 // ▼▼▼ 【请用这个已更新的版本】替换旧的 renderWallpaperScreen 函数 ▼▼▼
         function renderWallpaperScreen() { 
@@ -19007,7 +19005,7 @@ if (chat.settings.isOfflineMode) {
     consolidatedMessages = messagesArray;
 }
 // ▲▲▲ 修复结束 ▲▲▲
-/* // ▼▼▼ 【全新】智能识图优化功能，请将此代码块粘贴到指定位置 ▼▼▼
+ // ▼▼▼ 【全新】智能识图优化功能，请将此代码块粘贴到指定位置 ▼▼▼
 
 // 1. 检查触发条件：最后一条用户消息是【尚未处理过】的图片
 const lastUserMessage = chat.history.filter(m => m.role === 'user' && !m.isHidden).pop();
@@ -19043,7 +19041,7 @@ if (lastUserMessage &&
         // 注意：此时我们只修改了内存中的 chat.history。
         // 后续的代码会把这个修改后的 history 和新消息一起存入数据库，完成持久化。
     }
-}*/
+}
 // ▲▲▲ 优化功能代码块结束 ▲▲▲
                 const isViewingThisChat = document.getElementById('chat-interface-screen').classList.contains('active') && state.activeChatId === chatId;
                 let callHasBeenHandled = false;
@@ -28284,52 +28282,48 @@ function hideThoughtsHistory() {
         
             thoughtsHistoryRenderCount = initialItems.length;
         
-            // 如果还有更多记录，则添加“加载更多”按钮
-            if (history.length > thoughtsHistoryRenderCount) {
-                prependLoadMoreThoughtsButton(listEl);
-            }
+// 如果还有更多记录，则添加“加载更多”按钮
+if (history.length > thoughtsHistoryRenderCount) {
+    appendLoadMoreThoughtsButton(listEl); // 核心修改：调用新的函数
+}
         }
-        /**
-         * 【全新】创建“加载更多”按钮并添加到列表顶部
-         */
-        function prependLoadMoreThoughtsButton(container) {
-            const button = document.createElement('button');
-            button.id = 'load-more-thoughts-btn';
-            button.textContent = '加载更早的记录';
-            button.className = 'load-more-btn'; // 复用聊天页面的按钮样式
-            container.prepend(button);
-        }
+
         
-        /**
-         * 【全新】加载更多心声历史记录
-         */
-        function loadMoreThoughts() {
-            const listEl = document.getElementById('thoughts-history-list');
-            const chat = state.chats[state.activeChatId];
-            if (!chat) return;
-        
-            const loadMoreBtn = document.getElementById('load-more-thoughts-btn');
-            if (loadMoreBtn) loadMoreBtn.remove();
-            
-            const history = [...chat.thoughtsHistory].reverse();
-            const totalItems = history.length;
-            
-            const nextSliceStart = thoughtsHistoryRenderCount;
-            const nextSliceEnd = thoughtsHistoryRenderCount + THOUGHTS_RENDER_WINDOW;
-            const itemsToAppend = history.slice(nextSliceStart, nextSliceEnd);
-            
-            itemsToAppend.forEach(thought => {
-                const card = createThoughtCard(thought);
-                listEl.appendChild(card);
-            });
-        
-            thoughtsHistoryRenderCount += itemsToAppend.length;
-        
-            // 如果还有更多，再次添加按钮
-            if (totalItems > thoughtsHistoryRenderCount) {
-                prependLoadMoreThoughtsButton(listEl);
-            }
-        }
+// ▼▼▼ 【无限滚动修复版】请用这个新版本替换旧的 loadMoreThoughts 函数 ▼▼▼
+async function loadMoreThoughts() {
+    if (isLoadingMoreThoughts) return;
+    isLoadingMoreThoughts = true;
+
+    const listEl = document.getElementById('thoughts-history-list');
+    const chat = state.chats[state.activeChatId];
+    if (!chat) { 
+        isLoadingMoreThoughts = false; 
+        return; 
+    }
+
+    showLoader(listEl, 'bottom'); // 在底部显示加载动画
+    await new Promise(resolve => setTimeout(resolve, 500)); // 模拟网络延迟
+
+    const history = [...chat.thoughtsHistory].reverse();
+    const totalItems = history.length;
+
+    const nextSliceStart = thoughtsHistoryRenderCount;
+    const nextSliceEnd = thoughtsHistoryRenderCount + THOUGHTS_RENDER_WINDOW;
+    const itemsToAppend = history.slice(nextSliceStart, nextSliceEnd);
+
+    // 在追加新内容前，先移除加载动画
+    hideLoader(listEl);
+
+    itemsToAppend.forEach(thought => {
+        const card = createThoughtCard(thought);
+        listEl.appendChild(card);
+    });
+
+    thoughtsHistoryRenderCount += itemsToAppend.length;
+
+    isLoadingMoreThoughts = false;
+}
+// ▲▲▲ 替换结束 ▲▲▲
 // ▼▼▼ 步骤 1：用这个【全新的函数】，完整替换旧的 createThoughtCard 函数 ▼▼▼
 /**
  * 【全新美化版】根据单条记录数据，创建一张心声历史卡片
@@ -38268,7 +38262,37 @@ async function checkAndFixData() {
         await showCustomAlert('操作失败', `执行检查时发生错误: ${error.message}`);
     }
 }
+// ▼▼▼ 【全新】加载动画辅助函数 ▼▼▼
+/**
+ * 在指定容器显示加载动画
+ * @param {HTMLElement} container - 要显示加载动画的容器元素
+ * @param {string} position - 'top' 或 'bottom'，决定加载动画出现的位置
+ */
+function showLoader(container, position = 'top') {
+    // 检查是否已存在加载器，避免重复添加
+    if (container.querySelector('.loader-container')) return;
+    const loader = document.createElement('div');
+    loader.className = 'loader-container';
+    loader.innerHTML = '<div class="spinner"></div>';
+    
+    if (position === 'bottom') {
+        container.appendChild(loader);
+    } else {
+        container.prepend(loader);
+    }
+}
 
+/**
+ * 从指定容器移除加载动画
+ * @param {HTMLElement} container - 要移除加载动画的容器元素
+ */
+function hideLoader(container) {
+    const loader = container.querySelector('.loader-container');
+    if (loader) {
+        loader.remove();
+    }
+}
+// ▲▲▲ 新增函数结束 ▲▲▲
 
               // ===================================================================
                 // 4. 初始化函数 init()
@@ -42863,6 +42887,50 @@ document.getElementById('sticker-category-tabs').addEventListener('click', (e) =
     }
 });
 // ▲▲▲ 新增代码结束 ▲▲▲
+// ▼▼▼ 【全新】无限滚动事件监听器 ▼▼▼
+
+// --- 1. 聊天记录的滚动加载 ---
+const chatMessagesContainer = document.getElementById('chat-messages');
+chatMessagesContainer.addEventListener('scroll', () => {
+    // 当滚动到顶部时触发
+    if (chatMessagesContainer.scrollTop < 1 && !isLoadingMoreMessages) {
+        const totalMessages = state.chats[state.activeChatId]?.history.length || 0;
+        // 检查是否还有更多消息可供加载
+        if (totalMessages > currentRenderedCount) {
+             loadMoreMessages();
+        }
+    }
+});
+
+// --- 2. 心声历史的滚动加载 ---
+const thoughtsHistoryList = document.getElementById('thoughts-history-list');
+thoughtsHistoryList.addEventListener('scroll', () => {
+    const { scrollTop, scrollHeight, clientHeight } = thoughtsHistoryList;
+    // 当滚动到底部时触发
+    if (scrollHeight - scrollTop <= clientHeight + 50 && !isLoadingMoreThoughts) { // 增加50px的缓冲距离
+        const totalItems = state.chats[state.activeChatId]?.thoughtsHistory.length || 0;
+        if (totalItems > thoughtsHistoryRenderCount) {
+            loadMoreThoughts();
+        }
+    }
+});
+
+// --- 3. 好友动态的滚动加载 ---
+const qzoneContent = document.querySelector('#qzone-screen .qzone-content');
+qzoneContent.addEventListener('scroll', () => {
+    const { scrollTop, scrollHeight, clientHeight } = qzoneContent;
+    // 当滚动到底部时触发
+    if (scrollHeight - scrollTop <= clientHeight + 100 && !isLoadingMorePosts) { // 增加100px的缓冲距离
+        if (qzonePostsCache.length > qzonePostsRenderCount) {
+            loadMoreQzonePosts();
+        }
+    }
+});
+
+// ▲▲▲ 新增事件监听器结束 ▲▲▲
+
+
+
 
 
 
