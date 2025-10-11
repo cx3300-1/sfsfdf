@@ -9089,44 +9089,7 @@ input, textarea, select {
 #phone-screen.dark-mode #npc-list-view {
     background-color: #000;
 }
-       /* 悬浮X Logo样式 */
-        #floating-x-logo {
-          position: fixed;
-          right: 20px;
-          top: 50%;
-          transform: translateY(-50%);
-          width: 50px;
-          height: 50px;
-          background: linear-gradient(135deg, #1d9bf0 0%, #0ea5ff 100%);
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: white;
-          cursor: pointer;
-          box-shadow: 0 4px 20px rgba(29, 155, 240, 0.3);
-          z-index: 999;
-          transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
 
-        .floating-x-hidden {
-          transform: translateY(-50%) translateX(100px);
-          opacity: 0;
-        }
-
-        .floating-x-visible {
-          transform: translateY(-50%) translateX(0);
-          opacity: 1;
-        }
-
-        #floating-x-logo:hover {
-          transform: translateY(-50%) scale(1.1);
-          box-shadow: 0 6px 25px rgba(29, 155, 240, 0.4);
-        }
-
-        #floating-x-logo:active {
-          transform: translateY(-50%) scale(0.95);
-        }
 /* ▼▼▼ 【全新】这是为“围观群聊”操作按钮添加的样式 ▼▼▼ */
 
 /* 1. 让“围观中”文字和按钮容器垂直排列 */
@@ -9725,13 +9688,10 @@ input, textarea, select {
             <div class="icon-bg-desktop"><img id="icon-img-werewolf" src="https://i.postimg.cc/k401K5g7/IMG-7304.jpg" alt="狼人杀"></div>
             <span class="label">狼人杀</span>
         </div>
-     <!-- 悬浮X Logo - 只在主页面显示 -->
-      <div id="floating-x-logo" class="floating-x-hidden">
-        <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
-          <path
-            d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-        </svg>
-      </div>
+<div class="desktop-app-icon" onclick="showScreen('x-social-screen')">
+    <div class="icon-bg-desktop"><img id="icon-img-x" src="https://i.postimg.cc/Y9d3BztC/1.png" alt="X"></div>
+    <span class="label">X</span>
+</div>
                 </div>
             </div>
         </div>
@@ -12553,53 +12513,7 @@ if (!Array.prototype.findLastIndex) {
     writable: true
   });
 }
-        // 双击检测变量
-        let homeScreenTapCount = 0;
-        let homeScreenTapTimer = null;
-       document.addEventListener('DOMContentLoaded', function () {
-          const homeScreen = document.getElementById('home-screen');
-          const floatingXLogo = document.getElementById('floating-x-logo');
 
-          if (homeScreen && floatingXLogo) {
-            // 双击事件监听
-            homeScreen.addEventListener('click', function (e) {
-              // 避免与其他元素的点击事件冲突
-              if (e.target.closest('.desktop-app-icon') || e.target.closest('#floating-x-logo')) {
-                return;
-              }
-
-              homeScreenTapCount++;
-
-              if (homeScreenTapCount === 1) {
-                homeScreenTapTimer = setTimeout(function () {
-                  homeScreenTapCount = 0;
-                }, 300);
-              } else if (homeScreenTapCount === 2) {
-                clearTimeout(homeScreenTapTimer);
-                homeScreenTapCount = 0;
-
-                // 显示悬浮X Logo
-                floatingXLogo.classList.remove('floating-x-hidden');
-                floatingXLogo.classList.add('floating-x-visible');
-
-                // 3秒后自动隐藏
-                setTimeout(function () {
-                  floatingXLogo.classList.remove('floating-x-visible');
-                  floatingXLogo.classList.add('floating-x-hidden');
-                }, 3000);
-              }
-            });
-
-            // X Logo点击事件
-            floatingXLogo.addEventListener('click', function (e) {
-              e.stopPropagation();
-              showScreen('x-social-screen');
-              // 点击后隐藏logo
-              floatingXLogo.classList.remove('floating-x-visible');
-              floatingXLogo.classList.add('floating-x-hidden');
-            });
-          }
-        });
 
         // ... 其他全局变量
         let activeMessageTimestamp = null;
@@ -12997,7 +12911,9 @@ const DEFAULT_NOTIFICATION_SOUND = 'https://www.myinstants.com/media/sounds/noti
     'preset': 'https://s3plus.meituan.net/opapisdk/op_ticket_885190757_1758510900942_qdqqd_djw0z2.jpeg',
             // ▼▼▼ 在这里添加新的一行 ▼▼▼
             'tutorial': 'https://i.postimg.cc/d10GjC4g/IMG-7302.jpg',
-    'werewolf': 'https://i.postimg.cc/k401K5g7/IMG-7304.jpg'
+    'werewolf': 'https://i.postimg.cc/k401K5g7/IMG-7304.jpg',
+    // ▼▼▼ 在这里添加新的一行 ▼▼▼
+    'x': 'https://i.postimg.cc/Y9d3BztC/1.png'
         };
         // ▲▲▲ 替换结束 ▲▲▲
         // ▼▼▼ 【全新】这是为CPhone图标设置新增的常量 ▼▼▼
@@ -25850,7 +25766,9 @@ async function endVideoCall() {
        'preset': '预设',
            // ▼▼▼ 在这里添加新的一行 ▼▼▼
            'tutorial': '教程',
-   'werewolf': '狼人杀'
+   'werewolf': '狼人杀',
+   // ▼▼▼ 在这里添加新的一行 ▼▼▼
+   'x': 'X'
     };
         // ▲▲▲ 替换结束 ▲▲▲
         
