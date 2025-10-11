@@ -39448,46 +39448,67 @@ function processImportedText(title, textContent) {
 }
 
 // ▲▲▲ 新增JS代码结束 ▲▲▲
-// ▼▼▼ 【V2.1 | 拖动修复版】请用这个新版本替换旧的 makeDraggable 函数 ▼▼▼
 /**
- * 【已修复】让一个元素变得可拖动
+ * 【V2.1 | 拖动与点击兼容修复版】让一个元素变得可拖动
  * @param {HTMLElement} windowEl - 要拖动的窗口元素
  * @param {HTMLElement} headerEl - 拖动的手柄元素
  */
 function makeDraggable(windowEl, headerEl) {
     let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+    let isDragging = false;
+    let hasMoved = false; // 新增标志位，判断是否发生过移动
     const phoneScreen = document.getElementById('phone-screen');
 
-const startDrag = (e) => {
-    // 在开始拖动前，检查点击的是否是按钮。如果是，则立即退出。
-    if (e.target.closest('button')) {
-        return;
-    }
+    const startDrag = (e) => {
+        // 如果是主窗口，并且点击的是内部按钮，则不触发拖动
+        if (windowEl !== headerEl && e.target.closest('button')) {
+            return;
+        }
 
-    // 核心修改：我们已经不再需要处理 transform 的逻辑，可以安全地删除了。
+        isDragging = true;
+        hasMoved = false; // 每次开始时重置移动状态
 
-    e.preventDefault();
-    const event = e.type === 'touchstart' ? e.touches[0] : e;
-    pos3 = event.clientX;
-    pos4 = event.clientY;
+        const event = e.type === 'touchstart' ? e.touches[0] : e;
+        pos3 = event.clientX;
+        pos4 = event.clientY;
 
-    document.addEventListener('mouseup', endDrag);
-    document.addEventListener('mousemove', elementDrag);
-    document.addEventListener('touchend', endDrag);
-    document.addEventListener('touchmove', elementDrag);
-};
+        // 确保使用 top/left 定位，而不是 transform
+        windowEl.style.top = `${windowEl.offsetTop}px`;
+        windowEl.style.left = `${windowEl.offsetLeft}px`;
+        windowEl.style.transform = '';
+
+        document.addEventListener('mouseup', endDrag);
+        document.addEventListener('mousemove', elementDrag);
+        document.addEventListener('touchend', endDrag);
+        // 【核心修复1】添加 passive: false 确保 preventDefault 生效
+        document.addEventListener('touchmove', elementDrag, { passive: false });
+    };
 
     const elementDrag = (e) => {
+        if (!isDragging) return;
+
         const event = e.type === 'touchmove' ? e.touches[0] : e;
+        const diffX = event.clientX - pos3;
+        const diffY = event.clientY - pos4;
+
+        // 【核心修复2】只有当移动距离超过一个微小阈值时，才判定为“拖动”
+        if (!hasMoved && (Math.abs(diffX) > 5 || Math.abs(diffY) > 5)) {
+            hasMoved = true;
+        }
+
+        // 只有在确定是拖动时，才阻止页面滚动
+        if (hasMoved && e.cancelable) {
+            e.preventDefault();
+        }
+
         pos1 = pos3 - event.clientX;
         pos2 = pos4 - event.clientY;
         pos3 = event.clientX;
         pos4 = event.clientY;
-        
+
         let newTop = windowEl.offsetTop - pos2;
         let newLeft = windowEl.offsetLeft - pos1;
 
-        // 边界检测 (这部分逻辑是正确的)
         const maxTop = phoneScreen.clientHeight - windowEl.offsetHeight - 10;
         const maxLeft = phoneScreen.clientWidth - windowEl.offsetWidth - 10;
         newTop = Math.max(10, Math.min(newTop, maxTop));
@@ -39502,12 +39523,21 @@ const startDrag = (e) => {
         document.removeEventListener('mousemove', elementDrag);
         document.removeEventListener('touchend', endDrag);
         document.removeEventListener('touchmove', elementDrag);
+
+        if (!isDragging) return;
+        isDragging = false;
+
+        // 【核心修复3】如果从头到尾都没有发生有效移动，就判定为一次“点击”
+        if (!hasMoved) {
+            // 手动触发元素的点击事件
+            windowEl.click();
+        }
     };
 
     headerEl.addEventListener('mousedown', startDrag);
-    headerEl.addEventListener('touchstart', startDrag);
+    // 【核心修复4】为 touchstart 也添加 passive: false
+    headerEl.addEventListener('touchstart', startDrag, { passive: false });
 }
-// ▲▲▲ 替换结束 ▲▲▲
 
 
 /**
