@@ -37128,10 +37128,8 @@ async function saveDoubanSettings() {
     await showCustomAlert('保存成功', '豆瓣设置已更新！下次重新生成时将生效。');
 }
 // ▲▲▲ 新增JS代码粘贴结束 ▲▲▲
-// ▼▼▼ 【全新 | 头像修复版】请用这个全新的函数，完整替换旧的 openWerewolfLobby ▼▼▼
-
 /**
- * 【总入口】打开狼人杀游戏大厅
+ * 【全新 | V2.1 | 本名追踪版】打开狼人杀游戏大厅
  * @param {'global' | 'group'} mode - 模式：'global'表示从游戏小屋进入，'group'表示从群聊进入
  */
 async function openWerewolfLobby(mode) {
@@ -37145,9 +37143,12 @@ async function openWerewolfLobby(mode) {
         const characters = Object.values(state.chats).filter(c => !c.isGroup);
         const npcs = await db.npcs.toArray();
         potentialPlayers = [
-            { id: 'user', name: state.qzoneSettings.nickname || '我', avatar: state.qzoneSettings.avatar, type: 'user' },
-            ...characters.map(c => ({ id: c.id, name: c.name, avatar: c.settings.aiAvatar, type: 'character' })),
-            ...npcs.map(n => ({ id: `npc_${n.id}`, name: n.name, avatar: n.avatar, type: 'npc' }))
+            // 为用户添加本名
+            { id: 'user', name: state.qzoneSettings.nickname || '我', originalName: state.qzoneSettings.nickname || '我', avatar: state.qzoneSettings.avatar, type: 'user' },
+            // 为角色添加本名
+            ...characters.map(c => ({ id: c.id, name: c.name, originalName: c.originalName, avatar: c.settings.aiAvatar, type: 'character' })),
+            // 为NPC添加本名 (使用其昵称作为本名)
+            ...npcs.map(n => ({ id: `npc_${n.id}`, name: n.name, originalName: n.name, avatar: n.avatar, type: 'npc' }))
         ];
         werewolfGameState.chatId = null;
     } else {
@@ -37155,21 +37156,18 @@ async function openWerewolfLobby(mode) {
         if (!chat || !chat.isGroup) return;
         
         potentialPlayers = [
-            { id: 'user', name: chat.settings.myNickname || '我', avatar: chat.settings.myAvatar, type: 'user' },
+            // 为用户添加本名
+            { id: 'user', name: chat.settings.myNickname || '我', originalName: state.qzoneSettings.nickname || '我', avatar: chat.settings.myAvatar, type: 'user' },
+            // 为群成员添加本名
             ...chat.members.map(m => {
                 const char = state.chats[m.id];
-                
-                // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
-                //            这就是本次修复的核心所在！
-                // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
-                // 我们将原来的 `defaultAvatar` 替换为了专门用于群成员的 `defaultGroupMemberAvatar`
                 const memberAvatar = m.avatar || (char ? char.settings.aiAvatar : defaultGroupMemberAvatar);
-                
                 return { 
                     id: m.id, 
                     name: m.groupNickname, 
-                    avatar: memberAvatar, // 使用我们刚刚获取到的、绝对正确的头像
-                    type: 'character' 
+                    originalName: m.originalName, // 核心：记录本名
+                    avatar: memberAvatar, 
+                    type: m.isNpc ? 'npc' : 'character' 
                 };
             })
         ];
@@ -37189,8 +37187,6 @@ async function openWerewolfLobby(mode) {
     
     modal.classList.add('visible');
 }
-
-// ▲▲▲ 替换结束 ▲▲▲
 
 /**
          * 【V3.0 | 已添加女巫守卫】初始化一局新的狼人杀游戏
@@ -37721,124 +37717,111 @@ async function startDiscussionPhase() {
 }
 // ▲▲▲ 替换结束 ▲▲▲
 
-// ▼▼▼ 【V3.3 | 跨天记忆终极版】构建用于生成所有AI讨论的System Prompt ▼▼▼
-        function buildWerewolfPrompt() {
-            const alivePlayers = werewolfGameState.players.filter(p => p.isAlive);
-            const myPlayerObject = werewolfGameState.players.find(p => p.id === 'user');
-            const myPlayerName = myPlayerObject ? myPlayerObject.name : '用户';
-            const isUserAlive = alivePlayers.some(p => p.id === 'user');
+/**
+ * 【V3.4 | 称呼修复版】构建用于生成所有AI讨论的System Prompt
+ */
+function buildWerewolfPrompt() {
+    const alivePlayers = werewolfGameState.players.filter(p => p.isAlive);
+    const myPlayerObject = werewolfGameState.players.find(p => p.id === 'user');
+    const myPlayerName = myPlayerObject ? myPlayerObject.name : '用户';
+    const isUserAlive = alivePlayers.some(p => p.id === 'user');
 
-            // 角色档案部分
-            let charactersAndPlayersDossier = "# 角色与玩家档案 (Character & Player Dossiers)\n";
-            alivePlayers.forEach((p, i) => {
-                const playerIndex = werewolfGameState.players.findIndex(player => player.id === p.id) + 1;
-                charactersAndPlayersDossier += `
-        ## ${playerIndex}号玩家: ${p.name}
-        - **身份**: ${p.id === 'user' ? '【用户 (User)】' : '【AI角色】'}
-        - **人设 (必须严格遵守)**: ${p.character_persona}
-        `;
-                
-                // =================================================================
-                //            ★★★ 核心的长期记忆注入逻辑就在这里！ ★★★
-                // =================================================================
-                // 检查当前玩家是否是“真·角色”(character)，而不是用户或纯NPC
-                if (p.type === 'character') {
-                    // 从全局 state.chats 中找到这个角色的主聊天对象
-                    const char = state.chats[p.id];
-                    // 如果找到了，并且这个角色有长期记忆
-                    if (char && char.longTermMemory && char.longTermMemory.length > 0) {
-                        // 就把所有长期记忆拼接成一个字符串
-                        const memoryContent = char.longTermMemory.map(mem => mem.content).join('; ');
-                        // 然后把这个字符串作为“长期记忆”的一部分，添加到这个角色的专属档案里
-                        charactersAndPlayersDossier += `- **长期记忆 (必须参考)**: ${memoryContent}\n`;
-                    }
-                }
-                // =================================================================
-                //            ★★★ 注入逻辑结束 ★★★
-                // =================================================================
-            });
+    // 角色档案部分
+    let charactersAndPlayersDossier = "# 角色与玩家档案 (Character & Player Dossiers)\n";
+    alivePlayers.forEach((p, i) => {
+        const playerIndex = werewolfGameState.players.findIndex(player => player.id === p.id) + 1;
+        // 【核心修改1】在这里同时提供了昵称和本名，并明确指示了本名的用途
+        charactersAndPlayersDossier += `
+## ${playerIndex}号玩家: ${p.name} (这是TA的昵称)
+- **本名 (你在对话中必须用这个名字称呼TA)**: ${p.originalName}
+- **身份**: ${p.id === 'user' ? '【用户 (User)】' : '【AI角色】'}
+- **人设 (必须严格遵守)**: ${p.character_persona}
+`;
         
-            // 昨晚事件总结
-            let nightEventSummary = "# 昨晚事件总结 (Night Event Summary)\n";
-            const deathsThisNight = werewolfGameState.gameLog.filter(entry => entry.content.includes('死亡了') && entry.day === werewolfGameState.currentDay);
-            if (deathsThisNight.length === 0) {
-                 nightEventSummary += "- 昨晚是平安夜，无人死亡。\n";
-            } else {
-                deathsThisNight.forEach(death => {
-                    nightEventSummary += `- ${death.content}\n`;
-                });
+        if (p.type === 'character') {
+            const char = state.chats[p.id];
+            if (char && char.longTermMemory && char.longTermMemory.length > 0) {
+                const memoryContent = char.longTermMemory.map(mem => mem.content).join('; ');
+                charactersAndPlayersDossier += `- **长期记忆 (必须参考)**: ${memoryContent}\n`;
             }
+        }
+    });
 
-            // 前几日历史回顾
-            let previousDaysSummary = "# 前几日完整历史回顾 (Full Recap of Previous Days)\n";
-            if (werewolfGameState.currentDay > 1) {
-                for (let day = 1; day < werewolfGameState.currentDay; day++) {
-                    previousDaysSummary += `\n**--- 第 ${day} 天 ---**\n`;
-                    const eventsThisDay = werewolfGameState.gameLog.filter(entry => entry.day === day && (entry.content.includes('死亡') || entry.content.includes('放逐')));
-                    if (eventsThisDay.length > 0) {
-                        previousDaysSummary += `*事件*: ${eventsThisDay.map(e => e.content).join(' ')}\n`;
-                    } else {
-                        previousDaysSummary += "*事件*: 平安夜，无人出局。\n";
-                    }
-                    const discussionsThisDay = werewolfGameState.discussionLog.filter(entry => entry.day === day);
-                    if (discussionsThisDay.length > 0) {
-                        previousDaysSummary += `*讨论记录*:\n${discussionsThisDay.map(d => `- ${d.speaker}: ${d.content}`).join('\n')}\n`;
-                    }
-                }
+    // (后续的事件总结、历史回顾、秘密信息等部分保持不变)
+    let nightEventSummary = "# 昨晚事件总结 (Night Event Summary)\n";
+    const deathsThisNight = werewolfGameState.gameLog.filter(entry => entry.content.includes('死亡了') && entry.day === werewolfGameState.currentDay);
+    if (deathsThisNight.length === 0) {
+         nightEventSummary += "- 昨晚是平安夜，无人死亡。\n";
+    } else {
+        deathsThisNight.forEach(death => {
+            nightEventSummary += `- ${death.content}\n`;
+        });
+    }
+    let previousDaysSummary = "# 前几日完整历史回顾 (Full Recap of Previous Days)\n";
+    if (werewolfGameState.currentDay > 1) {
+        for (let day = 1; day < werewolfGameState.currentDay; day++) {
+            previousDaysSummary += `\n**--- 第 ${day} 天 ---**\n`;
+            const eventsThisDay = werewolfGameState.gameLog.filter(entry => entry.day === day && (entry.content.includes('死亡') || entry.content.includes('放逐')));
+            if (eventsThisDay.length > 0) {
+                previousDaysSummary += `*事件*: ${eventsThisDay.map(e => e.content).join(' ')}\n`;
             } else {
-                previousDaysSummary += "(今天是第一天，没有历史记录)\n";
+                previousDaysSummary += "*事件*: 平安夜，无人出局。\n";
             }
+            const discussionsThisDay = werewolfGameState.discussionLog.filter(entry => entry.day === day);
+            if (discussionsThisDay.length > 0) {
+                previousDaysSummary += `*讨论记录*:\n${discussionsThisDay.map(d => `- ${d.speaker}: ${d.content}`).join('\n')}\n`;
+            }
+        }
+    } else {
+        previousDaysSummary += "(今天是第一天，没有历史记录)\n";
+    }
+    let secretInfo = "### 你的秘密信息 (此部分只有你作为AI导演能看到)\n";
+    alivePlayers.forEach(p => {
+        if (p.id !== 'user') {
+            secretInfo += `#### ${p.name}的秘密档案：\n- 你的狼人杀身份是：【${p.role}】\n`;
+            if (p.role === '狼人') {
+                const teammates = werewolfGameState.players.filter(t => t.role === '狼人' && t.id !== p.id).map(t => t.name).join('、');
+                secretInfo += `- 你的狼队友是：${teammates || '无'}\n`;
+                const killedPlayer = werewolfGameState.players.find(pl => pl.id === werewolfGameState.nightActions.killedId);
+                secretInfo += `- 你们昨晚尝试攻击的玩家是：${killedPlayer ? killedPlayer.name : '空刀'}\n`;
+            }
+            if (p.role === '预言家' && werewolfGameState.nightActions.prophetCheck) {
+                const checkedPlayer = werewolfGameState.players.find(pl => pl.id === werewolfGameState.nightActions.prophetCheck.target);
+                secretInfo += `- 你昨晚查验了 ${checkedPlayer.name}，TA的身份是：【${werewolfGameState.nightActions.prophetCheck.result}】\n`;
+            }
+            if (p.role === '女巫') {
+                if (werewolfGameState.nightActions.savedId) {
+                    const savedPlayer = werewolfGameState.players.find(pl => pl.id === werewolfGameState.nightActions.savedId);
+                    secretInfo += `- 你昨晚用解药救了 ${savedPlayer.name}。\n`;
+                }
+                if (werewolfGameState.nightActions.poisonedId) {
+                    const poisonedPlayer = werewolfGameState.players.find(pl => pl.id === werewolfGameState.nightActions.poisonedId);
+                    secretInfo += `- 你昨晚用毒药毒了 ${poisonedPlayer.name}。\n`;
+                }
+                secretInfo += `- 你的解药状态：${p.antidoteUsed ? '已使用' : '未使用'}\n`;
+                secretInfo += `- 你的毒药状态：${p.poisonUsed ? '已使用' : '未使用'}\n`;
+            }
+            if (p.role === '守卫') {
+                if (werewolfGameState.nightActions.guardedId) {
+                    const guardedPlayer = werewolfGameState.players.find(pl => pl.id === werewolfGameState.nightActions.guardedId);
+                    secretInfo += `- 你昨晚守护了 ${guardedPlayer.name}。\n`;
+                } else {
+                    secretInfo += `- 你昨晚空守了。\n`;
+                }
+            }
+            secretInfo += '\n';
+        }
+    });
+    let discussionHistoryContext = "# 今日完整讨论记录 (Today's Full Discussion Record)\n";
+    const todayDiscussions = werewolfGameState.discussionLog.filter(entry => entry.day === werewolfGameState.currentDay);
+    if (todayDiscussions.length > 0) {
+        discussionHistoryContext += todayDiscussions.map(d => `- **${d.speaker}**: ${d.content}`).join('\n');
+    } else {
+        discussionHistoryContext += "(你是第一个发言的人)";
+    }
 
-            // 秘密信息
-            let secretInfo = "### 你的秘密信息 (此部分只有你作为AI导演能看到)\n";
-            alivePlayers.forEach(p => {
-                if (p.id !== 'user') {
-                    secretInfo += `#### ${p.name}的秘密档案：\n- 你的狼人杀身份是：【${p.role}】\n`;
-                    if (p.role === '狼人') {
-                        const teammates = werewolfGameState.players.filter(t => t.role === '狼人' && t.id !== p.id).map(t => t.name).join('、');
-                        secretInfo += `- 你的狼队友是：${teammates || '无'}\n`;
-                        const killedPlayer = werewolfGameState.players.find(pl => pl.id === werewolfGameState.nightActions.killedId);
-                        secretInfo += `- 你们昨晚尝试攻击的玩家是：${killedPlayer ? killedPlayer.name : '空刀'}\n`;
-                    }
-                    if (p.role === '预言家' && werewolfGameState.nightActions.prophetCheck) {
-                        const checkedPlayer = werewolfGameState.players.find(pl => pl.id === werewolfGameState.nightActions.prophetCheck.target);
-                        secretInfo += `- 你昨晚查验了 ${checkedPlayer.name}，TA的身份是：【${werewolfGameState.nightActions.prophetCheck.result}】\n`;
-                    }
-                    if (p.role === '女巫') {
-                        if (werewolfGameState.nightActions.savedId) {
-                            const savedPlayer = werewolfGameState.players.find(pl => pl.id === werewolfGameState.nightActions.savedId);
-                            secretInfo += `- 你昨晚用解药救了 ${savedPlayer.name}。\n`;
-                        }
-                        if (werewolfGameState.nightActions.poisonedId) {
-                            const poisonedPlayer = werewolfGameState.players.find(pl => pl.id === werewolfGameState.nightActions.poisonedId);
-                            secretInfo += `- 你昨晚用毒药毒了 ${poisonedPlayer.name}。\n`;
-                        }
-                        secretInfo += `- 你的解药状态：${p.antidoteUsed ? '已使用' : '未使用'}\n`;
-                        secretInfo += `- 你的毒药状态：${p.poisonUsed ? '已使用' : '未使用'}\n`;
-                    }
-                    if (p.role === '守卫') {
-                        if (werewolfGameState.nightActions.guardedId) {
-                            const guardedPlayer = werewolfGameState.players.find(pl => pl.id === werewolfGameState.nightActions.guardedId);
-                            secretInfo += `- 你昨晚守护了 ${guardedPlayer.name}。\n`;
-                        } else {
-                            secretInfo += `- 你昨晚空守了。\n`;
-                        }
-                    }
-                    secretInfo += '\n';
-                }
-            });
-        
-            // 今日讨论记录
-            let discussionHistoryContext = "# 今日完整讨论记录 (Today's Full Discussion Record)\n";
-            const todayDiscussions = werewolfGameState.discussionLog.filter(entry => entry.day === werewolfGameState.currentDay);
-            if (todayDiscussions.length > 0) {
-                discussionHistoryContext += todayDiscussions.map(d => `- **${d.speaker}**: ${d.content}`).join('\n');
-            } else {
-                discussionHistoryContext += "(你是第一个发言的人)";
-            }
-        
-            // 最终的Prompt
-            const prompt = `
+    // 最终的Prompt
+    const prompt = `
 # 你的任务
 你是一个狼人杀游戏导演。你的任务是扮演【除了${isUserAlive ? `用户(${myPlayerName})` : `已死亡的用户(${myPlayerName})`}以外】的所有AI角色，并根据他们的【角色人设】和【狼人杀身份】，生成一整轮符合逻辑、充满博弈的发言。
 
@@ -37882,8 +37865,10 @@ ${nightEventSummary}
 # 其他核心指令 (必须遵守)
 1.  **互动铁律**: 角色之间【必须】互相质疑、支持、分析【本轮已有发言】。你【绝对不能】无视 ${myPlayerName} (用户) 或其他AI的发言，必须对他们的观点和逻辑做出回应。
 2.  **记忆力与连贯性**: 你的新发言【必须】是基于**过去几天和今天发生的所有事件和讨论**的逻辑延续。
-3.  **格式铁律**: 你的回复【必须且只能】是一个JSON数组，格式为: \`{"speaker_name": "角色名", "dialogue": "发言内容"}\`。**必须**为每一个存活的AI角色都生成一段发言。
-4.  **编号禁令**: 你的发言中【绝对禁止】提及任何玩家的编号，【必须】使用玩家的【名字】来指代他们。
+
+// 【核心修改2】明确了JSON格式中 speaker_name 和对话中称呼的不同要求
+3.  **格式铁律**: 你的回复【必须且只能】是一个JSON数组，格式为: \`{"speaker_name": "角色的【昵称】", "dialogue": "发言内容"}\`。**必须**为每一个存活的AI角色都生成一段发言。
+4.  **称呼铁律**: 你的发言中【绝对禁止】提及任何玩家的编号。在对话中互相称呼时，你【必须】使用玩家的【本名】，而不是他们的昵称。
 
 # ${previousDaysSummary}
 
@@ -37892,9 +37877,9 @@ ${nightEventSummary}
 ${secretInfo}
 
 现在，请为所有【存活的AI角色】生成他们充满策略和博弈的发言。`;
-        
-            return prompt;
-        }
+    
+        return prompt;
+    }
 /**
          * 【全新 | V2.1 无编号版】创建一个详细的、供AI分析的狼人杀游戏完整日志
          * @param {object} gameState - 当前的游戏状态对象
@@ -38616,10 +38601,8 @@ ${werewolfGameState.discussionLog.map(d => `${d.speaker}: ${d.content}`).join('\
     }
 }
 // ▲▲▲ 狼人杀JS代码结束 ▲▲▲
-// ▼▼▼ 【全新V2.0】这是女巫操作弹窗的核心逻辑，请完整粘贴 ▼▼▼
-
 /**
- * 【全新】打开女巫操作弹窗
+ * 【全新 V2.2 | 交互最终修复版】打开女巫操作弹窗
  * @param {object|null} killedPlayer - 被狼人刀的玩家对象，如果是平安夜则为null
  * @param {object} witchPlayer - 女巫玩家的对象
  * @returns {Promise<object>} - 返回一个包含 { save: boolean, poison: string|null } 的对象
@@ -38629,15 +38612,26 @@ function openWitchActionModal(killedPlayer, witchPlayer) {
         const modal = document.getElementById('werewolf-witch-modal');
         const listEl = document.getElementById('werewolf-witch-selection-list');
         const titleEl = document.getElementById('witch-modal-title');
+        
+        // 1. 获取原始按钮的引用
         const poisonBtn = document.getElementById('confirm-witch-poison-btn');
         const doNothingBtn = document.getElementById('witch-do-nothing-btn');
         listEl.innerHTML = '';
-        poisonBtn.style.display = 'none';
+
+        // 2. ★★★ 核心修复：先克隆并替换按钮，确保我们操作的是最新的DOM元素 ★★★
+        const newPoisonBtn = poisonBtn.cloneNode(true);
+        poisonBtn.parentNode.replaceChild(newPoisonBtn, poisonBtn);
+        const newDoNothingBtn = doNothingBtn.cloneNode(true);
+        doNothingBtn.parentNode.replaceChild(newDoNothingBtn, doNothingBtn);
+
+        // 3. 现在，所有的操作都针对 newPoisonBtn 和 newDoNothingBtn
+        newPoisonBtn.style.display = 'block';
+        newPoisonBtn.disabled = true; // 默认禁用
 
         let action = { save: false, poison: null };
         let selectedPoisonTarget = null;
         
-        // 1. 显示死亡信息，并提供救人选项
+        // (显示死亡信息和救人选项的逻辑保持不变)
         if (killedPlayer && !witchPlayer.antidoteUsed) {
             titleEl.textContent = `昨晚 ${killedPlayer.name} 被刀了`;
             const saveBtn = document.createElement('button');
@@ -38656,7 +38650,7 @@ function openWitchActionModal(killedPlayer, witchPlayer) {
             titleEl.textContent = '昨晚是平安夜';
         }
 
-        // 2. 提供毒人选项
+        // (提供毒人选项的逻辑保持不变)
         if (!witchPlayer.poisonUsed) {
             const poisonTitle = document.createElement('p');
             poisonTitle.textContent = '是否要使用毒药？';
@@ -38674,15 +38668,15 @@ function openWitchActionModal(killedPlayer, witchPlayer) {
                     listEl.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
                     item.classList.add('selected');
                     selectedPoisonTarget = p.id;
-                    poisonBtn.style.display = 'block'; // 选中后才显示确认按钮
+                    
+                    // 4. ★★★ 核心修复：现在我们启用的是正确的、新的按钮 ★★★
+                    newPoisonBtn.disabled = false;
                 };
                 listEl.appendChild(item);
             });
         }
 
-        // 3. 绑定按钮事件
-        const newPoisonBtn = poisonBtn.cloneNode(true);
-        poisonBtn.parentNode.replaceChild(newPoisonBtn, poisonBtn);
+        // 5. 为新的按钮绑定事件
         newPoisonBtn.onclick = () => {
             if (selectedPoisonTarget) {
                 action.poison = selectedPoisonTarget;
@@ -38691,11 +38685,9 @@ function openWitchActionModal(killedPlayer, witchPlayer) {
             }
         };
 
-        const newDoNothingBtn = doNothingBtn.cloneNode(true);
-        doNothingBtn.parentNode.replaceChild(newDoNothingBtn, doNothingBtn);
         newDoNothingBtn.onclick = () => {
             modal.classList.remove('visible');
-            resolve(action); // 返回默认的 false/null
+            resolve(action);
         };
 
         modal.classList.add('visible');
@@ -44757,14 +44749,14 @@ document.getElementById('reading-content').addEventListener('scroll', debouncedU
     <div class="modal-content" style="height: 70%;">
         <div class="modal-header"><span id="witch-modal-title">女巫请睁眼</span></div>
         <div class="modal-body" id="werewolf-witch-selection-list" style="padding: 0;">
-            <!-- 救人或毒人选项将在这里显示 -->
-        </div>
+            </div>
         <div class="modal-footer">
              <button class="cancel" id="witch-do-nothing-btn">什么都不做</button>
              <button class="save btn-danger" id="confirm-witch-poison-btn" style="display: none;">确认用毒</button>
         </div>
     </div>
 </div>
+
 
 <!-- 3. 猎人开枪弹窗 (之前缺失) -->
 <div id="werewolf-hunter-modal" class="modal">
