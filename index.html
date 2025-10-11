@@ -26972,7 +26972,8 @@ ${formattedHistory}
                     }
                 }
                 if (memoriesAddedCount > 0) {
-                    await showCustomAlert('总结成功', `已成功为 ${memoriesAddedCount} 位群成员生成并注入了个性化记忆！`);
+                    // *** 修改点 1：移除弹窗，改为在控制台输出日志 ***
+                    console.log(`自动总结成功：为 ${memoriesAddedCount} 位群成员生成并注入了个性化记忆！`);
                 } else {
                     throw new Error("AI返回了空的或格式不正确的总结内容。");
                 }
@@ -26980,17 +26981,16 @@ ${formattedHistory}
                 throw new Error("AI返回的JSON格式不正确，缺少 'summaries' 字段。");
             }
         } else {
-            // --- 这是单聊的“统一客观记忆”逻辑 ---
             if (result.summary && result.summary.trim()) {
                 const newMemoryEntry = { content: result.summary.trim(), timestamp: Date.now(), source: 'auto' };
                 chat.longTermMemory.push(newMemoryEntry);
                 await db.chats.put(chat);
-                await showCustomAlert('总结成功', `已成功添加 1 条新的长期记忆！`);
+                // *** 修改点 2：移除弹窗，改为在控制台输出日志 ***
+                console.log('自动总结成功：已成功添加 1 条新的长期记忆！');
             } else {
                 throw new Error("AI返回了空的或格式不正确的总结内容。");
             }
         }
-        // ▲▲▲ 修改结束 ▲▲▲
 
         chat.lastMemorySummaryTimestamp = messagesToSummarize.slice(-1)[0].timestamp;
         await db.chats.put(chat);
@@ -27000,6 +27000,7 @@ ${formattedHistory}
         }
     } catch (error) {
         console.error("总结长期记忆时出错:", error);
+        // *** 修改点 3：失败时依然弹出错误提示 ***
         await showCustomAlert('总结失败', `操作失败: ${error.message}`);
     }
 }
