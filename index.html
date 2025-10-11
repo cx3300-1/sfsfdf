@@ -9594,6 +9594,192 @@ input, textarea, select {
     border-top-color: #fff; /* 夜间模式下旋转部分为白色 */
 }
 /* ▲▲▲ 新增CSS结束 ▲▲▲ */
+/* ▼▼▼ 【V2.1 | 交互修复版】请用这一整块代码，完整替换从 #reading-overlay 到 .reading-footer button:disabled 的所有相关样式 ▼▼▼ */
+
+/* 1. 外部容器：提升 z-index，确保它在顶栏之上 */
+#reading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 150; /* 高于顶栏的 100 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none; /* 允许点击穿透背景 */
+    display: none; /* 默认隐藏 */
+}
+
+/* 2. 主窗口样式 */
+#reading-window {
+    width: 90%;
+    max-width: 340px;
+    height: 60vh;
+    max-height: 480px;
+    background-color: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 18px;
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    display: flex;
+    flex-direction: column;
+    pointer-events: auto; /* 窗口本身可以交互 */
+    position: absolute; /* 改为 absolute 以支持拖动 */
+    /* 初始居中定位由JS控制，这里不再设置 */
+    transition: transform 0.3s ease, opacity 0.3s ease, visibility 0s 0.3s; /* 添加平滑的过渡动画 */
+}
+#phone-screen.dark-mode #reading-window {
+    background-color: rgba(40, 40, 42, 0.7);
+}
+
+/* ▼▼▼ 请用这整块代码，完整替换旧的 .reading-header 和 #reading-title 样式 ▼▼▼ */
+
+/* 3. 头部样式，作为“拖动把手” */
+
+.reading-header {
+    cursor: move;
+    user-select: none;
+    -webkit-user-select: none;
+    flex-shrink: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--border-color);
+    gap: 10px;
+    /* 新增：强制不换行，作为双重保险 */
+    flex-wrap: nowrap;
+}
+
+#reading-title {
+    font-weight: 600;
+    /* 核心：让标题占据所有可用空间，但允许收缩 */
+    flex: 1;
+    min-width: 0;
+    /* 以下三行负责实现省略号效果 */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.reading-controls {
+    /* 关键：告诉按钮容器绝对不要被压缩 */
+    flex-shrink: 0;
+}
+
+/* ▲▲▲ 替换结束 ▲▲▲ */
+.reading-controls button {
+    background: none; border: none; color: var(--text-secondary); padding: 4px 8px;
+    border-radius: 4px; cursor: pointer; font-size: 14px; transition: background-color 0.2s;
+}
+.reading-controls button:hover {
+    background-color: rgba(0,0,0,0.1);
+}
+#minimize-reading-btn {
+    font-weight: bold; font-size: 16px; line-height: 1;
+}
+
+/* 4. 【核心修复】最小化后的状态：使其透明、缩小并不可交互 */
+#reading-window.minimized {
+    transform: scale(0.8); /* 缩小效果 */
+    opacity: 0;           /* 透明效果 */
+    pointer-events: none; /* 禁止交互 */
+    visibility: hidden;   /* 彻底隐藏 */
+}
+
+/* 5. 【核心修复】最小化后用于“恢复”的小球，改为屏幕居中 */
+#reading-restore-btn {
+    position: absolute;
+    /* --- 核心修改1：从居中改为靠右 --- */
+    top: 50%;
+    right: 15px; /* 距离右侧边缘15像素 */
+    /* 【关键】只在Y轴上垂直居中，不再需要X轴的平移 */
+    transform: translateY(-50%); 
+    /* --- 修改结束 --- */
+    width: 50px; 
+    height: 50px;
+    background-color: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px; 
+    cursor: move; 
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    pointer-events: auto; 
+    z-index: 160; 
+    transition: transform 0.2s; 
+}
+#reading-restore-btn:active {
+    /* 【核心修改2】修复点击时的位移问题 */
+    transform: translateY(-50%) scale(0.95);
+}
+#phone-screen.dark-mode #reading-restore-btn {
+    background-color: rgba(50, 50, 52, 0.8);
+}
+
+/* 6. 内容和页脚样式 (保持不变) */
+#reading-content {
+    flex-grow: 1; 
+    overflow-y: auto; 
+    padding: 15px;
+    font-size: 15px; 
+    line-height: 1.8;
+    /* ▼▼▼ 核心新增 ▼▼▼ */
+    white-space: pre-wrap; /* 保持换行符，同时允许长单词自动换行 */
+    word-break: break-word;  /* 强制长单词或URL断开，防止撑破布局 */
+    /* ▲▲▲ 新增结束 ▲▲▲ */
+}
+.reading-footer {
+    flex-shrink: 0; display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 15px; border-top: 1px solid var(--border-color);
+}
+#page-indicator {
+    font-size: 14px; 
+    color: var(--text-secondary);
+    cursor: pointer; /* 添加手型光标，提示用户可以点击 */
+    transition: color 0.2s;
+}
+#page-indicator:hover {
+    color: var(--accent-color); /* 鼠标悬停时变色 */
+}
+.reading-footer button {
+    padding: 6px 15px; border-radius: 15px; border: none;
+    background-color: var(--accent-color); color: white; cursor: pointer;
+}
+.reading-footer button:disabled {
+    background-color: #ccc;
+}
+#phone-screen.dark-mode .reading-footer button:disabled {
+    background-color: #555;
+}
+
+/* ▲▲▲ V2.1 CSS 替换结束 ▲▲▲ */
+/* ▼▼▼ 【全新】这是为书库搜索功能添加的样式 ▼▼▼ */
+#reading-library-search-container {
+    padding: 10px 15px;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0; /* 防止被压缩 */
+}
+#reading-library-search-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-sizing: border-box;
+    font-size: 16px; /* 避免在iOS上输入时自动放大页面 */
+    -webkit-appearance: none; /* 移除iOS上的默认样式 */
+}
+#phone-screen.dark-mode #reading-library-search-input {
+    background-color: #2c2c2e;
+    color: #f0f0f0;
+    border-color: #38383a;
+}
+/* ▲▲▲ 新增CSS结束 ▲▲▲ */
     </style>
 </head>
 <body>
@@ -10623,6 +10809,45 @@ input, textarea, select {
                 </div>
             </div>
             <!-- ▲▲▲ 新增HTML结束 ▲▲▲ -->
+<div id="reading-overlay">
+    <!-- 这是全新的、用于恢复窗口的小按钮 -->
+    <div id="reading-restore-btn" style="display: none;">📖</div>
+
+    <!-- 这是可拖动的主窗口 -->
+    <div id="reading-window">
+        <div class="reading-header">
+            <span id="reading-title">未选择书籍</span>
+<div class="reading-controls">
+    <button id="minimize-reading-btn" title="最小化" style="font-size: 20px; line-height: 1;">
+        <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+    </button>
+    <button id="open-reading-library-btn" title="打开书库" style="font-size: 22px; line-height: 1;">
+    <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+</button>
+    <button id="close-reading-btn" title="关闭">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    </button>
+</div>
+        </div>
+        <div id="reading-content">
+            <p>点击“导入”按钮，<br>从本地.txt文件或网络URL加载书籍内容。</p>
+        </div>
+        <div class="reading-footer">
+            <button id="prev-page-btn">上一页</button>
+            <span id="page-indicator">0 / 0</span>
+            <button id="next-page-btn">下一页</button>
+        </div>
+    </div>
+</div>
+<!-- 这是一个隐藏的文件输入框，用于本地上传 -->
+<input type="file" id="book-upload-input" accept=".txt, text/plain" hidden>
+<!-- ▲▲▲ 替换结束 ▲▲▲ -->
             <div class="header">
                 <div class="default-controls">
                     <span class="back-btn" id="back-to-list-btn">‹</span>
@@ -10788,6 +11013,12 @@ input, textarea, select {
 <button id="werewolf-game-btn" class="chat-action-icon-btn action-button" title="狼人杀" style="display: none;">
     <svg width="24" height="24" viewBox="0 0 512 512" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
         <path d="M332.6 128.5c-61.1 0-110.5 49.4-110.5 110.5 0 23.4 7.3 45.1 19.9 63.3-19.3 6.3-40.1 9.7-61.9 9.7-88.2 0-160-71.8-160-160s71.8-160 160-160c5.3 0 10.5.3 15.6.8C202.9 44.1 160 0 160 0s-53.3 44.1-45.9 92.5c-48.4 24.3-82.1 73.4-82.1 129.6 0 80.9 65.5 146.4 146.4 146.4 20.2 0 39.4-4.1 56.8-11.5 24.1 33.6 63.3 56.8 107.4 56.8 7.2 0 14.2-0.6 21-1.7 15.2 24.2 41.2 41.1 71.6 41.1 44.7 0 80.9-36.2 80.9-80.9 0-25.2-11.5-47.7-29.6-62.6 11.6-16.1 18.4-35.6 18.4-56.5C443.1 177.9 393.7 128.5 332.6 128.5zM180.1 85.8c-52.1 0-94.4 42.3-94.4 94.4s42.3 94.4 94.4 94.4 94.4-42.3 94.4-94.4S232.2 85.8 180.1 85.8zM332.6 170.9c-37.8 0-68.4 30.6-68.4 68.4s30.6 68.4 68.4 68.4 68.4-30.6 68.4-68.4S370.4 170.9 332.6 170.9z"></path>
+    </svg>
+</button>
+<button id="read-together-btn" class="chat-action-icon-btn action-button" title="一起读书">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
     </svg>
 </button>
                 </div>
@@ -12893,6 +13124,7 @@ let activeDiaryForViewing = null; // 用于暂存当前正在查看的日记对�
 const DEFAULT_NOTIFICATION_SOUND = 'https://www.myinstants.com/media/sounds/notification-sound-2.mp3'; // 默认的微信提示音
         // ▼▼▼ 在JS顶部，变量定义区，添加这个新变量 ▼▼▼
         let gomokuState = {}; // 用于存储每个聊天的五子棋状态
+let readingState = {}; // { chatId: { isActive, isMinimized, title, ... } }
         let originalChatMessagesPaddingTop = null; // 用于存储消息区的原始顶部内边距
         
         // ▲▲▲ 新增代码结束 ▲▲▲
@@ -13608,7 +13840,7 @@ function showCustomAlert(title, message) {
                 // ===================================================================
         
         // ▼▼▼ 【请用这个 V30 版本】完整替换旧的 db.version(...) 代码块 ▼▼▼
-        db.version(36).stores({ 
+        db.version(37).stores({ 
             doubanPosts: '++id, timestamp',
             chats: '&id, isGroup, groupId, isPinned, memos, diary, appUsageLog',
             apiConfig: '&id', 
@@ -13634,7 +13866,7 @@ function showCustomAlert(title, message) {
             customAvatarFrames: '++id, name',
             presets: '&id, name, categoryId', // 新增：预设主表
             presetCategories: '++id, name',
-            npcs: '++id, name',
+    readingLibrary: '++id, title, lastOpened', // 新增：书籍库
             // 【核心修改】为NPC表添加后台活动、冷却时间和最后行动时间戳字段
             npcs: '++id, name, enableBackgroundActivity, actionCooldownMinutes, lastActionTimestamp'  
         }).upgrade(tx => {
@@ -17247,18 +17479,20 @@ function scrollToOriginalMessage(originalTimestamp) {
             if (patBtn) {
                 patBtn.style.display = isGroup ? 'none' : 'flex';
             }
-        
+        const propelBtn = document.getElementById('propel-btn');       
             // 【【【核心修改就在这里】】】
             // 切换“购物”和“五子棋”按钮
             const shoppingBtn = document.getElementById('open-shopping-btn');
             const gomokuBtn = document.getElementById('gomoku-btn');
     const werewolfBtn = document.getElementById('werewolf-game-btn');
-    if (shoppingBtn && gomokuBtn && werewolfBtn) {
-        shoppingBtn.style.display = 'flex';
-        gomokuBtn.style.display = isGroup ? 'none' : 'flex';
-        // 【核心新增】狼人杀按钮只在群聊显示
-        werewolfBtn.style.display = isGroup ? 'flex' : 'none';
-    }
+        if (shoppingBtn && gomokuBtn && werewolfBtn && propelBtn) {
+            shoppingBtn.style.display = 'flex';
+            gomokuBtn.style.display = isGroup ? 'none' : 'flex';
+            werewolfBtn.style.display = isGroup ? 'flex' : 'none';
+
+            // 2. 添加判断：如果是群聊(isGroup)，则隐藏(none)；否则，显示(flex)
+            propelBtn.style.display = isGroup ? 'none' : 'flex';
+        }
             // --- 修改结束 ---
         
             // 触发AI响应的逻辑（保持不变）
@@ -18099,6 +18333,7 @@ if (chat.settings.enableTimePerception) {
                     } else {
                         groupAvatarLibraryContext += '- (头像库是空的，无法更换头像)';
                     }
+    const readingContext = formatReadingStateForAI(chatId);
 systemPrompt = `
 # 核心任务：群聊导演
 你是一个群聊AI导演，负责扮演【除了用户以外】的所有角色。你的核心任务是导演一场生动的、角色间有充分互动的群聊。
@@ -18148,6 +18383,7 @@ ${longTermMemoryContext}
 ${chat.longTermMemory && chat.longTermMemory.length > 0 ? chat.longTermMemory.map(mem => `- ${mem.content}`).join('\n') : '- (暂无)'}
 ${linkedMemoryContext}
 ${musicContext}
+${readingContext}
 ${sharedContext}
 ${groupAvatarLibraryContext}
 ${shoppingContext}
@@ -18625,7 +18861,7 @@ if (chat.settings.enableTimePerception) {
         timeContext = "- **对话状态**: 这是你们的第一次对话。";
     }
 }
-        
+    const readingContext = formatReadingStateForAI(chatId);   
 systemPrompt = `
 # 身份与核心任务
 你正在扮演角色“${chat.originalName}”，与用户（你的聊天对象）进行一场自然的、生活化的在线聊天。你的所有行为和决策都必须严格围绕你的角色设定展开。
@@ -18703,6 +18939,7 @@ ${linkedMemoryContext}
 ${chat.longTermMemory && chat.longTermMemory.length > 0 ? chat.longTermMemory.map(mem => `- ${mem.content}`).join('\n') : '- (暂无)'}
 # 当前音乐情景
 ${musicContext}
+${readingContext}
 ${sharedContext}
 ${shoppingContext}
 ${callTranscriptContext} 
@@ -30333,6 +30570,7 @@ async function handlePropelAction() {
 2.  **情景感知**:
     - **时间**: 你必须感知到当前是 ${currentTime} (${timeOfDayGreeting})，并在对话中自然地体现出来。
     - **音乐**: ${musicContext ? '你们正在一起听歌，' + musicContext : '你们没有在听歌。'}
+
 3.  **主动性**:
     - 你可以根据对话发展，使用指令来更新自己的状态、更换头像、记录回忆、发起约定或执行其他社交行为。
     - 【关系破裂时】才可使用 \`block_user\` 指令。
@@ -36285,7 +36523,10 @@ const DEFAULT_BUTTON_ORDER = [
     'video-call-btn', 'group-video-call-btn', 'send-poll-btn', 
     'share-link-btn', 'share-location-btn', 'gomoku-btn', 
     'open-shopping-btn', 'pat-btn', 'edit-last-response-btn', 
-    'regenerate-btn', 'propel-btn', 'show-announcement-board-btn'
+    'regenerate-btn', 'propel-btn', 'show-announcement-board-btn',
+'werewolf-game-btn',
+    // ▼▼▼ 在这里添加新按钮ID ▼▼▼
+    'read-together-btn'
 ];
 // ▲▲▲ 新增代码结束 ▲▲▲
 // ▼▼▼ 【全新】重置按钮顺序的核心功能函数 ▼▼▼
@@ -38733,6 +38974,689 @@ async function handleConfirmWorldBookDeletion() {
     }
 }
 // ▲▲▲ 新增JS代码结束 ▲▲▲
+// ▼▼▼ 【V2.1 | 状态与交互修复版】一起读书功能核心函数 ▼▼▼
+
+/**
+ * 【总入口】打开读书窗口（由工具栏按钮调用）
+ */
+function openReadingRoom() {
+    if (!state.activeChatId) return;
+    const chatId = state.activeChatId;
+    const overlay = document.getElementById('reading-overlay');
+    const windowEl = document.getElementById('reading-window');
+    const restoreBtn = document.getElementById('reading-restore-btn');
+
+    let session = readingState[chatId];
+
+    // 如果会话已激活（无论是打开还是最小化），只需确保它可见即可
+    if (session && session.isActive) {
+        if (session.isMinimized) {
+            restoreReadingRoom(); // 如果是最小化状态，就恢复它
+        }
+        // 如果已经是打开状态，确保它在最前
+        overlay.style.display = 'flex';
+        return;
+    }
+
+    // 如果会话未激活，则创建并显示
+    initReadingSession(chatId);
+    renderReadingRoom(chatId);
+
+    // 重置所有状态，确保窗口从中间出现
+    overlay.style.display = 'flex';
+    windowEl.classList.remove('minimized');
+    restoreBtn.style.display = 'none';
+    
+    // 使用transform居中，避免拖动冲突
+// ▼▼▼ 【核心修复：使用JS计算初始居中位置，消除弹跳】 ▼▼▼
+// 1. 获取父容器（手机屏幕）和窗口本身的尺寸
+const phoneScreen = document.getElementById('phone-screen');
+const windowRect = windowEl.getBoundingClientRect(); // 获取窗口尺寸
+
+// 2. 计算居中的 top 和 left 像素值
+const top = (phoneScreen.clientHeight - windowRect.height) / 2;
+const left = (phoneScreen.clientWidth - windowRect.width) / 2;
+
+// 3. 直接应用计算好的像素值，并确保 transform 属性为空
+windowEl.style.top = `${top}px`;
+windowEl.style.left = `${left}px`;
+windowEl.style.transform = ''; // 确保没有 transform 属性
+// ▲▲▲ 修复结束 ▲▲▲
+}
+
+/**
+ * 【已升级】初始化一个新的读书会话状态
+ */
+function initReadingSession(chatId) {
+    readingState[chatId] = {
+        isActive: true,
+        isMinimized: false,
+        title: '未选择书籍',
+        contentLines: [],
+        currentPage: 0,
+        totalPages: 0,
+        linesPerPage: 15,
+        currentSnippet: '' // <-- 核心新增：用于存储当前视野中的文字片段
+    };
+}
+
+/**
+ * 【已修复】关闭读书悬浮窗 (由 'X' 按钮调用)
+ */
+function closeReadingRoom() {
+    const chatId = state.activeChatId;
+    if (!chatId || !readingState[chatId] || !readingState[chatId].isActive) return;
+
+    // 隐藏所有相关UI
+    document.getElementById('reading-overlay').style.display = 'none';
+    document.getElementById('reading-restore-btn').style.display = 'none';
+    document.getElementById('reading-window').classList.remove('minimized');
+
+    // 核心修复：将 isActive 设为 false，这样下次才能重新打开
+    readingState[chatId].isActive = false;
+    console.log("读书会话已关闭。");
+}
+
+/**
+ * 【已修复】最小化读书窗口
+ */
+function minimizeReadingRoom() {
+    const session = readingState[state.activeChatId];
+    if (!session || !session.isActive || session.isMinimized) return;
+
+    session.isMinimized = true; // 更新状态
+    document.getElementById('reading-window').classList.add('minimized');
+    document.getElementById('reading-restore-btn').style.display = 'flex';
+}
+
+/**
+ * 【已修复】恢复读书窗口
+ */
+function restoreReadingRoom() {
+    const session = readingState[state.activeChatId];
+    if (!session || !session.isActive || !session.isMinimized) return;
+
+    session.isMinimized = false; // 更新状态
+    document.getElementById('reading-restore-btn').style.display = 'none';
+    document.getElementById('reading-window').classList.remove('minimized');
+}
+
+/**
+ * 【已修复】让一个元素变得可拖动
+ * @param {HTMLElement} windowEl - 要拖动的窗口元素
+ * @param {HTMLElement} headerEl - 拖动的手柄元素
+ */
+function makeDraggable(windowEl, headerEl) {
+    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+    const phoneScreen = document.getElementById('phone-screen');
+
+    const startDrag = (e) => {
+        // ▼▼▼ 【【【核心修复就在这里！】】】 ▼▼▼
+        // 在开始拖动前，检查点击的是否是按钮。如果是，则立即退出，不执行任何拖动逻辑。
+        if (e.target.closest('button')) {
+            return;
+        }
+        // ▲▲▲ 【【【修复结束】】】 ▲▲▲
+
+        // （后续的拖动逻辑保持不变）
+        if (windowEl.style.transform) {
+            const rect = windowEl.getBoundingClientRect();
+            const parentRect = windowEl.offsetParent.getBoundingClientRect();
+            windowEl.style.top = `${rect.top - parentRect.top}px`;
+            windowEl.style.left = `${rect.left - parentRect.left}px`;
+            windowEl.style.transform = '';
+        }
+
+        e.preventDefault();
+        const event = e.type === 'touchstart' ? e.touches[0] : e;
+        pos3 = event.clientX;
+        pos4 = event.clientY;
+        
+        document.addEventListener('mouseup', endDrag);
+        document.addEventListener('mousemove', elementDrag);
+        document.addEventListener('touchend', endDrag);
+        document.addEventListener('touchmove', elementDrag);
+    };
+
+    const elementDrag = (e) => {
+        const event = e.type === 'touchmove' ? e.touches[0] : e;
+        pos1 = pos3 - event.clientX;
+        pos2 = pos4 - event.clientY;
+        pos3 = event.clientX;
+        pos4 = event.clientY;
+        
+        let newTop = windowEl.offsetTop - pos2;
+        let newLeft = windowEl.offsetLeft - pos1;
+
+        const maxTop = phoneScreen.clientHeight - windowEl.offsetHeight - 10;
+        const maxLeft = phoneScreen.clientWidth - windowEl.offsetWidth - 10;
+        newTop = Math.max(10, Math.min(newTop, maxTop));
+        newLeft = Math.max(10, Math.min(newLeft, maxLeft));
+
+        windowEl.style.top = newTop + "px";
+        windowEl.style.left = newLeft + "px";
+    };
+
+    const endDrag = () => {
+        document.removeEventListener('mouseup', endDrag);
+        document.removeEventListener('mousemove', elementDrag);
+        document.removeEventListener('touchend', endDrag);
+        document.removeEventListener('touchmove', elementDrag);
+    };
+
+    headerEl.addEventListener('mousedown', startDrag);
+    headerEl.addEventListener('touchstart', startDrag);
+}
+
+// --- 其他辅助函数 (保持不变) ---
+function renderReadingRoom(chatId) {
+    const session = readingState[chatId]; if (!session) return;
+    const titleEl = document.getElementById('reading-title');
+    const contentEl = document.getElementById('reading-content');
+    const pageIndicator = document.getElementById('page-indicator');
+    const prevBtn = document.getElementById('prev-page-btn');
+    const nextBtn = document.getElementById('next-page-btn');
+    titleEl.textContent = session.title;
+    if (session.contentLines.length === 0) {
+        contentEl.innerHTML = '<p>点击“导入”按钮，<br>从本地.txt文件或网络URL加载书籍内容。</p>';
+        session.totalPages = 0; session.currentPage = 0;
+    } else {
+        const startLine = session.currentPage * session.linesPerPage;
+        const endLine = startLine + session.linesPerPage;
+        contentEl.textContent = session.contentLines.slice(startLine, endLine).join('\n');
+    }
+    pageIndicator.textContent = `${session.currentPage + 1} / ${session.totalPages}`;
+    prevBtn.disabled = session.currentPage === 0;
+    nextBtn.disabled = session.currentPage >= session.totalPages - 1;
+}
+function showNextPage() {
+    const session = readingState[state.activeChatId];
+    if (session && session.currentPage < session.totalPages - 1) {
+        session.currentPage++; 
+        renderReadingRoom(state.activeChatId);
+        document.getElementById('reading-content').scrollTop = 0;
+        // 【核心新增】保存进度
+        saveReadingProgress(session.activeBookId, session.currentPage);
+    }
+}
+
+// ▼▼▼ 【请用这个已升级的版本】替换旧的 showPrevPage 函数 ▼▼▼
+async function showPrevPage() {
+    const session = readingState[state.activeChatId];
+    if (session && session.currentPage > 0) {
+        session.currentPage--; 
+        renderReadingRoom(state.activeChatId);
+        document.getElementById('reading-content').scrollTop = 0;
+        await saveReadingProgress(session.activeBookId, session.currentPage);
+
+        // 【核心新增】在翻页后，也立刻通知AI
+        await notifyAiOfPageTurn(state.activeChatId, session);
+    }
+}
+// ▲▲▲ 替换结束 ▲▲▲
+/**
+ * 【已修改】仅用于触发本地文件选择
+ */
+function importBook() {
+    // 直接触发隐藏的文件输入框，不再弹出选择菜单
+    document.getElementById('book-upload-input').click();
+}
+/**
+ * 【全新 | 编码兼容】智能解码文本文件
+ * @param {ArrayBuffer} arrayBuffer - 文件的二进制数据
+ * @returns {string} - 解码后的文本内容
+ */
+async function decodeTextFile(arrayBuffer) {
+    const uint8array = new Uint8Array(arrayBuffer);
+
+    // 1. 检查BOM (Byte Order Mark) 来精确判断编码
+    if (uint8array.length >= 3 && uint8array[0] === 0xEF && uint8array[1] === 0xBB && uint8array[2] === 0xBF) {
+        console.log("检测到 UTF-8 BOM，使用 UTF-8 解码。");
+        return new TextDecoder('utf-8').decode(uint8array);
+    }
+    if (uint8array.length >= 2 && uint8array[0] === 0xFF && uint8array[1] === 0xFE) {
+        console.log("检测到 UTF-16 LE BOM，使用 UTF-16 LE 解码。");
+        return new TextDecoder('utf-16le').decode(uint8array);
+    }
+    if (uint8array.length >= 2 && uint8array[0] === 0xFE && uint8array[1] === 0xFF) {
+        console.log("检测到 UTF-16 BE BOM，使用 UTF-16 BE 解码。");
+        return new TextDecoder('utf-16be').decode(uint8array);
+    }
+
+    // 2. 如果没有BOM，尝试作为UTF-8解码
+    try {
+        console.log("未检测到BOM，尝试使用 UTF-8 解码...");
+        // 使用 fatal: true 会在遇到无效字节序列时抛出错误
+        const decoded = new TextDecoder('utf-8', { fatal: true }).decode(uint8array);
+        console.log("UTF-8 解码成功。");
+        return decoded;
+    } catch (e) {
+        console.log("UTF-8 解码失败，将尝试 GBK (ANSI) 解码...");
+        // 3. 如果UTF-8失败，则回退到GBK解码 (覆盖常见的中文ANSI)
+        try {
+            const decoded = new TextDecoder('gbk').decode(uint8array);
+            console.log("GBK 解码成功。");
+            return decoded;
+        } catch (err) {
+             console.error("所有解码尝试均失败:", err);
+             // 4. 如果所有尝试都失败了，抛出一个用户友好的错误
+             throw new Error("无法识别的文件编码。请尝试将文件转换为 UTF-8 格式后重新导入。");
+        }
+    }
+}
+/**
+ * 【已修改 | 编码兼容】处理用户上传的书籍文件，现在会将其保存到数据库
+ */
+async function handleBookFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    try {
+        // 核心修改1：将文件读取为 ArrayBuffer
+        const arrayBuffer = await file.arrayBuffer();
+        // 核心修改2：调用我们新的智能解码函数
+        const textContent = await decodeTextFile(arrayBuffer);
+
+        const title = file.name.replace(/\.txt$/i, '');
+
+        const newBookId = await db.readingLibrary.add({
+            title: title,
+            content: textContent,
+            lastOpened: Date.now()
+        });
+
+        await loadBookFromLibrary(newBookId);
+        if (document.getElementById('reading-library-modal').classList.contains('visible')) {
+            renderBookLibrary();
+        }
+    } catch (error) {
+        // 如果解码或处理过程中出错，给用户一个明确的提示
+        console.error("导入书籍失败:", error);
+        await showCustomAlert("导入失败", error.message);
+    } finally {
+        event.target.value = null;
+    }
+}
+async function handlePageJump() {
+    const chatId = state.activeChatId;
+    if (!chatId) return;
+    const session = readingState[chatId];
+    if (!session || session.totalPages <= 1) return;
+
+    const targetPageStr = await showCustomPrompt(
+        '页面跳转', 
+        `请输入想跳转的页码 (1 - ${session.totalPages})`,
+        session.currentPage + 1
+    );
+
+    if (targetPageStr === null) return;
+
+    const targetPage = parseInt(targetPageStr);
+
+    if (isNaN(targetPage) || targetPage < 1 || targetPage > session.totalPages) {
+        alert("请输入一个有效的页码！");
+        return;
+    }
+
+    session.currentPage = targetPage - 1;
+    renderReadingRoom(chatId);
+    // 【核心新增】保存进度
+    saveReadingProgress(session.activeBookId, session.currentPage);
+}
+
+/**
+ * 【全新】保存指定书籍的阅读进度到数据库
+ * @param {number} bookId - 要保存进度的书籍ID
+ * @param {number} pageNumber - 当前的页码
+ */
+async function saveReadingProgress(bookId, pageNumber) {
+    if (!bookId) return;
+    try {
+        // 使用 update 方法，只更新 currentPage 字段，不影响其他数据
+        await db.readingLibrary.update(bookId, { currentPage: pageNumber });
+    } catch (error) {
+        console.error(`保存书籍(ID: ${bookId})的阅读进度失败:`, error);
+    }
+}
+// ▼▼▼ 【请用这个已升级的版本】替换旧的 showNextPage 函数 ▼▼▼
+async function showNextPage() {
+    const session = readingState[state.activeChatId];
+    if (session && session.currentPage < session.totalPages - 1) {
+        session.currentPage++; 
+        renderReadingRoom(state.activeChatId);
+        document.getElementById('reading-content').scrollTop = 0;
+        await saveReadingProgress(session.activeBookId, session.currentPage);
+        
+        // 【核心新增】在翻页后，立刻通知AI
+        await notifyAiOfPageTurn(state.activeChatId, session);
+    }
+}
+// ▲▲▲ 替换结束 ▲▲▲
+function processImportedText(title, textContent) {
+    const chatId = state.activeChatId; if (!chatId) return;
+    const session = readingState[chatId];
+    session.title = title.replace(/\.txt$/i, '');
+    session.contentLines = textContent.split(/\r\n?|\n/).map(line => line.replace(/ +/g, ' '));
+    session.totalPages = Math.ceil(session.contentLines.length / session.linesPerPage);
+    session.currentPage = 0;
+    renderReadingRoom(chatId);
+}
+
+// ▲▲▲ JS代码替换结束 ▲▲▲
+/**
+ * 【全新】打开书库弹窗并渲染列表
+ */
+async function openBookLibrary() {
+    // 【核心新增】在渲染前，先清空搜索框
+    document.getElementById('reading-library-search-input').value = '';
+
+    await renderBookLibrary(); // 调用不带参数的渲染，显示全部书籍
+    document.getElementById('reading-library-modal').classList.add('visible');
+}
+
+/**
+ * 【全新 | 支持搜索】从数据库读取书籍并渲染到书库列表中
+ * @param {string} searchTerm - 用户输入的搜索关键词
+ */
+async function renderBookLibrary(searchTerm = '') {
+    const listEl = document.getElementById('reading-library-list');
+    let books = await db.readingLibrary.orderBy('lastOpened').reverse().toArray();
+    listEl.innerHTML = '';
+
+    // 【核心修改1】根据搜索词过滤书籍
+    if (searchTerm) {
+        books = books.filter(book => 
+            book.title.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }
+
+    // 【核心修改2】根据是否有结果，显示不同的提示信息
+    if (books.length === 0) {
+        const message = searchTerm 
+            ? '找不到匹配的书籍' 
+            : '书库是空的，点击“导入新书”添加第一本吧！';
+        listEl.innerHTML = `<p style="text-align:center; color: var(--text-secondary); padding: 50px 0;">${message}</p>`;
+        return;
+    }
+
+    books.forEach(book => {
+        const item = document.createElement('div');
+        item.className = 'existing-group-item'; 
+        item.innerHTML = `
+            <span class="group-name" style="cursor:pointer;" data-book-id="${book.id}">${book.title}</span>
+            <button class="delete-group-btn" data-book-id="${book.id}" title="删除书籍">×</button>
+        `;
+        listEl.appendChild(item);
+    });
+}
+
+/**
+ * 【全新 | 支持断点续读】从书库中加载一本书到阅读器
+ * @param {number} bookId - 要加载的书籍的ID
+ */
+async function loadBookFromLibrary(bookId) {
+    const chatId = state.activeChatId;
+    if (!chatId) return;
+
+    const book = await db.readingLibrary.get(bookId);
+    if (!book) {
+        alert('找不到这本书！');
+        return;
+    }
+
+    await db.readingLibrary.update(bookId, { lastOpened: Date.now() });
+
+    const session = readingState[chatId];
+    session.activeBookId = bookId; // 【核心新增】记录当前正在阅读的书籍ID
+    session.title = book.title;
+    session.contentLines = book.content.split(/\r\n?|\n/).map(line => line.replace(/ +/g, ' '));
+    session.totalPages = Math.ceil(session.contentLines.length / session.linesPerPage);
+    
+    // ▼▼▼ 【【【这就是实现断点续读的关键！】】】 ▼▼▼
+    // 读取数据库中保存的页码，如果没有，则默认为第0页
+    session.currentPage = book.currentPage || 0;
+    // ▲▲▲ 关键代码结束 ▲▲▲
+
+    renderReadingRoom(chatId);
+    // 渲染后，确保滚动条在顶部
+    document.getElementById('reading-content').scrollTop = 0; 
+    document.getElementById('reading-library-modal').classList.remove('visible');
+}
+
+/**
+ * 【全新】从书库中删除一本书
+ * @param {number} bookId - 要删除的书籍的ID
+ */
+async function deleteBookFromLibrary(bookId) {
+    const book = await db.readingLibrary.get(bookId);
+    if (!book) return;
+
+    const confirmed = await showCustomConfirm('删除书籍', `确定要删除《${book.title}》吗？`, { confirmButtonClass: 'btn-danger' });
+    if (confirmed) {
+        await db.readingLibrary.delete(bookId);
+        await renderBookLibrary(); // 刷新书库列表
+    }
+}
+/**
+ * 【核心】处理导入的文本内容，更新状态并刷新UI
+ * @param {string} title - 书籍/文件名
+ * @param {string} textContent - 完整的文本内容
+ */
+function processImportedText(title, textContent) {
+    const chatId = state.activeChatId;
+    if (!chatId) return;
+
+    const session = readingState[chatId];
+    session.title = title.replace(/\.txt$/i, '');
+    session.contentLines = textContent.split(/\r\n?|\n/);
+    session.totalPages = Math.ceil(session.contentLines.length / session.linesPerPage);
+    session.currentPage = 0;
+
+    renderReadingRoom(chatId);
+}
+
+// ▲▲▲ 新增JS代码结束 ▲▲▲
+// ▼▼▼ 【V2.1 | 拖动修复版】请用这个新版本替换旧的 makeDraggable 函数 ▼▼▼
+/**
+ * 【已修复】让一个元素变得可拖动
+ * @param {HTMLElement} windowEl - 要拖动的窗口元素
+ * @param {HTMLElement} headerEl - 拖动的手柄元素
+ */
+function makeDraggable(windowEl, headerEl) {
+    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+    const phoneScreen = document.getElementById('phone-screen');
+
+const startDrag = (e) => {
+    // 在开始拖动前，检查点击的是否是按钮。如果是，则立即退出。
+    if (e.target.closest('button')) {
+        return;
+    }
+
+    // 核心修改：我们已经不再需要处理 transform 的逻辑，可以安全地删除了。
+
+    e.preventDefault();
+    const event = e.type === 'touchstart' ? e.touches[0] : e;
+    pos3 = event.clientX;
+    pos4 = event.clientY;
+
+    document.addEventListener('mouseup', endDrag);
+    document.addEventListener('mousemove', elementDrag);
+    document.addEventListener('touchend', endDrag);
+    document.addEventListener('touchmove', elementDrag);
+};
+
+    const elementDrag = (e) => {
+        const event = e.type === 'touchmove' ? e.touches[0] : e;
+        pos1 = pos3 - event.clientX;
+        pos2 = pos4 - event.clientY;
+        pos3 = event.clientX;
+        pos4 = event.clientY;
+        
+        let newTop = windowEl.offsetTop - pos2;
+        let newLeft = windowEl.offsetLeft - pos1;
+
+        // 边界检测 (这部分逻辑是正确的)
+        const maxTop = phoneScreen.clientHeight - windowEl.offsetHeight - 10;
+        const maxLeft = phoneScreen.clientWidth - windowEl.offsetWidth - 10;
+        newTop = Math.max(10, Math.min(newTop, maxTop));
+        newLeft = Math.max(10, Math.min(newLeft, maxLeft));
+
+        windowEl.style.top = newTop + "px";
+        windowEl.style.left = newLeft + "px";
+    };
+
+    const endDrag = () => {
+        document.removeEventListener('mouseup', endDrag);
+        document.removeEventListener('mousemove', elementDrag);
+        document.removeEventListener('touchend', endDrag);
+        document.removeEventListener('touchmove', elementDrag);
+    };
+
+    headerEl.addEventListener('mousedown', startDrag);
+    headerEl.addEventListener('touchstart', startDrag);
+}
+// ▲▲▲ 替换结束 ▲▲▲
+
+
+/**
+ * 最小化读书窗口
+ */
+function minimizeReadingRoom() {
+    const session = readingState[state.activeChatId];
+    if (!session || !session.isActive) return;
+
+    document.getElementById('reading-window').classList.add('minimized');
+    document.getElementById('reading-restore-btn').style.display = 'flex';
+    session.isMinimized = true;
+}
+
+/**
+ * 恢复读书窗口
+ */
+function restoreReadingRoom() {
+    const session = readingState[state.activeChatId];
+    if (!session || !session.isActive) return;
+
+    document.getElementById('reading-restore-btn').style.display = 'none';
+    document.getElementById('reading-window').classList.remove('minimized');
+    session.isMinimized = false;
+}
+
+// ▲▲▲ 新增JS代码结束 ▲▲▲
+// ▼▼▼ 【全新】这是实现“滚动感知”功能的核心代码，请完整粘贴 ▼▼▼
+
+/**
+ * 【辅助函数】创建一个防抖函数
+ * @param {Function} func - 需要防抖的函数
+ * @param {number} delay - 延迟时间 (毫秒)
+ * @returns {Function} - 经过防抖处理的新函数
+ */
+function debounce(func, delay) {
+    let timeout;
+    return function(...args) {
+        const context = this;
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(context, args), delay);
+    };
+}
+/**
+ * 【全新 | V3.0 滚动感知版】将指定聊天的“一起读书”状态格式化为AI可读的文本
+ * @param {string} chatId - 目标聊天的ID
+ * @returns {string} - 格式化后的上下文字符串，如果没有激活的读书会话则为空字符串
+ */
+function formatReadingStateForAI(chatId) {
+    const session = readingState[chatId];
+    
+    if (!session || !session.isActive) {
+        return "";
+    }
+
+    const title = session.title || '未知书籍';
+    let contentForAI = '';
+    let contextLabel = '';
+
+    // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+    //            这就是本次升级的核心所在！
+    // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+    
+    // 1. 优先使用通过滚动获取的、最精确的文字片段
+    if (session.currentSnippet && session.currentSnippet.trim()) {
+        contentForAI = session.currentSnippet;
+        contextLabel = '你正在阅读的段落'; // 提示语也变得更精确
+    } 
+    // 2. 如果还没有滚动过，则回退到使用页面开头的摘要
+    else if (session.contentLines.length > 0) {
+        const startLine = session.currentPage * session.linesPerPage;
+        const endLine = startLine + session.linesPerPage;
+        contentForAI = session.contentLines.slice(startLine, endLine).join('\n').substring(0, 200);
+        contextLabel = '当前页内容摘要';
+    } 
+    // 3. 如果连内容都没有，则显示提示
+    else {
+        contentForAI = '(无内容)';
+        contextLabel = '内容';
+    }
+
+    // 构建供AI阅读的上下文提示
+    return `
+# 当前读书情景 (最高优先级)
+- **状态**: 你正在和用户一起阅读。
+- **书名**: 《${title}》
+- **${contextLabel}**: "${contentForAI}..."
+- **你的任务**: 你的回复【必须】与当前正在阅读的书籍内容或读书这件事本身相关。你可以发表感想、提出问题、或者讨论相关情节。
+`;
+}
+// ▼▼▼ 【这是最终修复版】请用这个全新的函数，完整替换旧的 updateReadingContextOnScroll ▼▼▼
+
+/**
+ * 【全新 | V2.0 全视野版】当读书窗口滚动时，更新当前视野中的【所有可见】文字片段
+ */
+function updateReadingContextOnScroll() {
+    const chatId = state.activeChatId;
+    if (!chatId || !readingState[chatId]) return;
+
+    const session = readingState[chatId];
+    const container = document.getElementById('reading-content');
+    
+    // --- ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+    //            这就是本次升级的核心所在！
+    // --- ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+
+    // 1. 获取滚动容器的尺寸和位置信息
+    const scrollTop = container.scrollTop; // 滚动条距离顶部的距离
+    const clientHeight = container.clientHeight; // 容器本身可见的高度
+    const scrollBottom = scrollTop + clientHeight; // 可见区域的底部位置
+
+    // 2. 估算每一行的大致高度 (这部分保持不变)
+    const approximateLineHeight = 15 * 1.8; 
+
+    // 3. 计算出视野范围内的第一行和最后一行的行号
+    const firstVisibleLine = Math.floor(scrollTop / approximateLineHeight);
+    const lastVisibleLine = Math.ceil(scrollBottom / approximateLineHeight);
+
+    // 4. 计算这些行在整本书中的绝对行号
+    const absoluteStartIndex = (session.currentPage * session.linesPerPage) + firstVisibleLine;
+    const absoluteEndIndex = (session.currentPage * session.linesPerPage) + lastVisibleLine;
+
+    // 5. 安全检查，确保索引在有效范围内
+    if (absoluteStartIndex < 0 || absoluteStartIndex >= session.contentLines.length) {
+        return;
+    }
+
+    // 6. 截取从第一行到最后一行的所有内容，形成一个完整的“视野”
+    const newSnippet = session.contentLines.slice(
+        Math.max(0, absoluteStartIndex), 
+        Math.min(session.contentLines.length, absoluteEndIndex)
+    ).join('\n');
+    
+    // 7. 更新状态，将这个完整的“视野”存起来
+    session.currentSnippet = newSnippet;
+}
+
+// ▲▲▲ 替换结束 ▲▲▲
+
+
+
 
 
 
@@ -43477,10 +44401,54 @@ qzoneContent.addEventListener('scroll', () => {
 });
 
 // ▲▲▲ 新增事件监听器结束 ▲▲▲
+// ▼▼▼ 【V2.0 | 全新】一起读书功能事件绑定 ▼▼▼
+document.getElementById('read-together-btn').addEventListener('click', openReadingRoom);
+const restoreBtn = document.getElementById('reading-restore-btn');
+// 调用我们现有的拖动函数，将小球本身作为拖动目标和拖动把手
+makeDraggable(restoreBtn, restoreBtn);
+document.getElementById('close-reading-btn').addEventListener('click', closeReadingRoom);
+document.getElementById('open-reading-library-btn').addEventListener('click', openBookLibrary);
+document.getElementById('next-page-btn').addEventListener('click', showNextPage);
+document.getElementById('prev-page-btn').addEventListener('click', showPrevPage);
+document.getElementById('book-upload-input').addEventListener('change', handleBookFileUpload);
 
+// 新增：为最小化和恢复按钮绑定事件
+document.getElementById('minimize-reading-btn').addEventListener('click', minimizeReadingRoom);
+document.getElementById('reading-restore-btn').addEventListener('click', restoreReadingRoom);
 
+// 新增：初始化窗口的拖动功能
+makeDraggable(document.getElementById('reading-window'), document.querySelector('#reading-window .reading-header'));
+// ▲▲▲ 新增事件绑定结束 ▲▲▲
+// ▼▼▼ 【全新】为读书功能的新按钮绑定事件 ▼▼▼
+document.getElementById('open-reading-library-btn').addEventListener('click', openBookLibrary);
+// ▼▼▼ 【全新】为书库弹窗的头部SVG按钮绑定事件 ▼▼▼
+document.getElementById('close-reading-library-btn-header').addEventListener('click', () => {
+    document.getElementById('reading-library-modal').classList.remove('visible');
+});
+document.getElementById('import-new-book-btn-header').addEventListener('click', importBook);
+// ▲▲▲ 替换结束 ▲▲▲
 
+// 使用事件委托处理书库列表中的点击事件
+document.getElementById('reading-library-list').addEventListener('click', (e) => {
+    const target = e.target;
+    if (target.classList.contains('group-name')) { // 点击书名 -> 阅读
+        const bookId = parseInt(target.dataset.bookId);
+        loadBookFromLibrary(bookId);
+    } else if (target.classList.contains('delete-group-btn')) { // 点击删除按钮
+        const bookId = parseInt(target.dataset.bookId);
+        deleteBookFromLibrary(bookId);
+    }
+});
+// ▲▲▲ 新增事件绑定结束 ▲▲▲
+document.getElementById('page-indicator').addEventListener('click', handlePageJump);
+document.getElementById('reading-library-search-input').addEventListener('input', (e) => {
+    // 当用户输入时，调用渲染函数并传入搜索词
+    renderBookLibrary(e.target.value);
+});
+const debouncedUpdateReadingContext = debounce(updateReadingContextOnScroll, 300); // 停止滚动300毫秒后触发
 
+// 2. 将这个新函数绑定到读书窗口内容区的滚动事件上
+document.getElementById('reading-content').addEventListener('scroll', debouncedUpdateReadingContext);
 
 
     checkForUpdates();
@@ -43836,6 +44804,30 @@ qzoneContent.addEventListener('scroll', () => {
     </div>
 </div>
 <!-- ▲▲▲ 替换结束 ▲▲▲ -->
+<div id="reading-library-modal" class="modal">
+    <div class="modal-content" style="height: 70%;">
+        <div class="modal-header">
+            <span>我的书库</span>
+            <div class="header-actions">
+                <span class="action-btn" id="import-new-book-btn-header" title="导入新书">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                </span>
+                <span class="action-btn" id="close-reading-library-btn-header" title="关闭">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </span>
+            </div>
+        </div>
 
+        <div id="reading-library-search-container">
+            <input type="search" id="reading-library-search-input" placeholder="搜索书名...">
+        </div>
+
+        <div class="modal-body" style="padding: 0; flex-grow: 1; overflow-y: auto;">
+            <div id="reading-library-list">
+                </div>
+        </div>
+
+        </div>
+</div>
 </body>
 </html>
