@@ -18352,6 +18352,7 @@ systemPrompt = `
     -   严禁生成 'name' 字段为 "${myNickname}" (用户) 或 "${chat.name}" (群名) 的消息。
 3.  **禁止出戏**: 绝不能透露你是AI或模型。严禁发展线下剧情。
 ${chat.settings.enableTimePerception ? `4.  **情景感知**: 你的对话【必须】自然地体现出对当前时间 (${currentTime}) 和情景的感知。${longTimeNoSee ? `【重要提示】${timeContextText} 你应该让角色们主动开启新话题来打破沉默。` : ''}` : ''}
+    - **读书**: ${readingContext ? '你们正在一起读书。' + readingContext : '你们没有在读书。'}
 # 导演策略与节奏控制
 1.  **并非人人发言**: 不是每个角色都必须在每一轮都说话。你可以根据当前话题，让1-2个最相关的角色进行深度对话，其他角色可以暂时“潜水”，等待合适的时机再切入。
 2.  **创造“小团体”**: 允许角色之间形成短暂的“两人对话”或“三人讨论”，让群聊更有层次感。
@@ -18383,7 +18384,6 @@ ${longTermMemoryContext}
 ${chat.longTermMemory && chat.longTermMemory.length > 0 ? chat.longTermMemory.map(mem => `- ${mem.content}`).join('\n') : '- (暂无)'}
 ${linkedMemoryContext}
 ${musicContext}
-${readingContext}
 ${sharedContext}
 ${groupAvatarLibraryContext}
 ${shoppingContext}
@@ -18875,6 +18875,7 @@ systemPrompt = `
 2.  **情景感知**:
     ${chat.settings.enableTimePerception ? `- **时间**: 你必须感知到当前是 ${currentTime} (${timeOfDayGreeting})，并在对话中自然地体现出来。` : ''}
     - **音乐**: ${musicContext ? '你们正在一起听歌，' + musicContext : '你们没有在听歌。'}
+    - **读书**: ${readingContext ? '你们正在一起读书。' + readingContext : '你们没有在读书。'}
 3.  **主动性**:
     - 你可以根据对话发展，使用指令来更新自己的状态、更换头像、记录回忆、发起约定或执行其他社交行为。
     - 【关系破裂时】才可使用 \`block_user\` 指令。
@@ -18937,9 +18938,6 @@ ${timeContext}
 ${linkedMemoryContext}
 # 长期记忆 (必须严格遵守)
 ${chat.longTermMemory && chat.longTermMemory.length > 0 ? chat.longTermMemory.map(mem => `- ${mem.content}`).join('\n') : '- (暂无)'}
-# 当前音乐情景
-${musicContext}
-${readingContext}
 ${sharedContext}
 ${shoppingContext}
 ${callTranscriptContext} 
@@ -39581,14 +39579,17 @@ function debounce(func, delay) {
         timeout = setTimeout(() => func.apply(context, args), delay);
     };
 }
+// ▼▼▼ 【V3.1 | 逻辑优化版】请用这个全新的函数，完整替换旧的 formatReadingStateForAI ▼▼▼
+
 /**
- * 【全新 | V3.0 滚动感知版】将指定聊天的“一起读书”状态格式化为AI可读的文本
+ * 【全新 V3.1 | 逻辑优化版】将指定聊天的“一起读书”状态格式化为AI可读的文本
  * @param {string} chatId - 目标聊天的ID
- * @returns {string} - 格式化后的上下文字符串，如果没有激活的读书会话则为空字符串
+ * @returns {string} - 格式化后的上下文细节字符串，如果没有激活的读书会话则为空字符串
  */
 function formatReadingStateForAI(chatId) {
     const session = readingState[chatId];
     
+    // 如果会话未激活，或没有内容，直接返回空字符串
     if (!session || !session.isActive) {
         return "";
     }
@@ -39597,37 +39598,30 @@ function formatReadingStateForAI(chatId) {
     let contentForAI = '';
     let contextLabel = '';
 
-    // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
-    //            这就是本次升级的核心所在！
-    // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
-    
-    // 1. 优先使用通过滚动获取的、最精确的文字片段
+    // (这部分获取视野内容的逻辑保持不变)
     if (session.currentSnippet && session.currentSnippet.trim()) {
         contentForAI = session.currentSnippet;
-        contextLabel = '你正在阅读的段落'; // 提示语也变得更精确
-    } 
-    // 2. 如果还没有滚动过，则回退到使用页面开头的摘要
-    else if (session.contentLines.length > 0) {
+        contextLabel = '你正在阅读的段落';
+    } else if (session.contentLines.length > 0) {
         const startLine = session.currentPage * session.linesPerPage;
         const endLine = startLine + session.linesPerPage;
         contentForAI = session.contentLines.slice(startLine, endLine).join('\n').substring(0, 200);
         contextLabel = '当前页内容摘要';
-    } 
-    // 3. 如果连内容都没有，则显示提示
-    else {
+    } else {
         contentForAI = '(无内容)';
         contextLabel = '内容';
     }
 
-    // 构建供AI阅读的上下文提示
+    // 【【【核心修改】】】
+    // 不再返回完整的指令块，而是只返回包含细节的、用于拼接的字符串。
+    // 注意前面的换行和缩进，以保持最终Prompt的美观。
     return `
-# 当前读书情景 (最高优先级)
-- **状态**: 你正在和用户一起阅读。
-- **书名**: 《${title}》
-- **${contextLabel}**: "${contentForAI}..."
-- **你的任务**: 你的回复【必须】与当前正在阅读的书籍内容或读书这件事本身相关。你可以发表感想、提出问题、或者讨论相关情节。
-`;
+    - **书名**: 《${title}》
+    - **${contextLabel}**: "${contentForAI}..."
+    - **你的任务**: 你的回复【必须】与当前正在阅读的书籍内容或读书这件事本身相关。你可以发表感想、提出问题、或者讨论相关情节。`;
 }
+
+// ▲▲▲ 替换结束 ▲▲▲
 // ▼▼▼ 【这是最终修复版】请用这个全新的函数，完整替换旧的 updateReadingContextOnScroll ▼▼▼
 
 /**
