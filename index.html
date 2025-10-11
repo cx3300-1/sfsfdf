@@ -5323,24 +5323,30 @@
             border-color: #4a4a4e;
         }
         /* ▲▲▲ 新CSS粘贴结束 ▲▲▲ */
-/* ▼▼▼ 【全新】线下模式消息样式 ▼▼▼ */
+/* ▼▼▼ 【全新 | 线下模式内心独白样式 (已修复斜体)】 ▼▼▼ */
 .offline-dialogue {
     /* 对话部分可以保持默认样式，或者稍作强调 */
     font-weight: 500;
 }
 .offline-description {
-    display: block; /* 确保描写另起一行或多行 */
-    color: var(--text-secondary);
-    font-style: italic; /* 心理活动和动作描写使用斜体，以作区分 */
-    margin-top: 4px; /* 和对话拉开一点距离 */
-    white-space: pre-wrap; /* 允许描写中的换行符生效 */
+    display: block; 
+    color: inherit; /* 保持普通描写文字颜色与对话一致 */
+    font-style: normal; 
+    margin-top: 4px; 
+    white-space: pre-wrap; 
     line-height: 1.6;
 }
 
-#phone-screen.dark-mode .offline-description {
-    color: #a0a0a0; /* 夜间模式下使用更柔和的灰色 */
+/* ✨ 核心新增：专门为内心独白（斜体）设置样式 */
+.offline-description em {
+    color: var(--text-secondary); /* 将颜色设置为次要文字的浅灰色 */
+    /* font-style: normal;  <-- 已删除此行，恢复斜体 */
 }
-/* ▲▲▲ 新增CSS结束 ▲▲▲ */
+
+#phone-screen.dark-mode .offline-description {
+    color: inherit; /* 夜间模式下也保持普通描写文字颜色一致 */
+}
+/* ▲▲▲ 修改结束 ▲▲▲ */
         /* ▼▼▼ 【全新】引用跳转高亮效果 ▼▼▼ */
         
         /* 1. 为消息气泡的内容区添加一个平滑的背景色过渡效果 */
@@ -18460,6 +18466,7 @@ ${enabledEntries}
     -   在 \`content\` 字段中，角色的对话【必须】使用中文引号「」或“ ”包裹。
     -   所有在引号之外的文字都将被视为动作/环境描写。
     -   你可以自由地将对话穿插在描写的任何位置，实现自然分段。
+    -   **内心独白语法**: 当你需要描写角色的【内心想法或心理活动】时，你【必须】使用 Markdown 的斜体语法，即用星号将那段文字包裹起来，例如：\`*这到底是怎么回事？* 我心里一惊。\`
 3.  **【禁止】**: 绝对禁止在 \`content\` 字段中出现 "dialogue" 或 "description" 这两个词。
 
 # 【其他核心规则】
@@ -18722,6 +18729,7 @@ systemPrompt = `
 4.  **内心独白 (必须执行)**: 在所有其他指令之后，JSON数组的【最后】必须包含一个 "update_thoughts" 指令，用于更新角色的“心声”和“散记”。
     - **心声 (heartfelt_voice)**: 一句话概括角色此刻最核心、最私密的想法。
     - **散记 (random_jottings)**: 一段50字以上的、符合人设的思考或心情记录，禁止OOC。
+    - **记忆发展**: 你的新“心声”和“散记”【必须】是基于最新对话内容的【全新思考】。你【绝对不能】重复或简单改写上一轮的内心独白（上下文中的[这是你上一轮的内心独白和思考]部分）。你的思绪应该像真人一样，不断演进和发展。
 
 
 # 你的角色设定
@@ -18803,7 +18811,7 @@ ${callTranscriptContext}
 -   **点赞动态**: \`{"type": "qzone_like", "postId": 456}\`
 -   **拍用户**: \`{"type": "pat_user", "suffix": "(可选)后缀"}\`
 -   **分享链接**: \`{"type": "share_link", "title": "标题", "description": "摘要", "source_name": "来源", "content": "正文"}\`
-- **【全新】共享位置**: '{"type": "location_share", "content": "你想分享的位置名"}'
+- **共享位置**: '{"type": "location_share", "content": "你想分享的位置名"}'
 
 ### 状态与关系指令
 -   **更新状态**: \`{"type": "update_status", "status_text": "我去做什么了", "is_busy": false}\`
@@ -18832,7 +18840,16 @@ ${callTranscriptContext}
             
 // ▼▼▼ 【这是最终的线下记忆修复版】请用这整块代码，完整替换旧的 messagesPayload = historySlice.map(...) 代码块 ▼▼▼
 messagesPayload = historySlice.map(msg => {
-    if (msg.isHidden) return null;
+    // 1. 检查是否是需要注入上下文的“隐藏系统消息”
+    if (msg.isHidden && msg.role === 'system') {
+        // 如果是，就把它格式化成一个AI能读取的上下文消息。
+        // 我们将其角色伪装成'user'，以确保它被按顺序阅读。
+        return { role: 'user', content: msg.content };
+    } 
+    // 2. 对于其他所有类型的隐藏消息，则像以前一样直接跳过。
+    else if (msg.isHidden) {
+        return null;
+    }
 
     // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
     //            这就是本次修复的核心所在！
@@ -19129,27 +19146,45 @@ if (lastUserMessage &&
                     lastResponseTimestamps.push(currentMessageTimestamp);
         
                     switch (msgData.type) {
-                        case 'update_thoughts':
-                            if (!chat.isGroup) {
-                                if (msgData.heartfelt_voice) {
-                                    chat.heartfeltVoice = String(msgData.heartfelt_voice);
-                                }
-                                if (msgData.random_jottings) {
-                                    chat.randomJottings = String(msgData.random_jottings);
-                                }
-                                if (!Array.isArray(chat.thoughtsHistory)) {
-                                    chat.thoughtsHistory = [];
-                                }
-                                chat.thoughtsHistory.push({
-                                    heartfeltVoice: chat.heartfeltVoice,
-                                    randomJottings: chat.randomJottings,
-                                    timestamp: Date.now()
-                                });
-                                if (chat.thoughtsHistory.length > 50) {
-                                    chat.thoughtsHistory.shift();
-                                }
-                            }
-                            continue;
+case 'update_thoughts':
+    if (!chat.isGroup) {
+        if (msgData.heartfelt_voice) {
+            chat.heartfeltVoice = String(msgData.heartfelt_voice);
+        }
+        if (msgData.random_jottings) {
+            chat.randomJottings = String(msgData.random_jottings);
+        }
+        if (!Array.isArray(chat.thoughtsHistory)) {
+            chat.thoughtsHistory = [];
+        }
+        chat.thoughtsHistory.push({
+            heartfeltVoice: chat.heartfeltVoice,
+            randomJottings: chat.randomJottings,
+            timestamp: Date.now()
+        });
+        if (chat.thoughtsHistory.length > 50) {
+            chat.thoughtsHistory.shift();
+        }
+
+        // --- 【【【核心修改就在这里！】】】 ---
+        // 1. 将刚刚更新的心声和散记，格式化为一段AI能理解的文本。
+        const thoughtForMemory = `[这是你上一轮的内心独白和思考]
+- 心声: ${chat.heartfeltVoice}
+- 散记: ${chat.randomJottings}`;
+        
+        // 2. 创建一条对用户隐藏的系统消息
+        const hiddenThoughtMessage = {
+            role: 'system',
+            content: thoughtForMemory,
+            timestamp: Date.now(),
+            isHidden: true // 这个关键标记确保用户看不到这条指令，但它存在于历史记录中
+        };
+
+        // 3. 将这条“记忆碎片”也存入聊天记录
+        chat.history.push(hiddenThoughtMessage);
+        // --- 【【【修改结束】】】 ---
+    }
+    continue;
                         case 'change_user_nickname':
                             if (!chat.isGroup && msgData.new_name) {
                                 const newNickname = msgData.new_name.trim();
@@ -26639,9 +26674,11 @@ async function triggerAutoSummary(chatId, force = false) {
     if (!chat) return;
 
     const lastSummaryTimestamp = chat.lastMemorySummaryTimestamp || 0;
+    // --- ✨ 核心修改 ①：修改筛选逻辑 ---
+    // 我们现在不仅要获取用户可见的消息，还要把AI自己的“内心独白”也包含进来。
     const messagesToSummarize = force 
-        ? chat.history.filter(m => !m.isHidden).slice(-(chat.settings.autoMemoryInterval || 20))
-        : chat.history.filter(m => m.timestamp > lastSummaryTimestamp && !m.isHidden);
+        ? chat.history.filter(m => !m.isHidden || (m.role === 'system' && m.content.includes('内心独白'))).slice(-(chat.settings.autoMemoryInterval || 20))
+        : chat.history.filter(m => m.timestamp > lastSummaryTimestamp && (!m.isHidden || (m.role === 'system' && m.content.includes('内心独白'))));
         
     if (messagesToSummarize.length < 5) {
         if (force) alert("最近的消息太少，无法进行有意义的总结。");
@@ -26649,35 +26686,39 @@ async function triggerAutoSummary(chatId, force = false) {
     }
 
     const userNickname = state.qzoneSettings.nickname || '用户';
-    // ▼▼▼ 核心修复就在这里！ ▼▼▼
+    
+    // --- ✨ 核心修改 ②：更新历史记录格式化逻辑 ---
+    // 让AI能清晰地区分“对话”和“自己的内心想法”
     const formattedHistory = messagesToSummarize.map(msg => {
+        // 如果是隐藏的内心独白消息
+        if (msg.isHidden && msg.role === 'system' && msg.content.includes('内心独白')) {
+            // 直接返回内容，它已经包含了清晰的标签
+            return msg.content;
+        }
+        
+        // （处理其他普通消息的逻辑保持不变）
         let sender;
         if (msg.role === 'user') {
             sender = userNickname;
         } else {
             sender = msg.senderName || chat.originalName;
         }
-
         let contentToSummarize = '';
-        // 1. 检查消息类型是否是“线下模式”
         if (msg.type === 'offline_text') {
-            // 2. 如果是，就智能地拼接对话和描写
-            // 优先使用新的 content 格式
             if (msg.content) {
                  contentToSummarize = msg.content;
-            } else { // 兼容旧的 dialogue/description 格式
+            } else {
                 const dialogue = msg.dialogue ? `「${msg.dialogue}」` : '';
                 const description = msg.description ? `(${msg.description})` : '';
                 contentToSummarize = `${dialogue} ${description}`.trim();
             }
         } else {
-            // 3. 如果是其他任何类型的消息，则保持原有的处理方式
             contentToSummarize = String(msg.content);
         }
-        // 4. 返回拼接好的完整消息
         return `${sender}: ${contentToSummarize}`;
     }).join('\n');
-    // --- ▲▲▲ 修复结束 ▲▲▲ ---
+
+
 
     let systemPrompt;
 
@@ -27565,18 +27606,44 @@ function createAiResponseEditorBlock(initialContent = '') {
                         continue;
                     }
                     case 'update_thoughts': { 
-                        if (!chat.isGroup) {
-                            if (msgData.heartfelt_voice) chat.heartfeltVoice = String(msgData.heartfelt_voice);
-                            if (msgData.random_jottings) chat.randomJottings = String(msgData.random_jottings);
-                            if (!Array.isArray(chat.thoughtsHistory)) chat.thoughtsHistory = [];
-                            chat.thoughtsHistory.push({
-                                heartfeltVoice: chat.heartfeltVoice,
-                                randomJottings: chat.randomJottings,
-                                timestamp: Date.now()
-                            });
-                            if (chat.thoughtsHistory.length > 50) chat.thoughtsHistory.shift();
-                        }
-                        continue;
+    if (!chat.isGroup) {
+        if (msgData.heartfelt_voice) {
+            chat.heartfeltVoice = String(msgData.heartfelt_voice);
+        }
+        if (msgData.random_jottings) {
+            chat.randomJottings = String(msgData.random_jottings);
+        }
+        if (!Array.isArray(chat.thoughtsHistory)) {
+            chat.thoughtsHistory = [];
+        }
+        chat.thoughtsHistory.push({
+            heartfeltVoice: chat.heartfeltVoice,
+            randomJottings: chat.randomJottings,
+            timestamp: Date.now()
+        });
+        if (chat.thoughtsHistory.length > 50) {
+            chat.thoughtsHistory.shift();
+        }
+
+        // --- 【【【核心修改就在这里！】】】 ---
+        // 1. 将刚刚更新的心声和散记，格式化为一段AI能理解的文本。
+        const thoughtForMemory = `[这是你上一轮的内心独白和思考]
+- 心声: ${chat.heartfeltVoice}
+- 散记: ${chat.randomJottings}`;
+        
+        // 2. 创建一条对用户隐藏的系统消息
+        const hiddenThoughtMessage = {
+            role: 'system',
+            content: thoughtForMemory,
+            timestamp: Date.now(),
+            isHidden: true // 这个关键标记确保用户看不到这条指令，但它存在于历史记录中
+        };
+
+        // 3. 将这条“记忆碎片”也存入聊天记录
+        chat.history.push(hiddenThoughtMessage);
+        // --- 【【【修改结束】】】 ---
+    }
+    continue;
                     }
                     // ▲▲▲ 新代码粘贴结束 ▲▲▲
                     // 在 switch 语句中，添加一个专门处理 'quote_reply' 的 case
