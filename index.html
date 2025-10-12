@@ -10443,6 +10443,13 @@ input, textarea, select {
                     <select id="secondary-model-select"></select>
                 </div>
                 <button class="form-button form-button-secondary" id="fetch-secondary-models-btn">拉取副模型</button>
+<div class="form-group">
+    <label for="api-temperature-slider">API 温度 (Temperature) <span id="api-temperature-value">0.8</span></label>
+    <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;">
+        控制AI回复的随机性和创造性。值越高，回复越随机；值越低，回复越确定。建议范围 0.7-1.0。
+    </p>
+    <input type="range" id="api-temperature-slider" min="0" max="2" step="0.1" value="0.8" style="width: 100%; margin-top: 8px;">
+</div>
                 <!-- 后台活动设置 -->
                 <hr style="margin: 30px 0; opacity: 0.3;">
                 <h3 style="border-bottom: 1px solid #eee; padding-bottom: 10px;">后台活动设置</h3>
@@ -12840,8 +12847,11 @@ if (!Array.prototype.findLastIndex) {
         }
         // ▲▲▲ 替换结束 ▲▲▲
         
+
+            document.addEventListener('DOMContentLoaded', () => {
 // ▼▼▼ 【最终识图修复方案】请用这个全新的、兼容性更强的函数，完整替换旧的 toGeminiRequestData ▼▼▼
 function toGeminiRequestData(model, apiKey, systemInstruction, messagesForDecision) {
+    const apiTemperature = state.globalSettings.apiTemperature || 0.8; // <-- 新增：获取温度
     const roleType = {
         user: 'user',
         assistant: 'model',
@@ -12900,14 +12910,13 @@ function toGeminiRequestData(model, apiKey, systemInstruction, messagesForDecisi
             body: JSON.stringify({
                 contents: contents,
                 generationConfig: {
-                    temperature: 0.8,
+                    temperature: apiTemperature, // <-- 【核心修改】使用我们获取的温度值
                 },
             })
         }
     };
 }
 // ▲▲▲ 替换结束 ▲▲▲
-            document.addEventListener('DOMContentLoaded', () => {
         
                 // ===================================================================
                 // 1. 所有变量和常量定义
@@ -15327,6 +15336,7 @@ async function loadAllDataFromDB() {
         enableBackgroundActivity: false,
         backgroundActivityInterval: 60,
         blockCooldownHours: 1,
+        apiTemperature: 0.8,
         appIcons: { ...DEFAULT_APP_ICONS },
         cphoneWallpaper: 'linear-gradient(135deg, #f6d365, #fda085)',
         cphoneAppIcons: { ...DEFAULT_CPHONE_ICONS },
@@ -15731,7 +15741,12 @@ async function loadAllDataFromDB() {
             document.getElementById('background-interval-input').value = state.globalSettings.backgroundActivityInterval || 60;
             document.getElementById('block-cooldown-input').value = state.globalSettings.blockCooldownHours || 1;
             document.getElementById('enable-ai-drawing-switch').checked = state.globalSettings.enableAiDrawing; 
-            document.getElementById('chat-render-window-input').value = state.globalSettings.chatRenderWindow || 50;       
+            document.getElementById('chat-render-window-input').value = state.globalSettings.chatRenderWindow || 50;   
+            const tempSlider = document.getElementById('api-temperature-slider');
+            const tempValue = document.getElementById('api-temperature-value');
+            const savedTemp = state.globalSettings.apiTemperature || 0.8;
+            tempSlider.value = savedTemp;
+            tempValue.textContent = savedTemp;    
             // 2. 【核心新增】加载并渲染预设下拉菜单
             loadApiPresetsDropdown();
         }
@@ -17670,7 +17685,7 @@ ${membersList}
                 body: JSON.stringify({
                     model: model,
                     messages: [ {role: 'system', content: systemPrompt}, ...messagesPayload ],
-                    temperature: 0.9,
+                    temperature: state.globalSettings.apiTemperature || 0.9,
                 })
             });
         }
@@ -17979,7 +17994,7 @@ ${membersList}
                             : await fetch(`${proxyUrl}/v1/chat/completions`, {
                                 method: 'POST',
                                 headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}`},
-                                body: JSON.stringify({model: model, messages: messagesForDecision, temperature: 0.8})
+                                body: JSON.stringify({model: model, messages: messagesForDecision, temperature: state.globalSettings.apiTemperature || 0.8})
                             });
         
                         if (!response.ok) {
@@ -19115,7 +19130,7 @@ messagesPayload = historySlice.map(msg => {
                                 body: JSON.stringify({
                                     model: model,
                                     messages: [{role: 'system', content: systemPrompt}, ...messagesPayload],
-                                    temperature: 0.8,
+                                    temperature: state.globalSettings.apiTemperature || 0.8,
                                     stream: false
                                 })
                             });
@@ -21182,7 +21197,7 @@ ${tasksString}
                 body: JSON.stringify({
                     model: model,
                     messages: [{role: 'system', content: systemPrompt}, ...messagesForApi],
-                    temperature: 0.9
+                    temperature: state.globalSettings.apiTemperature || 0.9
                 })
             });
             
@@ -21590,7 +21605,7 @@ ${longTimeNoSee ? `【重要提示】你们已经很久没聊天了！你【必�
                     model: model,
                     // 【【【核心修复】】】在这里使用我们新构建的、包含完整历史的 messagesPayload
                     messages: messagesPayload,
-                    temperature: 0.9,
+                    temperature: state.globalSettings.apiTemperature || 0.9,
                 })
             });
         
@@ -22150,7 +22165,7 @@ ${longTermMemoryContext}
                 body: JSON.stringify({
                     model: model,
                     messages: messagesPayload, // <-- 使用这个新变量！
-                    temperature: 0.9,
+                    temperature: state.globalSettings.apiTemperature || 0.9,
                 })
             });
         
@@ -24162,7 +24177,7 @@ async function endVideoCall() {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}`},
                         body: JSON.stringify({
-                            model: model, messages: messagesForApi, temperature: 0.8
+                            model: model, messages: messagesForApi, temperature: state.globalSettings.apiTemperature || 0.8
                         })
                     });
                     if (!response.ok) throw new Error((await response.json()).error.message);
@@ -24801,7 +24816,7 @@ async function endVideoCall() {
                     body: JSON.stringify({
                         model: model,
                         messages: messagesForApi, // Send the combined messages
-                        temperature: 0.9,
+                        temperature: state.globalSettings.apiTemperature || 0.9,
                     })
                 });
         
@@ -30671,7 +30686,7 @@ ${chat.settings.myPersona}
                 body: JSON.stringify({
                     model: model,
                     messages: [{ role: 'system', content: systemPrompt }, ...messagesForApi],
-                    temperature: 0.8,
+                    temperature: state.globalSettings.apiTemperature || 0.8,
                 })
             });
 
@@ -32490,7 +32505,7 @@ ${recentHistoryWithUser}
                 body: JSON.stringify({
                     model: model,
                     messages: [{role: 'system', content: systemPrompt}, ...messagesForApi],
-                    temperature: 0.95,
+                    temperature: state.globalSettings.apiTemperature || 0.95,
                     // response_format: { "type": "json_object" } <-- 此行已被删除
                 })
             });
@@ -32601,7 +32616,7 @@ ${recentHistoryWithUser}
                     body: JSON.stringify({
                         model: model,
                         messages: [{role: 'system', content: systemPrompt}, ...messagesForApi],
-                        temperature: 0.95,
+                        temperature: state.globalSettings.apiTemperature || 0.95,
                     })
                 });
                 if (!response.ok) throw new Error(`API 错误: ${response.statusText}`);
@@ -32974,7 +32989,7 @@ ${npcContext}
                 body: JSON.stringify({
                     model: model,
                     messages: [{role: 'system', content: systemPrompt}, ...messagesForApi],
-                    temperature: 0.9
+                    temperature: state.globalSettings.apiTemperature || 0.9
                 })
             });
 
@@ -33118,7 +33133,7 @@ ${historySlice.map(msg => `${msg.role === 'user' ? myNickname : chat.name}: ${St
                 body: JSON.stringify({
                     model: model,
                     messages: [{role: 'system', content: systemPrompt}, ...messagesPayload],
-                    temperature: 0.8,
+                    temperature: state.globalSettings.apiTemperature || 0.8,
                 })
             });
 
@@ -33458,7 +33473,7 @@ ${recentHistoryWithUser}
                 body: JSON.stringify({
                     model: model,
                     messages: [{role: 'system', content: systemPrompt}, ...messagesForApi],
-                    temperature: 0.9
+                    temperature: state.globalSettings.apiTemperature || 0.9
                     // response_format: { "type": "json_object" }  <-- 此行已被删除
                 })
             });
@@ -33630,7 +33645,7 @@ ${recentHistoryWithUser}
                 body: JSON.stringify({
                     model: model,
                     messages: [{role: 'system', content: systemPrompt}, ...messagesForApi],
-                    temperature: 0.9
+                    temperature: state.globalSettings.apiTemperature || 0.9
                     // response_format: { "type": "json_object" } <-- 此行已被删除
                 })
             });
@@ -33810,7 +33825,7 @@ ${recentHistoryWithUser}
                 body: JSON.stringify({
                     model: model,
                     messages: [{role: 'system', content: systemPrompt}, ...messagesForApi],
-                    temperature: 0.9
+                    temperature: state.globalSettings.apiTemperature || 0.9
                     // response_format: { "type": "json_object" }  <-- 这行已被删除
                 })
             });
@@ -33986,7 +34001,7 @@ ${recentHistoryWithUser}
                 body: JSON.stringify({
                     model: model,
                     messages: [{role: 'system', content: systemPrompt}, ...messagesForApi],
-                    temperature: 0.9
+                    temperature: state.globalSettings.apiTemperature || 0.9
                     // 同样移除 response_format
                 })
             });
@@ -34117,7 +34132,7 @@ ${recentHistoryWithUser}
                 body: JSON.stringify({
                     model: model,
                     messages: [{role: 'system', content: systemPrompt}, ...messagesForApi],
-                    temperature: 0.9
+                    temperature: state.globalSettings.apiTemperature || 0.9
                     // response_format: { "type": "json_object" } <-- 此行已被删除
                 })
             });
@@ -34278,7 +34293,7 @@ ${recentHistoryWithUser}
                 body: JSON.stringify({
                     model: model,
                     messages: [{role: 'system', content: systemPrompt}, ...messagesForApi],
-                    temperature: 0.9
+                    temperature: state.globalSettings.apiTemperature || 0.9
                     // response_format: { "type": "json_object" } <-- 此行已被删除
                 })
             });
@@ -34422,7 +34437,7 @@ ${recentHistoryWithUser}
                 body: JSON.stringify({
                     model: model,
                     messages: [{role: 'system', content: systemPrompt}, ...messagesForApi],
-                    temperature: 1.0,
+                    temperature: state.globalSettings.apiTemperature || 1.0,
                 })
             });
         // ▲▲▲ 修改结束 ▲▲▲
@@ -34974,7 +34989,7 @@ ${charactersContext}
                 body: JSON.stringify({
                     model: model,
                     messages: [{role: 'system', content: systemPrompt}, ...messagesForApi],
-                    temperature: 1.0,
+                    temperature: state.globalSettings.apiTemperature || 1.0,
                 })
             });
 
@@ -35280,7 +35295,7 @@ ${charactersContext}
                 body: JSON.stringify({
                     model: model,
                     messages: [{role: 'system', content: systemPrompt}, ...messagesForApi],
-                    temperature: 1.0,
+                    temperature: state.globalSettings.apiTemperature || 1.0,
                 })
             });
 
@@ -37649,7 +37664,7 @@ async function startDiscussionPhase() {
                 body: JSON.stringify({
                     model: model,
                     messages: [{role: 'system', content: systemPrompt}, ...messagesForApi],
-                    temperature: 0.95,
+                    temperature: state.globalSettings.apiTemperature || 0.95,
                 })
             });
 
@@ -38246,7 +38261,7 @@ function openWolfKillModal() {
                         body: JSON.stringify({
                             model: model,
                             messages: [{role: 'system', content: systemPrompt}, ...messagesForApi],
-                            temperature: 0.9,
+                            temperature: state.globalSettings.apiTemperature || 0.9,
                         })
                     });
 
@@ -38325,7 +38340,7 @@ function openWolfKillModal() {
                         body: JSON.stringify({
                             model: model,
                             messages: [{role: 'system', content: systemPrompt}, ...messagesForApi],
-                            temperature: 0.9,
+                            temperature: state.globalSettings.apiTemperature || 0.9,
                         })
                     });
 
@@ -38445,7 +38460,7 @@ function openWolfKillModal() {
                         body: JSON.stringify({
                             model: model,
                             messages: [{role: 'system', content: systemPrompt}, ...messagesForApi],
-                            temperature: 0.8,
+                            temperature: state.globalSettings.apiTemperature || 0.8,
                         })
                     });
 
@@ -38593,7 +38608,7 @@ ${werewolfGameState.discussionLog.map(d => `${d.speaker}: ${d.content}`).join('\
                 method: 'POST',
                 headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}`},
                 body: JSON.stringify({
-                    model: model, messages: [{role: 'system', content: systemPrompt}, ...messagesForApi], temperature: 0.8,
+                    model: model, messages: [{role: 'system', content: systemPrompt}, ...messagesForApi], temperature: state.globalSettings.apiTemperature || 0.8,
                 })
             });
 
@@ -40311,6 +40326,7 @@ messagesView.addEventListener('scroll', () => { // <--- 核心修改2：在 mess
             state.globalSettings.blockCooldownHours = parseFloat(cooldownInput.value) || 1;
             state.globalSettings.enableAiDrawing = document.getElementById('enable-ai-drawing-switch').checked;
            state.globalSettings.chatRenderWindow = parseInt(document.getElementById('chat-render-window-input').value) || 50;
+            state.globalSettings.apiTemperature = parseFloat(document.getElementById('api-temperature-slider').value);
             await db.globalSettings.put(state.globalSettings);
         
             stopBackgroundSimulation(); 
@@ -44489,6 +44505,12 @@ const debouncedUpdateReadingContext = debounce(updateReadingContextOnScroll, 300
 
 // 2. 将这个新函数绑定到读书窗口内容区的滚动事件上
 document.getElementById('reading-content').addEventListener('scroll', debouncedUpdateReadingContext);
+document.getElementById('api-temperature-slider').addEventListener('input', (e) => {
+    document.getElementById('api-temperature-value').textContent = e.target.value;
+});
+
+
+
 
 
     checkForUpdates();
