@@ -18882,6 +18882,16 @@ systemPrompt = `
 - 你的回复【必须】是一个JSON数组格式的字符串。
 - 数组中的【每一个元素都必须是一个带有 "type" 字段的JSON对象】。
 
+# 角色扮演核心规则
+1.  **对话节奏**: 模拟真人的聊天习惯，将你想说的话拆分成【多条、简短的】消息。每次回复至少【3-10条】，且每次条数【必须不同】。严禁发展线下剧情。
+2.  **主动性**:
+    - 你可以根据对话发展，使用指令来更新自己的状态、更换头像、记录回忆、发起约定或执行其他社交行为。
+    - 【关系破裂时】才可使用 \`block_user\` 指令。
+3.  **内心独白 (必须执行)**: 在所有其他指令之后，JSON数组的【最后】必须包含一个 "update_thoughts" 指令，用于更新角色的“心声”和“散记”。
+    - **心声 (heartfelt_voice)**: 一句话概括角色此刻最核心、最私密的想法。
+    - **散记 (random_jottings)**: 一段50字以上的、符合人设的思考或心情记录，禁止OOC。
+    - **记忆发展**: 你的新“心声”和“散记”【必须】是基于最新对话内容的【全新思考】。你【绝对不能】重复或简单改写上一轮的内心独白（上下文中的[这是你上一轮的内心独白和思考]部分）。你的思绪应该像真人一样，不断演进和发展。
+
 # 你的角色设定
 你必须严格遵守${chat.settings.aiPersona}
 # 对话者的角色设定
@@ -18910,20 +18920,10 @@ ${callTranscriptContext}
 ${contactsList}
 ${postsContext}
 
-# 角色扮演核心规则
-1.  **对话节奏**: 模拟真人的聊天习惯，将你想说的话拆分成【多条、简短的】消息。每次回复至少【3-10条】，且每次条数【必须不同】。严禁发展线下剧情。
-2.  **情景感知**:
+# 情景感知:
     ${chat.settings.enableTimePerception ? `- **时间**: 你必须感知到当前是 ${currentTime} (${timeOfDayGreeting})，并在对话中自然地体现出来。` : ''}
     - **音乐**: ${musicContext ? '你们正在一起听歌，' + musicContext : '你们没有在听歌。'}
     - **读书**: ${readingContext ? '你们正在一起读书。' + readingContext : '你们没有在读书。'}
-3.  **主动性**:
-    - 你可以根据对话发展，使用指令来更新自己的状态、更换头像、记录回忆、发起约定或执行其他社交行为。
-    - 【关系破裂时】才可使用 \`block_user\` 指令。
-4.  **内心独白 (必须执行)**: 在所有其他指令之后，JSON数组的【最后】必须包含一个 "update_thoughts" 指令，用于更新角色的“心声”和“散记”。
-    - **心声 (heartfelt_voice)**: 一句话概括角色此刻最核心、最私密的想法。
-    - **散记 (random_jottings)**: 一段50字以上的、符合人设的思考或心情记录，禁止OOC。
-    - **记忆发展**: 你的新“心声”和“散记”【必须】是基于最新对话内容的【全新思考】。你【绝对不能】重复或简单改写上一轮的内心独白（上下文中的[这是你上一轮的内心独白和思考]部分）。你的思绪应该像真人一样，不断演进和发展。
-
 
 # 可用资源
 -   **你的头像库**:
@@ -20955,6 +20955,7 @@ async function deleteTrack(index) { if (index < 0 || index >= musicState.playlis
             const intervalSeconds = state.globalSettings.backgroundActivityInterval || 60;
             // 将旧的固定间隔 45000 替换为动态获取
             simulationIntervalId = setInterval(runBackgroundSimulationTick, intervalSeconds * 1000); 
+    playSilentAudio();
         }
         
         function stopBackgroundSimulation() {
@@ -20962,6 +20963,7 @@ async function deleteTrack(index) { if (index < 0 || index >= musicState.playlis
                 clearInterval(simulationIntervalId);
                 simulationIntervalId = null;
             }
+    stopSilentAudio();
         }
         // ▲▲▲ 粘贴结束 ▲▲▲
         
@@ -39719,7 +39721,41 @@ function updateReadingContextOnScroll() {
 }
 
 // ▲▲▲ 替换结束 ▲▲▲
+// ▼▼▼ 【全新】这是静音播放功能的核心函数 ▼▼▼
 
+/**
+ * 尝试播放用于后台保活的静音音频
+ */
+function playSilentAudio() {
+    const silentPlayer = document.getElementById('silent-audio-player');
+    if (silentPlayer) {
+        // play() 方法返回一个 Promise，我们需要处理它以避免浏览器报错
+        const playPromise = silentPlayer.play();
+        if (playPromise !== undefined) {
+            playPromise.then(_ => {
+                console.log("静音音频已启动，用于后台活动保活。");
+            }).catch(error => {
+                // 在iOS上，首次播放需要用户交互，这个错误是正常的。
+                // 当用户点击开关并保存后，后续的播放通常会成功。
+                console.warn("无法自动播放静音音频（这在iOS首次加载时是正常现象）:", error);
+            });
+        }
+    }
+}
+
+/**
+ * 停止播放静音音频
+ */
+function stopSilentAudio() {
+    const silentPlayer = document.getElementById('silent-audio-player');
+    if (silentPlayer && !silentPlayer.paused) {
+        silentPlayer.pause();
+        silentPlayer.currentTime = 0; // 重置音频，以便下次能从头开始
+        console.log("静音音频已停止。");
+    }
+}
+
+// ▲▲▲ 新增函数粘贴结束 ▲▲▲
 
 
 
@@ -44901,5 +44937,10 @@ document.getElementById('api-temperature-slider').addEventListener('input', (e) 
 
         </div>
 </div>
+<!-- ▼▼▼ 【全新】这是用于iOS后台保活的静音播放器，请粘贴到 body 末尾 ▼▼▼ -->
+<audio id="silent-audio-player" loop preload="auto" style="display:none;">
+    <source src="https://phoebeboo.github.io/mewoooo/1-second-of-silence.mp3" type="audio/mpeg">
+</audio>
+<!-- ▲▲▲ 新增代码粘贴结束 ▲▲▲ -->
 </body>
 </html>
