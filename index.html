@@ -21259,8 +21259,8 @@ let longTimeNoSee = false;
     // ==========================================================
 
     // 步骤 1: (保持不变) 我们依然需要获取最近的10条消息，用于后续的API请求
-    const selfMemoryCount = 10;
-    const recentHistory = chat.history.filter(m => !m.isHidden).slice(-selfMemoryCount);
+    const maxMemory = chat.settings.maxMemory || 10; // 读取角色的设置
+    const recentHistory = chat.history.filter(m => !m.isHidden).slice(-maxMemory);
         
             const lastMessage = chat.history.filter(m => !m.isHidden).slice(-1)[0];
             
@@ -21917,8 +21917,8 @@ for (const action of responseArray) {
                     }
                 }
                 let recentContextSummary = "你们最近没有有效聊天记录。";
-                const selfMemoryCount = 10;
-                const recentHistory = chat.history.filter(m => !m.isHidden).slice(-selfMemoryCount);
+const maxMemory = chat.settings.maxMemory || 10; // 读取群聊的设置
+const recentHistory = chat.history.filter(m => !m.isHidden).slice(-maxMemory);
                 if (recentHistory.length > 0) {
                     recentContextSummary = "这是你们最近的对话：\n" + recentHistory.map(msg => {
                         const sender = msg.role === 'user' ? myNickname : getDisplayNameInGroup(chat, msg.senderName);
@@ -32437,7 +32437,8 @@ async function handleGenerateSimulatedDiaries() {
     const userDisplayNameForAI = (state.qzoneSettings.nickname === '{{user}}' || !state.qzoneSettings.nickname) ? '用户' : state.qzoneSettings.nickname;
 
     const longTermMemoryContext = chat.longTermMemory?.map(mem => `- ${mem.content}`).join('\n') || '无';
-    const recentHistoryWithUser = chat.history.slice(-5).map(msg => `${msg.role === 'user' ? userDisplayNameForAI : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
+    const maxMemory = chat.settings.maxMemory || 10;
+const recentHistoryWithUser = chat.history.slice(-maxMemory).map(msg => `${msg.role === 'user' ? userDisplayNameForAI : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
     const worldBookContext = (chat.settings.linkedWorldBookIds || [])
         .map(bookId => state.worldBooks.find(wb => wb.id === bookId))
         .filter(Boolean)
@@ -32562,7 +32563,8 @@ ${recentHistoryWithUser}
             const userDisplayNameForAI = (state.qzoneSettings.nickname === '{{user}}' || !state.qzoneSettings.nickname) ? '用户' : state.qzoneSettings.nickname;
 
             const longTermMemoryContext = chat.longTermMemory?.map(mem => `- ${mem.content}`).join('\n') || '无';
-            const recentHistoryWithUser = chat.history.slice(-5).map(msg => `${msg.role === 'user' ? userDisplayNameForAI : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
+            const maxMemory = chat.settings.maxMemory || 10;
+const recentHistoryWithUser = chat.history.slice(-maxMemory).map(msg => `${msg.role === 'user' ? userDisplayNameForAI : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
             const worldBookContext = (chat.settings.linkedWorldBookIds || []).map(bookId=>state.worldBooks.find(wb=>wb.id===bookId)).filter(Boolean).map(book=>`\n## 世界书《${book.name}》设定:\n${book.content.filter(e=>e.enabled).map(e=>`- ${e.content}`).join('\n')}`).join('');
             
             // ▼▼▼ 核心修复1：在这里也添加“时间铁律” ▼▼▼
@@ -32910,7 +32912,8 @@ async function handleGenerateSimulatedQQ() {
     const userDisplayNameForAI = state.qzoneSettings.nickname === '{{user}}' || !state.qzoneSettings.nickname ? '用户' : state.qzoneSettings.nickname;
     const userNicknameInThisChat = chat.settings.myNickname || userDisplayNameForAI;
     const longTermMemoryContext = chat.longTermMemory?.map(mem => `- ${mem.content}`).join('\n') || '无';
-    const recentHistoryWithUser = chat.history.slice(-10).map(msg => `${msg.role === 'user' ? userNicknameInThisChat : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
+const maxMemory = chat.settings.maxMemory || 10;
+    const recentHistoryWithUser =chat.history.slice(-maxMemory).map(msg => `${msg.role === 'user' ? userNicknameInThisChat : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
     const worldBookContext = (chat.settings.linkedWorldBookIds || [])
         .map(bookId => state.worldBooks.find(wb => wb.id === bookId))
         .filter(Boolean)
@@ -33417,7 +33420,8 @@ async function handleGenerateSimulatedAlbum() {
     const userDisplayNameForAI = (state.qzoneSettings.nickname === '{{user}}' || !state.qzoneSettings.nickname) ? '用户' : state.qzoneSettings.nickname;
     
     const longTermMemoryContext = chat.longTermMemory?.map(mem => `- ${mem.content}`).join('\n') || '无';
-    const recentHistoryWithUser = chat.history.slice(-5).map(msg => `${msg.role === 'user' ? userDisplayNameForAI : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
+    const maxMemory = chat.settings.maxMemory || 10;
+const recentHistoryWithUser = chat.history.slice(-maxMemory).map(msg => `${msg.role === 'user' ? userDisplayNameForAI : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
     const worldBookContext = (chat.settings.linkedWorldBookIds || [])
         .map(bookId => state.worldBooks.find(wb => wb.id === bookId))
         .filter(Boolean)
@@ -33587,7 +33591,8 @@ async function handleGenerateBrowserHistory() {
     const userDisplayNameForAI = (state.qzoneSettings.nickname === '{{user}}' || !state.qzoneSettings.nickname) ? '用户' : state.qzoneSettings.nickname;
 
     const longTermMemoryContext = chat.longTermMemory?.map(mem => `- ${mem.content}`).join('\n') || '无';
-    const recentHistoryWithUser = chat.history.slice(-5).map(msg => `${msg.role === 'user' ? userDisplayNameForAI : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
+    const maxMemory = chat.settings.maxMemory || 10;
+const recentHistoryWithUser = chat.history.slice(-maxMemory).map(msg => `${msg.role === 'user' ? userDisplayNameForAI : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
     const worldBookContext = (chat.settings.linkedWorldBookIds || [])
         .map(bookId => state.worldBooks.find(wb => wb.id === bookId))
         .filter(Boolean)
@@ -33768,7 +33773,8 @@ async function handleGenerateTaobaoHistory() {
     const userDisplayNameForAI = (state.qzoneSettings.nickname === '{{user}}' || !state.qzoneSettings.nickname) ? '用户' : state.qzoneSettings.nickname;
 
     const longTermMemoryContext = chat.longTermMemory?.map(mem => `- ${mem.content}`).join('\n') || '无';
-    const recentHistoryWithUser = chat.history.slice(-5).map(msg => `${msg.role === 'user' ? userDisplayNameForAI : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
+    const maxMemory = chat.settings.maxMemory || 10;
+const recentHistoryWithUser = chat.history.slice(-maxMemory).map(msg => `${msg.role === 'user' ? userDisplayNameForAI : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
     const worldBookContext = (chat.settings.linkedWorldBookIds || [])
         .map(bookId => state.worldBooks.find(wb => wb.id === bookId))
         .filter(Boolean)
@@ -33948,7 +33954,8 @@ async function handleGenerateSimulatedMemos() {
     const userDisplayNameForAI = (state.qzoneSettings.nickname === '{{user}}' || !state.qzoneSettings.nickname) ? '用户' : state.qzoneSettings.nickname;
 
     const longTermMemoryContext = chat.longTermMemory?.map(mem => `- ${mem.content}`).join('\n') || '无';
-    const recentHistoryWithUser = chat.history.slice(-5).map(msg => `${msg.role === 'user' ? userDisplayNameForAI : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
+    const maxMemory = chat.settings.maxMemory || 10;
+const recentHistoryWithUser = chat.history.slice(-maxMemory).map(msg => `${msg.role === 'user' ? userDisplayNameForAI : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
     const worldBookContext = (chat.settings.linkedWorldBookIds || [])
         .map(bookId => state.worldBooks.find(wb => wb.id === bookId))
         .filter(Boolean)
@@ -34068,7 +34075,8 @@ async function handleGenerateAmapHistory() {
     
     const userDisplayNameForAI = (state.qzoneSettings.nickname === '{{user}}' || !state.qzoneSettings.nickname) ? '用户' : state.qzoneSettings.nickname;
     const longTermMemoryContext = chat.longTermMemory?.map(mem => `- ${mem.content}`).join('\n') || '无';
-    const recentHistoryWithUser = chat.history.slice(-5).map(msg => `${msg.role === 'user' ? userDisplayNameForAI : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
+    const maxMemory = chat.settings.maxMemory || 10;
+const recentHistoryWithUser = chat.history.slice(-maxMemory).map(msg => `${msg.role === 'user' ? userDisplayNameForAI : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
     const worldBookContext = (chat.settings.linkedWorldBookIds || [])
         .map(bookId => state.worldBooks.find(wb => wb.id === bookId))
         .filter(Boolean)
@@ -34237,7 +34245,8 @@ async function handleGenerateAppUsage() {
     const userDisplayNameForAI = (state.qzoneSettings.nickname === '{{user}}' || !state.qzoneSettings.nickname) ? '用户' : state.qzoneSettings.nickname;
 
     const longTermMemoryContext = chat.longTermMemory?.map(mem => `- ${mem.content}`).join('\n') || '无';
-    const recentHistoryWithUser = chat.history.slice(-5).map(msg => `${msg.role === 'user' ? userDisplayNameForAI : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
+    const maxMemory = chat.settings.maxMemory || 10;
+const recentHistoryWithUser = chat.history.slice(-maxMemory).map(msg => `${msg.role === 'user' ? userDisplayNameForAI : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
     const worldBookContext = (chat.settings.linkedWorldBookIds || [])
         .map(bookId => state.worldBooks.find(wb => wb.id === bookId))
         .filter(Boolean)
@@ -34383,7 +34392,8 @@ async function handleGenerateSimulatedMusic() {
     const userDisplayNameForAI = (state.qzoneSettings.nickname === '{{user}}' || !state.qzoneSettings.nickname) ? '用户' : state.qzoneSettings.nickname;
 
     const longTermMemoryContext = chat.longTermMemory?.map(mem => `- ${mem.content}`).join('\n') || '无';
-    const recentHistoryWithUser = chat.history.slice(-5).map(msg => `${msg.role === 'user' ? userDisplayNameForAI : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
+    const maxMemory = chat.settings.maxMemory || 10;
+const recentHistoryWithUser = chat.history.slice(-maxMemory).map(msg => `${msg.role === 'user' ? userDisplayNameForAI : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
     const worldBookContext = (chat.settings.linkedWorldBookIds || [])
         .map(bookId => state.worldBooks.find(wb => wb.id === bookId))
         .filter(Boolean)
