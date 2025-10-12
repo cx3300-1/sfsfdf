@@ -25428,43 +25428,47 @@ async function endVideoCall() {
             document.getElementById('ai-avatar-library-modal').classList.add('visible');
         }
         
-        /**
-         * 渲染AI头像库的内容
-         */
-        function renderAiAvatarLibrary() {
-            const grid = document.getElementById('ai-avatar-library-grid');
-            grid.innerHTML = '';
-            const chat = state.chats[state.activeChatId];
-            const library = chat.settings.aiAvatarLibrary || [];
-        
-            if (library.length === 0) {
-                grid.innerHTML = '<p style="color: var(--text-secondary); grid-column: 1 / -1; text-align: center;">这个头像库还是空的，点击右上角“添加”吧！</p>';
-                return;
+function renderAiAvatarLibrary() {
+    const grid = document.getElementById('ai-avatar-library-grid');
+    grid.innerHTML = '';
+    const chat = state.chats[state.activeChatId];
+    const library = chat.settings.aiAvatarLibrary || [];
+
+    if (library.length === 0) {
+        grid.innerHTML = '<p style="color: var(--text-secondary); grid-column: 1 / -1; text-align: center;">这个头像库还是空的，点击右上角“添加”吧！</p>';
+        return;
+    }
+
+    library.forEach((avatar, index) => {
+        const item = document.createElement('div');
+        item.className = 'sticker-item'; // 复用样式
+        item.title = avatar.name;
+
+        // ▼▼▼ 核心修复就在这里！▼▼▼
+        // 我们现在创建了 CSS 期望的内部结构
+        item.innerHTML = `
+            <div class="sticker-image-container" style="background-image: url(${avatar.url});"></div>
+            <span class="sticker-name">${avatar.name}</span>
+        `;
+        // ▲▲▲ 修复结束 ▲▲▲
+
+        const deleteBtn = document.createElement('div');
+        deleteBtn.className = 'delete-btn';
+        deleteBtn.innerHTML = '×';
+        deleteBtn.style.display = 'block';
+        deleteBtn.onclick = async (e) => {
+            e.stopPropagation();
+            const confirmed = await showCustomConfirm('删除头像', `确定要从头像库中删除“${avatar.name}”吗？`, { confirmButtonClass: 'btn-danger' });
+            if (confirmed) {
+                chat.settings.aiAvatarLibrary.splice(index, 1);
+                await db.chats.put(chat);
+                renderAiAvatarLibrary();
             }
-        
-            library.forEach((avatar, index) => {
-                const item = document.createElement('div');
-                item.className = 'sticker-item'; // 复用表情面板的样式
-                item.style.backgroundImage = `url(${avatar.url})`;
-                item.title = avatar.name;
-        
-                const deleteBtn = document.createElement('div');
-                deleteBtn.className = 'delete-btn';
-                deleteBtn.innerHTML = '×';
-                deleteBtn.style.display = 'block'; // 总是显示删除按钮
-                deleteBtn.onclick = async (e) => {
-                    e.stopPropagation();
-                    const confirmed = await showCustomConfirm('删除头像', `确定要从头像库中删除“${avatar.name}”吗？`, { confirmButtonClass: 'btn-danger' });
-                    if (confirmed) {
-                        chat.settings.aiAvatarLibrary.splice(index, 1);
-                        await db.chats.put(chat);
-                        renderAiAvatarLibrary();
-                    }
-                };
-                item.appendChild(deleteBtn);
-                grid.appendChild(item);
-            });
-        }
+        };
+        item.appendChild(deleteBtn);
+        grid.appendChild(item);
+    });
+}
         
         // ▼▼▼ 【最终修复版】请用这个全新的函数，完整替换旧的 addAvatarToLibrary / addAvatarToLibraryFromURL 函数 ▼▼▼
         /**
@@ -25513,43 +25517,49 @@ async function endVideoCall() {
             document.getElementById('my-avatar-library-modal').classList.add('visible');
         }
         
-        /**
-         * 渲染“我的”头像库的内容
-         */
-        function renderMyAvatarLibrary() {
-            const grid = document.getElementById('my-avatar-library-grid');
-            grid.innerHTML = '';
-            const chat = state.chats[state.activeChatId];
-            const library = chat.settings.myAvatarLibrary || [];
-        
-            if (library.length === 0) {
-                grid.innerHTML = '<p style="color: var(--text-secondary); grid-column: 1 / -1; text-align: center;">这个头像库还是空的，点击右上角“添加”吧！</p>';
-                return;
+/**
+ * 【已修复】渲染“我的”头像库的内容
+ */
+function renderMyAvatarLibrary() {
+    const grid = document.getElementById('my-avatar-library-grid');
+    grid.innerHTML = '';
+    const chat = state.chats[state.activeChatId];
+    const library = chat.settings.myAvatarLibrary || [];
+
+    if (library.length === 0) {
+        grid.innerHTML = '<p style="color: var(--text-secondary); grid-column: 1 / -1; text-align: center;">这个头像库还是空的，点击右上角“添加”吧！</p>';
+        return;
+    }
+
+    library.forEach((avatar, index) => {
+        const item = document.createElement('div');
+        item.className = 'sticker-item';
+        item.title = avatar.name;
+
+        // ▼▼▼ 核心修复就在这里！▼▼▼
+        item.innerHTML = `
+            <div class="sticker-image-container" style="background-image: url(${avatar.url});"></div>
+            <span class="sticker-name">${avatar.name}</span>
+        `;
+        // ▲▲▲ 修复结束 ▲▲▲
+
+        const deleteBtn = document.createElement('div');
+        deleteBtn.className = 'delete-btn';
+        deleteBtn.innerHTML = '×';
+        deleteBtn.style.display = 'block';
+        deleteBtn.onclick = async (e) => {
+            e.stopPropagation();
+            const confirmed = await showCustomConfirm('删除头像', `确定要从你的头像库中删除“${avatar.name}”吗？`, { confirmButtonClass: 'btn-danger' });
+            if (confirmed) {
+                chat.settings.myAvatarLibrary.splice(index, 1);
+                await db.chats.put(chat);
+                renderMyAvatarLibrary();
             }
-        
-            library.forEach((avatar, index) => {
-                const item = document.createElement('div');
-                item.className = 'sticker-item'; // 复用表情面板的样式
-                item.style.backgroundImage = `url(${avatar.url})`;
-                item.title = avatar.name;
-        
-                const deleteBtn = document.createElement('div');
-                deleteBtn.className = 'delete-btn';
-                deleteBtn.innerHTML = '×';
-                deleteBtn.style.display = 'block'; // 总是显示删除按钮
-                deleteBtn.onclick = async (e) => {
-                    e.stopPropagation();
-                    const confirmed = await showCustomConfirm('删除头像', `确定要从你的头像库中删除“${avatar.name}”吗？`, { confirmButtonClass: 'btn-danger' });
-                    if (confirmed) {
-                        chat.settings.myAvatarLibrary.splice(index, 1);
-                        await db.chats.put(chat);
-                        renderMyAvatarLibrary();
-                    }
-                };
-                item.appendChild(deleteBtn);
-                grid.appendChild(item);
-            });
-        }
+        };
+        item.appendChild(deleteBtn);
+        grid.appendChild(item);
+    });
+}
         
         /**
          * 向“我的”头像库中通过URL添加新头像
@@ -25672,43 +25682,49 @@ async function endVideoCall() {
             document.getElementById('group-avatar-library-modal').classList.add('visible');
         }
         
-        /**
-         * 渲染群头像库的内容
-         */
-        function renderGroupAvatarLibrary() {
-            const grid = document.getElementById('group-avatar-library-grid');
-            grid.innerHTML = '';
-            const chat = state.chats[state.activeChatId];
-            const library = chat.settings.groupAvatarLibrary || [];
-        
-            if (library.length === 0) {
-                grid.innerHTML = '<p style="color: var(--text-secondary); grid-column: 1 / -1; text-align: center;">这个头像库还是空的，点击右上角“添加”吧！</p>';
-                return;
+/**
+ * 【已修复】渲染群头像库的内容
+ */
+function renderGroupAvatarLibrary() {
+    const grid = document.getElementById('group-avatar-library-grid');
+    grid.innerHTML = '';
+    const chat = state.chats[state.activeChatId];
+    const library = chat.settings.groupAvatarLibrary || [];
+
+    if (library.length === 0) {
+        grid.innerHTML = '<p style="color: var(--text-secondary); grid-column: 1 / -1; text-align: center;">这个头像库还是空的，点击右上角“添加”吧！</p>';
+        return;
+    }
+
+    library.forEach((avatar, index) => {
+        const item = document.createElement('div');
+        item.className = 'sticker-item';
+        item.title = avatar.name;
+
+        // ▼▼▼ 核心修复就在这里！▼▼▼
+        item.innerHTML = `
+            <div class="sticker-image-container" style="background-image: url(${avatar.url});"></div>
+            <span class="sticker-name">${avatar.name}</span>
+        `;
+        // ▲▲▲ 修复结束 ▲▲▲
+
+        const deleteBtn = document.createElement('div');
+        deleteBtn.className = 'delete-btn';
+        deleteBtn.innerHTML = '×';
+        deleteBtn.style.display = 'block';
+        deleteBtn.onclick = async (e) => {
+            e.stopPropagation();
+            const confirmed = await showCustomConfirm('删除头像', `确定要从头像库中删除“${avatar.name}”吗？`, { confirmButtonClass: 'btn-danger' });
+            if (confirmed) {
+                chat.settings.groupAvatarLibrary.splice(index, 1);
+                await db.chats.put(chat);
+                renderGroupAvatarLibrary();
             }
-        
-            library.forEach((avatar, index) => {
-                const item = document.createElement('div');
-                item.className = 'sticker-item'; // 复用表情面板的样式
-                item.style.backgroundImage = `url(${avatar.url})`;
-                item.title = avatar.name;
-        
-                const deleteBtn = document.createElement('div');
-                deleteBtn.className = 'delete-btn';
-                deleteBtn.innerHTML = '×';
-                deleteBtn.style.display = 'block'; // 总是显示删除按钮
-                deleteBtn.onclick = async (e) => {
-                    e.stopPropagation();
-                    const confirmed = await showCustomConfirm('删除头像', `确定要从头像库中删除“${avatar.name}”吗？`, { confirmButtonClass: 'btn-danger' });
-                    if (confirmed) {
-                        chat.settings.groupAvatarLibrary.splice(index, 1);
-                        await db.chats.put(chat);
-                        renderGroupAvatarLibrary();
-                    }
-                };
-                item.appendChild(deleteBtn);
-                grid.appendChild(item);
-            });
-        }
+        };
+        item.appendChild(deleteBtn);
+        grid.appendChild(item);
+    });
+}
         
         /**
          * 向当前群聊的头像库中添加新头像
