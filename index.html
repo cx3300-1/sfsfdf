@@ -17667,7 +17667,7 @@ async function triggerSpectatorGroupAiAction() {
         }
 
         const membersList = chat.members.map(m => `- **${m.groupNickname}** (本名: ${m.originalName}): ${m.persona}`).join('\n');
-const intelligentSummaryContext = await checkAndTriggerIntelligentSummary(chat);        
+
         // 2. 【【【核心：构建一个全新的、功能完备的 System Prompt】】】
         const systemPrompt = `
 # 核心任务：群聊剧本作家
@@ -17695,7 +17695,7 @@ const intelligentSummaryContext = await checkAndTriggerIntelligentSummary(chat);
 # 上下文参考 (你必须阅读并遵守)
 ${longTermMemoryContext}
 ${worldBookContent}
-${intelligentSummaryContext ? intelligentSummaryContext : ''}
+
 ${linkedMemoryContext}
 - **这是你们最近的对话历史**:
 ${historySlice.map(msg => `${getDisplayNameInGroup(chat, msg.senderName)}: ${msg.content}`).join('\n')}
@@ -18389,7 +18389,27 @@ if (chat.settings.enableTimePerception) {
                         groupAvatarLibraryContext += '- (头像库是空的，无法更换头像)';
                     }
     const readingContext = formatReadingStateForAI(chatId);
-const intelligentSummaryContext = await checkAndTriggerIntelligentSummary(chat);
+
+const summary3Hours_group = generateSummaryForTimeframe(chat, 3, 'hours');
+const summary6Hours_group = generateSummaryForTimeframe(chat, 6, 'hours');
+const summary9Hours_group = generateSummaryForTimeframe(chat, 9, 'hours');
+const summaryToday_group = generateSummaryForTimeframe(chat, 1, 'days');
+const summary3Days_group = generateSummaryForTimeframe(chat, 3, 'days');
+const summary7Days_group = generateSummaryForTimeframe(chat, 7, 'days');
+
+let multiLayeredSummaryContext_group = '';
+if (summary3Hours_group || summary6Hours_group || summary9Hours_group || summaryToday_group || summary3Days_group || summary7Days_group) {
+    multiLayeredSummaryContext_group += `\n# 智能总结 (基于不同时间维度的群聊回顾)\n`;
+    if (summary3Hours_group) multiLayeredSummaryContext_group += summary3Hours_group;
+    if (summary6Hours_group) multiLayeredSummaryContext_group += summary6Hours_group;
+    if (summary9Hours_group) multiLayeredSummaryContext_group += summary9Hours_group;
+
+    if (summary3Hours_group || summary6Hours_group || summary9Hours_group) multiLayeredSummaryContext_group += '\n';
+
+    if (summaryToday_group) multiLayeredSummaryContext_group += summaryToday_group;
+    if (summary3Days_group) multiLayeredSummaryContext_group += summary3Days_group;
+    if (summary7Days_group) multiLayeredSummaryContext_group += summary7Days_group;
+}
 systemPrompt = `
 # 核心任务：群聊导演
 你是一个群聊AI导演，负责扮演【除了用户以外】的所有角色。你的核心任务是导演一场生动的、角色间有充分互动的群聊。
@@ -18413,7 +18433,7 @@ ${worldBookContent}
 # 长期记忆 (所有角色必须严格遵守)
 ${longTermMemoryContext}
 ${chat.longTermMemory && chat.longTermMemory.length > 0 ? chat.longTermMemory.map(mem => `- ${mem.content}`).join('\n') : '- (暂无)'}
-${intelligentSummaryContext ? intelligentSummaryContext : ''}
+${multiLayeredSummaryContext_group}
 ${linkedMemoryContext}
 ${musicContext}
 ${sharedContext}
@@ -18659,8 +18679,7 @@ ${enabledEntries}
                                     }
                                 }
                             }
-const intelligentSummaryContext = await checkAndTriggerIntelligentSummary(chat);
-                            
+                       
                                     systemPrompt = `
 # 你的任务
 你现在正处于【线下剧情模式】，你需要扮演角色"${chat.originalName}"，并与用户进行面对面的互动。你的任务是创作一段包含角色动作、神态、心理活动和对话的、连贯的叙事片段。
@@ -18677,7 +18696,7 @@ ${chat.settings.enableTimePerception ? `- **当前时间**: ${currentTime} (${ti
 你必须严格遵守${worldBookContent}
 # 长期记忆 (你必须严格遵守的事实)
 ${chat.longTermMemory && chat.longTermMemory.length > 0 ? chat.longTermMemory.map(mem => `- ${mem.content}`).join('\n') : '- (暂无)'}
-${intelligentSummaryContext ? intelligentSummaryContext : ''}
+
 ${linkedMemoryContext}
 - **你们最后的对话摘要**: 
 ${historySlice.map(msg => {
@@ -18918,7 +18937,26 @@ if (chat.settings.enableTimePerception) {
     }
 }
     const readingContext = formatReadingStateForAI(chatId);   
-const intelligentSummaryContext = await checkAndTriggerIntelligentSummary(chat);
+
+// 【【【核心修改：在这里也同时生成更细致的、多维度的总结】】】
+const summary3Hours = generateSummaryForTimeframe(chat, 3, 'hours');
+const summary6Hours = generateSummaryForTimeframe(chat, 6, 'hours');
+const summary9Hours = generateSummaryForTimeframe(chat, 9, 'hours');
+const summaryToday = generateSummaryForTimeframe(chat, 1, 'days');
+const summary3Days = generateSummaryForTimeframe(chat, 3, 'days');
+const summary7Days = generateSummaryForTimeframe(chat, 7, 'days');
+
+let multiLayeredSummaryContext = '';
+if (summary3Hours || summary6Hours || summary9Hours || summaryToday || summary3Days || summary7Days) {
+    multiLayeredSummaryContext += `\n# 智能总结 (基于不同时间维度的对话回顾)\n`;
+    if (summary3Hours) multiLayeredSummaryContext += summary3Hours;
+    if (summary6Hours) multiLayeredSummaryContext += summary6Hours;
+    if (summary9Hours) multiLayeredSummaryContext += summary9Hours;
+    if (summary3Hours || summary6Hours || summary9Hours) multiLayeredSummaryContext += '\n';
+    if (summaryToday) multiLayeredSummaryContext += summaryToday;
+    if (summary3Days) multiLayeredSummaryContext += summary3Days;
+    if (summary7Days) multiLayeredSummaryContext += summary7Days;
+}
 systemPrompt = `
 # 身份与核心任务
 你正在扮演角色“${chat.originalName}”，与用户（你的聊天对象）进行一场自然的、生活化的在线聊天。你的所有行为和决策都必须严格围绕你的角色设定展开。
@@ -18949,7 +18987,7 @@ ${timeContext}
 ${linkedMemoryContext}
 # 长期记忆 (必须严格遵守)
 ${chat.longTermMemory && chat.longTermMemory.length > 0 ? chat.longTermMemory.map(mem => `- ${mem.content}`).join('\n') : '- (暂无)'}
-${intelligentSummaryContext ? intelligentSummaryContext : ''}
+${multiLayeredSummaryContext}
 # 关系与身份档案 (至关重要)
 -   **你的本名**: "${chat.originalName}" (核心身份，用于指令中的'name'字段)
 -   **用户给你的备注**: "${chat.name}" (你可以建议并修改)
@@ -21612,7 +21650,25 @@ if (chat.settings.enableTimePerception) {
     const longTermMemoryContext = `# 长期记忆 (最高优先级，这是你和用户之间已经确立的事实，必须严格遵守)
 ${chat.longTermMemory && chat.longTermMemory.length > 0 ? chat.longTermMemory.map(mem => `- ${mem.content}`).join('\n') : '- (暂无)'}`;
     // ▲▲▲ 修改结束 ▲▲▲  
-const intelligentSummaryContext = await checkAndTriggerIntelligentSummary(chat);
+
+const summary3Hours = generateSummaryForTimeframe(chat, 3, 'hours');
+const summary6Hours = generateSummaryForTimeframe(chat, 6, 'hours');
+const summary9Hours = generateSummaryForTimeframe(chat, 9, 'hours');
+const summaryToday = generateSummaryForTimeframe(chat, 1, 'days');
+const summary3Days = generateSummaryForTimeframe(chat, 3, 'days');
+const summary7Days = generateSummaryForTimeframe(chat, 7, 'days');
+
+let multiLayeredSummaryContext = '';
+if (summary3Hours || summary6Hours || summary9Hours || summaryToday || summary3Days || summary7Days) {
+    multiLayeredSummaryContext += `\n# 智能总结 (基于不同时间维度的对话回顾)\n`;
+    if (summary3Hours) multiLayeredSummaryContext += summary3Hours;
+    if (summary6Hours) multiLayeredSummaryContext += summary6Hours;
+    if (summary9Hours) multiLayeredSummaryContext += summary9Hours;
+    if (summary3Hours || summary6Hours || summary9Hours) multiLayeredSummaryContext += '\n';
+    if (summaryToday) multiLayeredSummaryContext += summaryToday;
+    if (summary3Days) multiLayeredSummaryContext += summary3Days;
+    if (summary7Days) multiLayeredSummaryContext += summary7Days;
+}
             const systemPrompt = `
         # 你的任务
         你现在扮演一个名为"${chat.name}"的角色（你的本名是"${chat.originalName}"）。你已经有一段时间没有和用户（${userNickname}）互动了，现在你有机会【主动】做点什么，来表现你的个性和独立生活。这是一个秘密的、后台的独立行动。
@@ -21677,7 +21733,7 @@ ${longTimeNoSee ? `【重要提示】你们已经很久没聊天了！你【必�
         -   **你的角色设定**: ${chat.settings.aiPersona}
         ${worldBookContent}
         ${longTermMemoryContext}
-        ${intelligentSummaryContext ? intelligentSummaryContext : ''}   
+        ${multiLayeredSummaryContext}   
         ${linkedMemoryContext}
         ${chat.settings.enableTimePerception ? `-   **当前时间**:${currentTime} (${timeOfDayGreeting})` : ''}
         ${chat.settings.enableTimePerception ? `-   **对话状态**: ${timeContextText}` : ''}
@@ -22189,7 +22245,27 @@ const recentHistory = chat.history.filter(m => !m.isHidden).slice(-maxMemory);
                     }
                     dynamicContext = postsContext;
                 }
-const intelligentSummaryContext = await checkAndTriggerIntelligentSummary(chat);        
+   
+const summary3Hours_group = generateSummaryForTimeframe(chat, 3, 'hours');
+const summary6Hours_group = generateSummaryForTimeframe(chat, 6, 'hours');
+const summary9Hours_group = generateSummaryForTimeframe(chat, 9, 'hours');
+const summaryToday_group = generateSummaryForTimeframe(chat, 1, 'days');
+const summary3Days_group = generateSummaryForTimeframe(chat, 3, 'days');
+const summary7Days_group = generateSummaryForTimeframe(chat, 7, 'days');
+
+let multiLayeredSummaryContext_group = '';
+if (summary3Hours_group || summary6Hours_group || summary9Hours_group || summaryToday_group || summary3Days_group || summary7Days_group) {
+    multiLayeredSummaryContext_group += `\n# 智能总结 (基于不同时间维度的群聊回顾)\n`;
+    if (summary3Hours_group) multiLayeredSummaryContext_group += summary3Hours_group;
+    if (summary6Hours_group) multiLayeredSummaryContext_group += summary6Hours_group;
+    if (summary9Hours_group) multiLayeredSummaryContext_group += summary9Hours_group;
+
+    if (summary3Hours_group || summary6Hours_group || summary9Hours_group) multiLayeredSummaryContext_group += '\n';
+
+    if (summaryToday_group) multiLayeredSummaryContext_group += summaryToday_group;
+    if (summary3Days_group) multiLayeredSummaryContext_group += summary3Days_group;
+    if (summary7Days_group) multiLayeredSummaryContext_group += summary7Days_group;
+}     
                 systemPrompt = `
         # 你的任务
         你是一个群聊AI导演。你现在控制着一个名为“${chat.name}”的群聊。
@@ -22221,7 +22297,7 @@ ${longTermMemoryContext}
         ${worldBookContent}
         # 长期记忆 (最高优先级，这是群内已经确立的事实，所有角色必须严格遵守)
         ${chat.longTermMemory && chat.longTermMemory.length > 0 ? chat.longTermMemory.map(mem => `- ${mem.content}`).join('\n') : '- (暂无)'}       
-        ${intelligentSummaryContext ? intelligentSummaryContext : ''}
+        ${multiLayeredSummaryContext_group}
         ${linkedMemoryContext}
         
         # 群成员列表及人设
@@ -26785,27 +26861,27 @@ function analyzeTextForSummary(text) {
 }
 
 /**
- * 【核心生成器】根据最近7天的对话生成总结文本
+ * 【全新 | V3.0 分时段总结版】根据指定的时间范围，为对话生成智能总结
  * @param {object} chat - 目标聊天对象
- * @returns {string} - 格式化后的总结文本字符串，如果没有内容则返回空字符串
+ * @param {number} duration - 要回顾的时长 (例如 3, 6, 1, 7)
+ * @param {string} unit - 时间单位, 'hours' 或 'days'
+ * @returns {string} - 格式化后的、用于注入Prompt的总结文本，如果没有内容则返回空字符串
  */
-function generateIntelligentSummaryForPrompt(chat) {
-    console.log(`正在为聊天 "${chat.name}" 生成智能总结...`);
+function generateSummaryForTimeframe(chat, duration, unit) {
+    let timeAgo;
+    if (unit === 'hours') {
+        timeAgo = Date.now() - duration * 60 * 60 * 1000;
+    } else { // 'days'
+        timeAgo = Date.now() - duration * 24 * 60 * 60 * 1000;
+    }
 
-    // 1. 【【【核心修改：7天时间过滤】】】
-    const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-    
-    // 2. 聚合数据：只获取最近7天内的、非隐藏的消息
-    const messagesToSummarize = chat.history.filter(m => 
-        m.timestamp > sevenDaysAgo && !m.isHidden
-    );
+    const messagesToSummarize = chat.history.filter(m => m.timestamp > timeAgo && !m.isHidden);
 
-    if (messagesToSummarize.length === 0) {
-        console.log("最近7天内无消息可供总结。");
-        return ""; // 如果7天内没消息，直接返回空
+    if (messagesToSummarize.length < 3) {
+        return "";
     }
     
-    // 3. 提取文本 (逻辑不变)
+    // (此处的关键词提取逻辑与您现有的代码完全相同，无需修改)
     const allText = messagesToSummarize.map(msg => {
         if (typeof msg.content === 'string') return msg.content;
         if (msg.type === 'voice_message') return msg.content;
@@ -26813,62 +26889,34 @@ function generateIntelligentSummaryForPrompt(chat) {
         return '';
     }).join(' ');
 
-    // 4. 分析文本，提取关键词 (逻辑不变)
-    const { coreKeywords, situationalKeywords } = analyzeTextForSummary(allText);
-
-    // 5. 【【【核心修改：返回Prompt字符串】】】
-    // 使用模板生成总结，不再创建隐藏消息
-    let summary = "";
-    if (coreKeywords.length > 0) {
-        summary += `\n- 核心议题似乎是关于 **${coreKeywords.join('、 ')}**。`;
-    }
-    if (situationalKeywords.length > 0) {
-        summary += `\n- 同时，我们也聊到了 ${situationalKeywords.join('、 ')} 这些相关话题。`;
-    }
-    if (coreKeywords.length === 0 && situationalKeywords.length === 0) {
-        summary += "\n- 我们聊了很多，但似乎没有一个特别集中的主题。";
+    const stopWords = new Set(['的', '是', '了', '在', '我', '你', '他', '她', '它', '我们', '你们', '他们', '这', '那', '一个', '也', '和', '与', '或', '但', '然而', '所以', '因此', '就', '都', '地', '得', '着', '过', '吧', '吗', '呢', '啊', '哦', '嗯']);
+    const words = allText.match(/[\u4e00-\u9fa5]+|[a-zA-Z0-9]+/g) || [];
+    const frequencies = new Map();
+    words.forEach(word => {
+        if (word.length > 1 && !stopWords.has(word)) {
+            frequencies.set(word, (frequencies.get(word) || 0) + 1);
+        }
+    });
+    const sortedKeywords = [...frequencies.entries()].sort((a, b) => b[1] - a[1]).map(entry => entry[0]);
+    
+    if (sortedKeywords.length === 0) {
+        return "";
     }
 
-    // 只有在生成了有效总结时，才返回完整的上下文块
-    if (summary) {
-        console.log(`为 "${chat.name}" 生成的总结:`, summary);
-        return `\n# 智能总结 (基于最近7天对话)\n你最近和用户的对话要点如下：${summary}\n`;
+    // 【核心修改】根据单位和时长，生成更精确的标题
+    let title;
+    if (unit === 'hours') {
+        title = `最近${duration}小时核心议题`;
+    } else {
+        if (duration === 1) {
+            title = "本日核心议题";
+        } else {
+            title = `最近${duration}天核心议题`;
+        }
     }
     
-    return ""; // 如果没有关键词，也返回空
+    return `\n- **${title}**: 关于 **${sortedKeywords.slice(0, 3).join('、 ')}**。`;
 }
-
-/**
- * 【触发器 | 已重构】检查是否需要执行智能总结，如果需要，则生成并返回总结文本
- * @param {object} chat - 目标聊天对象
- * @returns {Promise<string>} - 返回总结文本或空字符串
- */
-async function checkAndTriggerIntelligentSummary(chat) {
-    if (!chat) return "";
-
-    const INTELLIGENT_SUMMARY_INTERVAL = 50;
-    const lastSummaryTimestamp = chat.lastIntelligentSummaryTimestamp || 0;
-    
-    // 计算自上次总结以来的消息数量
-    const messagesSinceLastSummary = chat.history.filter(m => m.timestamp > lastSummaryTimestamp && !m.isHidden).length;
-
-    if (messagesSinceLastSummary >= INTELLIGENT_SUMMARY_INTERVAL) {
-        // 如果满足条件，调用生成器获取总结文本
-        const summaryText = generateIntelligentSummaryForPrompt(chat);
-        
-        // 更新时间戳并保存到数据库
-        chat.lastIntelligentSummaryTimestamp = Date.now();
-        await db.chats.put(chat);
-        
-        // 返回生成的文本
-        return summaryText;
-    }
-
-    // 如果不满足条件，返回空字符串
-    return "";
-}
-
-// ▲▲▲ 全新JS代码替换结束 ▲▲▲
 
 
 // ▼▼▼ 【全新 | V3.0 终极容错版】请用这一整块代码，完整替换旧的 summarizeExistingLongTermMemory 函数 ▼▼▼
