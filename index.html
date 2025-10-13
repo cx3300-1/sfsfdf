@@ -9780,6 +9780,7 @@ input, textarea, select {
     border-color: #38383a;
 }
 /* ▲▲▲ 新增CSS结束 ▲▲▲ */
+
     </style>
 </head>
 <body>
@@ -12174,28 +12175,31 @@ input, textarea, select {
             <p id="battery-alert-text"></p>
         </div>
     </div>
-    <!-- ▼▼▼ 【全新】外卖请求模态框 ▼▼▼ -->
-    <div id="waimai-request-modal" class="modal">
-        <div class="modal-content" style="width: 290px;">
-            <div class="modal-header">
-                <span>发起外卖代付</span>
+<!-- ▼▼▼ 【全新】外卖请求模态框 (V2.0 - 支持为TA点单) ▼▼▼ -->
+<div id="waimai-request-modal" class="modal">
+    <div class="modal-content" style="width: 290px;">
+        <div class="modal-header">
+            <span>发起外卖订单</span>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label for="waimai-product-info">商品信息</label>
+                <input type="text" id="waimai-product-info" placeholder="例如：一杯杨枝甘露">
             </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label for="waimai-product-info">商品信息</label>
-                    <input type="text" id="waimai-product-info" placeholder="例如：一杯杨枝甘露">
-                </div>
-                <div class="form-group">
-                    <label for="waimai-amount">代付金额 (元)</label>
-                    <input type="number" id="waimai-amount" placeholder="例如：21" min="0" step="0.01">
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="cancel" id="waimai-cancel-btn">取消</button>
-                <button class="save" id="waimai-confirm-btn">发起请求</button>
+            <div class="form-group">
+                <label for="waimai-amount">订单金额 (元)</label>
+                <input type="number" id="waimai-amount" placeholder="例如：21" min="0" step="0.01">
             </div>
         </div>
+        <div class="modal-footer">
+            <!-- 【核心修改1】原来的“取消”按钮，现在变成了“为TA点外卖” -->
+            <button class="save" id="waimai-order-for-ai-btn">为TA点单</button>
+            <!-- 【核心修改2】原来的“发起请求”按钮，现在是另一个选项 -->
+            <button class="save" id="waimai-confirm-btn">发起请求</button>
+        </div>
     </div>
+</div>
+<!-- ▲▲▲ 新HTML粘贴结束 ▲▲▲ -->
     <!-- ▼▼▼ 【全新】新建约定/倒计时模态框 ▼▼▼ -->
     <div id="create-countdown-modal" class="modal">
         <div class="modal-content" style="height: auto;">
@@ -17233,7 +17237,7 @@ function scrollToOriginalMessage(originalTimestamp) {
             if (typeof rawContent === 'string' && rawContent.trim().startsWith('<') && rawContent.trim().endsWith('>')) {
                 contentHtml = rawContent;
                 bubble.classList.add('is-raw-html'); 
-            } else if (msg.type === 'offline_text' || msg.type === 'share_link' || msg.type === 'share_card' || msg.type === 'location_share' || msg.type === 'ai_image' || msg.type === 'user_photo' || msg.type === 'voice_message' || msg.type === 'transfer' || msg.type === 'waimai_request' || msg.type === 'red_packet' || msg.type === 'poll' || msg.type === 'gift') {
+            } else if (msg.type === 'offline_text' || msg.type === 'share_link' || msg.type === 'share_card' || msg.type === 'location_share' || msg.type === 'ai_image' || msg.type === 'user_photo' || msg.type === 'voice_message' || msg.type === 'transfer' || msg.type === 'waimai_request'|| msg.type === 'waimai_order'  || msg.type === 'red_packet' || msg.type === 'poll' || msg.type === 'gift') {
                 // (这部分是您已有的所有卡片渲染逻辑，保持不变)
                if (msg.type === 'offline_text') {
                     // 1. 【兼容旧数据】如果消息还是旧的 dialogue/description 格式，则先合并
@@ -17320,8 +17324,43 @@ function scrollToOriginalMessage(originalTimestamp) {
                     let actionButtonsHtml = '';
                     if (msg.status === 'pending' && !isUser) { actionButtonsHtml = `<div class="waimai-user-actions"><button class="waimai-decline-btn" data-choice="rejected">残忍拒绝</button><button class="waimai-pay-btn" data-choice="paid">为Ta买单</button></div>`; }
                     contentHtml = `<div class="waimai-card"><div class="waimai-header"><img src="https://files.catbox.moe/mq179k.png" class="icon" alt="Meituan Icon"><div class="title-group"><span class="brand">美团外卖</span><span class="separator">|</span><span>外卖美食</span></div></div><div class="waimai-catchphrase">Hi，你和我的距离只差一顿外卖～</div><div class="waimai-main"><div class="request-title">${requestTitle}</div><div class="payment-box"><div class="payment-label">需付款</div><div class="amount">¥${Number(msg.amount).toFixed(2)}</div><div class="countdown-label">剩余支付时间<div class="countdown-timer" id="waimai-timer-${msg.timestamp}"></div></div></div><button class="waimai-details-btn">查看详情</button></div>${actionButtonsHtml}</div>`;
-                    setTimeout(() => { /* waimai timer logic */ }, 0);
-                } else if (msg.type === 'red_packet') {
+                       setTimeout(() => {
+        if (msg.status === 'pending') {
+            const timerElement = document.getElementById(`waimai-timer-${msg.timestamp}`);
+            if (timerElement) {
+                const timerId = startWaimaiCountdown(timerElement, msg.countdownEndTime);
+                // 将计时器ID存起来，方便在离开页面时统一清理
+                waimaiTimers[msg.timestamp] = timerId;
+            }
+        }
+    }, 0);
+                } else if (msg.type === 'waimai_order') {
+                bubble.classList.add('is-waimai-request', 'is-card-like'); // 复用样式
+                const senderDisplayName = getDisplayNameInGroup(chat, msg.senderName);
+                
+                let recipientDisplayName = '你';
+                if (chat.isGroup) {
+                    // 如果是群聊，就去查找接收者的名字
+                    recipientDisplayName = getDisplayNameInGroup(chat, msg.recipientName);
+                }
+
+    contentHtml = `
+        <div class="waimai-card">
+            <div class="waimai-header">
+                <img src="https://files.catbox.moe/mq179k.png" class="icon" alt="Meituan Icon">
+                <div class="title-group"><span class="brand">美团外卖</span><span class="separator">|</span><span>外卖美食</span></div>
+            </div>
+            <div class="waimai-main">
+                <div class="request-title" style="margin-bottom: 12px;">${senderDisplayName} 已为${recipientDisplayName}下单，请慢用～</div>
+                <div class="payment-box">
+                    <div class="payment-label" style="font-size: 18px; font-weight: 600;">${msg.productInfo}</div>
+                    <div class="amount" style="margin-top: 8px;">¥${Number(msg.amount).toFixed(2)}</div>
+                </div>
+                <button class="waimai-details-btn">查看订单详情</button>
+            </div>
+        </div>
+    `;
+}else if (msg.type === 'red_packet') {
                      bubble.classList.add('is-red-packet', 'is-card-like');
                     const myOriginalName = state.qzoneSettings.nickname || '{{user}}';
                     const isFinished = msg.isFullyClaimed; const hasClaimed = msg.claimedBy && msg.claimedBy[myOriginalName];
@@ -18433,7 +18472,7 @@ ${chat.settings.enableTimePerception ? `4.  **情景感知**: 你的对话【必
 -   **发起投票**: \`{"type": "poll", "name": "角色本名", "question": "问题", "options": "选项A\\n选项B"}\`
 -   **参与投票**: \`{"type": "vote", "name": "角色本名", "poll_timestamp": 投票时间戳, "choice": "选项文本"}\`
 -   **送礼物**: \`{"type": "gift", "name": "角色本名", "productId": ID, "quantity": 1, "recipients": ["收礼人本名A", "收礼人本名B"]}\`
-
+-   **为他人点外卖**: \`{"type": "waimai_order", "name": "你的本名", "recipientName": "收礼者本名", "productInfo": "商品名", "amount": 价格, "greeting": "你想说的话"}\`
 # 互动指南 (请严格遵守)
 -   **红包互动**: 抢红包后，你【必须】根据系统提示的结果（抢到多少钱、谁是手气王）发表符合人设的评论。
 -   **音乐互动**: 【必须】围绕【用户的行为】进行评论。严禁将用户切歌等行为归因于其他AI成员。
@@ -18998,7 +19037,7 @@ ${postsContext}
 -   **回应视频通话**: \`{"type": "video_call_response", "decision": "accept" or "reject"}\`
 -   **下五子棋**: \`{"type": "gomoku_move", "name": "${chat.originalName}", "x": (0-14), "y": (0-14)}\`
 -   **送礼物**: \`{"type": "gift", "productId": 商品ID, "quantity": 1}\`
-
+-   **为用户点外卖**:  \`{"type": "waimai_order", "productInfo": "商品名", "amount": 价格, "greeting": "你想说的话"} \`(你主动为用户点外卖时使用)
 
 现在，请根据以上规则和下面的对话历史，继续进行对话。`;
             
@@ -20129,6 +20168,16 @@ chat.history.push(aiClaimedMessage);
                                 countdownEndTime: Date.now() + 15 * 60 * 1000,
                             };
                             break;
+                case 'waimai_order':
+                    aiMessage = {
+                        ...baseMessage,
+                        type: 'waimai_order',
+                        productInfo: msgData.productInfo,
+                        amount: msgData.amount,
+                        greeting: msgData.greeting,
+                        recipientName: msgData.recipientName || null // 如果是群聊，记录接收者
+                    };
+                    break;
                         case 'offline_text':
         aiMessage = { ...baseMessage, ...msgData };
                         default:
@@ -20250,6 +20299,61 @@ if (qzoneActionTaken) {
                 async function sendSticker(sticker) { if (!state.activeChatId) return; const chat = state.chats[state.activeChatId]; const msg = { role: 'user', content: sticker.url, meaning: sticker.name, timestamp: Date.now() }; chat.history.push(msg); await db.chats.put(chat); appendMessage(msg, chat); renderChatList(); document.getElementById('sticker-panel').classList.remove('visible'); }
         
                 async function sendUserTransfer() { if (!state.activeChatId) return; const amountInput = document.getElementById('transfer-amount'); const noteInput = document.getElementById('transfer-note'); const amount = parseFloat(amountInput.value); const note = noteInput.value.trim(); if (isNaN(amount) || amount < 0 || amount > 999999) { alert('请输入有效的金额 (0 到 999999 之间)！'); return; } const chat = state.chats[state.activeChatId]; const senderName = chat.isGroup ? (chat.settings.myNickname || '我') : '我'; const receiverName = chat.isGroup ? '群聊' : chat.name; const msg = { role: 'user', type: 'transfer', amount: amount, note: note, senderName, receiverName, timestamp: Date.now() }; chat.history.push(msg); await db.chats.put(chat); appendMessage(msg, chat); renderChatList(); document.getElementById('transfer-modal').classList.remove('visible'); amountInput.value = ''; noteInput.value = ''; }
+
+/**
+ * 【全新 V2.0 | AI认知修复版】处理用户点击“为TA点外卖”的逻辑
+ */
+async function sendWaimaiOrderForAI() {
+    if (!state.activeChatId) return;
+    
+    const productInfoInput = document.getElementById('waimai-product-info');
+    const amountInput = document.getElementById('waimai-amount');
+    
+    const productInfo = productInfoInput.value.trim();
+    const amount = parseFloat(amountInput.value);
+
+    if (!productInfo || isNaN(amount) || amount <= 0) {
+        alert('请填写有效的商品信息和金额！');
+        return;
+    }
+
+    const chat = state.chats[state.activeChatId];
+    const now = Date.now();
+    const myNickname = chat.isGroup ? (chat.settings.myNickname || '我') : '我';
+
+    // 1. 创建对用户可见的“已下单”卡片消息（这部分保持不变）
+    const visibleMessage = {
+        role: 'user',
+        senderName: myNickname, 
+        type: 'waimai_order',
+        productInfo: productInfo,
+        amount: amount,
+        timestamp: now
+    };
+    chat.history.push(visibleMessage);
+
+    // 2. 【核心修改1】创建一条对用户隐藏的、语义更清晰的系统消息，明确告知AI这是一个“礼物”
+    const hiddenMessage = {
+        role: 'system',
+        content: `[系统提示：用户(${myNickname})为你点了一份外卖作为【礼物】。外卖内容是“${productInfo}”，价值${amount}元。这不是一个代付请求，而是用户已经为你支付了。请你对此表示感谢。]`,
+        timestamp: now + 1,
+        isHidden: true
+    };
+    chat.history.push(hiddenMessage);
+
+    // 3. 保存数据，更新UI
+    await db.chats.put(chat);
+    appendMessage(visibleMessage, chat);
+    renderChatList();
+
+    // 4. 清理并关闭弹窗
+    productInfoInput.value = '';
+    amountInput.value = '';
+    document.getElementById('waimai-request-modal').classList.remove('visible');
+
+    // 5. 【核心修改2】移除此处的 triggerAiResponse() 调用，不再立刻通知AI
+    // triggerAiResponse(); // <--- 确保这一行已被删除或注释掉！
+}
         /**
          * 【全新 V3.0】发送一个位置共享卡片 (背景图已内置)
          */
@@ -23726,51 +23830,86 @@ function createNewMemberInGroup() {
             waimaiTimers = {};
         }
         // ▲▲▲ 新函数粘贴结束 ▲▲▲
-        // ▼▼▼ 【最终修复版】请用这个全新的函数，完整替换旧的 showWaimaiDetails 函数 ▼▼▼
-        
-        /**
-         * 【全新】显示外卖代付请求的详细信息 (仿原生App样式，已修复布局)
-         * @param {number} timestamp - 被点击的外卖卡片消息的时间戳
-         */
-        async function showWaimaiDetails(timestamp) {
-            const chat = state.chats[state.activeChatId];
-            if (!chat) return;
-        
-            const message = chat.history.find(m => m.timestamp === timestamp);
-            if (!message || message.type !== 'waimai_request') return;
-            
-            let statusText;
-            switch(message.status) {
-                case 'paid':
-                    const payerName = message.paidBy || '对方';
-                    const payerDisplayName = getDisplayNameInGroup(chat, payerName);
-                    statusText = `由 ${payerDisplayName} 为您代付成功`;
-                    break;
-                case 'rejected':
-                    statusText = '代付请求已被拒绝';
-                    break;
-                case 'pending':
-                default:
-                    statusText = '等待对方处理';
-                    break;
-            }
-        
-            // --- ★★★ 核心修改就在这里 ★★★ ---
-            // 我们将多个 <p> 标签合并为了一个 <div>，并使用 <br> 标签进行换行。
-            // 同时增加了 line-height (行高) 来微调垂直间距，使其更美观。
-            const detailsHtml = `
-                <div style="text-align: left; font-size: 15px; line-height: 1.8;">
-                    <strong>商品:</strong> ${message.productInfo}<br>
-                    <strong>金额:</strong> ¥${Number(message.amount).toFixed(2)}<br>
-                    <strong>状态:</strong> ${statusText}
-                </div>
-            `;
-            // --- ★★★ 修改结束 ★★★ ---
-        
-            await showCustomAlert("订单详情", detailsHtml);
+// ▼▼▼ 【最终修复版】请用这个全新的函数，完整替换旧的 showWaimaiDetails 函数 ▼▼▼
+
+/**
+ * 【全新 V3.0 | 昵称修复版】显示外卖卡片的详细信息
+ * @param {number} timestamp - 被点击的外卖卡片消息的时间戳
+ */
+async function showWaimaiDetails(timestamp) {
+    const chat = state.chats[state.activeChatId];
+    if (!chat) return;
+
+    const message = chat.history.find(m => m.timestamp === timestamp);
+    
+    if (!message || !['waimai_request', 'waimai_order'].includes(message.type)) {
+        console.error("showWaimaiDetails: 找不到消息或消息类型不正确", timestamp);
+        return;
+    }
+    
+    let detailsHtml = '';
+
+    if (message.type === 'waimai_request') {
+        // (处理“代付请求”卡片的逻辑保持不变)
+        let statusText;
+        switch(message.status) {
+            case 'paid':
+                const payerName = message.paidBy || '对方';
+                const payerDisplayName = getDisplayNameInGroup(chat, payerName);
+                statusText = `由 ${payerDisplayName} 为您代付成功`;
+                break;
+            case 'rejected':
+                statusText = '代付请求已被拒绝';
+                break;
+            default:
+                statusText = '等待对方处理';
+                break;
         }
-        
-        // ▲▲▲ 替换结束 ▲▲▲
+        detailsHtml = `
+            <div style="text-align: left; font-size: 15px; line-height: 1.8;">
+                <strong>商品:</strong> ${message.productInfo}<br>
+                <strong>金额:</strong> ¥${Number(message.amount).toFixed(2)}<br>
+                <strong>状态:</strong> ${statusText}
+            </div>
+        `;
+    } else if (message.type === 'waimai_order') {
+        // --- 核心修复：智能判断赠送方和接收方的显示名称 ---
+        let senderDisplayName;
+        let recipientDisplayName;
+
+        if (chat.isGroup) {
+            // 如果是群聊，统一使用 getDisplayNameInGroup 函数来获取正确的群昵称
+            senderDisplayName = getDisplayNameInGroup(chat, message.senderName);
+            recipientDisplayName = getDisplayNameInGroup(chat, message.recipientName);
+        } else {
+            // 如果是单聊，根据消息是谁发的来判断
+            if (message.role === 'user') {
+                // 如果是用户发的，赠送方是"我"，接收方是AI
+                senderDisplayName = chat.settings.myNickname || '我';
+                recipientDisplayName = chat.name; // chat.name 就是AI的备注名
+            } else {
+                // 如果是AI发的，赠送方是AI，接收方是"我"
+                senderDisplayName = chat.name;
+                recipientDisplayName = chat.settings.myNickname || '我';
+            }
+        }
+        // --- 修复结束 ---
+
+        detailsHtml = `
+            <div style="text-align: left; font-size: 15px; line-height: 1.8;">
+                <strong>订单类型:</strong> 为TA点单<br>
+                <strong>赠送方:</strong> ${senderDisplayName}<br>
+                <strong>接收方:</strong> ${recipientDisplayName}<br>
+                <strong>商品:</strong> ${message.productInfo}<br>
+                <strong>金额:</strong> ¥${Number(message.amount).toFixed(2)}
+            </div>
+        `;
+    }
+
+    await showCustomAlert("订单详情", detailsHtml);
+}
+
+// ▲▲▲ 替换结束 ▲▲▲
         async function handleWaimaiResponse(originalTimestamp, choice) {
             const chat = state.chats[state.activeChatId];
             if (!chat) return;
@@ -41227,61 +41366,63 @@ document.getElementById('chat-settings-screen').addEventListener('click', (e) =>
                     document.getElementById('voice-message-btn').addEventListener('click', async () => { if (!state.activeChatId) return; const text = await showCustomPrompt("发送语音", "请输入你想说的内容："); if (text && text.trim()) { const chat = state.chats[state.activeChatId]; const msg = { role: 'user', type: 'voice_message', content: text.trim(), timestamp: Date.now() }; chat.history.push(msg); await db.chats.put(chat); appendMessage(msg, chat); renderChatList(); } });
                     document.getElementById('send-photo-btn').addEventListener('click', async () => { if (!state.activeChatId) return; const description = await showCustomPrompt("发送照片", "请用文字描述您要发送的照片："); if (description && description.trim()) { const chat = state.chats[state.activeChatId]; const msg = { role: 'user', type: 'user_photo', content: description.trim(), timestamp: Date.now() }; chat.history.push(msg); await db.chats.put(chat); appendMessage(msg, chat); renderChatList(); } });
         
-        // ▼▼▼ 【全新】外卖请求功能事件绑定 ▼▼▼
-        const waimaiModal = document.getElementById('waimai-request-modal');
-        document.getElementById('send-waimai-request-btn').addEventListener('click', () => {
-            waimaiModal.classList.add('visible');
-        });
-        
-        document.getElementById('waimai-cancel-btn').addEventListener('click', () => {
-            waimaiModal.classList.remove('visible');
-        });
-        
-        document.getElementById('waimai-confirm-btn').addEventListener('click', async () => {
-            if (!state.activeChatId) return;
-            
-            const productInfoInput = document.getElementById('waimai-product-info');
-            const amountInput = document.getElementById('waimai-amount');
-            
-            const productInfo = productInfoInput.value.trim();
-            const amount = parseFloat(amountInput.value);
-        
-            if (!productInfo) {
-                alert('请输入商品信息！');
-                return;
-            }
-            if (isNaN(amount) || amount <= 0) {
-                alert('请输入有效的代付金额！');
-                return;
-            }
-        
-            const chat = state.chats[state.activeChatId];
-            const now = Date.now();
-        
-            // 【核心修正】在这里获取用户自己的昵称
-            const myNickname = chat.isGroup ? (chat.settings.myNickname || '我') : '我';
-            
-            const msg = {
-                role: 'user',
-                // 【核心修正】将获取到的昵称，作为 senderName 添加到消息对象中
-                senderName: myNickname, 
-                type: 'waimai_request',
-                productInfo: productInfo,
-                amount: amount,
-                status: 'pending',
-                countdownEndTime: now + 15 * 60 * 1000,
-                timestamp: now
-            };
-        
-            chat.history.push(msg);
-            await db.chats.put(chat);
-            appendMessage(msg, chat);
-            renderChatList();
-        
-            productInfoInput.value = '';
-            amountInput.value = '';
-            waimaiModal.classList.remove('visible');
-        });         
+const waimaiModal = document.getElementById('waimai-request-modal');
+
+// 绑定工具栏的“外卖”按钮，用于打开弹窗
+document.getElementById('send-waimai-request-btn').addEventListener('click', () => {
+    waimaiModal.classList.add('visible');
+});
+
+// 【核心修改1】为弹窗的半透明背景添加点击事件，实现点击外部关闭
+waimaiModal.addEventListener('click', (e) => {
+    // 只有当点击的是背景本身，而不是内容区域时，才关闭
+    if (e.target === waimaiModal) {
+        waimaiModal.classList.remove('visible');
+    }
+});
+
+// 【核心修改2】为新的“为TA点外卖”按钮绑定我们新创建的函数
+document.getElementById('waimai-order-for-ai-btn').addEventListener('click', sendWaimaiOrderForAI);
+
+// 绑定“发起代付请求”按钮（这个逻辑保持不变）
+document.getElementById('waimai-confirm-btn').addEventListener('click', async () => {
+    if (!state.activeChatId) return;
+    
+    const productInfoInput = document.getElementById('waimai-product-info');
+    const amountInput = document.getElementById('waimai-amount');
+    
+    const productInfo = productInfoInput.value.trim();
+    const amount = parseFloat(amountInput.value);
+
+    if (!productInfo || isNaN(amount) || amount <= 0) {
+        alert('请填写有效的商品信息和金额！');
+        return;
+    }
+
+    const chat = state.chats[state.activeChatId];
+    const now = Date.now();
+    const myNickname = chat.isGroup ? (chat.settings.myNickname || '我') : '我';
+    
+    const msg = {
+        role: 'user',
+        senderName: myNickname, 
+        type: 'waimai_request',
+        productInfo: productInfo,
+        amount: amount,
+        status: 'pending',
+        countdownEndTime: now + 15 * 60 * 1000,
+        timestamp: now
+    };
+
+    chat.history.push(msg);
+    await db.chats.put(chat);
+    appendMessage(msg, chat);
+    renderChatList();
+
+    productInfoInput.value = '';
+    amountInput.value = '';
+    waimaiModal.classList.remove('visible');
+});       
                     document.getElementById('open-persona-library-btn').addEventListener('click', openPersonaLibrary);
                     document.getElementById('close-persona-library-btn').addEventListener('click', closePersonaLibrary);
                     document.getElementById('add-persona-preset-btn').addEventListener('click', openPersonaEditorForCreate);
