@@ -40500,16 +40500,17 @@ document.getElementById('save-world-book-btn').addEventListener('click', async (
                 }
             }
             
+            // ▼▼▼ 【【【核心新增代码就在这里！】】】 ▼▼▼
             // 检查是否点击了 "为Ta买单" 或 "残忍拒绝" 按钮
             const choiceBtn = e.target.closest('.waimai-user-actions button');
             if (choiceBtn) {
                 const bubble = choiceBtn.closest('.message-bubble');
                 if (bubble) {
                     const timestamp = parseInt(bubble.dataset.timestamp);
-                    const choice = choiceBtn.dataset.choice;
+                    const choice = choiceBtn.dataset.choice; // 获取 'paid' 或 'rejected'
                     if (!isNaN(timestamp) && choice) {
-                        await handleWaimaiResponse(timestamp, choice);
-                        return;
+                        await handleWaimaiResponse(timestamp, choice); // 调用已有的处理函数
+                        return; // 处理完后退出，避免触发其他逻辑
                     }
                 }
             }
