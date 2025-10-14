@@ -32773,7 +32773,25 @@ const recentHistoryWithUser = chat.history.slice(-maxMemory).map(msg => `${msg.r
         .filter(Boolean)
         .map(book => `\n## 世界书《${book.name}》设定:\n${book.content.filter(e=>e.enabled).map(e => `- ${e.content}`).join('\n')}`)
         .join('');
+// 【【【核心修改：在这里同时生成更细致的、多维度的总结】】】
+const summary3Hours = generateSummaryForTimeframe(chat, 3, 'hours');
+const summary6Hours = generateSummaryForTimeframe(chat, 6, 'hours');
+const summary9Hours = generateSummaryForTimeframe(chat, 9, 'hours');
+const summaryToday = generateSummaryForTimeframe(chat, 1, 'days');
+const summary3Days = generateSummaryForTimeframe(chat, 3, 'days');
+const summary7Days = generateSummaryForTimeframe(chat, 7, 'days');
 
+let multiLayeredSummaryContext = '';
+if (summary3Hours || summary6Hours || summary9Hours || summaryToday || summary3Days || summary7Days) {
+    multiLayeredSummaryContext += `\n# 智能总结 (基于不同时间维度的对话回顾)\n`;
+    if (summary3Hours) multiLayeredSummaryContext += summary3Hours;
+    if (summary6Hours) multiLayeredSummaryContext += summary6Hours;
+    if (summary9Hours) multiLayeredSummaryContext += summary9Hours;
+    if (summary3Hours || summary6Hours || summary9Hours) multiLayeredSummaryContext += '\n';
+    if (summaryToday) multiLayeredSummaryContext += summaryToday;
+    if (summary3Days) multiLayeredSummaryContext += summary3Days;
+    if (summary7Days) multiLayeredSummaryContext += summary7Days;
+}
     // ▼▼▼ 核心修改1：强化AI指令 ▼▼▼
     const systemPrompt = `
 # 你的任务
@@ -32815,6 +32833,7 @@ const recentHistoryWithUser = chat.history.slice(-maxMemory).map(msg => `${msg.r
 - **你的长期记忆**:
 ${longTermMemoryContext}
 ${worldBookContext}
+${multiLayeredSummaryContext} 
 - **你最近和“${userDisplayNameForAI}”的对话摘要**:
 ${recentHistoryWithUser}
 
@@ -33414,7 +33433,25 @@ async function handleContinueRealConversationFromCPhone() {
                 worldBookContext = `\n\n# 核心世界观设定 (必须严格遵守以下所有设定)\n${linkedContents}\n`;
             }
         }
+// 【【【核心修改：在这里同时生成更细致的、多维度的总结】】】
+const summary3Hours = generateSummaryForTimeframe(chat, 3, 'hours');
+const summary6Hours = generateSummaryForTimeframe(chat, 6, 'hours');
+const summary9Hours = generateSummaryForTimeframe(chat, 9, 'hours');
+const summaryToday = generateSummaryForTimeframe(chat, 1, 'days');
+const summary3Days = generateSummaryForTimeframe(chat, 3, 'days');
+const summary7Days = generateSummaryForTimeframe(chat, 7, 'days');
 
+let multiLayeredSummaryContext = '';
+if (summary3Hours || summary6Hours || summary9Hours || summaryToday || summary3Days || summary7Days) {
+    multiLayeredSummaryContext += `\n# 智能总结 (基于不同时间维度的对话回顾)\n`;
+    if (summary3Hours) multiLayeredSummaryContext += summary3Hours;
+    if (summary6Hours) multiLayeredSummaryContext += summary6Hours;
+    if (summary9Hours) multiLayeredSummaryContext += summary9Hours;
+    if (summary3Hours || summary6Hours || summary9Hours) multiLayeredSummaryContext += '\n';
+    if (summaryToday) multiLayeredSummaryContext += summaryToday;
+    if (summary3Days) multiLayeredSummaryContext += summary3Days;
+    if (summary7Days) multiLayeredSummaryContext += summary7Days;
+}
         // 4. 更新 System Prompt 以包含用户人设
         const systemPrompt = `
 # 你的核心任务
@@ -33438,7 +33475,7 @@ ${userPersona}
 - **用户的备注**: "${myNickname}"
 ${worldBookContext}
 ${longTermMemoryContext}
-
+${multiLayeredSummaryContext} 
 - **你们最后的对话**:
 ${historySlice.map(msg => `${msg.role === 'user' ? myNickname : chat.name}: ${String(msg.content)}`).join('\n')}
 
@@ -33756,7 +33793,25 @@ const recentHistoryWithUser = chat.history.slice(-maxMemory).map(msg => `${msg.r
         .filter(Boolean)
         .map(book => `\n## 世界书《${book.name}》设定:\n${book.content.filter(e=>e.enabled).map(e => `- ${e.content}`).join('\n')}`)
         .join('');
+// 【【【核心修改：在这里同时生成更细致的、多维度的总结】】】
+const summary3Hours = generateSummaryForTimeframe(chat, 3, 'hours');
+const summary6Hours = generateSummaryForTimeframe(chat, 6, 'hours');
+const summary9Hours = generateSummaryForTimeframe(chat, 9, 'hours');
+const summaryToday = generateSummaryForTimeframe(chat, 1, 'days');
+const summary3Days = generateSummaryForTimeframe(chat, 3, 'days');
+const summary7Days = generateSummaryForTimeframe(chat, 7, 'days');
 
+let multiLayeredSummaryContext = '';
+if (summary3Hours || summary6Hours || summary9Hours || summaryToday || summary3Days || summary7Days) {
+    multiLayeredSummaryContext += `\n# 智能总结 (基于不同时间维度的对话回顾)\n`;
+    if (summary3Hours) multiLayeredSummaryContext += summary3Hours;
+    if (summary6Hours) multiLayeredSummaryContext += summary6Hours;
+    if (summary9Hours) multiLayeredSummaryContext += summary9Hours;
+    if (summary3Hours || summary6Hours || summary9Hours) multiLayeredSummaryContext += '\n';
+    if (summaryToday) multiLayeredSummaryContext += summaryToday;
+    if (summary3Days) multiLayeredSummaryContext += summary3Days;
+    if (summary7Days) multiLayeredSummaryContext += summary7Days;
+}
     // ▼▼▼ 核心修改1：强化AI指令 ▼▼▼
     const systemPrompt = `
 # 你的任务
@@ -33786,6 +33841,7 @@ const recentHistoryWithUser = chat.history.slice(-maxMemory).map(msg => `${msg.r
 - **你的角色设定**: ${chat.settings.aiPersona}
 ${longTermMemoryContext}
 ${worldBookContext}
+${multiLayeredSummaryContext} 
 - **你最近和“${userDisplayNameForAI}”的对话摘要**:
 ${recentHistoryWithUser}
 
@@ -33927,7 +33983,25 @@ const recentHistoryWithUser = chat.history.slice(-maxMemory).map(msg => `${msg.r
         .filter(Boolean)
         .map(book => `\n## 世界书《${book.name}》设定:\n${book.content.filter(e => e.enabled).map(e => `- ${e.content}`).join('\n')}`)
         .join('');
+// 【【【核心修改：在这里同时生成更细致的、多维度的总结】】】
+const summary3Hours = generateSummaryForTimeframe(chat, 3, 'hours');
+const summary6Hours = generateSummaryForTimeframe(chat, 6, 'hours');
+const summary9Hours = generateSummaryForTimeframe(chat, 9, 'hours');
+const summaryToday = generateSummaryForTimeframe(chat, 1, 'days');
+const summary3Days = generateSummaryForTimeframe(chat, 3, 'days');
+const summary7Days = generateSummaryForTimeframe(chat, 7, 'days');
 
+let multiLayeredSummaryContext = '';
+if (summary3Hours || summary6Hours || summary9Hours || summaryToday || summary3Days || summary7Days) {
+    multiLayeredSummaryContext += `\n# 智能总结 (基于不同时间维度的对话回顾)\n`;
+    if (summary3Hours) multiLayeredSummaryContext += summary3Hours;
+    if (summary6Hours) multiLayeredSummaryContext += summary6Hours;
+    if (summary9Hours) multiLayeredSummaryContext += summary9Hours;
+    if (summary3Hours || summary6Hours || summary9Hours) multiLayeredSummaryContext += '\n';
+    if (summaryToday) multiLayeredSummaryContext += summaryToday;
+    if (summary3Days) multiLayeredSummaryContext += summary3Days;
+    if (summary7Days) multiLayeredSummaryContext += summary7Days;
+}
     // ▼▼▼ 核心修改1：强化AI指令 ▼▼▼
     const systemPrompt = `
 # 你的任务
@@ -33959,6 +34033,7 @@ const recentHistoryWithUser = chat.history.slice(-maxMemory).map(msg => `${msg.r
 - **你的长期记忆**:
 ${longTermMemoryContext}
 ${worldBookContext}
+${multiLayeredSummaryContext} 
 - **你最近和“${userDisplayNameForAI}”的对话摘要**:
 ${recentHistoryWithUser}
 
@@ -34109,7 +34184,25 @@ const recentHistoryWithUser = chat.history.slice(-maxMemory).map(msg => `${msg.r
         .filter(Boolean)
         .map(book => `\n## 世界书《${book.name}》设定:\n${book.content.filter(e => e.enabled).map(e => `- ${e.content}`).join('\n')}`)
         .join('');
+// 【【【核心修改：在这里同时生成更细致的、多维度的总结】】】
+const summary3Hours = generateSummaryForTimeframe(chat, 3, 'hours');
+const summary6Hours = generateSummaryForTimeframe(chat, 6, 'hours');
+const summary9Hours = generateSummaryForTimeframe(chat, 9, 'hours');
+const summaryToday = generateSummaryForTimeframe(chat, 1, 'days');
+const summary3Days = generateSummaryForTimeframe(chat, 3, 'days');
+const summary7Days = generateSummaryForTimeframe(chat, 7, 'days');
 
+let multiLayeredSummaryContext = '';
+if (summary3Hours || summary6Hours || summary9Hours || summaryToday || summary3Days || summary7Days) {
+    multiLayeredSummaryContext += `\n# 智能总结 (基于不同时间维度的对话回顾)\n`;
+    if (summary3Hours) multiLayeredSummaryContext += summary3Hours;
+    if (summary6Hours) multiLayeredSummaryContext += summary6Hours;
+    if (summary9Hours) multiLayeredSummaryContext += summary9Hours;
+    if (summary3Hours || summary6Hours || summary9Hours) multiLayeredSummaryContext += '\n';
+    if (summaryToday) multiLayeredSummaryContext += summaryToday;
+    if (summary3Days) multiLayeredSummaryContext += summary3Days;
+    if (summary7Days) multiLayeredSummaryContext += summary7Days;
+}
     // ▼▼▼ 核心修改1：强化AI指令，确保在没有强制JSON模式下也能稳定输出 ▼▼▼
     const systemPrompt = `
 # 你的任务
@@ -34139,6 +34232,7 @@ const recentHistoryWithUser = chat.history.slice(-maxMemory).map(msg => `${msg.r
 - **你的长期记忆**:
 ${longTermMemoryContext}
 ${worldBookContext}
+${multiLayeredSummaryContext} 
 - **你最近和“${userDisplayNameForAI}”的对话摘要**:
 ${recentHistoryWithUser}
 
@@ -34290,7 +34384,25 @@ const recentHistoryWithUser = chat.history.slice(-maxMemory).map(msg => `${msg.r
         .filter(Boolean)
         .map(book => `\n## 世界书《${book.name}》设定:\n${book.content.filter(e => e.enabled).map(e => `- ${e.content}`).join('\n')}`)
         .join('');
+// 【【【核心修改：在这里同时生成更细致的、多维度的总结】】】
+const summary3Hours = generateSummaryForTimeframe(chat, 3, 'hours');
+const summary6Hours = generateSummaryForTimeframe(chat, 6, 'hours');
+const summary9Hours = generateSummaryForTimeframe(chat, 9, 'hours');
+const summaryToday = generateSummaryForTimeframe(chat, 1, 'days');
+const summary3Days = generateSummaryForTimeframe(chat, 3, 'days');
+const summary7Days = generateSummaryForTimeframe(chat, 7, 'days');
 
+let multiLayeredSummaryContext = '';
+if (summary3Hours || summary6Hours || summary9Hours || summaryToday || summary3Days || summary7Days) {
+    multiLayeredSummaryContext += `\n# 智能总结 (基于不同时间维度的对话回顾)\n`;
+    if (summary3Hours) multiLayeredSummaryContext += summary3Hours;
+    if (summary6Hours) multiLayeredSummaryContext += summary6Hours;
+    if (summary9Hours) multiLayeredSummaryContext += summary9Hours;
+    if (summary3Hours || summary6Hours || summary9Hours) multiLayeredSummaryContext += '\n';
+    if (summaryToday) multiLayeredSummaryContext += summaryToday;
+    if (summary3Days) multiLayeredSummaryContext += summary3Days;
+    if (summary7Days) multiLayeredSummaryContext += summary7Days;
+}
     // ▼▼▼ 核心修改1：强化AI指令 ▼▼▼
     const systemPrompt = `
 # 你的任务
@@ -34317,6 +34429,7 @@ const recentHistoryWithUser = chat.history.slice(-maxMemory).map(msg => `${msg.r
 - **你的长期记忆**:
 ${longTermMemoryContext}
 ${worldBookContext}
+${multiLayeredSummaryContext}
 - **你最近和“${userDisplayNameForAI}”的对话摘要**:
 ${recentHistoryWithUser}
 
@@ -34411,7 +34524,24 @@ const recentHistoryWithUser = chat.history.slice(-maxMemory).map(msg => `${msg.r
         .filter(Boolean)
         .map(book => `\n## 世界书《${book.name}》设定:\n${book.content.filter(e => e.enabled).map(e => `- ${e.content}`).join('\n')}`)
         .join('');
+const summary3Hours = generateSummaryForTimeframe(chat, 3, 'hours');
+const summary6Hours = generateSummaryForTimeframe(chat, 6, 'hours');
+const summary9Hours = generateSummaryForTimeframe(chat, 9, 'hours');
+const summaryToday = generateSummaryForTimeframe(chat, 1, 'days');
+const summary3Days = generateSummaryForTimeframe(chat, 3, 'days');
+const summary7Days = generateSummaryForTimeframe(chat, 7, 'days');
 
+let multiLayeredSummaryContext = '';
+if (summary3Hours || summary6Hours || summary9Hours || summaryToday || summary3Days || summary7Days) {
+    multiLayeredSummaryContext += `\n# 智能总结 (基于不同时间维度的对话回顾)\n`;
+    if (summary3Hours) multiLayeredSummaryContext += summary3Hours;
+    if (summary6Hours) multiLayeredSummaryContext += summary6Hours;
+    if (summary9Hours) multiLayeredSummaryContext += summary9Hours;
+    if (summary3Hours || summary6Hours || summary9Hours) multiLayeredSummaryContext += '\n';
+    if (summaryToday) multiLayeredSummaryContext += summaryToday;
+    if (summary3Days) multiLayeredSummaryContext += summary3Days;
+    if (summary7Days) multiLayeredSummaryContext += summary7Days;
+}
     // ▼▼▼ 核心修改1：强化AI指令 ▼▼▼
     const systemPrompt = `
 # 你的任务
@@ -34449,6 +34579,7 @@ const recentHistoryWithUser = chat.history.slice(-maxMemory).map(msg => `${msg.r
 - **你的长期记忆**:
 ${longTermMemoryContext}
 ${worldBookContext}
+${multiLayeredSummaryContext}
 - **你最近和“${userDisplayNameForAI}”的对话摘要**:
 ${recentHistoryWithUser}
 
@@ -34581,7 +34712,24 @@ const recentHistoryWithUser = chat.history.slice(-maxMemory).map(msg => `${msg.r
         .filter(Boolean)
         .map(book => `\n## 世界书《${book.name}》设定:\n${book.content.filter(e => e.enabled).map(e => `- ${e.content}`).join('\n')}`)
         .join('');
+const summary3Hours = generateSummaryForTimeframe(chat, 3, 'hours');
+const summary6Hours = generateSummaryForTimeframe(chat, 6, 'hours');
+const summary9Hours = generateSummaryForTimeframe(chat, 9, 'hours');
+const summaryToday = generateSummaryForTimeframe(chat, 1, 'days');
+const summary3Days = generateSummaryForTimeframe(chat, 3, 'days');
+const summary7Days = generateSummaryForTimeframe(chat, 7, 'days');
 
+let multiLayeredSummaryContext = '';
+if (summary3Hours || summary6Hours || summary9Hours || summaryToday || summary3Days || summary7Days) {
+    multiLayeredSummaryContext += `\n# 智能总结 (基于不同时间维度的对话回顾)\n`;
+    if (summary3Hours) multiLayeredSummaryContext += summary3Hours;
+    if (summary6Hours) multiLayeredSummaryContext += summary6Hours;
+    if (summary9Hours) multiLayeredSummaryContext += summary9Hours;
+    if (summary3Hours || summary6Hours || summary9Hours) multiLayeredSummaryContext += '\n';
+    if (summaryToday) multiLayeredSummaryContext += summaryToday;
+    if (summary3Days) multiLayeredSummaryContext += summary3Days;
+    if (summary7Days) multiLayeredSummaryContext += summary7Days;
+}
     // ▼▼▼ 核心修改1：强化AI指令 ▼▼▼
     const systemPrompt = `
 # 你的任务
@@ -34611,6 +34759,7 @@ const recentHistoryWithUser = chat.history.slice(-maxMemory).map(msg => `${msg.r
 - **你的长期记忆**:
 ${longTermMemoryContext}
 ${worldBookContext}
+${multiLayeredSummaryContext}
 - **你最近和“${userDisplayNameForAI}”的对话摘要**:
 ${recentHistoryWithUser}
 
