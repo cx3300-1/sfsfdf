@@ -15477,7 +15477,46 @@ async function loadAllDataFromDB() {
                 async function saveGlobalPlaylist() { await db.musicLibrary.put({ id: 'main', playlist: musicState.playlist }); }
         
                 function formatTimestamp(timestamp) { if (!timestamp) return ''; const date = new Date(timestamp); const hours = String(date.getHours()).padStart(2, '0'); const minutes = String(date.getMinutes()).padStart(2, '0'); return `${hours}:${minutes}`; }
-        
+/**
+ * 【全新 V2.0 | 智能日期感知版】为AI上下文格式化时间戳
+ * @param {number} timestamp - 消息的时间戳
+ * @returns {string} - 格式化后的日期时间字符串，例如 "今天 17:42", "昨天 23:50" 等
+ */
+function formatTimestampForAI(timestamp) {
+    if (!timestamp) return '';
+    
+    const now = new Date();
+    const date = new Date(timestamp);
+
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const timeString = `${hours}:${minutes}`;
+
+    // 如果是今天
+    if (now.toDateString() === date.toDateString()) {
+        return `今天 ${timeString}`;
+    }
+
+    // 如果是昨天
+    const yesterday = new Date();
+    yesterday.setDate(now.getDate() - 1);
+    if (yesterday.toDateString() === date.toDateString()) {
+        return `昨天 ${timeString}`;
+    }
+    
+    // 如果是今年
+    if (now.getFullYear() === date.getFullYear()) {
+        const month = String(date.getMonth() + 1);
+        const day = String(date.getDate());
+        return `${month}月${day}日 ${timeString}`;
+    }
+    
+    // 如果是往年
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1);
+    const day = String(date.getDate());
+    return `${year}年${month}月${day}日 ${timeString}`;
+}        
          // ▼▼▼ 【全新】请用这个更可靠的版本，替换旧的 showNotification 函数 ▼▼▼
         function showNotification(chatId, messageContent) {
     // ▼▼▼ 在这里粘贴新代码 ▼▼▼
@@ -17472,16 +17511,13 @@ function scrollToOriginalMessage(originalTimestamp) {
             const messagesContainer = document.getElementById('chat-messages');
             const typingIndicator = document.getElementById('typing-indicator');
 
-            // --- 核心修改：判断时间间隔 ---
-            const historyWithoutNewMsg = chat.history.slice(0, -1);
-            const lastMessage = historyWithoutNewMsg.filter(m => !m.isHidden).pop();
+const lastMessage = chat.history.filter(m => !m.isHidden).pop();
 
-            // 将间隔从 300000 (5分钟) 延长到 3600000 (1小时)
-            if (lastMessage && (msg.timestamp - lastMessage.timestamp > 3600000)) {
-                const timestampEl = createSystemTimestampElement(msg.timestamp);
-                messagesContainer.insertBefore(timestampEl, typingIndicator);
-            }
-            // --- 修改结束 ---
+// 核心逻辑：用新消息的时间戳(msg.timestamp)与上一条消息的时间戳(lastMessage.timestamp)进行比较
+if (lastMessage && (msg.timestamp - lastMessage.timestamp > 600000)) { // 600000毫秒 = 10分钟
+    const timestampEl = createSystemTimestampElement(msg.timestamp);
+    messagesContainer.insertBefore(timestampEl, typingIndicator);
+}
 
             const messageEl = await createMessageElement(msg, chat);
             if (!messageEl) return;
@@ -18309,31 +18345,24 @@ ${transcriptText}
                 longTermMemoryContext += '- (暂无)';
             }
             // ▲▲▲ 修改结束 ▲▲▲
+// 【V2.0 | 智能日期感知版 for Group】
 let timeContextText = '';
 let longTimeNoSee = false;
 
-// 【核心修改】只有当时间感知开启时，才计算时间差
 if (chat.settings.enableTimePerception) {
-    const lastAiMsgIndex = historySlice.findLastIndex(msg => msg.role === 'assistant');
-    if (lastAiMsgIndex !== -1 && lastAiMsgIndex < historySlice.length - 1) {
-        const lastAiMessage = historySlice[lastAiMsgIndex];
-        const firstUserReply = historySlice[lastAiMsgIndex + 1];
-        if (firstUserReply.role === 'user') {
-            const lastTime = new Date(lastAiMessage.timestamp);
-            const userReplyTime = new Date(firstUserReply.timestamp);
-            const timeDiffHours = (userReplyTime - lastTime) / (1000 * 60 * 60);
-            if (timeDiffHours > 12) {
-                longTimeNoSee = true;
-                const diffDays = Math.floor(timeDiffHours / 24);
-                timeContextText = `群里已经${diffDays > 0 ? diffDays + '天' : Math.floor(timeDiffHours) + '小时'}没动静了。`;
-            } else {
-                const diffMinutes = Math.floor(timeDiffHours * 60);
-                if (diffMinutes < 5) { timeContextText = "大家刚刚还在聊天。"; }
-                else if (diffMinutes < 60) { timeContextText = `群里在${diffMinutes}分钟前有人聊过。`; }
-                else { timeContextText = `群里在${Math.floor(timeDiffHours)}小时前有人聊过。`; }
-            }
+    const lastMessage = historySlice.slice(-1)[0]; // 获取最后一条消息
+
+    if (lastMessage) {
+        const lastMessageTime = formatTimestampForAI(lastMessage.timestamp);
+        timeContextText = `上一条消息的发送时间是 ${lastMessageTime}。`;
+        
+        const timeDiffHours = (Date.now() - lastMessage.timestamp) / (1000 * 60 * 60);
+        if (timeDiffHours > 3) {
+            longTimeNoSee = true;
+            const diffDays = Math.floor(timeDiffHours / 24);
+            timeContextText += ` 群里已经安静了${diffDays > 0 ? diffDays + '天' : Math.floor(timeDiffHours) + '小时'}。`;
         }
-    } else if (historySlice.every(msg => msg.role === 'user')) {
+    } else {
         timeContextText = "这是群里的第一条消息。";
     }
 }
@@ -18905,35 +18934,34 @@ ${historySlice.map(msg => {
             
                         const myNickname = chat.settings.myNickname || '我';
                         
+// 【V2.0 | 智能日期感知版】
 let timeContext = '';
 let longTimeNoSee = false;
 
-// 【核心修改】只有当时间感知开启时，才计算时间差
 if (chat.settings.enableTimePerception) {
-    const lastAiMsgIndex = historySlice.findLastIndex(msg => msg.role === 'assistant');
+    const lastUserMsg = historySlice.findLast(msg => msg.role === 'user' && !msg.isHidden);
+    const lastAiMsg = historySlice.findLast(msg => msg.role === 'assistant' && !msg.isHidden);
 
-    if (lastAiMsgIndex !== -1 && lastAiMsgIndex < historySlice.length - 1) {
-        const lastAiMessage = historySlice[lastAiMsgIndex];
-        const firstUserReply = historySlice[lastAiMsgIndex + 1];
-
-        if (firstUserReply.role === 'user') {
-            const lastTime = new Date(lastAiMessage.timestamp);
-            const userReplyTime = new Date(firstUserReply.timestamp);
-            const timeDiffHours = (userReplyTime - lastTime) / (1000 * 60 * 60);
-
-            if (timeDiffHours > 12) {
+    if (lastUserMsg) {
+        const lastUserMessageTime = formatTimestampForAI(lastUserMsg.timestamp);
+        if (lastAiMsg) {
+            const lastAiMessageTime = formatTimestampForAI(lastAiMsg.timestamp);
+            timeContext = `- **对话状态**: 你的上一条消息发送于 ${lastAiMessageTime}，用户刚刚在 ${lastUserMessageTime} 回复了你。`;
+            
+            const timeDiffHours = (lastUserMsg.timestamp - lastAiMsg.timestamp) / (1000 * 60 * 60);
+            if (timeDiffHours > 3) {
                 longTimeNoSee = true;
                 const diffDays = Math.floor(timeDiffHours / 24);
-                timeContext = `- **【紧急】对话状态**: 你们已经有**${diffDays > 0 ? diffDays + '天' : Math.floor(timeDiffHours) + '小时'}**没有聊天了。你【必须】主动开启一个全新的、符合当前时间（${timeOfDayGreeting}）的话题来问候用户，绝对不要延续之前的话题！`;
-            } else {
-                const diffMinutes = Math.floor(timeDiffHours * 60);
-                if (diffMinutes < 5) { timeContext = "- **对话状态**: 你们的对话刚刚还在继续。"; }
-                else if (diffMinutes < 60) { timeContext = `- **对话状态**: 你们在${diffMinutes}分钟前聊过。`; }
-                else { timeContext = `- **对话状态**: 你们在${Math.floor(timeDiffHours)}小时前聊过。`; }
+                timeContext += ` 你们之间已经有**${diffDays > 0 ? diffDays + '天' : Math.floor(timeDiffHours) + '小时'}**没有聊天了。
+- **行为铁律**: 你的首要任务是【回应这个时间差】。你【绝对不能】直接延续上一段对话的话题（比如昨天的饭菜）。
+- **你的行动**:你【必须】主动开启一个全新的、符合当前时间（${timeOfDayGreeting}）的话题来问候用户，可以表达惊讶（“哇，好久不见！”）、关心（“最近怎么样？”）或者分享你自己的近况，绝对不要延续之前的话题！
+- **上下文参考**: 下面的“对话历史”仅供你回忆，【不要】直接回应其中的内容。`;
             }
+        } else {
+            timeContext = `- **对话状态**: 这是你们的第一次对话，用户的第一条消息发送于 ${lastUserMessageTime}。`;
         }
-    } else if (historySlice.every(msg => msg.role === 'user')) {
-        timeContext = "- **对话状态**: 这是你们的第一次对话。";
+    } else {
+        timeContext = "- **对话状态**: (暂无有效对话历史)";
     }
 }
     const readingContext = formatReadingStateForAI(chatId);   
