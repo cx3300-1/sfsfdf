@@ -16481,7 +16481,7 @@ async function renderChatInterface(chatId) {
     let lastTimestamp = 0;
     const fragment = document.createDocumentFragment();
     for (const msg of initialMessages) {
-        if (lastTimestamp > 0 && (msg.timestamp - lastTimestamp > 3600000)) {
+        if (lastTimestamp > 0 && (msg.timestamp - lastTimestamp > 600000)) {
             fragment.appendChild(createSystemTimestampElement(msg.timestamp));
         }
         const messageEl = await createMessageElement(msg, chat, true);
@@ -16531,8 +16531,27 @@ async function loadMoreMessages() {
     const nextSliceEnd = totalMessages - currentRenderedCount;
     const messagesToPrepend = chat.history.slice(Math.max(0, nextSliceStart), nextSliceEnd);
 
+
+    // 1. 获取当前屏幕上最“老”的那条消息的时间戳，作为我们比较的基准
+    const firstVisibleMessage = messagesContainer.querySelector('.message-wrapper[data-timestamp]');
+    let nextMessageTimestamp = firstVisibleMessage ? parseInt(firstVisibleMessage.dataset.timestamp) : 0;
+
+    // 2. 依然是从新到旧地遍历我们要添加的消息
     for (const msg of messagesToPrepend.reverse()) {
+        
+        // 3. 【核心新增】在添加每条消息之前，都检查它和它后面那条消息的时间差
+        if (nextMessageTimestamp > 0 && (nextMessageTimestamp - msg.timestamp > 600000)) { // 600000毫秒 = 10分钟
+            // 如果间隔大于10分钟，就为“更晚”的那条消息创建一个时间提示
+            const timestampEl = createSystemTimestampElement(nextMessageTimestamp);
+            // 将时间提示也添加到顶部
+            messagesContainer.prepend(timestampEl);
+        }
+        
+        // 4. 添加消息本身（这部分逻辑不变）
         await prependMessage(msg, chat);
+        
+        // 5. 更新我们的时间基准，为下一次循环做准备
+        nextMessageTimestamp = msg.timestamp;
     }
 
     currentRenderedCount += messagesToPrepend.length;
