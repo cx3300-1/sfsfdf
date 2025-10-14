@@ -10472,6 +10472,15 @@ input, textarea, select {
 <hr style="margin: 30px 0; opacity: 0.3;">
                 <h3 style="border-bottom: 1px solid #eee; padding-bottom: 10px;">性能与显示设置</h3>
                 <div class="form-group" style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                    <label for="chat-list-render-window-input" style="margin-bottom: 0;">
+                        聊天列表每次加载条数
+                        <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;">
+                            控制主页聊天列表下拉时每次加载会话的数量。默认30。
+                        </p>
+                    </label>
+                    <input type="number" id="chat-list-render-window-input" min="10" value="30" style="width: 80px; text-align: center;">
+                </div>
+                <div class="form-group" style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
                     <label for="chat-render-window-input" style="margin-bottom: 0;">
                         聊天界面初始加载条数
                         <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;">
@@ -15785,6 +15794,7 @@ function formatTimestampForAI(timestamp) {
             document.getElementById('block-cooldown-input').value = state.globalSettings.blockCooldownHours || 1;
             document.getElementById('enable-ai-drawing-switch').checked = state.globalSettings.enableAiDrawing; 
             document.getElementById('chat-render-window-input').value = state.globalSettings.chatRenderWindow || 50;   
+            document.getElementById('chat-list-render-window-input').value = state.globalSettings.chatListRenderWindow || 30;
             const tempSlider = document.getElementById('api-temperature-slider');
             const tempValue = document.getElementById('api-temperature-value');
             const savedTemp = state.globalSettings.apiTemperature || 0.8;
@@ -15977,7 +15987,7 @@ async function deleteNpc(npcId) {
 // ▲▲▲ 全新JS代码粘贴结束 ▲▲▲        
 // ▼▼▼ 【请用这个已升级“分批加载”功能的全新版本】替换旧的 renderChatList 函数 ▼▼▼
         let chatListRenderCount = 0; // 新增一个全局变量，跟踪已渲染的数量
-        const CHAT_LIST_RENDER_WINDOW = 30; // 每次加载30条
+
 // ▼▼▼ 【全新】这是为“按需加载”新增的所有辅助函数 ▼▼▼
 
 /**
@@ -16133,63 +16143,85 @@ async function renderChatList() {
             container.prepend(button); // 将按钮添加到列表顶部
         }
 
-// ▼▼▼ 【全新 | 无限滚动版】请用这个全新版本替换旧的 loadMoreChats 函数 ▼▼▼
+// ▼▼▼ 【全新 | 独立设置+加载动画版】请用这个版本替换旧的 loadMoreChats 函数 ▼▼▼
 function loadMoreChats() {
-    // 【核心修改1】如果正在加载，则直接返回，防止重复触发
+    // 1. 防止重复触发
     if (isLoadingMoreChats) return;
 
     const chatListEl = document.getElementById('chat-list');
-    if (!chatListEl) return;
+    // 列表的滚动容器
+    const scrollContainer = document.getElementById('messages-view'); 
+    if (!chatListEl || !scrollContainer) return;
+
+    // 检查是否已经加载完所有数据
+    if (chatListRenderCount >= sortedChatListItems.length) return;
     
-    // 【核心修改2】设置加载状态为 true
+    // 2. 设置加载状态，并在底部显示加载动画
     isLoadingMoreChats = true;
+    showLoader(chatListEl, 'bottom'); 
     
-    const nextSliceStart = chatListRenderCount;
-    const nextSliceEnd = chatListRenderCount + CHAT_LIST_RENDER_WINDOW;
-    const itemsToAppend = sortedChatListItems.slice(nextSliceStart, nextSliceEnd);
+    // 【核心】从全局设置中读取每页加载条数，默认为 30
+    const renderWindow = state.globalSettings.chatListRenderWindow || 30;
 
-    // 如果没有更多内容了，就结束加载
-    if (itemsToAppend.length === 0) {
-        isLoadingMoreChats = false; // 别忘了重置状态
-        return;
-    }
+    // 3. 使用 setTimeout 模拟网络延迟，让动画显示出来
+    setTimeout(() => {
+        // 移除加载动画
+        hideLoader(chatListEl); 
 
-    const fragment = document.createDocumentFragment();
-    let currentGroupContent = chatListEl.querySelector('.chat-group-content:last-of-type');
+        const nextSliceStart = chatListRenderCount;
+        const nextSliceEnd = chatListRenderCount + renderWindow;
+        const itemsToAppend = sortedChatListItems.slice(nextSliceStart, nextSliceEnd);
 
-    itemsToAppend.forEach(item => {
-        if (item.type === 'groupHeader') {
-            const groupContainer = createChatGroupContainer(item.group);
-            fragment.appendChild(groupContainer);
-            currentGroupContent = groupContainer.querySelector('.chat-group-content');
-        } else if (item.type === 'chatItem') {
-            const listItem = createChatListItem(item.chat);
-            if (currentGroupContent && item.chat.groupId) {
-                currentGroupContent.appendChild(listItem);
-            } else {
-                fragment.appendChild(listItem);
-                currentGroupContent = null;
+        const fragment = document.createDocumentFragment();
+        let currentGroupContent = chatListEl.querySelector('.chat-group-content:last-of-type');
+
+        // 如果追加的第一项是普通聊天，且列表末尾是一个展开的分组，则放入该分组
+        // 注意：如果是一个新的分组头，逻辑会自动处理
+        
+        itemsToAppend.forEach(item => {
+            if (item.type === 'groupHeader') {
+                const groupContainer = createChatGroupContainer(item.group);
+                fragment.appendChild(groupContainer);
+                // 更新当前指向的分组内容容器
+                currentGroupContent = groupContainer.querySelector('.chat-group-content');
+            } else if (item.type === 'chatItem') {
+                const listItem = createChatListItem(item.chat);
+                
+                // 如果该聊天属于某个分组，且当前正处于该分组下方
+                if (item.chat.groupId && currentGroupContent) {
+                    currentGroupContent.appendChild(listItem);
+                } else {
+                    // 否则（未分组，或新分组未开始），直接添加到主片段
+                    fragment.appendChild(listItem);
+                    // 如果这是一个未分组的聊天，打断当前的分组上下文
+                    if (!item.chat.groupId) currentGroupContent = null;
+                }
             }
-        }
-    });
-    
-    chatListEl.appendChild(fragment);
-    chatListRenderCount += itemsToAppend.length;
-    
-    // (重新绑定分组折叠事件的逻辑保持不变)
-    document.querySelectorAll('.chat-group-header').forEach(header => {
-        const newHeader = header.cloneNode(true);
-        header.parentNode.replaceChild(newHeader, header);
-        newHeader.addEventListener('click', () => {
-            newHeader.classList.toggle('collapsed');
-            newHeader.nextElementSibling.classList.toggle('collapsed');
         });
-    });
+        
+        chatListEl.appendChild(fragment);
+        chatListRenderCount += itemsToAppend.length;
+        
+        // 为新添加的分组头绑定折叠事件
+        chatListEl.querySelectorAll('.chat-group-header:not([data-has-listener="true"])').forEach(header => {
+            header.dataset.hasListener = "true"; // 防止重复绑定
+            header.addEventListener('click', () => {
+                header.classList.toggle('collapsed');
+                header.nextElementSibling.classList.toggle('collapsed');
+            });
+        });
 
-    // 【核心修改3】加载完成后，将状态重置为 false
-    isLoadingMoreChats = false;
+        // 4. 重置加载状态
+        isLoadingMoreChats = false;
+        
+        // 如果加载后内容仍未填满屏幕（例如在大屏幕上），继续加载
+        if (scrollContainer.scrollHeight <= scrollContainer.clientHeight && chatListRenderCount < sortedChatListItems.length) {
+            loadMoreChats();
+        }
+
+    }, 500); // 延迟 500ms
 }
-// ▲▲▲ 替换结束 ▲▲▲    
+// ▲▲▲ 替换结束 ▲▲▲ 
 // ▼▼▼ 【全新 | V2.0 容错增强版】请用这个新版本替换旧的 createChatListItem 函数 ▼▼▼
 function createChatListItem(chat) {
     // 【核心新增】使用 try...catch 包裹整个函数
@@ -40876,6 +40908,7 @@ messagesView.addEventListener('scroll', () => { // <--- 核心修改2：在 mess
             state.globalSettings.blockCooldownHours = parseFloat(cooldownInput.value) || 1;
             state.globalSettings.enableAiDrawing = document.getElementById('enable-ai-drawing-switch').checked;
            state.globalSettings.chatRenderWindow = parseInt(document.getElementById('chat-render-window-input').value) || 50;
+            state.globalSettings.chatListRenderWindow = parseInt(document.getElementById('chat-list-render-window-input').value) || 30;
             state.globalSettings.apiTemperature = parseFloat(document.getElementById('api-temperature-slider').value);
             await db.globalSettings.put(state.globalSettings);
         
@@ -45061,7 +45094,14 @@ document.getElementById('reading-content').addEventListener('scroll', debouncedU
 document.getElementById('api-temperature-slider').addEventListener('input', (e) => {
     document.getElementById('api-temperature-value').textContent = e.target.value;
 });
-
+const chatListContainer = document.getElementById('messages-view');
+chatListContainer.addEventListener('scroll', () => {
+    const { scrollTop, scrollHeight, clientHeight } = chatListContainer;
+    // 当滚动条距离底部小于 150px 时触发加载
+    if (scrollHeight - scrollTop <= clientHeight + 150 && !isLoadingMoreChats) {
+        loadMoreChats();
+    }
+});
 
 
 
