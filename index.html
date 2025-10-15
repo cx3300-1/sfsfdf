@@ -10542,6 +10542,15 @@ input, textarea, select {
     <input type="password" id="minimax-api-key" placeholder="在此输入你的 API Key">
 </div>
 <!-- ▲▲▲ 粘贴结束 ▲▲▲ -->
+<!-- ▼▼▼ 在这里粘贴下面的新代码 ▼▼▼ -->
+<div class="form-group">
+    <label for="minimax-model-select">语音模型 (Model)</label>
+    <select id="minimax-model-select">
+        <option value="speech-01">speech-01 (标准)</option>
+        <option value="speech-02">speech-02 (高清)</option>
+    </select>
+</div>
+<!-- ▲▲▲ 粘贴结束 ▲▲▲ -->
 <hr style="margin: 30px 0; opacity: 0.3;">
                 <h3 style="border-bottom: 1px solid #eee; padding-bottom: 10px;">性能与显示设置</h3>
                 <div class="form-group" style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
@@ -11876,6 +11885,20 @@ input, textarea, select {
             <div id="group-members-settings"></div>
             <button id="manage-members-btn" class="form-button form-button-secondary" style="margin-top: 15px;">管理群成员</button>
         </div>
+<div class="form-group" id="tts-enable-group">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <label for="enable-tts-switch" style="margin-bottom: 0;">
+            启用语音合成 (TTS)
+            <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;">
+                关闭后，即使AI回复包含 [V] 前缀，也不会生成语音消息。
+            </p>
+        </label>
+        <label class="toggle-switch">
+            <input type="checkbox" id="enable-tts-switch">
+            <span class="slider"></span>
+        </label>
+    </div>
+</div>
 <div class="form-group" id="ai-voice-id-group">
     <label for="ai-voice-id-input">语音 ID (Minimax voice_id)</label>
     <input type="text" id="ai-voice-id-input" placeholder="例如: female-shaonv-jingpin">
@@ -15550,7 +15573,7 @@ async function loadAllDataFromDB() {
     if (memoriesToUpdate.length > 0) {
         await db.memories.bulkPut(memoriesToUpdate);
     }
-    state.apiConfig = apiConfig || { id: 'main', proxyUrl: '', apiKey: '', model: '', secondaryProxyUrl: '', secondaryApiKey: '', secondaryModel: '', minimaxGroupId: '', minimaxApiKey: '' };
+    state.apiConfig = apiConfig || { id: 'main', proxyUrl: '', apiKey: '', model: '', secondaryProxyUrl: '', secondaryApiKey: '', secondaryModel: '', minimaxGroupId: '', minimaxApiKey: '', minimaxModel: 'speech-01' };
     state.userStickers = userStickers || [];
     state.worldBooks = worldBooks || [];
     musicState.playlist = musicLib?.playlist || [];
@@ -15879,6 +15902,7 @@ function formatTimestampForAI(timestamp) {
             tempValue.textContent = savedTemp;    
            document.getElementById('minimax-group-id').value = state.apiConfig.minimaxGroupId || '';
            document.getElementById('minimax-api-key').value = state.apiConfig.minimaxApiKey || '';
+document.getElementById('minimax-model-select').value = state.apiConfig.minimaxModel || 'speech-01'; // <-- 新增这一行
             // 2. 【核心新增】加载并渲染预设下拉菜单
             loadApiPresetsDropdown();
         }
@@ -17429,21 +17453,7 @@ function scrollToOriginalMessage(originalTimestamp) {
                         }
                     }).join(''); // 最后将所有片段拼接成最终的HTML
                 }
-else if (msg.type === 'tts_voice') {
-    bubble.classList.add('is-voice-message', 'is-card-like');
-    const duration = Math.max(1, Math.round((msg.content || '').length / 5));
-    const durationFormatted = `0:${String(duration).padStart(2, '0')}''`;
-    // 从聊天设置中获取为该角色指定的 voice_id，如果没有，则使用一个默认值
-    const voiceId = chat.settings.minimaxVoiceId || 'female-shaonv-jingpin';
-
-    contentHtml = `
-        <div class="voice-message-body" data-text="${encodeURIComponent(msg.content)}" data-voice-id="${voiceId}">
-            <button class="voice-play-btn">▶</button>
-            <div class="voice-spinner"></div>
-            <span class="voice-duration">${durationFormatted}</span>
-        </div>
-    `;
-}  else if (msg.type === 'share_link') {
+else if (msg.type === 'share_link') {
                     bubble.classList.add('is-link-share', 'is-card-like');
                     contentHtml = `<div class="link-share-card" data-timestamp="${msg.timestamp}"><div class="title">${msg.title || '无标题'}</div><div class="description">${msg.description || '点击查看详情...'}</div><div class="footer"><svg class="footer-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg><span>${msg.source_name || '链接分享'}</span></div></div>`;
                 } else if (msg.type === 'share_card') {
@@ -17480,13 +17490,42 @@ else if (msg.type === 'tts_voice') {
                     // 2. 将判断后的URL用于生成HTML
                     contentHtml = `<img src="${imageUrl}" class="ai-generated-image" alt="${altText}" data-description="${msg.content}">`;
                 } else if (msg.type === 'voice_message') {
-                    bubble.classList.add('is-voice-message', 'is-card-like');
-                    bubble.dataset.voiceText = msg.content;
-                    const duration = Math.max(1, Math.round((msg.content || '').length / 5));
-                    const durationFormatted = `0:${String(duration).padStart(2, '0')}''`;
-                    const waveformHTML = '<div></div><div></div><div></div><div></div><div></div>';
-                    contentHtml = `<div class="voice-message-body"><div class="voice-waveform">${waveformHTML}</div><div class="loading-spinner"></div><span class="voice-duration">${durationFormatted}</span></div><div class="voice-transcript"></div>`;
-                } else if (msg.type === 'transfer') {
+    bubble.classList.add('is-voice-message', 'is-card-like');
+    const duration = Math.max(1, Math.round((msg.content || '').length / 5));
+    const durationFormatted = `0:${String(duration).padStart(2, '0')}''`;
+    const waveformHTML = '<div></div><div></div><div></div><div></div><div></div>';
+
+    if (isUser) {
+        // 用户发送的语音消息（这部分逻辑不变）
+        contentHtml = `
+            <div class="voice-message-body" data-text="${encodeURIComponent(msg.content)}">
+                <div class="voice-waveform">${waveformHTML}</div>
+                <span class="voice-duration">${durationFormatted}</span>
+            </div>
+            <div class="voice-transcript"></div>
+        `;
+    } else {
+        // AI发送的语音消息（这是我们的核心修改）
+        
+        // 1. 判断是否满足播放条件：必须是单聊 且 TTS开关没有被关闭
+        const canPlayTTS = !chat.isGroup && chat.settings.enableTts !== false;
+        
+        // 2. 获取 voiceId，以备不时之需
+        const voiceId = chat.settings.minimaxVoiceId || 'female-shaonv-jingpin';
+        
+        // 3. 【智能渲染】根据 canPlayTTS 的结果，决定是否添加 data-voice-id 属性
+        const voiceIdAttribute = canPlayTTS ? `data-voice-id="${voiceId}"` : '';
+
+        contentHtml = `
+            <div class="voice-message-body" data-text="${encodeURIComponent(msg.content)}" ${voiceIdAttribute}>
+                <div class="voice-waveform">${waveformHTML}</div>
+                <div class="loading-spinner"></div>
+                <span class="voice-duration">${durationFormatted}</span>
+            </div>
+            <div class="voice-transcript"></div>
+        `;
+    }
+}else if (msg.type === 'transfer') {
                     bubble.classList.add('is-transfer', 'is-card-like');
                      let titleText, noteText;
                     const myNickname = chat.isGroup ? (chat.settings.myNickname || '我') : '我';
@@ -19505,12 +19544,10 @@ if (lastUserMessage &&
                 let notificationShown = false;
         
                 for (const msgData of consolidatedMessages) {
-    if (msgData.type === 'text' && typeof msgData.content === 'string' && msgData.content.trim().startsWith('[V]')) {
-        // 2. 如果是，就将其类型转换为 'tts_voice'
-        msgData.type = 'tts_voice';
-        // 3. 并移除内容中的 [V] 前缀
-        msgData.content = msgData.content.replace('[V]', '').trim();
-    }                    
+if (chat.settings.enableTts !== false && msgData.type === 'text' && typeof msgData.content === 'string' && msgData.content.trim().startsWith('[V]')) {
+    msgData.type = 'voice_message'; 
+    msgData.content = msgData.content.replace('[V]', '').trim();
+}                  
                     if (chat.isGroup && msgData.name && msgData.name === chat.name) {
                         console.error(`AI幻觉已被拦截！试图使用群名 ("${chat.name}") 作为角色名。消息内容:`, msgData);
                         continue;
@@ -40412,82 +40449,72 @@ function stopSilentAudio() {
 }
 
 // ▲▲▲ 新增函数粘贴结束 ▲▲▲
-// ▼▼▼ 【全新】这是语音消息 (TTS) 功能的【全部核心JS代码】，请完整粘贴 ▼▼▼
-
-/**
- * 【总入口】当用户点击语音消息的播放按钮时触发
- * @param {HTMLElement} bodyElement - 被点击的 .voice-message-body 元素
- */
 async function playTtsAudio(bodyElement) {
     const text = decodeURIComponent(bodyElement.dataset.text);
     const voiceId = bodyElement.dataset.voiceId;
-    const button = bodyElement.querySelector('.voice-play-btn');
-    const spinner = bodyElement.querySelector('.voice-spinner');
-    
-    // 检查是否正在播放同一条语音
+    const button = bodyElement.querySelector('.voice-play-btn'); // 即使没有按钮，也尝试获取
+    const spinner = bodyElement.querySelector('.loading-spinner');
+
     const ttsPlayer = document.getElementById('tts-audio-player');
     if (!ttsPlayer.paused && ttsPlayer.dataset.currentText === text && ttsPlayer.dataset.currentVoiceId === voiceId) {
-        ttsPlayer.pause(); // 如果是，则暂停
+        ttsPlayer.pause();
         return;
     }
 
-    // 暂停任何可能正在播放的旧语音
     ttsPlayer.pause();
-    
-    // 重置所有其他播放按钮的UI
     document.querySelectorAll('.voice-play-btn').forEach(btn => btn.textContent = '▶');
-    
-    // 1. 检查缓存
+
     const cacheKey = `tts_${voiceId}_${text}`;
     let cachedAudio = state.ttsCache.get(cacheKey);
 
     if (cachedAudio) {
         console.log("从缓存播放 TTS 音频...");
-        await playAudioFromData(cachedAudio.url, cachedAudio.type, text, voiceId, button);
+        await playAudioFromData(cachedAudio.url, cachedAudio.type, text, voiceId, bodyElement); // 传递 bodyElement
         return;
     }
 
-    // 2. 如果没有缓存，则调用API
     console.log("无缓存，正在请求 Minimax TTS API...");
-    button.style.display = 'none';
+    if(button) button.style.display = 'none';
     spinner.style.display = 'block';
 
     const { minimaxGroupId, minimaxApiKey } = state.apiConfig;
     if (!minimaxGroupId || !minimaxApiKey) {
         await showCustomAlert("配置错误", "请先在API设置中填写您的 Minimax Group ID 和 API Key。");
         spinner.style.display = 'none';
-        button.style.display = 'flex';
+        if(button) button.style.display = 'flex';
         return;
     }
 
     try {
-        const response = await fetch('https://api.minimax.chat/v1/text_to_speech', {
+        const response = await fetch(`https://api.minimax.chat/v1/text_to_speech?GroupId=${minimaxGroupId}`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${minimaxApiKey}`,
                 'Content-Type': 'application/json',
-                'GroupId': minimaxGroupId
             },
             body: JSON.stringify({
                 text: text,
                 voice_id: voiceId,
-                model: "speech-01",
-                timber_weights: [{"voice_id": voiceId, "weight": 1}]
+                model: state.apiConfig.minimaxModel || "speech-01",
+                speed: 1.0, vol: 1.0, pitch: 0,
             })
         });
 
         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.base_resp?.status_msg || `API 返回错误: ${response.status}`);
+            let errorMsg = `API 返回错误: ${response.status}`;
+            try {
+                const errorData = await response.json();
+                errorMsg = errorData.base_resp?.status_msg || JSON.stringify(errorData);
+            } catch(e) {
+                errorMsg = await response.text();
+            }
+            throw new Error(errorMsg);
         }
 
         const audioBlob = await response.blob();
-        
-        // 播放音频
         const audioUrl = URL.createObjectURL(audioBlob);
-        await playAudioFromData(audioUrl, audioBlob.type, text, voiceId, button);
+        await playAudioFromData(audioUrl, audioBlob.type, text, voiceId, bodyElement); // 传递 bodyElement
 
-        // 保存到缓存
         const reader = new FileReader();
         reader.onloadend = function() {
             state.ttsCache.set(cacheKey, { url: reader.result, type: audioBlob.type });
@@ -40500,17 +40527,15 @@ async function playTtsAudio(bodyElement) {
         await showCustomAlert("语音生成失败", `错误: ${error.message}`);
     } finally {
         spinner.style.display = 'none';
-        button.style.display = 'flex';
+        if(button) button.style.display = 'flex';
     }
 }
 
-/**
- * 【辅助函数】从数据源播放音频并处理UI更新
- */
-function playAudioFromData(audioSrc, audioType, text, voiceId, button) {
+// 用这个新版本替换旧的 playAudioFromData 函数
+function playAudioFromData(audioSrc, audioType, text, voiceId, bodyElement) { // 参数从 button 改为 bodyElement
     return new Promise((resolve, reject) => {
         const ttsPlayer = document.getElementById('tts-audio-player');
-        
+
         ttsPlayer.src = audioSrc;
         ttsPlayer.type = audioType;
         ttsPlayer.dataset.currentText = text;
@@ -40520,7 +40545,10 @@ function playAudioFromData(audioSrc, audioType, text, voiceId, button) {
 
         if (playPromise !== undefined) {
             playPromise.then(() => {
-                button.textContent = '❚❚'; // 播放中
+                const button = bodyElement.querySelector('.voice-play-btn');
+                if (button) button.textContent = '❚❚'; 
+
+
                 resolve();
             }).catch(error => {
                 console.error("音频播放失败:", error);
@@ -40529,16 +40557,39 @@ function playAudioFromData(audioSrc, audioType, text, voiceId, button) {
         }
 
         ttsPlayer.onended = () => {
-            button.textContent = '▶'; // 播放结束
+            const button = bodyElement.querySelector('.voice-play-btn');
+            if (button) button.textContent = '▶'; 
         };
         ttsPlayer.onpause = () => {
-            button.textContent = '▶'; // 暂停
+            const button = bodyElement.querySelector('.voice-play-btn');
+            if (button) button.textContent = '▶';
         };
     });
 }
 
 // ▲▲▲ 全新JS代码粘贴结束 ▲▲▲
+// ▼▼▼ 【全新】这是专门为您自己的语音消息创建的文本展开/折叠函数 ▼▼▼
+/**
+ * 切换用户自己发送的语音消息的文字显示
+ * @param {HTMLElement} bodyElement - 被点击的 .voice-message-body 元素
+ */
+function toggleVoiceTranscript(bodyElement) {
+    const bubble = bodyElement.closest('.message-bubble');
+    if (!bubble) return;
 
+    const transcriptEl = bubble.querySelector('.voice-transcript');
+    const text = decodeURIComponent(bodyElement.dataset.text);
+
+    if (transcriptEl.style.display === 'block') {
+        // 如果文字已经是可见的，就隐藏它
+        transcriptEl.style.display = 'none';
+    } else {
+        // 如果文字是隐藏的，就显示它
+        transcriptEl.textContent = text;
+        transcriptEl.style.display = 'block';
+    }
+}
+// ▲▲▲ 新增函数结束 ▲▲▲
 
 
 
@@ -41136,7 +41187,8 @@ messagesView.addEventListener('scroll', () => { // <--- 核心修改2：在 mess
             state.apiConfig.apiKey = document.getElementById('api-key').value.trim();
             state.apiConfig.model = document.getElementById('model-select').value;
 state.apiConfig.minimaxGroupId = document.getElementById('minimax-group-id').value.trim();
-state.apiConfig.minimaxApiKey = document.getElementById('minimax-api-key').value.trim();            
+state.apiConfig.minimaxApiKey = document.getElementById('minimax-api-key').value.trim();  
+state.apiConfig.minimaxModel = document.getElementById('minimax-model-select').value; // <-- 新增这一行          
             // 【核心新增】保存副API
             state.apiConfig.secondaryProxyUrl = document.getElementById('secondary-proxy-url').value.trim();
             state.apiConfig.secondaryApiKey = document.getElementById('secondary-api-key').value.trim();
@@ -41270,11 +41322,39 @@ document.getElementById('save-world-book-btn').addEventListener('click', async (
 // ▲▲▲ 替换结束 ▲▲▲
         // ▼▼▼ 【最终修复版】请用这整块代码，完整替换旧的 chat-messages 事件监听器 ▼▼▼
         document.getElementById('chat-messages').addEventListener('click', async (e) => {
-    const ttsVoiceBody = e.target.closest('.voice-message-body[data-text]');
-    if (ttsVoiceBody) {
-        playTtsAudio(ttsVoiceBody);
-        return; // 处理完后直接退出，避免触发其他逻辑
+    // 优先处理带 data-text 属性的 tts_voice
+const voiceBody = e.target.closest('.voice-message-body[data-text]');
+if (voiceBody) {
+    // 【核心修复1】首先获取当前的聊天对象，这是所有判断的基础
+    const chat = state.chats[state.activeChatId];
+    if (!chat) return; // 安全检查，如果找不到聊天对象则直接退出
+
+    // 无论如何，都允许用户点击展开/折叠语音文字
+    toggleVoiceTranscript(voiceBody);
+
+    // 获取后续判断需要的元素
+    const bubble = voiceBody.closest('.message-bubble');
+    const transcriptEl = bubble ? bubble.querySelector('.voice-transcript') : null;
+
+    // 只有当它是一个可播放的AI语音，并且文字是展开状态时，才进入下一步判断
+    if (voiceBody.dataset.voiceId && transcriptEl && transcriptEl.style.display === 'block') {
+
+        // 【核心修复2】双重验证：拦截不应发出请求的场景
+        if (chat.isGroup) {
+            console.log("这是一条群聊语音消息，已禁止发起TTS请求。");
+            return; // 如果是群聊，直接阻止后续操作
+        }
+        if (chat.settings.enableTts === false) {
+            console.log(`“${chat.name}”的TTS功能已关闭，已禁止发起TTS请求。`);
+            return; // 如果当前聊天的TTS开关是关闭的，也直接阻止
+        }
+
+        // 只有通过了以上所有验证，才真正调用API去播放语音
+        playTtsAudio(voiceBody);
     }
+
+    return; // 处理完后立即退出
+}
             // 检查是否点击了 "查看详情" 按钮
             const detailsBtn = e.target.closest('.waimai-details-btn');
             if (detailsBtn) {
@@ -41390,43 +41470,7 @@ document.getElementById('save-world-book-btn').addEventListener('click', async (
                 }
             }
         
-    // 【【【这就是修复后的语音消息处理逻辑】】】
-    const voiceBody = e.target.closest('.voice-message-body');
-    if (voiceBody) {
-        const bubble = voiceBody.closest('.message-bubble');
-        if (!bubble) return;
-        
-        const spinner = voiceBody.querySelector('.loading-spinner');
-        const transcriptEl = bubble.querySelector('.voice-transcript');
 
-        if (bubble.dataset.state === 'loading') {
-            return;
-        }
-
-        // 核心逻辑：判断当前状态并执行反向操作
-        if (bubble.dataset.state === 'expanded') {
-            // 如果已展开，则折叠
-            transcriptEl.style.display = 'none';
-            bubble.dataset.state = 'collapsed'; // 更新状态
-        } 
-        else {
-            // 如果是折叠或初始状态，则展开
-            bubble.dataset.state = 'loading';
-            spinner.style.display = 'block';
-
-            setTimeout(() => {
-                if (document.body.contains(bubble)) {
-                    const voiceText = bubble.dataset.voiceText || '(无法识别)';
-                    transcriptEl.textContent = voiceText;
-                    
-                    spinner.style.display = 'none';
-                    transcriptEl.style.display = 'block';
-                    bubble.dataset.state = 'expanded'; // 更新状态
-                }
-            }, 1500);
-        }
-        return;
-    }
         
             const placeholder = e.target.closest('.recalled-message-placeholder');
             if (placeholder) {
@@ -41588,6 +41632,7 @@ if (isGroup) {
 await renderOfflinePresetSelector(chat);
     document.getElementById('ai-original-name-input').value = chat.originalName;
 document.getElementById('ai-voice-id-input').value = chat.settings.minimaxVoiceId || '';
+document.getElementById('enable-tts-switch').checked = chat.settings.enableTts !== false;
     document.getElementById('ai-persona').value = chat.settings.aiPersona;
     document.getElementById('ai-avatar-preview').src = chat.settings.aiAvatar || defaultAvatar;
     document.getElementById('my-nickname-input').value = chat.settings.myNickname || '我';
@@ -41879,6 +41924,7 @@ document.getElementById('save-chat-settings-btn').addEventListener('click', asyn
         chat.originalName = newOriginalName;
         chat.settings.aiPersona = document.getElementById('ai-persona').value;
         chat.settings.minimaxVoiceId = document.getElementById('ai-voice-id-input').value.trim();
+chat.settings.enableTts = document.getElementById('enable-tts-switch').checked;
         chat.settings.aiAvatar = document.getElementById('ai-avatar-preview').src;
         chat.settings.myNickname = document.getElementById('my-nickname-input').value.trim() || '我';
         chat.settings.actionCooldownMinutes = parseInt(document.getElementById('ai-action-cooldown-input').value) || 10;
@@ -42028,7 +42074,27 @@ document.getElementById('chat-settings-screen').addEventListener('click', (e) =>
         
                     document.getElementById('upload-image-btn').addEventListener('click', () => document.getElementById('image-upload-input').click());
                     document.getElementById('image-upload-input').addEventListener('change', async (event) => { const file = event.target.files[0]; if (!file || !state.activeChatId) return; const reader = new FileReader(); reader.onload = async (e) => { const base64Url = e.target.result; const chat = state.chats[state.activeChatId]; const msg = { role: 'user', content: [{ type: 'image_url', image_url: { url: base64Url } }], timestamp: Date.now() }; chat.history.push(msg); await db.chats.put(chat); appendMessage(msg, chat); renderChatList(); }; reader.readAsDataURL(file); event.target.value = null; });
-                    document.getElementById('voice-message-btn').addEventListener('click', async () => { if (!state.activeChatId) return; const text = await showCustomPrompt("发送语音", "请输入你想说的内容："); if (text && text.trim()) { const chat = state.chats[state.activeChatId]; const msg = { role: 'user', type: 'voice_message', content: text.trim(), timestamp: Date.now() }; chat.history.push(msg); await db.chats.put(chat); appendMessage(msg, chat); renderChatList(); } });
+                    document.getElementById('voice-message-btn').addEventListener('click', async () => {
+    if (!state.activeChatId) return;
+
+    const text = await showCustomPrompt("发送语音", "请输入你想说的内容：");
+    if (text && text.trim()) {
+        const chat = state.chats[state.activeChatId];
+        
+        // ★★★ 核心确认：类型必须是 'voice_message' ★★★
+        const msg = {
+            role: 'user',
+            type: 'voice_message', // 确保这里是 voice_message，而不是 tts_voice
+            content: text.trim(),
+            timestamp: Date.now()
+        };
+        
+        chat.history.push(msg);
+        await db.chats.put(chat);
+        appendMessage(msg, chat);
+        renderChatList();
+    }
+});
                     document.getElementById('send-photo-btn').addEventListener('click', async () => { if (!state.activeChatId) return; const description = await showCustomPrompt("发送照片", "请用文字描述您要发送的照片："); if (description && description.trim()) { const chat = state.chats[state.activeChatId]; const msg = { role: 'user', type: 'user_photo', content: description.trim(), timestamp: Date.now() }; chat.history.push(msg); await db.chats.put(chat); appendMessage(msg, chat); renderChatList(); } });
         
 const waimaiModal = document.getElementById('waimai-request-modal');
