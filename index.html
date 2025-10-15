@@ -41792,104 +41792,117 @@ document.getElementById('save-member-settings-btn').addEventListener('click', as
                     document.getElementById('reset-theme-btn').addEventListener('click', () => { document.getElementById('theme-default').checked = true; });
                    
         
-        // ▼▼▼ 【请用这个新版本】替换旧的 save-chat-settings-btn 事件监听器 ▼▼▼
-        document.getElementById('save-chat-settings-btn').addEventListener('click', async () => {
-            if (!state.activeChatId) return;
-            const chat = state.chats[state.activeChatId];
-            
-            // --- （这部分与之前相同，保持不变） ---
-            const newName = document.getElementById('chat-name-input').value.trim();
-            if (!newName) return alert('备注名/群名不能为空！');
-            if (!chat.isGroup && newName !== chat.name) {
-                if (!chat.nameHistory) chat.nameHistory = [];
-                if (!chat.nameHistory.includes(chat.name)) chat.nameHistory.push(chat.name);
-            }
-            chat.name = newName;
-            const selectedThemeRadio = document.querySelector('input[name="theme-select"]:checked');
-            chat.settings.theme = selectedThemeRadio ? selectedThemeRadio.value : 'default';
-            chat.settings.fontSize = parseInt(document.getElementById('font-size-slider').value);
-            chat.settings.customCss = document.getElementById('custom-css-input').value.trim();
-// 【新增代码】保存时间感知设置
-chat.settings.enableTimePerception = document.getElementById('time-perception-toggle').checked;
-chat.settings.timeZone = document.getElementById('time-zone-select').value;
+// ▼▼▼ 【最终修复版】请用这个全新的函数，完整替换旧的 'save-chat-settings-btn' 事件监听器 ▼▼▼
+document.getElementById('save-chat-settings-btn').addEventListener('click', async () => {
+    if (!state.activeChatId) return;
+    const chat = state.chats[state.activeChatId];
+    
+    // --- 捕获旧的线下模式状态 ---
+    const oldOfflineModeState = chat.settings.isOfflineMode || false;
 
-            chat.settings.myPersona = document.getElementById('my-persona').value;
-            chat.settings.myAvatar = document.getElementById('my-avatar-preview').src;
-        
-            // --- 【【【核心修改从这里开始】】】 ---
-            const checkedBookItems = document.querySelectorAll('#world-book-checkboxes-container input[type="checkbox"]:checked');
-            const newLinkedBookIds = [];
-        
-            checkedBookItems.forEach(cb => {
-                const value = cb.value;
-                // 我们只关心书籍的ID
-                if (value.startsWith('book_')) {
-                    newLinkedBookIds.push(value.replace('book_', ''));
-                }
-            });
-            
-            // 只保存单本书的ID
-            chat.settings.linkedWorldBookIds = newLinkedBookIds;
-            // 不再需要保存分类ID，将其从设置中移除以保持数据干净
-            delete chat.settings.linkedWorldBookCategoryIds; 
-            // --- 【【【核心修改到这里结束】】】 ---
-        
-// ▼▼▼ 请用这个【新版本】替换旧的 if/else 逻辑 ▼▼▼
-if (chat.isGroup) {
-    // 【核心新增】保存群聊的后台活动开关状态
-    chat.settings.enableBackgroundActivity = document.getElementById('group-background-activity-switch').checked;
-    chat.settings.myNickname = document.getElementById('my-group-nickname-input').value.trim();
-    chat.settings.groupAvatar = document.getElementById('group-avatar-preview').src;
-    chat.settings.actionCooldownMinutes = parseInt(document.getElementById('group-action-cooldown-input').value) || 10;
-} else {
-    // 【核心新增】保存单个角色的后台活动开关状态
-    chat.settings.enableBackgroundActivity = document.getElementById('char-background-activity-switch').checked;
+    // --- (所有其他设置的保存逻辑保持不变) ---
+    const newName = document.getElementById('chat-name-input').value.trim();
+    if (!newName) return alert('备注名/群名不能为空！');
+    if (!chat.isGroup && newName !== chat.name) {
+        if (!chat.nameHistory) chat.nameHistory = [];
+        if (!chat.nameHistory.includes(chat.name)) chat.nameHistory.push(chat.name);
+    }
+    chat.name = newName;
+    const selectedThemeRadio = document.querySelector('input[name="theme-select"]:checked');
+    chat.settings.theme = selectedThemeRadio ? selectedThemeRadio.value : 'default';
+    chat.settings.fontSize = parseInt(document.getElementById('font-size-slider').value);
+    chat.settings.customCss = document.getElementById('custom-css-input').value.trim();
+    chat.settings.myPersona = document.getElementById('my-persona').value;
+    chat.settings.myAvatar = document.getElementById('my-avatar-preview').src;
+    chat.settings.maxMemory = parseInt(document.getElementById('max-memory').value) || 10;
+    chat.settings.linkedMemoryCount = parseInt(document.getElementById('linked-memory-count').value) || 10;
+    
+    const checkedBookItems = document.querySelectorAll('#world-book-checkboxes-container input[type="checkbox"]:checked');
+    const newLinkedBookIds = [];
+    checkedBookItems.forEach(cb => {
+        if (cb.value.startsWith('book_')) {
+            newLinkedBookIds.push(cb.value.replace('book_', ''));
+        }
+    });
+    chat.settings.linkedWorldBookIds = newLinkedBookIds;
+    
+    const linkMemoryToggleChecked = document.getElementById('link-memory-toggle').checked;
+    if (linkMemoryToggleChecked) {
+        const checkedChats = document.querySelectorAll('#linked-chats-checkboxes-container input:checked');
+        chat.settings.linkedMemoryChatIds = Array.from(checkedChats).map(cb => cb.value);
+    } else {
+        chat.settings.linkedMemoryChatIds = [];
+    }
+    chat.settings.enableAutoMemory = document.getElementById('auto-memory-toggle').checked;
+    chat.settings.autoMemoryInterval = parseInt(document.getElementById('auto-memory-interval').value) || 20;
+    chat.settings.enableTimePerception = document.getElementById('time-perception-toggle').checked;
+    chat.settings.timeZone = document.getElementById('time-zone-select').value;
+    
+    if (chat.isGroup) {
+        chat.settings.enableBackgroundActivity = document.getElementById('group-background-activity-switch').checked;
+        chat.settings.myNickname = document.getElementById('my-group-nickname-input').value.trim();
+        chat.settings.groupAvatar = document.getElementById('group-avatar-preview').src;
+        chat.settings.actionCooldownMinutes = parseInt(document.getElementById('group-action-cooldown-input').value) || 10;
+    } else {
+        chat.settings.enableBackgroundActivity = document.getElementById('char-background-activity-switch').checked;
+        const newOfflineModeState = document.getElementById('offline-mode-toggle').checked;
+        chat.settings.isOfflineMode = newOfflineModeState;
 
-    // (其他单聊设置的保存逻辑保持不变)
-    chat.settings.isOfflineMode = document.getElementById('offline-mode-toggle').checked;
-    chat.settings.offlineMinLength = parseInt(document.getElementById('offline-min-length-input').value) || 100;
-    chat.settings.offlineMaxLength = parseInt(document.getElementById('offline-max-length-input').value) || 300;
-    chat.settings.offlinePresetId = document.getElementById('offline-preset-select').value || null;
-    const newOriginalName = document.getElementById('ai-original-name-input').value.trim();
-    if (!newOriginalName) return alert('对方本名不能为空！');
-    chat.originalName = newOriginalName;
-    chat.settings.aiPersona = document.getElementById('ai-persona').value;
-chat.settings.minimaxVoiceId = document.getElementById('ai-voice-id-input').value.trim();
-    chat.settings.aiAvatar = document.getElementById('ai-avatar-preview').src;
-    chat.settings.myNickname = document.getElementById('my-nickname-input').value.trim() || '我';
-    chat.settings.actionCooldownMinutes = parseInt(document.getElementById('ai-action-cooldown-input').value) || 10;
-    chat.settings.lyricsPosition = {
-        vertical: document.getElementById('lyrics-vertical-pos').value,
-        horizontal: document.getElementById('lyrics-horizontal-pos').value,
-        offset: parseInt(document.getElementById('lyrics-offset-input').value) || 10
-    };
-    const selectedGroupId = document.getElementById('assign-group-select').value;
-    chat.groupId = selectedGroupId ? parseInt(selectedGroupId) : null;
-}
+        // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+        //            这就是本次修复的核心所在！
+        // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+        
+        // 1. 检查是否是从“线下(true)”切换到了“线上(false)”
+        if (oldOfflineModeState === true && newOfflineModeState === false) {
+            
+            // 2. 如果是，就创建一个对用户隐藏的系统指令
+            const switchInstruction = {
+                role: 'system',
+                content: '[系统指令：模式已切换！你现在回到了线上聊天模式。你的回复【必须】严格遵守线上模式的JSON数组格式，例如 [{"type": "text", "content": "你好"}]]',
+                timestamp: Date.now(),
+                isHidden: true // 这个标记确保用户看不到这条指令，但AI能读到
+            };
+            
+            // 3. 将这条指令注入到聊天记录的末尾
+            chat.history.push(switchInstruction);
+            console.log("已成功注入“切换到线上模式”的系统指令。");
+        }
+        
+        // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+        
+        chat.settings.offlineMinLength = parseInt(document.getElementById('offline-min-length-input').value) || 100;
+        chat.settings.offlineMaxLength = parseInt(document.getElementById('offline-max-length-input').value) || 300;
+        chat.settings.offlinePresetId = document.getElementById('offline-preset-select').value || null;
+        
+        const newOriginalName = document.getElementById('ai-original-name-input').value.trim();
+        if (!newOriginalName) return alert('对方本名不能为空！');
+        chat.originalName = newOriginalName;
+        chat.settings.aiPersona = document.getElementById('ai-persona').value;
+        chat.settings.minimaxVoiceId = document.getElementById('ai-voice-id-input').value.trim();
+        chat.settings.aiAvatar = document.getElementById('ai-avatar-preview').src;
+        chat.settings.myNickname = document.getElementById('my-nickname-input').value.trim() || '我';
+        chat.settings.actionCooldownMinutes = parseInt(document.getElementById('ai-action-cooldown-input').value) || 10;
+        chat.settings.lyricsPosition = {
+            vertical: document.getElementById('lyrics-vertical-pos').value,
+            horizontal: document.getElementById('lyrics-horizontal-pos').value,
+            offset: parseInt(document.getElementById('lyrics-offset-input').value) || 10
+        };
+        const selectedGroupId = document.getElementById('assign-group-select').value;
+        chat.groupId = selectedGroupId ? parseInt(selectedGroupId) : null;
+    }
+
+    await db.chats.put(chat);
+    if (!chat.isGroup) {
+        await syncCharacterNameInGroups(chat);
+        await syncCharacterAvatarInGroups(chat);
+    }
+    applyLyricsBarPosition(chat);
+    applyScopedCss(chat.settings.customCss, '#chat-messages', 'custom-bubble-style');
+    showScreen('chat-interface-screen');
+    renderChatInterface(state.activeChatId);
+    renderChatList();
+});
 // ▲▲▲ 替换结束 ▲▲▲
-            chat.settings.maxMemory = parseInt(document.getElementById('max-memory').value) || 10;
-            chat.settings.linkedMemoryCount = parseInt(document.getElementById('linked-memory-count').value) || 10;
-            const linkMemoryToggleChecked = document.getElementById('link-memory-toggle').checked;
-            if (linkMemoryToggleChecked) {
-                const checkedChats = document.querySelectorAll('#linked-chats-checkboxes-container input:checked');
-                chat.settings.linkedMemoryChatIds = Array.from(checkedChats).map(cb => cb.value);
-            } else {
-                chat.settings.linkedMemoryChatIds = [];
-            }
-            chat.settings.enableAutoMemory = document.getElementById('auto-memory-toggle').checked;
-            chat.settings.autoMemoryInterval = parseInt(document.getElementById('auto-memory-interval').value) || 20;
-            await db.chats.put(chat);
-            if (!chat.isGroup) {
-                await syncCharacterNameInGroups(chat);
-                await syncCharacterAvatarInGroups(chat);
-            }
-            applyLyricsBarPosition(chat);
-            applyScopedCss(chat.settings.customCss, '#chat-messages', 'custom-bubble-style');
-            showScreen('chat-interface-screen');
-            renderChatInterface(state.activeChatId);
-            renderChatList();
-        });
-        // ▲▲▲ 替换结束 ▲▲▲
         
         // ▼▼▼ 【这是最终的完整功能代码，请用它替换掉旧的】 ▼▼▼
         
