@@ -15539,6 +15539,7 @@ async function loadAllDataFromDB() {
             if (typeof chat.settings.enableBackgroundActivity === 'undefined') {
                 chat.settings.enableBackgroundActivity = true;
             }
+if (typeof chat.settings.enableTts === 'undefined') { chat.settings.enableTts = false; }
             if (!chat.status) chat.status = { text: '在线', lastUpdate: Date.now(), isBusy: false };
             if (!chat.relationship) chat.relationship = { status: 'friend', blockedTimestamp: null, applicationReason: '' };
             if (!chat.settings || !chat.settings.aiAvatarLibrary) { if (!chat.settings) chat.settings = {}; chat.settings.aiAvatarLibrary = []; }
