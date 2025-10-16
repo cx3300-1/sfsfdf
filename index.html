@@ -15942,7 +15942,7 @@ function formatTimestampForAI(timestamp) {
         }
         // ▼▼▼ 【全新】API预设功能核心函数 ▼▼▼
         
-        /**
+/**
          * 从数据库加载API预设，并填充到下拉选择框中
          */
         async function loadApiPresetsDropdown() {
@@ -15961,14 +15961,21 @@ function formatTimestampForAI(timestamp) {
             const currentConfig = state.apiConfig;
             let matchingPresetId = null;
             for (const preset of presets) {
+                // ▼▼▼ 核心修改：在判断条件中加入对TTS设置的检查 ▼▼▼
                 if (
                     preset.proxyUrl === currentConfig.proxyUrl &&
                     preset.apiKey === currentConfig.apiKey &&
                     preset.model === currentConfig.model &&
                     preset.secondaryProxyUrl === currentConfig.secondaryProxyUrl &&
                     preset.secondaryApiKey === currentConfig.secondaryApiKey &&
-                    preset.secondaryModel === currentConfig.secondaryModel
-                ) {
+                    preset.secondaryModel === currentConfig.secondaryModel &&
+                    // -- 新增的判断条件 --
+                    (preset.minimaxGroupId || '') === (currentConfig.minimaxGroupId || '') &&
+                    (preset.minimaxApiKey || '') === (currentConfig.minimaxApiKey || '') &&
+                    (preset.minimaxModel || 'speech-01') === (currentConfig.minimaxModel || 'speech-01')
+                ) 
+                // ▲▲▲ 修改结束 ▲▲▲
+                {
                     matchingPresetId = preset.id;
                     break;
                 }
@@ -15981,7 +15988,7 @@ function formatTimestampForAI(timestamp) {
             }
         }
         
-        /**
+/**
          * 当用户从下拉框选择一个预设时，加载该预设的配置
          */
         async function handlePresetSelectionChange() {
@@ -16003,7 +16010,12 @@ function formatTimestampForAI(timestamp) {
                     model: preset.model,
                     secondaryProxyUrl: preset.secondaryProxyUrl,
                     secondaryApiKey: preset.secondaryApiKey,
-                    secondaryModel: preset.secondaryModel
+                    secondaryModel: preset.secondaryModel,
+                    // ▼▼▼ 核心修改：在这里加载缺失的TTS设置 ▼▼▼
+                    minimaxGroupId: preset.minimaxGroupId,
+                    minimaxApiKey: preset.minimaxApiKey,
+                    minimaxModel: preset.minimaxModel
+                    // ▲▲▲ 修改结束 ▲▲▲
                 };
                 // 将加载的配置保存为当前正在使用的配置
                 await db.apiConfig.put(state.apiConfig);
@@ -16033,7 +16045,12 @@ function formatTimestampForAI(timestamp) {
                 model: document.getElementById('model-select').value,
                 secondaryProxyUrl: document.getElementById('secondary-proxy-url').value.trim(),
                 secondaryApiKey: document.getElementById('secondary-api-key').value.trim(),
-                secondaryModel: document.getElementById('secondary-model-select').value
+                secondaryModel: document.getElementById('secondary-model-select').value,
+                // ▼▼▼ 核心修改：在这里添加缺失的TTS设置 ▼▼▼
+                minimaxGroupId: document.getElementById('minimax-group-id').value.trim(),
+                minimaxApiKey: document.getElementById('minimax-api-key').value.trim(),
+                minimaxModel: document.getElementById('minimax-model-select').value
+                // ▲▲▲ 修改结束 ▲▲▲
             };
         
             // 检查是否已存在同名预设
