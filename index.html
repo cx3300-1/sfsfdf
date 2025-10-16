@@ -10112,6 +10112,14 @@ input, textarea, select {
     text-shadow: 0 1px 3px rgba(0,0,0,0.4);
 }
 /* ▲▲▲ 新增CSS粘贴结束 ▲▲▲ */
+/* ▼▼▼ 【全新】这是让主屏幕第二屏小组件字体变黑的样式 ▼▼▼ */
+
+#page-2-app-container .small-widget-label {
+    color: #000 !important;       /* 核心：强制将文字颜色设为黑色 */
+    text-shadow: none !important; /* 推荐：移除文字阴影，让黑色字体更清晰 */
+}
+
+/* ▲▲▲ 新增CSS结束 ▲▲▲ */
     </style>
 </head>
 <body>
@@ -11563,124 +11571,130 @@ input, textarea, select {
             <input type="file" id="lrc-upload-input" accept=".lrc" style="display: none;">
         </div>
         <!-- ▼▼▼ 请用这整块【已修复】的代码，完整替换你现有的 id="wallpaper-screen" 的那整个 <div> ▼▼▼ -->
-        <div id="wallpaper-screen" class="screen">
-            <div class="header">
-                <span class="back-btn" onclick="showScreen('home-screen')">‹</span>
-                <span>外观设置</span>
-                <span style="width: 30px;"></span>
-            </div>
-            <div class="form-container">
-                <!-- EPhone 壁纸设置 -->
-                <label style="font-weight: 500; color: var(--text-secondary);">EPhone 主屏幕壁纸</label>
-                <div id="wallpaper-preview">点击下方上传</div>
-                <button class="form-button" onclick="document.getElementById('wallpaper-upload-input').click();">上传壁纸</button>
-                <input type="file" id="wallpaper-upload-input" accept="image/*">
-                
-                <!-- 【【【全新：CPhone 壁纸设置】】】 -->
-                <hr style="width: 80%; opacity: 0.3; margin: 30px 0;">
-                <label style="font-weight: 500; color: var(--text-secondary);">CPhone Cphone壁纸</label>
-                <div id="cphone-wallpaper-preview">点击下方上传</div>
-                <button class="form-button" onclick="document.getElementById('cphone-wallpaper-upload-input').click();">上传CPhone壁纸</button>
-                <input type="file" id="cphone-wallpaper-upload-input" accept="image/*" hidden>
-
-                <!-- 全局聊天背景设置 -->
-                <hr style="width: 80%; opacity: 0.3; margin: 30px 0;">
-                <label style="font-weight: 500; color: var(--text-secondary);">全局聊天背景 (所有聊天默认)</label>
-                <div id="global-bg-preview" class="wallpaper-preview" style="height: 160px; width: 90px;">点击下方上传</div>
-                <div class="bg-upload-container">
-                    <button class="form-button-secondary" onclick="document.getElementById('global-bg-input').click()">上传全局背景</button>
-                    <button id="remove-global-bg-btn" class="form-button-secondary">移除全局背景</button>
-                </div>
-                <input type="file" id="global-bg-input" accept="image/*" style="display: none;">
-                
-                <!-- 其他设置 -->
-                <hr style="width: 80%; opacity: 0.3; margin: 30px 0;">
-                <div class="form-group" style="display: flex; justify-content: space-between; align-items: center;">
-                    <label for="theme-toggle-switch" style="margin-bottom: 0;">夜间模式</label>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="theme-toggle-switch">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div class="form-group" style="display: flex; justify-content: space-between; align-items: center;">
-                    <label for="status-bar-toggle-switch" style="margin-bottom: 0;">显示顶部状态栏</label>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="status-bar-toggle-switch">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                
-                <!-- 提示音设置 -->
-                <hr style="width: 80%; opacity: 0.3; margin: 30px 0;">
-                <div style="width:100%; text-align: left; margin-bottom: 15px;">
-                    <label style="font-weight: 500; color: var(--text-secondary);">消息提示音</label>
-                </div>
-                <div class="form-group" style="width:100%;">
-                    <label for="notification-sound-url-input">提示音文件 URL (.mp3, .wav, .ogg)</label>
-                    <div style="display: flex; gap: 10px; align-items: center; margin-top: 8px;">
-                        <input type="text" id="notification-sound-url-input" placeholder="留空则使用默认提示音" style="flex-grow: 1;">
-                        <button id="test-sound-btn" class="form-button-secondary" style="margin-top: 0; padding: 12px;">▶</button>
-                        <button id="reset-sound-btn" class="form-button-secondary" style="margin-top: 0; padding: 12px;">重置</button>
-                    </div>
-                </div>
-
-                <!-- EPhone 图标设置 -->
-                <hr style="width: 80%; opacity: 0.3; margin: 30px 0;">
-                <div style="width:100%; text-align: left; margin-bottom: 15px;">
-                    <label style="font-weight: 500; color: var(--text-secondary);">EPhone App 图标设置</label>
-                </div>
-                <div id="icon-settings-grid"></div>
-<!-- ▼▼▼ 【全新】在这里粘贴聊天工具栏排序功能 ▼▼▼ -->
-<hr style="width: 80%; opacity: 0.3; margin: 30px 0;">
-<div class="form-group" style="width:100%;">
-    
-    <!-- 这里是修改后的样子 -->
-    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-        <label>聊天工具栏按钮排序</label>
-        <button id="reset-button-order-btn" title="恢复默认顺序" class="form-button-secondary" style="margin: 0; padding: 4px 12px; font-size: 13px;">重置顺序</button>
+<div id="wallpaper-screen" class="screen">
+    <div class="header">
+        <span class="back-btn" onclick="showScreen('home-screen')">‹</span>
+        <span>外观设置</span>
+        <span style="width: 30px;"></span>
     </div>
-    
-    <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;">
-        按住下方的按钮并拖动即可排序，设置会自动保存。
-    </p>
-    <div id="button-order-editor" style="display: flex; flex-wrap: wrap; gap: 10px; padding: 10px; background-color: #f0f2f5; border-radius: 8px; border: 1px solid var(--border-color);">
-        <!-- 按钮排序项将由 JavaScript 动态生成在这里 -->
-    </div>
-</div>
-<!-- ▲▲▲ 新增HTML结束 ▲▲▲ -->
-                <!-- 【【【全新：CPhone 图标设置】】】 -->
-                <hr style="width: 80%; opacity: 0.3; margin: 30px 0;">
-                <div style="width:100%; text-align: left; margin-bottom: 15px;">
-                    <label style="font-weight: 500; color: var(--text-secondary);">CPhone App 图标设置</label>
-                </div>
-                <div id="cphone-icon-settings-grid"></div>
+    <div class="form-container">
+        <label style="font-weight: 500; color: var(--text-secondary);">EPhone 主屏幕壁纸</label>
+        <div id="wallpaper-preview">点击下方上传</div>
+        <div class="bg-upload-container">
+            <button class="form-button-secondary" onclick="document.getElementById('wallpaper-upload-input').click();">本地上传</button>
+            <button id="upload-ephone-bg-url-btn" class="form-button-secondary">网络URL</button>
+            <button id="remove-ephone-bg-btn" class="form-button-secondary">移除壁纸</button>
+        </div>
+        <input type="file" id="wallpaper-upload-input" accept="image/*" hidden>
+        
+        <hr style="width: 80%; opacity: 0.3; margin: 30px 0;">
+        <label style="font-weight: 500; color: var(--text-secondary);">CPhone 手机壁纸</label>
+        <div id="cphone-wallpaper-preview">点击下方上传</div>
+        <div class="bg-upload-container">
+            <button class="form-button-secondary" onclick="document.getElementById('cphone-wallpaper-upload-input').click();">本地上传</button>
+            <button id="upload-cphone-bg-url-btn" class="form-button-secondary">网络URL</button>
+            <button id="remove-cphone-bg-btn" class="form-button-secondary">移除壁纸</button>
+        </div>
+        <input type="file" id="cphone-wallpaper-upload-input" accept="image/*" hidden>
 
-                <!-- CSS 预设 -->
-                <hr style="width: 80%; opacity: 0.3; margin: 30px 0;">
-                <h3 style="margin-top:0; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; width:100%; text-align: left;">CSS 预设管理</h3>
-                <div class="form-group" style="width:100%;">
-                    <label for="css-preset-select">选择或切换预设</label>
-                    <div style="display: flex; gap: 10px; align-items: center;">
-                        <select id="css-preset-select" style="flex-grow: 1;"></select>
-                        <button id="save-css-preset-btn" class="form-button-secondary" style="margin-top: 0; padding: 12px;">保存</button>
-                        <button id="delete-css-preset-btn" class="form-button-secondary" style="margin-top: 0; padding: 12px; background-color: #ffebee; color: #d32f2f; border-color: #ffcdd2;">删除</button>
-                    </div>
-                </div>
-                <div class="form-group" style="width:100%;">
-                    <label for="global-css-input"> 全局美化样式 (CSS) <button id="reset-global-css-btn" type="button" style="background: none; border: 1px solid #ccc; color: #555; font-size: 12px; padding: 2px 8px; border-radius: 5px; cursor: pointer; margin-left: 10px;">重置</button>
-                    </label>
-                    <textarea id="global-css-input" rows="6" style="width: 100%; margin-top: 8px; font-family: monospace; font-size: 16px; resize: vertical;" placeholder="/* 在此输入自定义CSS */"></textarea>
-                </div>
-<!-- ▼▼▼ 在这里粘贴下面的新代码 ▼▼▼ -->
-
-<button class="form-button form-button-secondary" id="import-appearance-btn" style="margin-top: 10px;">导入外观 (JSON)</button>
-<input type="file" id="import-appearance-input" accept="application/json" hidden>
-
-<!-- ▲▲▲ 粘贴结束 ▲▲▲ -->                
-                <!-- 保存按钮 -->
-                <button class="form-button" id="save-wallpaper-btn" style="margin-top: 30px;">保存所有外观设置</button>
+        <hr style="width: 80%; opacity: 0.3; margin: 30px 0;">
+        <label style="font-weight: 500; color: var(--text-secondary);">全局聊天背景 (所有聊天默认)</label>
+        <div id="global-bg-preview" class="wallpaper-preview" style="height: 160px; width: 90px;">点击下方上传</div>
+        <div class="bg-upload-container">
+            <button class="form-button-secondary" onclick="document.getElementById('global-bg-input').click()">本地上传</button>
+            <button id="upload-global-bg-url-btn" class="form-button-secondary">网络URL</button>
+            <button id="remove-global-bg-btn" class="form-button-secondary">移除全局背景</button>
+        </div>
+        <input type="file" id="global-bg-input" accept="image/*" style="display: none;">
+        
+        <hr style="width: 80%; opacity: 0.3; margin: 30px 0;">
+        <div class="form-group" style="display: flex; justify-content: space-between; align-items: center;">
+            <label for="theme-toggle-switch" style="margin-bottom: 0;">夜间模式</label>
+            <label class="toggle-switch">
+                <input type="checkbox" id="theme-toggle-switch">
+                <span class="slider"></span>
+            </label>
+        </div>
+        <div class="form-group" style="display: flex; justify-content: space-between; align-items: center;">
+            <label for="status-bar-toggle-switch" style="margin-bottom: 0;">显示顶部状态栏</label>
+            <label class="toggle-switch">
+                <input type="checkbox" id="status-bar-toggle-switch">
+                <span class="slider"></span>
+            </label>
+        </div>
+        
+        <hr style="width: 80%; opacity: 0.3; margin: 30px 0;">
+        <div style="width:100%; text-align: left; margin-bottom: 15px;">
+            <label style="font-weight: 500; color: var(--text-secondary);">消息提示音</label>
+        </div>
+        <div class="form-group" style="width:100%;">
+            <label for="notification-sound-url-input">提示音文件 URL (.mp3, .wav, .ogg)</label>
+            <div style="display: flex; gap: 10px; align-items: center; margin-top: 8px;">
+                <input type="text" id="notification-sound-url-input" placeholder="留空则使用默认提示音" style="flex-grow: 1;">
+                <button id="test-sound-btn" class="form-button-secondary" style="margin-top: 0; padding: 12px;">▶</button>
+                <button id="reset-sound-btn" class="form-button-secondary" style="margin-top: 0; padding: 12px;">重置</button>
             </div>
         </div>
+
+        <hr style="width: 80%; opacity: 0.3; margin: 30px 0;">
+        <div style="width:100%; text-align: left; margin-bottom: 15px;">
+            <label style="font-weight: 500; color: var(--text-secondary);">EPhone App 图标设置</label>
+        </div>
+        <div id="icon-settings-grid"></div>
+
+        <hr style="width: 80%; opacity: 0.3; margin: 30px 0;">
+        <div class="form-group" style="width:100%;">
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <label>聊天工具栏按钮排序</label>
+                <button id="reset-button-order-btn" title="恢复默认顺序" class="form-button-secondary" style="margin: 0; padding: 4px 12px; font-size: 13px;">重置顺序</button>
+            </div>
+            <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;">
+                按住下方的按钮并拖动即可排序，设置会自动保存。
+            </p>
+            <div id="button-order-editor" style="display: flex; flex-wrap: wrap; gap: 10px; padding: 10px; background-color: #f0f2f5; border-radius: 8px; border: 1px solid var(--border-color);">
+            </div>
+        </div>
+
+        <hr style="width: 80%; opacity: 0.3; margin: 30px 0;">
+        <div style="width:100%; text-align: left; margin-bottom: 15px;">
+            <label style="font-weight: 500; color: var(--text-secondary);">CPhone App 图标设置</label>
+        </div>
+        <div id="cphone-icon-settings-grid"></div>
+<hr style="width: 80%; opacity: 0.3; margin: 30px 0;">
+<h3 style="margin-top:0; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; width:100%; text-align: left;">外观预设管理</h3>
+<p style="font-size: 12px; color: #8a8a8a; margin-top: -5px; line-height: 1.5; width:100%; text-align: left;">
+    一键保存或加载壁纸、图标、按钮排序、主题等所有非CSS的视觉风格。
+</p>
+<div class="form-group" style="width:100%;">
+    <label for="appearance-preset-select">选择或切换预设</label>
+    <div style="display: flex; gap: 10px; align-items: center;">
+        <select id="appearance-preset-select" style="flex-grow: 1;"></select>
+        <button id="save-appearance-preset-btn" class="form-button-secondary" style="margin-top: 0; padding: 12px;">保存</button>
+        <button id="delete-appearance-preset-btn" class="form-button-secondary" style="margin-top: 0; padding: 12px; background-color: #ffebee; color: #d32f2f; border-color: #ffcdd2;">删除</button>
+    </div>
+</div>
+        <hr style="width: 80%; opacity: 0.3; margin: 30px 0;">
+        <h3 style="margin-top:0; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; width:100%; text-align: left;">CSS 预设管理</h3>
+        <div class="form-group" style="width:100%;">
+            <label for="css-preset-select">选择或切换预设</label>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <select id="css-preset-select" style="flex-grow: 1;"></select>
+                <button id="save-css-preset-btn" class="form-button-secondary" style="margin-top: 0; padding: 12px;">保存</button>
+                <button id="delete-css-preset-btn" class="form-button-secondary" style="margin-top: 0; padding: 12px; background-color: #ffebee; color: #d32f2f; border-color: #ffcdd2;">删除</button>
+            </div>
+        </div>
+        <div class="form-group" style="width:100%;">
+            <label for="global-css-input"> 全局美化样式 (CSS) <button id="reset-global-css-btn" type="button" style="background: none; border: 1px solid #ccc; color: #555; font-size: 12px; padding: 2px 8px; border-radius: 5px; cursor: pointer; margin-left: 10px;">重置</button>
+            </label>
+            <textarea id="global-css-input" rows="6" style="width: 100%; margin-top: 8px; font-family: monospace; font-size: 16px; resize: vertical;" placeholder="/* 在此输入自定义CSS */"></textarea>
+        </div>
+
+        <button class="form-button form-button-secondary" id="import-appearance-btn" style="margin-top: 10px;">导入外观 (JSON)</button>
+        <input type="file" id="import-appearance-input" accept="application/json" hidden>
+                        
+        <button class="form-button" id="save-wallpaper-btn" style="margin-top: 30px;">保存所有外观设置</button>
+    </div>
+</div>
 
         <!-- ▲▲▲ 替换结束 ▲▲▲ -->
         <!-- ▼▼▼ 【全新】分享链接功能 HTML ▼▼▼ -->
@@ -17027,59 +17041,74 @@ async function loadMoreMessages() {
 // ▲▲▲ 替换结束 ▲▲▲
         
 // ▼▼▼ 【请用这个已更新的版本】替换旧的 renderWallpaperScreen 函数 ▼▼▼
-        function renderWallpaperScreen() { 
-            loadCssPresetsDropdown();
-            
-            // EPhone 壁纸预览
-            const preview = document.getElementById('wallpaper-preview'); 
-            const bg = newWallpaperBase64 || state.globalSettings.wallpaper; 
-            if (bg && bg.startsWith('data:image')) { 
-                preview.style.backgroundImage = `url(${bg})`; 
-                preview.textContent = ''; 
-            } else if(bg) { 
-                preview.style.backgroundImage = bg; 
-                preview.textContent = '当前为渐变色'; 
-            }
+// ▼▼▼ 【最终修复版】请用这个全新的函数，完整替换旧的 renderWallpaperScreen 函数 ▼▼▼
+function renderWallpaperScreen() {
+    loadCssPresetsDropdown();
+loadAppearancePresetsDropdown();
+    // --- EPhone 壁纸预览 ---
+    const ephonePreview = document.getElementById('wallpaper-preview');
+    // 【核心修正1】我们不再使用 newWallpaperBase64，而是直接从 state 读取，逻辑更统一
+    const ephoneBg = state.globalSettings.wallpaper;
+    if (ephoneBg) {
+        // 【核心修正2】无论是 Base64 还是 URL，都统一用 url() 包裹
+        ephonePreview.style.backgroundImage = `url(${ephoneBg})`;
+        ephonePreview.textContent = ''; // 清空"当前为渐变色"之类的文字
+    } else {
+        // 如果没有设置，则恢复默认
+        ephonePreview.style.backgroundImage = 'linear-gradient(135deg, #89f7fe, #66a6ff)';
+        ephonePreview.textContent = '当前为渐变色';
+    }
 
-            // 【核心新增】渲染CPhone的壁纸预览
-            const cphonePreview = document.getElementById('cphone-wallpaper-preview');
-            const cphoneBg = state.globalSettings.cphoneWallpaper;
-            if (cphoneBg && cphoneBg.startsWith('data:image')) {
-                cphonePreview.style.backgroundImage = `url(${cphoneBg})`;
-                cphonePreview.textContent = '';
-            } else if (cphoneBg) {
-                cphonePreview.style.backgroundImage = cphoneBg;
-                cphonePreview.textContent = '当前为渐变色';
-            }
+    // --- CPhone 壁纸预览 (逻辑与EPhone完全相同) ---
+    const cphonePreview = document.getElementById('cphone-wallpaper-preview');
+    const cphoneBg = state.globalSettings.cphoneWallpaper;
+    if (cphoneBg) {
+        cphonePreview.style.backgroundImage = `url(${cphoneBg})`;
+        cphonePreview.textContent = '';
+    } else {
+        cphonePreview.style.backgroundImage = 'linear-gradient(135deg, #f6d365, #fda085)';
+        cphonePreview.textContent = '当前为渐变色';
+    }
 
-            // 全局聊天背景预览
-            const globalBgPreview = document.getElementById('global-bg-preview');
-            const globalBg = state.globalSettings.globalChatBackground;
-            if (globalBg) {
-                globalBgPreview.style.backgroundImage = `url(${globalBg})`;
-                globalBgPreview.textContent = '';
-                document.getElementById('remove-global-bg-btn').style.display = 'inline-block';
-            } else {
-                globalBgPreview.style.backgroundImage = 'none';
-                globalBgPreview.textContent = '点击下方上传';
-                document.getElementById('remove-global-bg-btn').style.display = 'none';
-            }
+    // --- 全局聊天背景预览 (逻辑不变，但为了统一也一并更新) ---
+    const globalBgPreview = document.getElementById('global-bg-preview');
+    const globalBg = state.globalSettings.globalChatBackground;
+    if (globalBg) {
+        globalBgPreview.style.backgroundImage = `url(${globalBg})`;
+        globalBgPreview.textContent = '';
+        document.getElementById('remove-global-bg-btn').style.display = 'inline-block';
+    } else {
+        globalBgPreview.style.backgroundImage = 'none';
+        globalBgPreview.textContent = '点击下方上传';
+        document.getElementById('remove-global-bg-btn').style.display = 'none';
+    }
 
-            // 渲染 EPhone 和 CPhone 的图标设置
-            renderIconSettings();
-            renderCPhoneIconSettings(); // <-- 新增调用
-
-            // (其他逻辑保持不变)
-            document.getElementById('global-css-input').value = state.globalSettings.globalCss || '';
-            document.getElementById('notification-sound-url-input').value = state.globalSettings.notificationSoundUrl || '';
-            document.getElementById('status-bar-toggle-switch').checked = state.globalSettings.showStatusBar || false;
+    // --- 后续的其他渲染逻辑保持不变 ---
+    renderIconSettings();
+    renderCPhoneIconSettings(); 
+    document.getElementById('global-css-input').value = state.globalSettings.globalCss || '';
+    document.getElementById('notification-sound-url-input').value = state.globalSettings.notificationSoundUrl || '';
+    document.getElementById('status-bar-toggle-switch').checked = state.globalSettings.showStatusBar || false;
     renderButtonOrderEditor();
     initializeButtonOrderEditor();
-        }
+}
+// ▲▲▲ 替换结束 ▲▲▲
         // ▲▲▲ 替换结束 ▲▲▲
                 window.renderWallpaperScreenProxy = renderWallpaperScreen;
         
-                function applyGlobalWallpaper() { const homeScreen = document.getElementById('home-screen'); const wallpaper = state.globalSettings.wallpaper; if (wallpaper && wallpaper.startsWith('data:image')) homeScreen.style.backgroundImage = `url(${wallpaper})`; else if (wallpaper) homeScreen.style.backgroundImage = wallpaper; }
+                // ▼▼▼ 【最终修复版】请用这个全新的函数，替换旧的 applyGlobalWallpaper 函数 ▼▼▼
+function applyGlobalWallpaper() {
+    const homeScreen = document.getElementById('home-screen');
+    const wallpaper = state.globalSettings.wallpaper;
+    if (wallpaper) {
+        // 【核心修正】统一使用 url() 包裹
+        homeScreen.style.backgroundImage = `url(${wallpaper})`;
+    } else {
+        // 恢复默认渐变
+        homeScreen.style.backgroundImage = 'linear-gradient(135deg, #89f7fe, #66a6ff)';
+    }
+}
+// ▲▲▲ 替换结束 ▲▲▲
         
         // ▼▼▼ 【全新】这个函数用于处理世界书页签的点击切换 ▼▼▼
         function switchWorldBookCategory(categoryId) {
@@ -26737,15 +26766,17 @@ function renderGroupAvatarLibrary() {
         /**
          * 【全新】将保存的CPhone壁纸应用到Cphone屏幕
          */
-        function applyCPhoneWallpaper() {
-            const charPhoneScreen = document.getElementById('character-phone-screen');
-            const wallpaper = state.globalSettings.cphoneWallpaper;
-            if (wallpaper && wallpaper.startsWith('data:image')) {
-                charPhoneScreen.style.backgroundImage = `url(${wallpaper})`;
-            } else if (wallpaper) {
-                charPhoneScreen.style.backgroundImage = wallpaper;
-            }
-        }
+function applyCPhoneWallpaper() {
+    const charPhoneScreen = document.getElementById('character-phone-screen');
+    const wallpaper = state.globalSettings.cphoneWallpaper;
+    if (wallpaper) {
+        // 【核心修正】统一使用 url() 包裹
+        charPhoneScreen.style.backgroundImage = `url(${wallpaper})`;
+    } else {
+        // 恢复默认渐变
+        charPhoneScreen.style.backgroundImage = 'linear-gradient(135deg, #f6d365, #fda085)';
+    }
+}
 
         /**
          * 【全新】将保存的图标URL应用到CPhone的App图标上
@@ -32639,6 +32670,125 @@ document.getElementById('thoughts-history-list').addEventListener('click', (e) =
             }
         }
         // ▲▲▲ 新增函数结束 ▲▲▲
+// ▼▼▼ 【全新】外观预设功能核心函数 ▼▼▼
+
+/**
+ * 从数据库加载外观预设，并填充到下拉选择框中
+ */
+async function loadAppearancePresetsDropdown() {
+    const selectEl = document.getElementById('appearance-preset-select');
+    selectEl.innerHTML = '<option value="">-- 选择一个预设 --</option>';
+    
+    // 从数据库中只查找类型为 'appearance' 的预设
+    const presets = await db.appearancePresets.where('type').equals('appearance').toArray();
+    presets.forEach(preset => {
+        const option = document.createElement('option');
+        option.value = preset.id;
+        option.textContent = preset.name;
+        selectEl.appendChild(option);
+    });
+}
+
+/**
+ * 当用户从下拉框选择一个外观预设时，加载并应用该预设
+ */
+async function handleAppearancePresetSelectionChange() {
+    const selectEl = document.getElementById('appearance-preset-select');
+    const selectedId = parseInt(selectEl.value);
+    if (isNaN(selectedId)) return;
+
+    const preset = await db.appearancePresets.get(selectedId);
+    if (preset && preset.value) {
+        const data = preset.value;
+        
+        // 1. 将加载的设置应用到全局状态
+        Object.assign(state.globalSettings, data);
+        
+        // 2. 单独应用主题模式，因为它存储在localStorage中
+        applyTheme(data.theme || 'light');
+        
+        // 3. 将更新后的全局设置存回数据库
+        await db.globalSettings.put(state.globalSettings);
+        
+        // 4. 调用所有相关的UI更新函数，使更改立即生效
+        applyGlobalWallpaper();
+        applyCPhoneWallpaper();
+        applyAppIcons();
+        applyCPhoneAppIcons();
+        applyStatusBarVisibility();
+        applyWidgetData();
+        
+        // 5. 重新渲染整个外观设置页面，以反映所有加载的新值
+        renderWallpaperScreen();
+
+        alert(`已成功加载外观预设：“${preset.name}”`);
+    }
+}
+
+/**
+ * 将当前的所有外观设置保存为一个新的预设
+ */
+async function saveAppearancePreset() {
+    const name = await showCustomPrompt('保存外观预设', '请输入预设名称');
+    if (!name || !name.trim()) return;
+
+    // 1. 从 state 和 localStorage 中收集所有相关的外观设置
+    const appearanceData = {
+        wallpaper: state.globalSettings.wallpaper,
+        cphoneWallpaper: state.globalSettings.cphoneWallpaper,
+        globalChatBackground: state.globalSettings.globalChatBackground,
+        appIcons: state.globalSettings.appIcons,
+        cphoneAppIcons: state.globalSettings.cphoneAppIcons,
+        chatActionButtonsOrder: state.globalSettings.chatActionButtonsOrder,
+        theme: localStorage.getItem('ephone-theme') || 'light',
+        showStatusBar: state.globalSettings.showStatusBar,
+        notificationSoundUrl: state.globalSettings.notificationSoundUrl,
+        widgetData: state.globalSettings.widgetData
+    };
+
+    // 2. 检查是否存在同名预设
+    const existingPreset = await db.appearancePresets.where({ name: name.trim(), type: 'appearance' }).first();
+    if (existingPreset) {
+        const confirmed = await showCustomConfirm('覆盖预设', `名为 “${name.trim()}” 的预设已存在。要覆盖它吗？`, { confirmButtonClass: 'btn-danger' });
+        if (!confirmed) return;
+        
+        await db.appearancePresets.update(existingPreset.id, { value: appearanceData });
+    } else {
+        await db.appearancePresets.add({
+            name: name.trim(),
+            type: 'appearance', // 关键：类型为 'appearance'
+            value: appearanceData
+        });
+    }
+
+    // 3. 刷新下拉列表并提示成功
+    await loadAppearancePresetsDropdown();
+    alert('外观预设已保存！');
+}
+
+/**
+ * 删除当前选中的外观预设
+ */
+async function deleteAppearancePreset() {
+    const selectEl = document.getElementById('appearance-preset-select');
+    const selectedId = parseInt(selectEl.value);
+
+    if (isNaN(selectedId)) {
+        alert('请先从下拉框中选择一个要删除的预设。');
+        return;
+    }
+
+    const preset = await db.appearancePresets.get(selectedId);
+    if (!preset) return;
+
+    const confirmed = await showCustomConfirm('删除预设', `确定要删除预设 “${preset.name}” 吗？`, { confirmButtonClass: 'btn-danger' });
+    if (confirmed) {
+        await db.appearancePresets.delete(selectedId);
+        await loadAppearancePresetsDropdown();
+        alert('预设已删除。');
+    }
+}
+// ▲▲▲ 新增函数结束 ▲▲▲
         // ▼▼▼ 【全新】气泡主题预设功能核心函数 ▼▼▼
 
         /**
@@ -45734,6 +45884,68 @@ document.getElementById('save-wallpaper-btn').addEventListener('click', async ()
     showScreen('home-screen');
 });
 // ▲▲▲ 新增代码结束 ▲▲▲
+// ▼▼▼ 【全新】这是为“网络URL”按钮添加的功能，请粘贴到 init() 函数的事件监听器区域 ▼▼▼
+document.getElementById('upload-global-bg-url-btn').addEventListener('click', async () => {
+    // 1. 弹出一个输入框，让用户输入URL
+    const url = await showCustomPrompt("网络图片", "请输入背景图片的URL", "", "url");
+
+    // 2. 如果用户输入了有效的URL并点击了“确定”
+    if (url && url.trim()) {
+        // a. 将获取到的URL更新到全局设置的状态中
+        state.globalSettings.globalChatBackground = url.trim();
+        
+        // b. 立刻刷新外观设置页面的预览，让用户能马上看到效果
+        renderWallpaperScreen();
+    } else if (url !== null) {
+        // 如果用户输入了无效内容（不是null，说明没点取消）
+        alert("请输入有效的URL。");
+    }
+});
+// ▲▲▲ 新增代码粘贴结束 ▲▲▲
+document.getElementById('upload-ephone-bg-url-btn').addEventListener('click', async () => {
+    const url = await showCustomPrompt("网络图片 (EPhone)", "请输入EPhone主屏幕的背景图片URL", "", "url");
+    if (url && url.trim()) {
+        // EPhone的壁纸更新逻辑是先存到一个临时变量中
+        newWallpaperBase64 = url.trim();
+        // 然后刷新预览
+        renderWallpaperScreen();
+    } else if (url !== null) {
+        alert("请输入有效的URL。");
+    }
+});
+
+// 2. 为 CPhone 的“网络URL”按钮绑定事件
+document.getElementById('upload-cphone-bg-url-btn').addEventListener('click', async () => {
+    const url = await showCustomPrompt("网络图片 (CPhone)", "请输入CPhone的背景图片URL", "", "url");
+    if (url && url.trim()) {
+        // CPhone的壁纸更新逻辑是直接修改全局状态
+        state.globalSettings.cphoneWallpaper = url.trim();
+        // 然后刷新预览
+        renderWallpaperScreen();
+    } else if (url !== null) {
+        alert("请输入有效的URL。");
+    }
+});
+// ▼▼▼ 【全新】这是为EPhone和CPhone壁纸移除功能添加的JS，请粘贴到 init() 函数的事件监听器区域 ▼▼▼
+
+// 1. 为 EPhone 的“移除壁纸”按钮绑定事件
+document.getElementById('remove-ephone-bg-btn').addEventListener('click', () => {
+    // 将临时变量和全局状态都清空
+    newWallpaperBase64 = null;
+    state.globalSettings.wallpaper = '';
+    // 刷新预览，它会自动恢复为默认渐变色
+    renderWallpaperScreen();
+});
+
+// 2. 为 CPhone 的“移除壁纸”按钮绑定事件
+document.getElementById('remove-cphone-bg-btn').addEventListener('click', () => {
+    // 直接清空全局状态中的 CPhone 壁纸设置
+    state.globalSettings.cphoneWallpaper = '';
+    // 刷新预览
+    renderWallpaperScreen();
+});
+
+// ▲▲▲ 新增JS代码粘贴结束 ▲▲▲
         // ▼▼▼ 【全新】全局CSS预设功能事件监听器 ▼▼▼
         document.getElementById('css-preset-select').addEventListener('change', handleCssPresetSelectionChange);
         document.getElementById('save-css-preset-btn').addEventListener('click', saveCssPreset);
@@ -46537,7 +46749,11 @@ document.getElementById('delete-selected-products-btn').addEventListener('click'
         await showCustomAlert("成功", "选中的商品已成功删除。");
     }
 });
-
+// ▼▼▼ 【全新】外观预设功能事件监听器 ▼▼▼
+document.getElementById('appearance-preset-select').addEventListener('change', handleAppearancePresetSelectionChange);
+document.getElementById('save-appearance-preset-btn').addEventListener('click', saveAppearancePreset);
+document.getElementById('delete-appearance-preset-btn').addEventListener('click', deleteAppearancePreset);
+// ▲▲▲ 新增结束 ▲▲▲
 
 
 
