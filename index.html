@@ -8799,13 +8799,7 @@
         }
         
         /* 5. 第二页的App网格容器 */
-        #page-2-app-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr 1fr; /* 每行4个图标 */
-            gap: 20px;
-            width: 100%;
-            padding-top: 40px; /* 与顶部留出一些距离 */
-        }
+
         /* ▲▲▲ 新增CSS结束 ▲▲▲ */
 /* ▼▼▼ 【全新】聊天工具栏按钮排序功能样式 ▼▼▼ */
 .draggable-button-item {
@@ -9992,8 +9986,132 @@ input, textarea, select {
             color: white;
         }
         /* ▲▲▲ 新增CSS粘贴结束 ▲▲▲ */
+/* ▼▼▼ 【全新】这是为主屏幕第二屏添加的拍立得小组件样式 ▼▼▼ */
 
+/* 1. 小组件总容器 */
+.polaroid-widget-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 30px; /* 和下方的App图标拉开距离 */
+    flex-shrink: 0;
+    
+    /* --- ▼▼▼ 核心修改就在这里 ▼▼▼ --- */
+    margin-top: 20px; /* 添加和第一屏同样的顶部外边距 */
+    /* --- ▲▲▲ 修改结束 ▲▲▲ --- */
+}
 
+/* 2. 三张照片的容器 */
+.polaroid-photos {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px; /* 照片之间的轻微间距 */
+}
+
+/* 3. 单张拍立得照片的样式 */
+.polaroid-photo {
+    background-color: white;
+    padding: 8px 8px 15px 8px; /* 顶部和左右8px，底部15px，模拟拍立得的白边 */
+    border-radius: 4px;
+    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2); /* 更柔和的阴影 */
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s;
+    width: 80px; /* 设置一个固定宽度 */
+    flex-shrink: 0;
+}
+.polaroid-photo:hover {
+    transform: scale(1.1) rotate(0deg) !important; /* 鼠标悬停时放大并摆正 */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    z-index: 10; /* 确保悬停的照片在最上层 */
+}
+
+/* 4. 拍立得内部的图片 */
+.polaroid-photo img {
+    width: 100%;
+    display: block;
+    aspect-ratio: 1 / 1; /* 保持图片为正方形 */
+    object-fit: cover;
+}
+
+/* 5. 小组件标题 */
+.polaroid-widget-title {
+    margin-top: 15px;
+    font-size: 13px;
+    font-weight: 500;
+    color: white; /* 与主屏幕其他文字颜色统一 */
+    text-shadow: 0 1px 3px rgba(0,0,0,0.4); /* 与主屏幕其他文字阴影统一 */
+}
+
+/* ▲▲▲ 新增CSS粘贴结束 ▲▲▲ */
+/* ▼▼▼ 请将这段新样式粘贴到 <style> 的末尾 ▼▼▼ */
+
+#page-2-app-container {
+    display: grid;
+    /* --- The core change is on this line --- */
+    grid-template-columns: 155px 1fr; /* Set a fixed width for the left widget */
+    gap: 15px;
+    width: 100%;
+    padding-top: 20px;
+    align-items: start;
+}
+/* 2. 右侧 2x2 小组件的网格容器 */
+.app-subgrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 内部是2列均分 */
+    gap: 15px; /* 小组件之间的间距 */
+}
+
+/* 3. 左侧大组件的样式 */
+.large-widget {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px; /* 图片和文字的间距 */
+}
+.large-widget-img {
+    width: 100%;
+    aspect-ratio: 1 / 1; /* 保持正方形 */
+    border-radius: 22px; /* iOS风格圆角 */
+    object-fit: cover;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+.large-widget-label {
+    color: white;
+    font-size: 13px;
+    font-weight: 500;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+
+/* 4. 右侧小组件的通用样式 */
+.small-widget {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+/* 新增一个包装器，用于控制小图标的大小和居中 */
+.small-widget-icon-wrapper {
+    width: 55px;
+    height: 55px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.small-widget-img {
+    /* 核心修改：移除 max-width 和 max-height */
+    width: 100%;     /* 让图片宽度填满 55px 的父容器 */
+    height: 100%;    /* 让图片高度填满 55px 的父容器 */
+    object-fit: cover; /* 确保图片不变形地填满 */
+    border-radius: 14px; /* 推荐：为图标本身也加上圆角，与Dock栏图标风格统一 */
+}
+.small-widget-label {
+    color: white;
+    font-size: 13px;
+    font-weight: 500;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+/* ▲▲▲ 新增CSS粘贴结束 ▲▲▲ */
     </style>
 </head>
 <body>
@@ -10074,28 +10192,59 @@ input, textarea, select {
                 </div>
             </div>
             <!-- 页面 2: 放置新App图标的地方 -->
-            <div class="home-screen-page">
-                <div id="page-2-app-container">
-                    <div class="desktop-app-icon" onclick="openPresetScreen()">
-                        <div class="icon-bg-desktop"><img id="icon-img-preset" src="https://s3plus.meituan.net/opapisdk/op_ticket_885190757_1758510900942_qdqqd_djw0z2.jpeg" alt="预设"></div>
-                        <span class="label">预设</span>
-                    </div>
-<div class="desktop-app-icon" onclick="showScreen('tutorial-screen')">
-    <div class="icon-bg-desktop"><img id="icon-img-tutorial" src="https://i.postimg.cc/d10GjC4g/IMG-7302.jpg" alt="教程"></div>
-    <span class="label">教程</span>
-</div>
-<div class="desktop-app-icon" onclick="openWerewolfLobby('global')">
-            <div class="icon-bg-desktop"><img id="icon-img-werewolf" src="https://i.postimg.cc/k401K5g7/IMG-7304.jpg" alt="狼人杀"></div>
-            <span class="label">狼人杀</span>
+<div class="home-screen-page">
+ <div class="polaroid-widget-container">
+    <div class="polaroid-photos">
+        <!-- 照片1 -->
+        <div class="polaroid-photo" style="transform: rotate(-6deg);" onclick="handleWidgetImageChange('polaroid-img-1')">
+            <img id="polaroid-img-1" src="https://i.imgur.com/Bv63o3h.jpg" alt="Photo 1">
         </div>
-<div class="desktop-app-icon" onclick="showScreen('x-social-screen')">
-    <div class="icon-bg-desktop"><img id="icon-img-x" src="https://i.postimg.cc/Y9d3BztC/1.png" alt="X"></div>
-    <span class="label">X</span>
-</div>
-                </div>
-            </div>
+        <!-- 照片2 -->
+        <div class="polaroid-photo" style="transform: rotate(2deg);" onclick="handleWidgetImageChange('polaroid-img-2')">
+            <img id="polaroid-img-2" src="https://i.imgur.com/GzPzBfF.jpg" alt="Photo 2">
+        </div>
+        <!-- 照片3 -->
+        <div class="polaroid-photo" style="transform: rotate(5deg);" onclick="handleWidgetImageChange('polaroid-img-3')">
+            <img id="polaroid-img-3" src="https://i.imgur.com/Wp72cEM.jpg" alt="Photo 3">
         </div>
     </div>
+</div>
+<div id="page-2-app-container">
+    <!-- 1. 左侧大组件 (保持可点击更换图片) -->
+    <div class="large-widget" onclick="handleWidgetImageChange('large-widget-img')">
+        <img class="large-widget-img" id="large-widget-img" src="https://i.imgur.com/Bv63o3h.jpg" alt="Colorful Widget">
+    </div>
+    <!-- 2. 右侧 2x2 小组件网格 (恢复App点击事件) -->
+                <div class="app-subgrid">
+                    <div class="small-widget" onclick="openPresetScreen()">
+                        <div class="small-widget-icon-wrapper">
+                            <img class="small-widget-img" id="icon-img-preset" src="https://s3plus.meituan.net/opapisdk/op_ticket_885190757_1758510900942_qdqqd_djw0z2.jpeg" alt="预设">
+                        </div>
+                        <span class="small-widget-label">预设</span>
+                    </div>
+                    <div class="small-widget" onclick="showScreen('tutorial-screen')">
+                        <div class="small-widget-icon-wrapper">
+                            <img class="small-widget-img" id="icon-img-tutorial" src="https://i.postimg.cc/d10GjC4g/IMG-7302.jpg" alt="教程">
+                        </div>
+                        <span class="small-widget-label">教程</span>
+                    </div>
+                    <div class="small-widget" onclick="openWerewolfLobby('global')">
+                        <div class="small-widget-icon-wrapper">
+                            <img class="small-widget-img" id="icon-img-werewolf" src="https://i.postimg.cc/k401K5g7/IMG-7304.jpg" alt="狼人杀">
+                        </div>
+                        <span class="small-widget-label">狼人杀</span>
+                    </div>
+                    <div class="small-widget" onclick="showScreen('x-social-screen')">
+                        <div class="small-widget-icon-wrapper">
+                            <img class="small-widget-img" id="icon-img-x" src="https://i.postimg.cc/Y9d3BztC/1.png" alt="X">
+                        </div>
+                        <span class="small-widget-label">X</span>
+                    </div>
+                </div>
+</div>
+        </div>
+    </div>
+</div>
 
     <!-- 2. 分页指示器 -->
     <div id="home-screen-pagination">
@@ -41345,7 +41494,58 @@ ${recentHistoryContext}
     }
 }
 // ▲▲▲ 替换结束 ▲▲▲
+/* ▼▼▼ 【全新】这是为小组件更换图片功能添加的【全部核心JS代码】 ▼▼▼ */
 
+/**
+ * 【总入口】处理用户点击小组件更换图片的逻辑
+ * @param {string} imageId - 被点击的图片元素的ID
+ */
+async function handleWidgetImageChange(imageId) {
+    const element = document.getElementById(imageId);
+    if (!element) return;
+
+    // 1. 弹出选项，让用户选择上传方式
+    const choice = await showChoiceModal("更换图片", [
+        { text: '📁 从本地上传', value: 'local' },
+        { text: '🌐 使用网络URL', value: 'url' }
+    ]);
+
+    let newUrl = null;
+
+    // 2. 根据用户的选择执行不同操作
+    if (choice === 'local') {
+        // 调用我们现有的本地上传辅助函数
+        newUrl = await uploadImageLocally();
+    } else if (choice === 'url') {
+        // 弹出输入框让用户输入URL
+        newUrl = await showCustomPrompt("更换图片", "请输入新的图片URL：", element.src, "url");
+    }
+
+    // 3. 如果成功获取到了新的图片（无论是Base64还是URL），就更新并保存
+    if (newUrl && newUrl.trim()) {
+        const trimmedUrl = newUrl.trim();
+        
+        // a. 实时更新界面上的图片
+        element.src = trimmedUrl;
+        
+        // b. 将新图片URL保存到全局设置中
+        if (!state.globalSettings.widgetData) {
+            state.globalSettings.widgetData = {};
+        }
+        state.globalSettings.widgetData[imageId] = trimmedUrl;
+        
+        // c. 将更新后的设置存入数据库
+        await db.globalSettings.put(state.globalSettings);
+        
+        // d. 给出成功提示
+        await showCustomAlert("成功", "组件图片已更新！");
+    }
+}
+
+// 最后，将这个新函数暴露到全局，这样HTML中的onclick才能找到它
+window.handleWidgetImageChange = handleWidgetImageChange;
+
+/* ▲▲▲ 新增JS代码结束 ▲▲▲ */
 
 
               // ===================================================================
