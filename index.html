@@ -14739,19 +14739,16 @@ function renderOriginalPostContent(targetPost) {
          * @param {object} post - 单个帖子的数据对象
          * @returns {HTMLElement} - 创建或更新后的帖子容器DOM元素
          */
-        function createOrUpdatePostElement(post) {
+async function createOrUpdatePostElement(post) { // <-- 核心修改1：将函数声明为 async
             const existingPostContainer = document.querySelector(`.qzone-post-container[data-post-id="${post.id}"]`);
             const isUpdating = !!existingPostContainer;
             
-            // 如果是更新，就直接用旧的容器；如果是新建，就创建一个新的
             const postContainer = isUpdating ? existingPostContainer : document.createElement('div');
             if (!isUpdating) {
                 postContainer.className = 'qzone-post-container';
                 postContainer.dataset.postId = post.id;
             }
         
-            // --- 后续的HTML构建逻辑与您旧的 renderQzonePosts 函数完全相同 ---
-            // (我们只是把它从一个大循环里抽离出来，变成一个独立的、可复用的函数)
             const postEl = isUpdating ? postContainer.querySelector('.qzone-post-item') : document.createElement('div');
             if (!isUpdating) {
                 postEl.className = 'qzone-post-item';
@@ -14759,6 +14756,7 @@ function renderOriginalPostContent(targetPost) {
         
             let authorAvatar = '', authorNickname = '', commentAvatar = state.qzoneSettings.avatar; 
         
+            // --- ▼▼▼ 核心修改2：重构作者信息获取逻辑 ▼▼▼ ---
             if (post.authorId === 'user') {
                 authorAvatar = state.qzoneSettings.avatar;
                 authorNickname = state.qzoneSettings.nickname;
@@ -14766,10 +14764,25 @@ function renderOriginalPostContent(targetPost) {
                 const authorChat = state.chats[post.authorId];
                 authorAvatar = authorChat.settings.aiAvatar || defaultAvatar;
                 authorNickname = authorChat.name;
+            } else if (String(post.authorId).startsWith('npc_')) {
+                // 如果作者是NPC，我们从NPC数据库中查找信息
+                const npcId = parseInt(String(post.authorId).replace('npc_', ''));
+                if (!isNaN(npcId)) {
+                    const npc = await db.npcs.get(npcId);
+                    if (npc) {
+                        authorAvatar = npc.avatar || defaultGroupMemberAvatar;
+                        authorNickname = npc.name;
+                    } else {
+                        authorNickname = post.authorOriginalName || '未知NPC';
+                        authorAvatar = defaultGroupMemberAvatar;
+                    }
+                }
             } else {
+                // 如果都找不到，则使用原始名称和默认头像作为保底
                 authorNickname = getDisplayNameByOriginalName(post.authorOriginalName);
                 authorAvatar = defaultAvatar;
             }
+            // --- ▲▲▲ 修改结束 ▲▲▲ ---
         
 function renderOriginalPostContent(targetPost) {
             let innerContentHtml = '';
@@ -14954,7 +14967,7 @@ function renderOriginalPostContent(targetPost) {
             state.favoritedPostIds = new Set(favorites.map(fav => fav.content.id));
         
             // 调用核心函数来更新DOM
-            createOrUpdatePostElement(postData);
+           await createOrUpdatePostElement(postData);
         }
         
         // ▲▲▲ 新函数粘贴结束 ▲▲▲
@@ -14986,7 +14999,7 @@ async function renderQzonePosts() {
 
         
 // ▼▼▼ 【无限滚动修复版】请用这个新版本替换旧的 loadMoreQzonePosts 函数 ▼▼▼
-function loadMoreQzonePosts() {
+async function loadMoreQzonePosts() {
     if (isLoadingMorePosts) return;
     isLoadingMorePosts = true;
 
@@ -14999,7 +15012,7 @@ function loadMoreQzonePosts() {
     showLoader(postsListEl, 'bottom'); // 在底部显示加载动画
 
     // 模拟网络延迟
-    setTimeout(() => {
+    setTimeout(async () => {
         hideLoader(postsListEl); // 先移除加载动画
 
         const nextSliceStart = qzonePostsRenderCount;
@@ -15007,10 +15020,10 @@ function loadMoreQzonePosts() {
         const postsToAppend = qzonePostsCache.slice(nextSliceStart, nextSliceEnd);
 
         const fragment = document.createDocumentFragment();
-        postsToAppend.forEach(post => {
-            const postElement = createOrUpdatePostElement(post);
-            fragment.appendChild(postElement);
-        });
+for (const post of postsToAppend) {
+                    const postElement = await createOrUpdatePostElement(post); // <-- 核心修改4：在这里使用 await
+                    fragment.appendChild(postElement);
+                }
         postsListEl.appendChild(fragment);
 
         qzonePostsRenderCount += postsToAppend.length;
