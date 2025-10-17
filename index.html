@@ -4796,41 +4796,44 @@
         }
         
         /* ▲▲▲ 替换结束 ▲▲▲ */
-        /* ▼▼▼ 【最终修复方案】请用这整块代码替换所有旧的头像和气泡相关样式 ▼▼▼ */
-        
-        /* 1. 强制外层气泡容器(.message-bubble)成为一个真正的“弹性”项目。*/
-        /* 这让它可以正确地为旁边的“时间戳”收缩。*/
-        .message-bubble {
-            flex: 1;          /* 关键修复①: 让它填充所有可用空间 (flex-grow: 1, flex-shrink: 1) */
-            min-width: 0;     /* 关键修复②: 允许它收缩至比其内容更小，这是解决此类问题的核心技巧 */
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            max-width: 100%;
-        }
-        
-        .message-bubble.user { 
-            flex-direction: row-reverse; 
-        }
-        
-        /* 2. 强制内层内容区(.content)也成为一个“弹性”项目。*/
-        /* 这让它可以正确地为旁边的“头像”收缩。*/
-        .message-bubble .content {
-            flex: 1;          /* 关键修复③: 让内容区填充气泡内的所有可用空间 */
-            min-width: 0;     /* 关键修复④: 同样允许它收缩，防止长文本撑破布局 */
-            word-break: break-all !important; /* 关键修复⑤: 使用最强力的换行模式，确保长串字符能被截断 */
-            position: relative;
-            font-size: var(--chat-font-size, 16px);
-            padding: 8px 12px;
-            line-height: 1.5;
-        }
-        
-        /* 3. 再次确保头像容器绝对不收缩 (作为最终保险) */
-        .message-bubble .avatar-group {
-            flex-shrink: 0 !important;
-        }
-        
-        /* ▲▲▲ 修复方案结束 ▲▲▲ */
+/* ▼▼▼ 【最终修复方案】请用这整块代码替换所有旧的头像和气泡相关样式 ▼▼▼ */
+
+/* 1. 强制外层气泡容器(.message-bubble)成为一个真正的“弹性”项目。*/
+.message-bubble {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    max-width: 100%;
+}
+
+.message-bubble.user { 
+    flex-direction: row-reverse; 
+}
+
+/* 2. 强制内层内容区(.content)也成为一个“弹性”项目。*/
+.message-bubble .content {
+    flex: 1;
+    min-width: 0;
+    
+    /* --- 核心修复：修改这里的换行规则 --- */
+    overflow-wrap: break-word; /* 使用这个标准属性来保证单词完整性 */
+    word-wrap: break-word;     /* 兼容旧版浏览器 */
+    /* --- 修复结束 (已替换旧的 break-all 规则) --- */
+
+    position: relative;
+    font-size: var(--chat-font-size, 16px);
+    padding: 8px 12px;
+    line-height: 1.5;
+}
+
+/* 3. 再次确保头像容器绝对不收缩 (作为最终保险) */
+.message-bubble .avatar-group {
+    flex-shrink: 0 !important;
+}
+
+/* ▲▲▲ 修复方案结束 ▲▲▲ */
         /* ▼▼▼ 【终极强制修正】请将这段代码粘贴到 <style> 的最末尾 ▼▼▼ */
         
         /* 使用ID选择器和!important，强制提升这条规则的优先级到最高，
@@ -19454,7 +19457,20 @@ ${historySlice.map(msg => {
                             postsContext = "\n\n# 最近的动态列表 (供你参考和评论):\n";
                             const aiOriginalName = chat.originalName;
                             for (const post of visiblePosts) {
-                                let authorName = post.authorId === 'user' ? state.qzoneSettings.nickname : (state.chats[post.authorId]?.name || '一位朋友');
+                let authorName;
+
+                // --- 核心修改就在这里 ---
+                if (post.authorId === 'user') {
+                    authorName = state.qzoneSettings.nickname;
+                } else if (String(post.authorId).startsWith('npc_')) {
+                    // 1. 如果作者是NPC，直接使用帖子里存好的 authorOriginalName
+                    authorName = post.authorOriginalName || '一位神秘的NPC';
+                } else {
+                    // 2. 如果是普通AI角色，保持原来的查找逻辑
+                    const authorChat = state.chats[post.authorId];
+                    authorName = authorChat ? authorChat.name : '一位朋友';
+                }
+                // --- 修改结束 ---
                                 if (post.authorId === chatId) authorName += " (这是你的帖子)";
             
                                 let contentSummary;
@@ -21718,7 +21734,7 @@ async function deleteTrack(index) { if (index < 0 || index >= musicState.playlis
         
 // ▼▼▼ 【最终修复版】请用这个全新的函数，完整替换旧的 runBackgroundSimulationTick ▼▼▼
 /**
- * 这是模拟器的“心跳”，每次定时器触发时运行
+ * 【V2.1 | 支持NPC发帖】这是模拟器的“心跳”，每次定时器触发时运行
  */
 async function runBackgroundSimulationTick() { 
     console.log("模拟器心跳 Tick...");
@@ -21727,10 +21743,9 @@ async function runBackgroundSimulationTick() {
         return;
     }
 
-    // --- 1. 处理所有单聊 ---
+    // --- 1. 处理所有单聊 (这部分逻辑不变) ---
     const allSingleChats = Object.values(state.chats).filter(chat => !chat.isGroup);
     allSingleChats.forEach(chat => {
-        // 处理【被用户拉黑】的角色
         if (chat.relationship?.status === 'blocked_by_user') {
             const blockedTimestamp = chat.relationship.blockedTimestamp;
             if (!blockedTimestamp) return;
@@ -21741,19 +21756,11 @@ async function runBackgroundSimulationTick() {
                 triggerAiFriendApplication(chat.id);
             }
         }
-        // 处理【好友关系】的正常后台活动
         else if (chat.relationship?.status === 'friend' && chat.id !== state.activeChatId) {
-            
-            // ★★★★★ 这就是本次修改的核心 ★★★★★
-            // 在执行任何操作前，先检查这个角色的独立开关是否开启
             if (chat.settings.enableBackgroundActivity === false) {
-                // 如果开关是关闭的，就打印一条日志并直接跳过这个角色
                 console.log(`角色 "${chat.name}" 的独立后台活动开关已关闭，本次跳过。`);
-                return; // 使用 return 跳出 forEach 的本次循环
+                return;
             }
-            // ★★★★★ 修改结束 ★★★★★
-
-            // (后续的随机触发逻辑保持不变)
             if (Math.random() < 0.20) { 
                 console.log(`角色 "${chat.name}" 被唤醒，准备独立行动...`);
                 triggerInactiveAiAction(chat.id);
@@ -21761,81 +21768,84 @@ async function runBackgroundSimulationTick() {
         }
     });
 
-    // --- 2. 处理所有群聊 (逻辑保持不变) ---
+    // --- 2. 处理所有群聊 (这部分逻辑不变) ---
     const allGroupChats = Object.values(state.chats).filter(chat => chat.isGroup);
     allGroupChats.forEach(chat => {
-    // 【核心新增】在所有判断之前，首先检查这个群聊的独立开关
-    if (chat.settings.enableBackgroundActivity === false) {
-        // 如果开关是关闭的，就打印一条日志并直接跳过这个群聊
-        console.log(`群聊 "${chat.name}" 的后台活动开关已关闭，本次跳过。`);
-        return; // 使用 return 跳出 forEach 的本次循环
-    }
-
+        if (chat.settings.enableBackgroundActivity === false) {
+            console.log(`群聊 "${chat.name}" 的后台活动开关已关闭，本次跳过。`);
+            return;
+        }
         if (chat.id !== state.activeChatId && Math.random() < 0.10) { 
             console.log(`群聊 "${chat.name}" 被唤醒，准备独立行动...`);
             triggerGroupAiAction(chat.id); 
         }
     });
-    // --- 3. 【【【核心新增：处理所有NPC的评论行为】】】 ---
+
+    // --- 3. 【【【核心修改部分】】】处理所有NPC的评论/发帖行为 ---
     try {
         const allNpcs = await db.npcs.toArray();
         if (allNpcs.length === 0) return;
 
         const allRecentPosts = await db.qzonePosts.orderBy('timestamp').reverse().limit(10).toArray();
-        if (allRecentPosts.length === 0) return;
 
         for (const npc of allNpcs) {
-                    // 1. 【新增】检查该NPC的后台活动开关是否开启
-                    if (npc.enableBackgroundActivity === false) {
-                        continue; // 如果关闭，则直接跳过这个NPC
-                    }
-
-                    // 2. 【新增】检查该NPC的独立行动冷却时间
-                    const cooldownMinutes = npc.actionCooldownMinutes || 15; // 默认15分钟
-                    if (npc.lastActionTimestamp) {
-                        const minutesSinceLastAction = (Date.now() - npc.lastActionTimestamp) / (1000 * 60);
-                        if (minutesSinceLastAction < cooldownMinutes) {
-                            console.log(`NPC "${npc.name}" 处于行动冷却中，本次跳过。`);
-                            continue; // 如果还在冷却期，跳过这个NPC
-                        }
-                    }
-            // 为每个NPC设置一个独立的行动概率
-            if (Math.random() > 0.3) { // 30%的概率行动
-                continue;
+            if (npc.enableBackgroundActivity === false) continue;
+            const cooldownMinutes = npc.actionCooldownMinutes || 15;
+            if (npc.lastActionTimestamp) {
+                const minutesSinceLastAction = (Date.now() - npc.lastActionTimestamp) / (1000 * 60);
+                if (minutesSinceLastAction < cooldownMinutes) {
+                    continue;
+                }
             }
+            if (Math.random() > 0.3) continue;
 
-            // 筛选出与该NPC相关的、且NPC还未“说最后一句话”的帖子作为任务
             const tasks = allRecentPosts.filter(post => {
                 const isAssociated = npc.associatedWith.includes(post.authorId);
                 const isRepliedTo = post.comments?.some(c => c.replyTo === npc.name);
                 const lastCommenter = post.comments?.slice(-1)[0]?.commenterName;
-
                 return (isAssociated || isRepliedTo) && lastCommenter !== npc.name;
             });
             
-            if (tasks.length > 0) {
-                console.log(`NPC "${npc.name}" 发现 ${tasks.length} 个可互动项，正在请求AI行动...`);
-                const generatedComments = await generateNpcComments(npc, tasks);
+            // 即使没有可评论的帖子，NPC也应该有机会自己发帖
+            if (tasks.length > 0 || Math.random() < 0.2) { // 增加20%的几率在没有可互动项时也主动发帖
+                console.log(`NPC "${npc.name}" 触发行动决策...`);
+                const generatedActions = await generateNpcActions(npc, tasks);
 
-                if (generatedComments && generatedComments.length > 0) {
-                    for (const comment of generatedComments) {
-                        const post = await db.qzonePosts.get(comment.postId);
-                        if (post) {
-                            if (!post.comments) post.comments = [];
-                            post.comments.push({
-                                commenterName: npc.name,
-                                text: comment.commentText,
-                                replyTo: comment.replyTo || null,
-                                timestamp: Date.now() + Math.random()
-                            });
-                            await db.qzonePosts.update(comment.postId, { comments: post.comments });
+                if (generatedActions && generatedActions.length > 0) {
+                    for (const action of generatedActions) {
+                        if (action.type === 'qzone_comment') {
+                            // --- 这是旧的评论逻辑，保持不变 ---
+                            const post = await db.qzonePosts.get(action.postId);
+                            if (post) {
+                                if (!post.comments) post.comments = [];
+                                post.comments.push({
+                                    commenterName: npc.name,
+                                    text: action.commentText,
+                                    replyTo: action.replyTo || null,
+                                    timestamp: Date.now() + Math.random()
+                                });
+                                await db.qzonePosts.update(action.postId, { comments: post.comments });
+                                updateUnreadIndicator(unreadPostsCount + 1);
+                            }
+                        } else if (action.type === 'qzone_post') {
+                            // --- 这是【全新】的发帖处理逻辑 ---
+                            const newPost = {
+                                type: action.postType || 'shuoshuo',
+                                content: action.content,
+                                timestamp: Date.now(),
+                                authorId: `npc_${npc.id}`, // 使用 "npc_" 前缀来明确标识作者身份
+                                authorOriginalName: npc.name,
+                                visibleTo: npc.associatedWith, // 【【【核心！】】】将NPC的绑定列表作为帖子的可见权限
+                                likes: [],
+                                comments: [],
+                                isDeleted: false
+                            };
+                            await db.qzonePosts.add(newPost);
+                            console.log(`NPC "${npc.name}" 成功发布了一条新动态。`);
+                            updateUnreadIndicator(unreadPostsCount + 1);
                         }
                     }
-                            // 3. 【新增】行动成功后，更新该NPC的“最后行动时间戳”
-                            await db.npcs.update(npc.id, { lastActionTimestamp: Date.now() });
-                    console.log(`NPC "${npc.name}" 成功发布了 ${generatedComments.length} 条评论。`);
-                    updateUnreadIndicator(unreadPostsCount + generatedComments.length);                    
-                    // 如果用户当前正在查看动态页，则刷新UI
+                    await db.npcs.update(npc.id, { lastActionTimestamp: Date.now() });
                     if (document.getElementById('qzone-screen').classList.contains('active')) {
                         await renderQzonePosts();
                     }
@@ -21843,34 +21853,29 @@ async function runBackgroundSimulationTick() {
             }
         }
     } catch (error) {
-        console.error("处理NPC后台评论时出错:", error);
+        console.error("处理NPC后台活动时出错:", error);
     }
 }
-// ▲▲▲ 替换结束 ▲▲▲
 // ▼▼▼ 【最终修复版】请用这个全新的函数，完整替换旧的 generateNpcComments 函数 ▼▼▼
 
 /**
- * 【全新 | 已注入角色上下文】调用AI为NPC批量生成评论
+ * 【V2.2 | 发帖冷却感知版】调用AI为NPC生成行动（评论或发帖）
  * @param {object} npc - NPC对象 { name, persona, ... }
  * @param {Array<object>} tasks - 待处理的帖子对象数组
- * @returns {Promise<Array|null>} - 返回AI生成的评论对象数组，或在失败时返回null
+ * @returns {Promise<Array|null>} - 返回AI生成的行动对象数组，或在失败时返回null
  */
-async function generateNpcComments(npc, tasks) {
+async function generateNpcActions(npc, tasks) {
     const { proxyUrl, apiKey, model } = state.apiConfig;
     if (!proxyUrl || !apiKey || !model) {
         console.error("NPC行动失败：API未配置。");
         return null;
     }
 
-    // --- 核心修复 1: 在这里构建完整的角色上下文 ---
+    // (这部分上下文构建逻辑与之前完全相同，无需改动)
     let charactersContext = "# 你的互动对象 (用户和其他角色)\n";
-    
-    // a. 获取用户的信息
     const userNickname = state.qzoneSettings.nickname || '我';
     const userPersona = state.chats[Object.keys(state.chats)[0]]?.settings.myPersona || '(未设置)';
     charactersContext += `- **${userNickname} (用户)**: ${userPersona}\n`;
-
-    // b. 获取所有与此NPC关联的主要AI角色的信息
     if (npc.associatedWith && npc.associatedWith.length > 0) {
         npc.associatedWith.forEach(charId => {
             const char = state.chats[charId];
@@ -21879,10 +21884,6 @@ async function generateNpcComments(npc, tasks) {
             }
         });
     }
-    // --- 修复结束 ---
-
-
-    // (将帖子格式化的逻辑保持不变)
     const tasksString = tasks.map(post => {
         const authorDisplayName = getDisplayNameByOriginalName(post.authorOriginalName || post.authorId);
         const commentsString = (post.comments || [])
@@ -21891,9 +21892,8 @@ async function generateNpcComments(npc, tasks) {
                     const commenterDisplayName = getDisplayNameByOriginalName(c.commenterName);
                     return `- **${commenterDisplayName}**: ${c.text}`;
                 }
-                return `- ${c}`; // 兼容旧格式
+                return `- ${c}`;
             }).join('\n');
-
         return `
 ---
 ### 帖子ID: ${post.id}
@@ -21905,38 +21905,60 @@ ${commentsString || '(暂无评论)'}
 `;
     }).join('\n');
 
-    // --- 核心修复 2: 将我们刚刚构建的 charactersContext 注入到系统指令中 ---
+    // --- ▼▼▼ 【【【核心修改就在这里！】】】 ▼▼▼
+
+    // 1. 在调用AI前，先检查该NPC最近（例如12小时内）是否发过动态
+    const npcAuthorId = `npc_${npc.id}`;
+    const twelveHoursAgo = Date.now() - (12 * 60 * 60 * 1000);
+    const recentNpcPosts = await db.qzonePosts
+        .where('authorId').equals(npcAuthorId)
+        .and(post => post.timestamp > twelveHoursAgo)
+        .toArray();
+
+    // 2. 根据检查结果，动态生成一条“行为倾向指令”
+    let postingCooldownInstruction = '';
+    if (recentNpcPosts.length > 0) {
+        postingCooldownInstruction = `
+# 【【【行为倾向指令 (高优先级)】】】
+**你最近已经发布过动态了。** 为了让社区互动更自然，你本次行动的【首要任务】应该是去**评论**或**回复**下面“待处理的帖子列表”中的内容。
+你【应该避免】再次发布新动态，除非你有一个非常紧急或绝佳的新想法。
+`;
+    }
+
+    // 3. 将这条新指令注入到最终的 System Prompt 中
     const systemPrompt = `
 # 你的任务
-你是一个虚拟社区的AI评论员。你的核心任务是扮演角色“${npc.name}”，并根据其人设，为你下面提供的【每一篇】帖子撰写评论或回复。你的目标是让社区互动看起来更真实、更活跃。
+你是一个虚拟社区的AI。你的核心任务是扮演角色“${npc.name}”，并根据其人设，通过【发布新动态】或【评论/回复帖子】来参与社区互动。
+
+${postingCooldownInstruction}
 
 # 核心规则
-1.  **【角色扮演】**: 你的每一条评论都【必须】严格符合你的角色设定。
-2.  **【互动逻辑 (最重要!)】**:
-    -   仔细阅读每篇帖子的“已有评论”。如果有人回复了你或提到了你，你【必须】优先回复他们。
-    -   如果帖子很有趣但没人与你互动，你可以发表一条全新的评论。
+1.  **【角色扮演】**: 你的所有行为都【必须】严格符合你的角色设定。
+2.  **【互动逻辑】**: 如果选择评论，优先回复那些提到了你或回复了你的评论。
 3.  **【格式铁律 (最高优先级)】**: 
     -   你的回复【必须且只能】是一个JSON数组格式的字符串。
-    -   数组中的每个元素都代表一条评论，格式【必须】是以下两种之一：
-      -   **发表新评论**: \`{"postId": 帖子ID, "commentText": "你的新评论内容。"}\`
-      -   **回复他人评论**: \`{"postId": 帖子ID, "replyTo": "被回复者的【本名】", "commentText": "你的回复内容。"}\`
-4.  **【数量铁律 (最高优先级!)】**: 你本次任务【必须】生成【总共2到5条】评论。你可以自由分配这些评论到不同的帖子上。
+    -   数组中可以包含【一个或多个】行动对象。
+    -   每个行动对象的格式【必须】是以下两种之一：
+      -   **发布新动态**: \`{"type": "qzone_post", "postType": "shuoshuo", "content": "你的新动态内容。"}\`
+      -   **发表评论**: \`{"type": "qzone_comment", "postId": 123, "commentText": "你的新评论内容。"}\` 或 \`{"type": "qzone_comment", "postId": 123, "replyTo": "被回复者的【本名】", "commentText": "你的回复内容。"}\`
+4.  **【行为组合指南】**:
+    -   你可以自由组合不同的行动，例如，先发布一条自己的动态，再去评论别人的动态。
+    -   为了模拟真实行为，你本次生成的行动数量建议在【1到3个】之间。
+
 # 你的角色设定
 - **昵称**: ${npc.name}
 - **人设**: ${npc.persona}
 
 ${charactersContext} 
 
-# 待处理的帖子列表
+# 待处理的帖子列表 (如果你选择评论)
 ${tasksString}
 
-现在，请严格遵守所有规则，开始为这些帖子撰写评论。
-`;
-    // --- 修复结束 ---
+现在，请严格遵守所有规则，选择并执行你的行动。`;
+    // --- ▲▲▲ 【【【修改结束】】】 ▲▲▲
 
     try {
-        // (后续的API调用逻辑保持不变)
-        const messagesForApi = [{ role: 'user', content: "请根据你的设定，为以上帖子生成评论。" }];
+        const messagesForApi = [{ role: 'user', content: "请根据你的设定，开始你的行动。" }];
         let isGemini = proxyUrl.includes('generativelanguage');
         let geminiConfig = toGeminiRequestData(model, apiKey, systemPrompt, messagesForApi);
         
@@ -21957,15 +21979,15 @@ ${tasksString}
         const data = await response.json();
         const aiResponseContent = getGeminiResponseText(data);
         const jsonMatch = aiResponseContent.match(/(\[[\s\S]*\])/);
-        if (!jsonMatch) throw new Error("AI返回的评论中未找到有效的JSON数组。");
+        if (!jsonMatch) throw new Error("AI返回的行动中未找到有效的JSON数组。");
         
         return JSON.parse(jsonMatch[0]);
 
     } catch (error) {
-        console.error(`为NPC "${npc.name}" 生成评论失败:`, error);
+        console.error(`为NPC "${npc.name}" 生成行动失败:`, error);
         return null;
     }
-}    
+}
         // ▼▼▼ 【最终修复版】请用这个全新的函数，完整替换旧的 triggerInactiveAiAction ▼▼▼
         /**
          * 【V3.0 | 记忆增强版】AI在非活跃状态下的独立行动决策
@@ -22189,7 +22211,18 @@ if (chat.settings.enableTimePerception) {
             if (visiblePosts.length > 0) {
                 let postsContext = "\n\n# 最近的动态列表 (供你参考和评论):\n";
                 for (const post of visiblePosts) {
-                    let authorName = post.authorId === 'user' ? userNickname : (state.chats[post.authorId]?.name || '一位朋友');
+                let authorName;
+                                   // --- 核心修改就在这里 ---
+                if (post.authorId === 'user') {
+                    authorName = state.qzoneSettings.nickname;
+                } else if (String(post.authorId).startsWith('npc_')) {
+                    // 1. 如果作者是NPC，我们直接使用帖子里存好的 authorOriginalName
+                    authorName = post.authorOriginalName || '一位神秘的NPC';
+                } else {
+                    // 2. 如果是普通AI角色，保持原来的查找逻辑
+                    const authorChat = state.chats[post.authorId];
+                    authorName = authorChat ? authorChat.name : '一位朋友';
+                }
                     if (post.authorId === chatId) authorName += " (这是你的帖子)";
         
                     let contentSummary;
@@ -27003,45 +27036,53 @@ function applyCPhoneWallpaper() {
         // ▲▲▲ 新函数粘贴结束 ▲▲▲
         
 /**
-         * 【V2.0 | 支持分组隔离】根据AI的视角，过滤出它能看到的动态
-         * @param {Array} allPosts - 所有待检查的动态帖子
-         * @param {object} viewerChat - 正在“看”动态的那个AI的chat对象
-         * @returns {Array} - 过滤后该AI可见的动态帖子
-         */
-        function filterVisiblePostsForAI(allPosts, viewerChat) {
-            if (!viewerChat || !viewerChat.id) return []; // 安全检查
+ * 【V2.1 | NPC可见性修复版】根据AI的视角，过滤出它能看到的动态
+ * @param {Array} allPosts - 所有待检查的动态帖子
+ * @param {object} viewerChat - 正在“看”动态的那个AI的chat对象
+ * @returns {Array} - 过滤后该AI可见的动态帖子
+ */
+function filterVisiblePostsForAI(allPosts, viewerChat) {
+    if (!viewerChat || !viewerChat.id) return [];
 
-            const viewerGroupId = viewerChat.groupId; // 查看者所在的分组ID
+    const viewerGroupId = viewerChat.groupId;
+    const viewerId = viewerChat.id; // 查看者自己的ID
 
-            return allPosts.filter(post => {
-                // 规则1：处理用户发布的动态（这部分逻辑保持不变）
-                if (post.authorId === 'user') {
-                    // 如果用户设置了“部分可见”
-                    if (post.visibleGroupIds && post.visibleGroupIds.length > 0) {
-                        // 只有当查看者AI的分组ID在用户的可见列表里时，才可见
-                        return viewerGroupId && post.visibleGroupIds.includes(viewerGroupId);
-                    }
-                    return true; // 用户公开的动态，所有AI可见
-                }
-
-                // 规则2：处理AI角色之间发布的动态（核心隔离逻辑）
-                const authorChat = state.chats[post.authorId];
-                if (!authorChat) {
-                    // 如果找不到发帖的AI角色信息，为安全起见，默认不可见
-                    return false;
-                }
-                const authorGroupId = authorChat.groupId; // 从发帖角色的信息中获取其分组ID
-
-                // 判断条件1：查看者和发帖者都在同一个分组中 (分组ID相同且不为空)
-                const inSameGroup = authorGroupId && viewerGroupId && authorGroupId === viewerGroupId;
-
-                // 判断条件2：查看者和发帖者都处于“未分组”状态 (分组ID都为空)
-                const bothUnGrouped = !authorGroupId && !viewerGroupId;
-
-                // 只有满足以上两种情况之一，动态才可见
-                return inSameGroup || bothUnGrouped;
-            });
+    return allPosts.filter(post => {
+        // 规则1：用户发布的动态（逻辑不变）
+        if (post.authorId === 'user') {
+            if (post.visibleGroupIds && post.visibleGroupIds.length > 0) {
+                return viewerGroupId && post.visibleGroupIds.includes(viewerGroupId);
+            }
+            return true;
         }
+        
+        // --- ▼▼▼ 全新的核心修改就在这里 ▼▼▼ ---
+
+        // 规则2：【新增】处理NPC发布的动态
+        if (String(post.authorId).startsWith('npc_')) {
+            // 如果帖子有 `visibleTo` 列表，检查查看者的ID是否在其中
+            if (Array.isArray(post.visibleTo)) {
+                return post.visibleTo.includes(viewerId);
+            }
+            // 如果没有 `visibleTo` 列表（异常情况），默认不可见
+            return false;
+        }
+
+        // --- ▲▲▲ 修改结束 ▲▲▲ ---
+
+        // 规则3：AI角色之间发布的动态（逻辑不变）
+        const authorChat = state.chats[post.authorId];
+        if (!authorChat) {
+            return false;
+        }
+        const authorGroupId = authorChat.groupId;
+
+        const inSameGroup = authorGroupId && viewerGroupId && authorGroupId === viewerGroupId;
+        const bothUnGrouped = !authorGroupId && !viewerGroupId;
+
+        return inSameGroup || bothUnGrouped;
+    });
+}
         
         /**
          * 应用指定的主题（'light' 或 'dark'）
@@ -43674,25 +43715,84 @@ document.getElementById('waimai-confirm-btn').addEventListener('click', async ()
             const target = e.target;
         
             // --- 优先处理评论删除按钮的点击 ---
-            const deleteBtn = target.closest('.comment-delete-btn');
-            if (deleteBtn) {
-                const postContainer = deleteBtn.closest('.qzone-post-container');
-                const postId = parseInt(postContainer.dataset.postId);
-                const commentIndex = parseInt(deleteBtn.dataset.commentIndex);
-                if (isNaN(postId) || isNaN(commentIndex)) return;
+const deleteBtn = target.closest('.comment-delete-btn');
+if (deleteBtn) {
+    const postContainer = deleteBtn.closest('.qzone-post-container');
+    const postId = parseInt(postContainer.dataset.postId);
+    const commentIndex = parseInt(deleteBtn.dataset.commentIndex);
+    if (isNaN(postId) || isNaN(commentIndex)) return;
+
+    const post = qzonePostsCache.find(p => p.id === postId);
+    if (!post || !post.comments || !post.comments[commentIndex]) return;
+    
+    // 【【【核心新增代码：第1步】】】
+    // 在删除前，先将这条要被删除的评论的完整信息保存下来
+    const deletedComment = post.comments[commentIndex];
+    
+    const confirmed = await showCustomConfirm('删除评论', '确定要删除这条评论吗？', { confirmButtonClass: 'btn-danger' });
+    if (confirmed) {
+        // 从动态的评论列表中移除
+        post.comments.splice(commentIndex, 1);
+        await db.qzonePosts.update(postId, { comments: post.comments });
         
-                const post = qzonePostsCache.find(p => p.id === postId);
-                if (!post || !post.comments || !post.comments[commentIndex]) return;
-                
-                const confirmed = await showCustomConfirm('删除评论', '确定要删除这条评论吗？', { confirmButtonClass: 'btn-danger' });
-                if (confirmed) {
-                    post.comments.splice(commentIndex, 1);
-                    await db.qzonePosts.update(postId, { comments: post.comments });
-                    await updateSinglePostInDOM(postId); // 【性能优化】调用增量更新
-                }
-                
-                return; // 处理完后必须退出
+        // 【【【核心新增代码：第2步】】】
+        // 现在，我们开始清理AI的记忆
+        // 只有当删除的是用户自己的评论时，才需要去清理AI的记忆
+        if (deletedComment && deletedComment.commenterName === state.qzoneSettings.nickname) {
+            console.log("用户删除了自己的评论，开始清理AI记忆...");
+
+            // a. 找到所有可能收到通知的AI（帖子作者和被回复者）
+            const aiToNotifyIds = new Set();
+            if (post.authorId !== 'user') {
+                aiToNotifyIds.add(post.authorId);
             }
+            if (deletedComment.replyTo) {
+                const repliedToChat = Object.values(state.chats).find(c => c.originalName === deletedComment.replyTo);
+                if (repliedToChat) {
+                    aiToNotifyIds.add(repliedToChat.id);
+                }
+            }
+
+            // b. 重新构建出当时发送给AI的那条系统通知的【精确内容】
+            const postSummary = (post.publicText || post.content || '').substring(0, 30);
+            const userNickname = state.qzoneSettings.nickname;
+            let notificationText;
+            const stickerMatch = state.userStickers.find(s => s.url === deletedComment.text);
+
+            if (stickerMatch) {
+                 notificationText = `用户'${userNickname}'刚刚在你的动态“${postSummary}”下，发送了一个表情评论，意思是：“${stickerMatch.name}”。`;
+            } else if (deletedComment.replyTo) {
+                 const repliedToDisplayName = getDisplayNameByOriginalName(deletedComment.replyTo);
+                 notificationText = `用户'${userNickname}'刚刚在你的动态“${postSummary}”下，回复了'${repliedToDisplayName}'的评论，内容是：“${deletedComment.text}”。`;
+            } else {
+                 notificationText = `用户'${userNickname}'刚刚评论了你的动态“${postSummary}”，内容是：“${deletedComment.text}”。`;
+            }
+            const fullSystemContent = `[系统提示：${notificationText}请你对此作出回应。]`;
+
+            // c. 遍历所有相关的AI，从他们的历史记录中移除这条通知
+            for (const aiId of aiToNotifyIds) {
+                const chat = state.chats[aiId];
+                if (chat) {
+                    const originalLength = chat.history.length;
+                    // 使用 filter 方法，保留所有与那条系统通知【内容不符】的消息
+                    chat.history = chat.history.filter(msg => 
+                        !(msg.isHidden && msg.role === 'system' && msg.content === fullSystemContent)
+                    );
+                    // 如果历史记录的长度变短了，说明我们成功删除了，就把更新后的数据存回数据库
+                    if (chat.history.length < originalLength) {
+                        console.log(`在角色 "${chat.name}" 的记忆中清除了1条关于已删除评论的通知。`);
+                        await db.chats.put(chat);
+                    }
+                }
+            }
+        }
+        // 【【【新增代码结束】】】
+
+        await updateSinglePostInDOM(postId); // 刷新动态UI
+    }
+    
+    return; // 处理完后必须退出
+}
             
             // --- 所有弹窗和非DOM更新的逻辑保持不变 ---
             const stickerBtn = target.closest('.comment-sticker-btn');
