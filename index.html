@@ -10123,6 +10123,69 @@ input, textarea, select {
 }
 
 /* ▲▲▲ 新增CSS结束 ▲▲▲ */
+/* ▼▼▼ 【全新】修复Cphone内部App列表项在夜间模式下的颜色 ▼▼▼ */
+
+#phone-screen.dark-mode #char-diary-list .list-item .item-title,
+#phone-screen.dark-mode #char-diary-list .list-item .item-content,
+#phone-screen.dark-mode #char-memo-list .list-item .item-title,
+#phone-screen.dark-mode #char-memo-list .list-item .item-content,
+#phone-screen.dark-mode #char-browser-history .char-browser-item .title,
+#phone-screen.dark-mode #char-usage-list .usage-item-name,
+#phone-screen.dark-mode #char-music-list .music-item-name {
+    color: #f0f0f0; /* 将主要文字强制设为亮灰色 */
+}
+
+#phone-screen.dark-mode #char-diary-list .list-item .item-content,
+#phone-screen.dark-mode #char-browser-history .char-browser-item .url,
+#phone-screen.dark-mode #char-usage-list .usage-item-category,
+#phone-screen.dark-mode #char-music-list .music-item-artist {
+    color: #a0a0a0; /* 将次要文字（如日期、网址）设为柔和的灰色 */
+}
+
+/* ▲▲▲ 新增CSS粘贴结束 ▲▲▲ */
+/* ▼▼▼ 【全新】修复日记详情页自定义Markdown样式在夜间模式下的可见性 ▼▼▼ */
+
+/* 1. 黄色高亮 */
+#phone-screen.dark-mode #char-diary-detail-content .diary-highlight {
+    background-color: rgba(255, 223, 100, 0.2); /* 暗黄色背景 */
+    color: #FFD700; /* 亮黄色文字 */
+}
+
+/* 2. 粉色虚线下划线 */
+#phone-screen.dark-mode #char-diary-detail-content .diary-underline {
+    border-bottom-color: #FF85B3; /* 更亮的粉色 */
+}
+
+/* 3. 粉红色加粗文字 */
+#phone-screen.dark-mode #char-diary-detail-content .diary-emphasis {
+    color: #FF85B3; /* 更亮的粉色 */
+}
+
+/* 4. 手写体 (包括凌乱手写体) */
+#phone-screen.dark-mode #char-diary-detail-content .diary-handwritten,
+#phone-screen.dark-mode #char-diary-detail-content .diary-messy {
+    color: #dcdcdc; /* 浅灰色，确保可见 */
+}
+
+/* ▼▼▼ 【全新 | 最终修复版】修复聊天界面“涂黑”功能在夜间模式下的可见性 ▼▼▼ */
+
+/* 1. 夜间模式下，“涂黑”区域的默认样式 */
+#phone-screen.dark-mode .spoiler {
+    background-color: #444; /* 将背景改为中度灰色，以便在纯黑背景下能被看到 */
+    color: #444;           /* 文字也改为同样的灰色，保持隐藏效果 */
+}
+
+/* 2. 夜间模式下，鼠标悬停或点击时，显示内容 */
+#phone-screen.dark-mode .spoiler:hover, 
+#phone-screen.dark-mode .spoiler:active {
+    background-color: #555; /* 背景变为更亮的灰色，与周围有区分 */
+    color: #fff;           /* 文字变为白色，清晰可见 */
+}
+
+/* ▲▲▲ 新增CSS粘贴结束 ▲▲▲ */
+
+
+/* ▲▲▲ 新增CSS粘贴结束 ▲▲▲ */
     </style>
 </head>
 <body>
