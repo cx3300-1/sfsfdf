@@ -16121,6 +16121,32 @@ async function loadAllDataFromDB() {
         
                 function formatTimestamp(timestamp) { if (!timestamp) return ''; const date = new Date(timestamp); const hours = String(date.getHours()).padStart(2, '0'); const minutes = String(date.getMinutes()).padStart(2, '0'); return `${hours}:${minutes}`; }
 /**
+ * 【全新】将时间戳转换为“xx前”的相对时间格式
+ * @param {number} timestamp - 过去的时间戳
+ * @returns {string} - 格式化后的相对时间字符串，例如 "5分钟前", "3天前"
+ */
+function formatTimeAgo(timestamp) {
+    const now = Date.now();
+    const seconds = Math.floor((now - timestamp) / 1000);
+
+    if (seconds < 60) return '刚刚';
+    
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}分钟前`;
+    
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}小时前`;
+
+    const days = Math.floor(hours / 24);
+    if (days < 30) return `${days}天前`;
+
+    const months = Math.floor(days / 30);
+    if (months < 12) return `大约${months}个月前`;
+
+    const years = Math.floor(days / 365);
+    return `大约${years}年前`;
+}
+/**
  * 【全新 V2.0 | 智能日期感知版】为AI上下文格式化时间戳
  * @param {number} timestamp - 消息的时间戳
  * @returns {string} - 格式化后的日期时间字符串，例如 "今天 17:42", "昨天 23:50" 等
@@ -18433,19 +18459,22 @@ async function triggerSpectatorGroupAiAction() {
         }
         
         // b. 收集长期记忆
-        let longTermMemoryContext = '# 长期记忆 (最高优先级，这是群内已经确立的事实，所有角色必须严格遵守)\n';
-        let collectedMemories = false;
-        chat.members.forEach(member => {
-            const memberChat = state.chats[member.id];
-            if (memberChat && memberChat.longTermMemory && memberChat.longTermMemory.length > 0) {
-                longTermMemoryContext += `\n## --- 关于“${member.groupNickname}”的记忆 ---\n`;
-                longTermMemoryContext += memberChat.longTermMemory.map(mem => `- ${mem.content}`).join('\n');
-                collectedMemories = true;
-            }
-        });
-        if (!collectedMemories) {
-            longTermMemoryContext += '- (暂无)';
-        }
+let longTermMemoryContext = '# 长期记忆 (最高优先级，这是群内已经确立的事实，所有角色必须严格遵守)\n';
+let collectedMemories = false;
+
+chat.members.forEach(member => {
+    const memberChat = state.chats[member.id];
+    if (memberChat && memberChat.longTermMemory && memberChat.longTermMemory.length > 0) {
+        longTermMemoryContext += `\n## --- 关于“${member.groupNickname}”的记忆 ---\n`;
+        // ★★★ 核心修改就在这里！ ★★★
+        longTermMemoryContext += memberChat.longTermMemory.map(mem => `- (记录于 ${formatTimeAgo(mem.timestamp)}) ${mem.content}`).join('\n');
+        collectedMemories = true;
+    }
+});
+
+if (!collectedMemories) {
+    longTermMemoryContext += '- (暂无)';
+}
 
         // c. 收集挂载记忆
         let linkedMemoryContext = '';
@@ -19081,21 +19110,22 @@ ${transcriptText}
                 }
 // ▲▲▲ 修复代码粘贴结束 ▲▲▲
              // ▼▼▼ 核心修改：在这里构建跨角色的长期记忆上下文 ▼▼▼
-            let longTermMemoryContext = '# 长期记忆 (最高优先级，这是群内已经确立的事实，所有角色必须严格遵守)\n';
-            let collectedMemories = false;
-            
-            chat.members.forEach(member => {
-                const memberChat = state.chats[member.id];
-                if (memberChat && memberChat.longTermMemory && memberChat.longTermMemory.length > 0) {
-                    longTermMemoryContext += `\n## --- 关于“${member.groupNickname}”的记忆 ---\n`;
-                    longTermMemoryContext += memberChat.longTermMemory.map(mem => `- ${mem.content}`).join('\n');
-                    collectedMemories = true;
-                }
-            });
+let longTermMemoryContext = '# 长期记忆 (最高优先级，这是群内已经确立的事实，所有角色必须严格遵守)\n';
+let collectedMemories = false;
 
-            if (!collectedMemories) {
-                longTermMemoryContext += '- (暂无)';
-            }
+chat.members.forEach(member => {
+    const memberChat = state.chats[member.id];
+    if (memberChat && memberChat.longTermMemory && memberChat.longTermMemory.length > 0) {
+        longTermMemoryContext += `\n## --- 关于“${member.groupNickname}”的记忆 ---\n`;
+        // ★★★ 核心修改就在这里！ ★★★
+        longTermMemoryContext += memberChat.longTermMemory.map(mem => `- (记录于 ${formatTimeAgo(mem.timestamp)}) ${mem.content}`).join('\n');
+        collectedMemories = true;
+    }
+});
+
+if (!collectedMemories) {
+    longTermMemoryContext += '- (暂无)';
+}
             // ▲▲▲ 修改结束 ▲▲▲
 // 【V2.0 | 智能日期感知版 for Group】
 let timeContextText = '';
@@ -22505,8 +22535,11 @@ if (chat.settings.enableTimePerception) {
             }
         
     // ▼▼▼ 核心修改：在这里构建长期记忆上下文 ▼▼▼
-    const longTermMemoryContext = `# 长期记忆 (最高优先级，这是你和用户之间已经确立的事实，必须严格遵守)
-${chat.longTermMemory && chat.longTermMemory.length > 0 ? chat.longTermMemory.map(mem => `- ${mem.content}`).join('\n') : '- (暂无)'}`;
+const longTermMemoryContext = `# 长期记忆 (最高优先级，这是你和用户之间已经确立的事实，必须严格遵守)
+${chat.longTermMemory && chat.longTermMemory.length > 0 
+    ? chat.longTermMemory.map(mem => `- (记录于 ${formatTimeAgo(mem.timestamp)}) ${mem.content}`).join('\n') 
+    : '- (暂无)'
+}`;
     // ▲▲▲ 修改结束 ▲▲▲  
 
 const summary3Hours = generateSummaryForTimeframe(chat, 3, 'hours');
@@ -22590,7 +22623,10 @@ ${longTimeNoSee ? `【重要提示】你们已经很久没聊天了！你【必�
         # 供你决策的参考信息：
         -   **你的角色设定**: ${chat.settings.aiPersona}
         ${worldBookContent}
-        ${longTermMemoryContext}
+        ${chat.longTermMemory && chat.longTermMemory.length > 0 
+    ? chat.longTermMemory.map(mem => `- (记录于 ${formatTimeAgo(mem.timestamp)}) ${mem.content}`).join('\n') 
+    : '无'
+}
         ${multiLayeredSummaryContext}   
         ${linkedMemoryContext}
         ${chat.settings.enableTimePerception ? `-   **当前时间**:${currentTime} (${timeOfDayGreeting})` : ''}
@@ -33977,7 +34013,9 @@ async function handleGenerateSimulatedDiaries() {
 
     const userDisplayNameForAI = (state.qzoneSettings.nickname === '{{user}}' || !state.qzoneSettings.nickname) ? '用户' : state.qzoneSettings.nickname;
 
-    const longTermMemoryContext = chat.longTermMemory?.map(mem => `- ${mem.content}`).join('\n') || '无';
+    const longTermMemoryContext = chat.longTermMemory && chat.longTermMemory.length > 0
+    ? chat.longTermMemory.map(mem => `- (记录于 ${formatTimeAgo(mem.timestamp)}) ${mem.content}`).join('\n')
+    : '无';
     const maxMemory = chat.settings.maxMemory || 10;
 const recentHistoryWithUser = chat.history.slice(-maxMemory).map(msg => `${msg.role === 'user' ? userDisplayNameForAI : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
     const worldBookContext = (chat.settings.linkedWorldBookIds || [])
@@ -34122,7 +34160,9 @@ ${recentHistoryWithUser}
 
             const userDisplayNameForAI = (state.qzoneSettings.nickname === '{{user}}' || !state.qzoneSettings.nickname) ? '用户' : state.qzoneSettings.nickname;
 
-            const longTermMemoryContext = chat.longTermMemory?.map(mem => `- ${mem.content}`).join('\n') || '无';
+            const longTermMemoryContext = chat.longTermMemory && chat.longTermMemory.length > 0
+    ? chat.longTermMemory.map(mem => `- (记录于 ${formatTimeAgo(mem.timestamp)}) ${mem.content}`).join('\n')
+    : '无';
             const maxMemory = chat.settings.maxMemory || 10;
 const recentHistoryWithUser = chat.history.slice(-maxMemory).map(msg => `${msg.role === 'user' ? userDisplayNameForAI : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
             const worldBookContext = (chat.settings.linkedWorldBookIds || []).map(bookId=>state.worldBooks.find(wb=>wb.id===bookId)).filter(Boolean).map(book=>`\n## 世界书《${book.name}》设定:\n${book.content.filter(e=>e.enabled).map(e=>`- ${e.content}`).join('\n')}`).join('');
@@ -34471,7 +34511,9 @@ async function handleGenerateSimulatedQQ() {
 
     const userDisplayNameForAI = state.qzoneSettings.nickname === '{{user}}' || !state.qzoneSettings.nickname ? '用户' : state.qzoneSettings.nickname;
     const userNicknameInThisChat = chat.settings.myNickname || userDisplayNameForAI;
-    const longTermMemoryContext = chat.longTermMemory?.map(mem => `- ${mem.content}`).join('\n') || '无';
+    const longTermMemoryContext = chat.longTermMemory && chat.longTermMemory.length > 0
+    ? chat.longTermMemory.map(mem => `- (记录于 ${formatTimeAgo(mem.timestamp)}) ${mem.content}`).join('\n')
+    : '无';
 const maxMemory = chat.settings.maxMemory || 10;
     const recentHistoryWithUser =chat.history.slice(-maxMemory).map(msg => `${msg.role === 'user' ? userNicknameInThisChat : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
     const worldBookContext = (chat.settings.linkedWorldBookIds || [])
@@ -34997,7 +35039,9 @@ async function handleGenerateSimulatedAlbum() {
 
     const userDisplayNameForAI = (state.qzoneSettings.nickname === '{{user}}' || !state.qzoneSettings.nickname) ? '用户' : state.qzoneSettings.nickname;
     
-    const longTermMemoryContext = chat.longTermMemory?.map(mem => `- ${mem.content}`).join('\n') || '无';
+    const longTermMemoryContext = chat.longTermMemory && chat.longTermMemory.length > 0
+    ? chat.longTermMemory.map(mem => `- (记录于 ${formatTimeAgo(mem.timestamp)}) ${mem.content}`).join('\n')
+    : '无';
     const maxMemory = chat.settings.maxMemory || 10;
 const recentHistoryWithUser = chat.history.slice(-maxMemory).map(msg => `${msg.role === 'user' ? userDisplayNameForAI : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
     const worldBookContext = (chat.settings.linkedWorldBookIds || [])
@@ -35187,7 +35231,9 @@ async function handleGenerateBrowserHistory() {
     
     const userDisplayNameForAI = (state.qzoneSettings.nickname === '{{user}}' || !state.qzoneSettings.nickname) ? '用户' : state.qzoneSettings.nickname;
 
-    const longTermMemoryContext = chat.longTermMemory?.map(mem => `- ${mem.content}`).join('\n') || '无';
+    const longTermMemoryContext = chat.longTermMemory && chat.longTermMemory.length > 0
+    ? chat.longTermMemory.map(mem => `- (记录于 ${formatTimeAgo(mem.timestamp)}) ${mem.content}`).join('\n')
+    : '无';
     const maxMemory = chat.settings.maxMemory || 10;
 const recentHistoryWithUser = chat.history.slice(-maxMemory).map(msg => `${msg.role === 'user' ? userDisplayNameForAI : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
     const worldBookContext = (chat.settings.linkedWorldBookIds || [])
@@ -35388,7 +35434,9 @@ async function handleGenerateTaobaoHistory() {
 
     const userDisplayNameForAI = (state.qzoneSettings.nickname === '{{user}}' || !state.qzoneSettings.nickname) ? '用户' : state.qzoneSettings.nickname;
 
-    const longTermMemoryContext = chat.longTermMemory?.map(mem => `- ${mem.content}`).join('\n') || '无';
+    const longTermMemoryContext = chat.longTermMemory && chat.longTermMemory.length > 0
+    ? chat.longTermMemory.map(mem => `- (记录于 ${formatTimeAgo(mem.timestamp)}) ${mem.content}`).join('\n')
+    : '无';
     const maxMemory = chat.settings.maxMemory || 10;
 const recentHistoryWithUser = chat.history.slice(-maxMemory).map(msg => `${msg.role === 'user' ? userDisplayNameForAI : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
     const worldBookContext = (chat.settings.linkedWorldBookIds || [])
@@ -35588,7 +35636,9 @@ async function handleGenerateSimulatedMemos() {
 
     const userDisplayNameForAI = (state.qzoneSettings.nickname === '{{user}}' || !state.qzoneSettings.nickname) ? '用户' : state.qzoneSettings.nickname;
 
-    const longTermMemoryContext = chat.longTermMemory?.map(mem => `- ${mem.content}`).join('\n') || '无';
+    const longTermMemoryContext = chat.longTermMemory && chat.longTermMemory.length > 0
+    ? chat.longTermMemory.map(mem => `- (记录于 ${formatTimeAgo(mem.timestamp)}) ${mem.content}`).join('\n')
+    : '无';
     const maxMemory = chat.settings.maxMemory || 10;
 const recentHistoryWithUser = chat.history.slice(-maxMemory).map(msg => `${msg.role === 'user' ? userDisplayNameForAI : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
     const worldBookContext = (chat.settings.linkedWorldBookIds || [])
@@ -35728,7 +35778,9 @@ async function handleGenerateAmapHistory() {
     }
     
     const userDisplayNameForAI = (state.qzoneSettings.nickname === '{{user}}' || !state.qzoneSettings.nickname) ? '用户' : state.qzoneSettings.nickname;
-    const longTermMemoryContext = chat.longTermMemory?.map(mem => `- ${mem.content}`).join('\n') || '无';
+    const longTermMemoryContext = chat.longTermMemory && chat.longTermMemory.length > 0
+    ? chat.longTermMemory.map(mem => `- (记录于 ${formatTimeAgo(mem.timestamp)}) ${mem.content}`).join('\n')
+    : '无';
     const maxMemory = chat.settings.maxMemory || 10;
 const recentHistoryWithUser = chat.history.slice(-maxMemory).map(msg => `${msg.role === 'user' ? userDisplayNameForAI : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
     const worldBookContext = (chat.settings.linkedWorldBookIds || [])
@@ -35916,7 +35968,9 @@ async function handleGenerateAppUsage() {
     
     const userDisplayNameForAI = (state.qzoneSettings.nickname === '{{user}}' || !state.qzoneSettings.nickname) ? '用户' : state.qzoneSettings.nickname;
 
-    const longTermMemoryContext = chat.longTermMemory?.map(mem => `- ${mem.content}`).join('\n') || '无';
+    const longTermMemoryContext = chat.longTermMemory && chat.longTermMemory.length > 0
+    ? chat.longTermMemory.map(mem => `- (记录于 ${formatTimeAgo(mem.timestamp)}) ${mem.content}`).join('\n')
+    : '无';
     const maxMemory = chat.settings.maxMemory || 10;
 const recentHistoryWithUser = chat.history.slice(-maxMemory).map(msg => `${msg.role === 'user' ? userDisplayNameForAI : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
     const worldBookContext = (chat.settings.linkedWorldBookIds || [])
@@ -36081,7 +36135,9 @@ async function handleGenerateSimulatedMusic() {
     
     const userDisplayNameForAI = (state.qzoneSettings.nickname === '{{user}}' || !state.qzoneSettings.nickname) ? '用户' : state.qzoneSettings.nickname;
 
-    const longTermMemoryContext = chat.longTermMemory?.map(mem => `- ${mem.content}`).join('\n') || '无';
+    const longTermMemoryContext = chat.longTermMemory && chat.longTermMemory.length > 0
+    ? chat.longTermMemory.map(mem => `- (记录于 ${formatTimeAgo(mem.timestamp)}) ${mem.content}`).join('\n')
+    : '无';
     const maxMemory = chat.settings.maxMemory || 10;
 const recentHistoryWithUser = chat.history.slice(-maxMemory).map(msg => `${msg.role === 'user' ? userDisplayNameForAI : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
     const worldBookContext = (chat.settings.linkedWorldBookIds || [])
@@ -41878,7 +41934,9 @@ async function handleGenerateShoppingItems() {
     
     // 2. 【核心新增】构建完整的角色上下文，注入到Prompt中
     const userNickname = state.qzoneSettings.nickname || '我';
-    const longTermMemoryContext = chat.longTermMemory?.map(mem => `- ${mem.content}`).join('\n') || '无';
+    const longTermMemoryContext = chat.longTermMemory && chat.longTermMemory.length > 0
+    ? chat.longTermMemory.map(mem => `- (记录于 ${formatTimeAgo(mem.timestamp)}) ${mem.content}`).join('\n')
+    : '无';
     const recentHistoryContext = chat.history.slice(-10).map(msg => 
         `${msg.role === 'user' ? userNickname : chat.name}: ${String(msg.content).substring(0, 30)}...`
     ).join('\n');
