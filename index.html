@@ -42132,7 +42132,46 @@ async function exportDataAsStream() {
         await writer.close();
     }
 }
+/**
+ * 【全新】使用传统Blob方式，将所有数据导出到一个文件中（作为备用方案）
+ */
+async function exportDataAsBlob() {
+    await showCustomAlert("正在准备...", "正在读取所有数据到内存中，请稍候...");
 
+    try {
+        const backupData = {
+            version: 3, // 标记为新版结构
+            timestamp: Date.now(),
+            data: {} // 所有数据都将存放在这个 'data' 对象中
+        };
+
+        const tablesToBackup = db.tables.map(t => t.name);
+
+        for (const tableName of tablesToBackup) {
+            const tableData = await db.table(tableName).toArray();
+            backupData.data[tableName] = tableData;
+            console.log(`已打包表: ${tableName}, 记录数: ${tableData.length}`);
+        }
+        
+        const blob = new Blob(
+            [JSON.stringify(backupData, null, 2)], 
+            { type: 'application/json' }
+        );
+        
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `EPhone-Full-Backup-Legacy-${new Date().toISOString().split('T')[0]}.json`;
+        link.click();
+        URL.revokeObjectURL(url);
+        
+        await showCustomAlert('导出成功', '已成功导出所有数据！');
+
+    } catch (error) {
+        console.error("传统导出数据时出错:", error);
+        await showCustomAlert('导出失败', `发生了一个错误: ${error.message}`);
+    }
+}
 
 
 
@@ -42481,7 +42520,21 @@ window.openNpcEditor = openNpcEditor; // <-- 新增这一行
         // ▲▲▲ 粘贴结束 ▲▲▲
                     document.getElementById('custom-modal-cancel').addEventListener('click', hideCustomModal);
                     document.getElementById('custom-modal-overlay').addEventListener('click', (e) => { if (e.target === modalOverlay) hideCustomModal(); });
-                    document.getElementById('export-data-btn').addEventListener('click', exportDataAsStream);
+                    document.getElementById('export-data-btn').addEventListener('click', async () => {
+    // 弹出选择框，让用户决定使用哪种导出方式
+    const choice = await showChoiceModal('选择导出方式', [
+        { text: '智能导出 (推荐，速度快，内存占用小)', value: 'stream' },
+        { text: '传统导出 (兼容旧版或内存小的浏览器)', value: 'blob' }
+    ]);
+
+    // 根据用户的选择，调用不同的导出函数
+    if (choice === 'stream') {
+        exportDataAsStream();
+    } else if (choice === 'blob') {
+        exportDataAsBlob();
+    }
+    // 如果用户点击取消，则 choice 为 null，不做任何事
+});
 // ▼▼▼ 在这里粘贴下面的新代码 ▼▼▼
 document.getElementById('cleanup-data-btn').addEventListener('click', cleanupRedundantData);
 // ▲▲▲ 粘贴结束 ▲▲▲
@@ -47743,4 +47796,3 @@ document.getElementById('delete-selected-frames-btn').addEventListener('click', 
 <audio id="tts-audio-player" style="display:none;"></audio>
 </body>
 </html>
-
