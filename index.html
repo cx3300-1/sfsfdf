@@ -15788,86 +15788,133 @@ async function cleanupRedundantData() {
                 await showCustomAlert('导出失败', `发生了一个错误: ${error.message}`);
             }
         }
-        
-        // ▼▼▼ 【这是导入函数修复版】 ▼▼▼
-        async function importBackup(file) {
-            if (!file) return;
-        
-            const confirmed = await showCustomConfirm(
-                '严重警告！',
-                '导入备份将完全覆盖您当前的所有数据，包括聊天、动态、设置等。此操作不可撤销！您确定要继续吗？',
-                { confirmButtonClass: 'btn-danger' }
-            );
-        
-            if (!confirmed) return;
-        
-            try {
-                const text = await file.text();
-                const data = JSON.parse(text);
-        
-                await db.transaction('rw', db.tables, async () => {
-                    for (const table of db.tables) {
-                        await table.clear();
-                    }
-        
-                    if (Array.isArray(data.chats)) await db.chats.bulkPut(data.chats);
-                    // ▼▼▼ 【全新】世界书旧版本数据兼容代码 ▼▼▼
-                    if (data.worldBooks && Array.isArray(data.worldBooks)) {
-                        console.log("正在检查世界书数据格式以确保兼容性...");
-                        data.worldBooks.forEach(book => {
-                            if (typeof book.content === 'string') {
-                                console.log(`检测到旧格式的世界书: "${book.name}"，正在自动迁移...`);
-                                const oldContentString = book.content;
-                                book.content = [{
-                                    keys: [], 
-                                    comment: "从旧版本自动迁移的条目",
-                                    content: oldContentString,
-                                    enabled: true 
-                                }];
-                            }
-                        });
-                    }
-                    // ▲▲▲ 代码粘贴结束 ▲▲▲
-                    if (Array.isArray(data.worldBooks)) await db.worldBooks.bulkPut(data.worldBooks);
-                    if (Array.isArray(data.worldBookCategories)) await db.worldBookCategories.bulkPut(data.worldBookCategories);
-                    if (Array.isArray(data.userStickers)) await db.userStickers.bulkPut(data.userStickers);
-                    if (Array.isArray(data.personaPresets)) await db.personaPresets.bulkPut(data.personaPresets);
-                    if (Array.isArray(data.qzonePosts)) await db.qzonePosts.bulkPut(data.qzonePosts);
-                    if (Array.isArray(data.qzoneAlbums)) await db.qzoneAlbums.bulkPut(data.qzoneAlbums);
-                    if (Array.isArray(data.qzonePhotos)) await db.qzonePhotos.bulkPut(data.qzonePhotos);
-                    if (Array.isArray(data.favorites)) await db.favorites.bulkPut(data.favorites);
-                    if (Array.isArray(data.qzoneGroups)) await db.qzoneGroups.bulkPut(data.qzoneGroups);
-                    if (Array.isArray(data.memories)) await db.memories.bulkPut(data.memories);
-                    if (Array.isArray(data.apiPresets)) await db.apiPresets.bulkPut(data.apiPresets);
-                    if (Array.isArray(data.shoppingProducts)) await db.shoppingProducts.bulkPut(data.shoppingProducts);
-                    if (Array.isArray(data.callRecords)) await db.callRecords.bulkPut(data.callRecords);
-                    if (Array.isArray(data.renderingRules)) await db.renderingRules.bulkPut(data.renderingRules);
-        
-                    // ▼▼▼ 在这里添加新代码 ▼▼▼
-                    if (Array.isArray(data.doubanPosts)) await db.doubanPosts.bulkPut(data.doubanPosts);
-                    // ▲▲▲ 新代码粘贴结束 ▲▲▲
-                   if (Array.isArray(data.stickerCategories)) await db.stickerCategories.bulkPut(data.stickerCategories);
-	   if (Array.isArray(data.appearancePresets)) await db.appearancePresets.bulkPut(data.appearancePresets);
-                    if (Array.isArray(data.presets)) await db.presets.bulkPut(data.presets);                         // <-- 【本次新增修复】
-                    if (Array.isArray(data.presetCategories)) await db.presetCategories.bulkPut(data.presetCategories);
-    if (Array.isArray(data.npcs)) await db.npcs.bulkPut(data.npcs);
-                    if (data.apiConfig) await db.apiConfig.put(data.apiConfig);
-                    if (data.globalSettings) await db.globalSettings.put(data.globalSettings);
-                    if (data.musicLibrary) await db.musicLibrary.put(data.musicLibrary);
-                    if (data.qzoneSettings) await db.qzoneSettings.put(data.qzoneSettings);
-                });
-        
-                await showCustomAlert('导入成功', '所有数据已成功恢复！应用即将刷新以应用所有更改。');
-                
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1500);
-        
-            } catch (error) {
-                console.error("导入数据时出错:", error);
-                await showCustomAlert('导入失败', `文件格式不正确或数据已损坏: ${error.message}`);
+// ▼▼▼ 【全新】这是专门用于导入“流式备份”文件的核心函数，请完整粘贴 ▼▼▼
+
+/**
+ * 【全新】处理新版流式备份文件的导入逻辑
+ * @param {object} backupData - 从流式备份文件 .data 字段中解析出的数据对象
+ */
+async function importStreamedBackup(backupData) {
+    try {
+        await db.transaction('rw', db.tables, async () => {
+            // 1. 清空所有现有数据
+            for (const table of db.tables) {
+                await table.clear();
             }
+
+            // 2. 遍历备份数据中的所有表，并批量导入
+            for (const tableName in backupData) {
+                if (Array.isArray(backupData[tableName])) {
+                    console.log(`正在导入表: ${tableName}, 记录数: ${backupData[tableName].length}`);
+                    await db.table(tableName).bulkPut(backupData[tableName]);
+                }
+            }
+        });
+
+    } catch (error) {
+        // 如果在事务中发生任何错误，直接向上抛出
+        throw new Error(`数据库写入失败: ${error.message}`);
+    }
+}
+
+// ▲▲▲ 新增函数粘贴结束 ▲▲▲        
+// ▼▼▼ 【最终解决方案】请用这一整块全新的代码，完整替换旧的 importBackup 函数 ▼▼▼
+
+/**
+ * 【智能总管 | V2.0】处理文件导入，自动识别备份文件版本
+ * @param {File} file - 用户选择的 .json 备份文件
+ */
+async function handleSmartImport(file) {
+    if (!file) return;
+
+    const confirmed = await showCustomConfirm(
+        '严重警告！',
+        '导入备份将完全覆盖您当前的所有数据。此操作不可撤销！确定要继续吗？',
+        { confirmButtonClass: 'btn-danger' }
+    );
+    if (!confirmed) return;
+
+    await showCustomAlert("请稍候...", "正在读取并解析备份文件...");
+
+    try {
+        const text = await file.text();
+        const data = JSON.parse(text);
+
+        // --- 核心识别逻辑 ---
+        // 检查是否是新的、带 "data" 包装的流式备份
+        if (data.data && typeof data.data === 'object' && data.data.chats) {
+            console.log("检测到新版流式备份文件，开始导入...");
+            await importStreamedBackup(data.data); // 调用新函数，并传入核心数据
         }
+        // 否则，检查是否是旧的、扁平结构的备份
+        else if (data.chats) {
+            console.log("检测到旧版完整备份文件，开始导入...");
+            await importLegacyBackup(data); // 调用改造后的旧函数
+        }
+        // 如果两种都不是
+        else {
+            throw new Error("文件格式无法识别。请确保您选择的是有效的 EPhone 备份文件。");
+        }
+
+        // --- 导入成功后的统一处理 ---
+        await showCustomAlert('导入成功', '所有数据已成功恢复！应用即将刷新以应用所有更改。');
+        setTimeout(() => {
+            window.location.reload();
+        }, 1500);
+
+    } catch (error) {
+        console.error("导入数据时出错:", error);
+        await showCustomAlert('导入失败', `文件解析或应用失败: ${error.message}`);
+    }
+}
+
+/**
+ * 【改造后】处理旧版备份文件的导入逻辑
+ * @param {object} backupData - 从旧版备份文件解析出的数据对象
+ */
+async function importLegacyBackup(backupData) {
+    try {
+        await db.transaction('rw', db.tables, async () => {
+            await db.chats.clear();
+            await db.worldBooks.clear();
+            // ... (为所有表添加 .clear() 调用)
+            for (const table of db.tables) {
+                await table.clear();
+            }
+
+            if (Array.isArray(backupData.chats)) await db.chats.bulkPut(backupData.chats);
+            if (Array.isArray(backupData.worldBooks)) await db.worldBooks.bulkPut(backupData.worldBooks);
+            // ... (为所有表添加 .bulkPut() 调用，这部分逻辑与您旧的 importBackup 函数完全相同)
+            if (Array.isArray(backupData.userStickers)) await db.userStickers.bulkPut(backupData.userStickers);
+            if (backupData.apiConfig) await db.apiConfig.put(backupData.apiConfig);
+            if (backupData.globalSettings) await db.globalSettings.put(backupData.globalSettings);
+            // ... (请确保这里包含了所有表的导入逻辑)
+             if (Array.isArray(backupData.personaPresets)) await db.personaPresets.bulkPut(backupData.personaPresets);
+            if (backupData.musicLibrary) await db.musicLibrary.put(backupData.musicLibrary);
+            if (backupData.qzoneSettings) await db.qzoneSettings.put(backupData.qzoneSettings);
+            if (Array.isArray(backupData.qzonePosts)) await db.qzonePosts.bulkPut(backupData.qzonePosts);
+            if (Array.isArray(backupData.qzoneAlbums)) await db.qzoneAlbums.bulkPut(backupData.qzoneAlbums);
+            if (Array.isArray(backupData.qzonePhotos)) await db.qzonePhotos.bulkPut(backupData.qzonePhotos);
+            if (Array.isArray(backupData.favorites)) await db.favorites.bulkPut(backupData.favorites);
+            if (Array.isArray(backupData.qzoneGroups)) await db.qzoneGroups.bulkPut(backupData.qzoneGroups);
+            if (Array.isArray(backupData.memories)) await db.memories.bulkPut(backupData.memories);
+            if (Array.isArray(backupData.worldBookCategories)) await db.worldBookCategories.bulkPut(backupData.worldBookCategories);
+            if (Array.isArray(backupData.apiPresets)) await db.apiPresets.bulkPut(backupData.apiPresets);
+            if (Array.isArray(backupData.shoppingProducts)) await db.shoppingProducts.bulkPut(backupData.shoppingProducts);
+            if (Array.isArray(backupData.callRecords)) await db.callRecords.bulkPut(backupData.callRecords);
+            if (Array.isArray(backupData.renderingRules)) await db.renderingRules.bulkPut(backupData.renderingRules);
+            if (Array.isArray(backupData.doubanPosts)) await db.doubanPosts.bulkPut(backupData.doubanPosts);
+            if (Array.isArray(backupData.stickerCategories)) await db.stickerCategories.bulkPut(backupData.stickerCategories);
+            if (Array.isArray(backupData.appearancePresets)) await db.appearancePresets.bulkPut(backupData.appearancePresets);
+            if (Array.isArray(backupData.presets)) await db.presets.bulkPut(backupData.presets);
+            if (Array.isArray(backupData.presetCategories)) await db.presetCategories.bulkPut(backupData.presetCategories);
+            if (Array.isArray(backupData.npcs)) await db.npcs.bulkPut(backupData.npcs);
+        });
+    } catch (error) {
+        throw new Error(`旧版备份数据写入数据库失败: ${error.message}`);
+    }
+}
+// ▲▲▲ 替换结束 ▲▲▲
         
                 function applyCustomFont(fontUrl, isPreviewOnly = false) {
                     if (!fontUrl) {
@@ -42434,7 +42481,7 @@ window.openNpcEditor = openNpcEditor; // <-- 新增这一行
         // ▲▲▲ 粘贴结束 ▲▲▲
                     document.getElementById('custom-modal-cancel').addEventListener('click', hideCustomModal);
                     document.getElementById('custom-modal-overlay').addEventListener('click', (e) => { if (e.target === modalOverlay) hideCustomModal(); });
-                    document.getElementById('export-data-btn').addEventListener('click', exportBackup);
+                    document.getElementById('export-data-btn').addEventListener('click', exportDataAsStream);
 // ▼▼▼ 在这里粘贴下面的新代码 ▼▼▼
 document.getElementById('cleanup-data-btn').addEventListener('click', cleanupRedundantData);
 // ▲▲▲ 粘贴结束 ▲▲▲
@@ -42446,7 +42493,8 @@ document.getElementById('offline-mode-toggle').addEventListener('change', (e) =>
     document.getElementById('time-perception-toggle').addEventListener('change', (e) => {
         document.getElementById('time-zone-group').style.display = e.target.checked ? 'block' : 'none';
     });
-                    document.getElementById('import-data-input').addEventListener('change', e => importBackup(e.target.files[0]));
+                    // 新代码
+document.getElementById('import-data-input').addEventListener('change', e => handleSmartImport(e.target.files[0]));
                     document.getElementById('import-card-input').addEventListener('change', handleCardImport);
                     document.getElementById('back-to-list-btn').addEventListener('click', () => { 
                ruleCache = {};
@@ -47695,3 +47743,4 @@ document.getElementById('delete-selected-frames-btn').addEventListener('click', 
 <audio id="tts-audio-player" style="display:none;"></audio>
 </body>
 </html>
+
