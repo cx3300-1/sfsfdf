@@ -10183,8 +10183,64 @@ input, textarea, select {
 }
 
 /* ▲▲▲ 新增CSS粘贴结束 ▲▲▲ */
+/* ▼▼▼ 【全新】头像框批量删除功能样式 ▼▼▼ */
 
+/* 1. 管理模式下，为头像框网格添加一个class，用于样式控制 */
+#avatar-frame-modal .frame-grid.management-mode .frame-item {
+    cursor: pointer;
+}
 
+/* 2. 管理模式下，为自定义头像框添加一个选中框的伪元素 */
+/*    注意：我们只为带有 .delete-btn 的自定义头像框添加可选效果 */
+#avatar-frame-modal .frame-grid.management-mode .frame-item:has(.delete-btn)::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    width: calc(100% + 4px);
+    height: calc(100% + 4px);
+    border: 3px solid transparent;
+    border-radius: 12px;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+    pointer-events: none; /* 确保不影响点击 */
+}
+
+/* 3. 管理模式下，被选中的自定义头像框，显示蓝色边框 */
+#avatar-frame-modal .frame-grid.management-mode .frame-item.selected::after {
+    border-color: var(--accent-color);
+}
+
+/* 4. 底部批量删除操作栏 (复用已有样式) */
+#frame-action-bar {
+    display: none; /* 默认隐藏 */
+    flex-shrink: 0;
+    padding: 10px 15px;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom));
+    background-color: rgba(247, 247, 247, 0.9);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-top: 1px solid var(--border-color);
+    justify-content: space-between;
+    align-items: center;
+}
+
+#frame-action-bar .select-all-label {
+    font-size: 16px;
+    color: var(--text-primary);
+    cursor: pointer;
+}
+
+#frame-action-bar .action-bar-btn {
+    padding: 10px 25px;
+    border-radius: 20px;
+    border: none;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    background-color: #ff3b30;
+    color: white;
+}
 /* ▲▲▲ 新增CSS粘贴结束 ▲▲▲ */
     </style>
 </head>
@@ -21875,12 +21931,45 @@ async function runBackgroundSimulationTick() {
             }
             if (Math.random() > 0.3) continue;
 
-            const tasks = allRecentPosts.filter(post => {
-                const isAssociated = npc.associatedWith.includes(post.authorId);
+// ▼▼▼ 在 runBackgroundSimulationTick 函数中，找到 const tasks = ... 并用下面这整块替换 ▼▼▼
+            const tasks = [];
+            for (const post of allRecentPosts) {
+                // 检查是否是自己发的，如果是则跳过
+                if (post.authorId === `npc_${npc.id}`) continue;
+
+                // 检查是否是回复给自己的
                 const isRepliedTo = post.comments?.some(c => c.replyTo === npc.name);
+                
+                // 检查最后一条评论是不是自己发的，避免重复评论
                 const lastCommenter = post.comments?.slice(-1)[0]?.commenterName;
-                return (isAssociated || isRepliedTo) && lastCommenter !== npc.name;
-            });
+                if(lastCommenter === npc.name) continue;
+
+                let isVisible = false;
+
+                // 判断1: 帖子作者是用户或AI角色
+                if (post.authorId === 'user' || post.authorId.startsWith('chat_')) {
+                    if (npc.associatedWith.includes(post.authorId)) {
+                        isVisible = true;
+                    }
+                }
+                // 判断2: 帖子作者是另一个NPC
+                else if (post.authorId.startsWith('npc_')) {
+                    const authorNpcId = parseInt(post.authorId.replace('npc_', ''));
+                    const authorNpc = await db.npcs.get(authorNpcId);
+                    if (authorNpc && authorNpc.associatedWith) {
+                        // 核心逻辑：计算关联列表的交集
+                        const intersection = npc.associatedWith.filter(id => authorNpc.associatedWith.includes(id));
+                        if (intersection.length > 0) {
+                            isVisible = true;
+                        }
+                    }
+                }
+                
+                if (isVisible || isRepliedTo) {
+                    tasks.push(post);
+                }
+            }
+// ▲▲▲ 替换结束 ▲▲▲
             
             // 即使没有可评论的帖子，NPC也应该有机会自己发帖
             if (tasks.length > 0 || Math.random() < 0.2) { // 增加20%的几率在没有可互动项时也主动发帖
@@ -21960,8 +22049,21 @@ async function generateNpcActions(npc, tasks) {
             }
         });
     }
-    const tasksString = tasks.map(post => {
-        const authorDisplayName = getDisplayNameByOriginalName(post.authorOriginalName || post.authorId);
+// ▼▼▼ 在 generateNpcActions 函数中，找到 const tasksString = ... 并用下面这整块替换 ▼▼▼
+    const tasksString = (await Promise.all(tasks.map(async post => {
+        let authorDisplayName = '未知作者';
+        if (post.authorId === 'user') {
+            authorDisplayName = state.qzoneSettings.nickname || '用户';
+        } else if (post.authorId.startsWith('chat_')) {
+            authorDisplayName = getDisplayNameByOriginalName(post.authorOriginalName || post.authorId);
+        } else if (post.authorId.startsWith('npc_')) {
+            const authorNpcId = parseInt(post.authorId.replace('npc_', ''));
+            const authorNpc = await db.npcs.get(authorNpcId);
+            if (authorNpc) {
+                authorDisplayName = authorNpc.name;
+            }
+        }
+
         const commentsString = (post.comments || [])
             .map(c => {
                  if (typeof c === 'object' && c.commenterName) {
@@ -21979,7 +22081,8 @@ async function generateNpcActions(npc, tasks) {
 ${commentsString || '(暂无评论)'}
 ---
 `;
-    }).join('\n');
+    }))).join('\n');
+// ▲▲▲ 替换结束 ▲▲▲
 
     // --- ▼▼▼ 【【【核心修改就在这里！】】】 ▼▼▼
 
@@ -25300,7 +25403,8 @@ async function endVideoCall() {
         // ▼▼▼ 【全新】视频通话消息编辑与删除功能核心代码 ▼▼▼
         
         let activeCallMessageTimestamp = null; // 用于暂存正在操作的通话消息的时间戳
-        
+let isFrameManagementMode = false;
+let selectedFrames = new Set();        
         /**
          * 显示视频通话消息的操作菜单
          * @param {number} timestamp - 被长按的通话消息的时间戳
@@ -29379,7 +29483,94 @@ async function recallMessage(timestamp, isUserRecall) {
         }
         
         // ▲▲▲ 粘贴结束 ▲▲▲
+// ▼▼▼ 【全新】头像框批量删除功能核心函数 ▼▼▼
+
+/**
+ * 切换头像框面板的管理模式
+ */
+function toggleFrameManagementMode() {
+    isFrameManagementMode = !isFrameManagementMode;
+    const manageBtn = document.getElementById('manage-frames-btn');
+    const actionBar = document.getElementById('frame-action-bar');
+    const selectAllCheckbox = document.getElementById('select-all-frames-checkbox');
+
+    // 为两个网格同时添加/移除管理模式的class
+    document.querySelectorAll('.frame-grid').forEach(grid => {
+        grid.classList.toggle('management-mode', isFrameManagementMode);
+    });
+    
+    if (isFrameManagementMode) {
+        manageBtn.textContent = '完成';
+        actionBar.style.display = 'flex';
+        selectedFrames.clear();
+        selectAllCheckbox.checked = false;
+        updateDeleteFrameButton();
+    } else {
+        manageBtn.textContent = '管理';
+        actionBar.style.display = 'none';
+        // 退出时取消所有选中状态
+        document.querySelectorAll('.frame-item.selected').forEach(item => {
+            item.classList.remove('selected');
+        });
+    }
+}
+
+/**
+ * 更新“删除”按钮上的计数
+ */
+function updateDeleteFrameButton() {
+    const btn = document.getElementById('delete-selected-frames-btn');
+    btn.textContent = `删除 (${selectedFrames.size})`;
+}
+
+/**
+ * 处理“全选”复选框的点击事件
+ */
+function handleSelectAllFrames() {
+    const isChecked = document.getElementById('select-all-frames-checkbox').checked;
+    const visibleGrid = document.querySelector('.frame-content[style*="display: block"] .frame-grid');
+    if (!visibleGrid) return;
+
+    // 只选择当前可见的、且是自定义的（带有删除按钮）头像框
+    visibleGrid.querySelectorAll('.frame-item:has(.delete-btn)').forEach(item => {
+        const frameId = parseInt(item.querySelector('.delete-btn').dataset.id);
+        if (isNaN(frameId)) return;
         
+        item.classList.toggle('selected', isChecked);
+        if (isChecked) {
+            selectedFrames.add(frameId);
+        } else {
+            selectedFrames.delete(frameId);
+        }
+    });
+    updateDeleteFrameButton();
+}
+
+/**
+ * 执行批量删除操作
+ */
+async function executeBatchDeleteFrames() {
+    if (selectedFrames.size === 0) return;
+    
+    const confirmed = await showCustomConfirm(
+        '确认删除',
+        `确定要永久删除选中的 ${selectedFrames.size} 个自定义头像框吗？`,
+        { confirmButtonClass: 'btn-danger' }
+    );
+
+    if (confirmed) {
+        const idsToDelete = [...selectedFrames];
+        await db.customAvatarFrames.bulkDelete(idsToDelete);
+        
+        // 退出管理模式并刷新
+        toggleFrameManagementMode();
+        populateFrameGrids(editingFrameForMember); 
+        
+        await showCustomAlert('删除成功', '选中的头像框已成功删除。');
+    }
+}
+
+// ▲▲▲ 新增函数粘贴结束 ▲▲▲        
         // ▼▼▼ 在这里粘贴新函数 ▼▼▼
         /**
          * 将用户自定义的全局CSS应用到页面
@@ -37174,7 +37365,7 @@ async function populateFrameGrids(isForMember = false, memberAvatar = null, memb
         });
     }
 }
-
+// ▼▼▼ 【请用这个V2.1版本】替换旧的 createFrameItem 函数 ▼▼▼
 /**
  * 【升级版】创建单个头像框的预览DOM，为自定义框添加删除按钮
  * @param {object} frame - 头像框对象 { id, url, name }
@@ -37188,7 +37379,6 @@ function createFrameItem(frame, type, previewAvatarSrc) {
     item.dataset.frameUrl = frame.url;
     item.title = frame.name;
 
-    // 【核心修改】检查
     const isCustom = typeof frame.id === 'number';
     const deleteButtonHtml = isCustom ? `<button class="delete-btn" data-id="${frame.id}" style="display:block;">×</button>` : '';
 
@@ -37197,18 +37387,39 @@ function createFrameItem(frame, type, previewAvatarSrc) {
         <img src="${previewAvatarSrc}" class="preview-avatar">
         ${frame.url ? `<img src="${frame.url}" class="preview-frame">` : ''}
     `;
+
+    // 【【【核心修改就在这里！】】】
     item.addEventListener('click', (e) => {
-        // 如果点击的是删除按钮，则不执行选择操作
+        // 如果点击的是删除按钮，则不执行任何选择操作，让事件冒泡上去
         if (e.target.classList.contains('delete-btn')) {
             return;
         }
-        currentFrameSelection[type] = frame.url;
-        const grid = type === 'ai' ? document.getElementById('ai-frame-grid') : document.getElementById('my-frame-grid');
-        grid.querySelectorAll('.frame-item').forEach(el => el.classList.remove('selected'));
-        item.classList.add('selected');
+
+        // 如果当前处于管理模式
+        if (isFrameManagementMode) {
+            // 只有自定义的头像框才能被选中
+            if (isCustom) {
+                const frameId = parseInt(frame.id);
+                item.classList.toggle('selected');
+                if (selectedFrames.has(frameId)) {
+                    selectedFrames.delete(frameId);
+                } else {
+                    selectedFrames.add(frameId);
+                }
+                updateDeleteFrameButton();
+            }
+        } else {
+            // 否则，执行原来的选择逻辑
+            currentFrameSelection[type] = frame.url;
+            const grid = type === 'ai' ? document.getElementById('ai-frame-grid') : document.getElementById('my-frame-grid');
+            grid.querySelectorAll('.frame-item').forEach(el => el.classList.remove('selected'));
+            item.classList.add('selected');
+        }
     });
+    
     return item;
 }
+// ▲▲▲ 替换结束 ▲▲▲
 
 /**
  * 【全新】处理本地上传单个头像框的逻辑
@@ -46930,7 +47141,9 @@ document.getElementById('appearance-preset-select').addEventListener('change', h
 document.getElementById('save-appearance-preset-btn').addEventListener('click', saveAppearancePreset);
 document.getElementById('delete-appearance-preset-btn').addEventListener('click', deleteAppearancePreset);
 // ▲▲▲ 新增结束 ▲▲▲
-
+document.getElementById('manage-frames-btn').addEventListener('click', toggleFrameManagementMode);
+document.getElementById('select-all-frames-checkbox').addEventListener('change', handleSelectAllFrames);
+document.getElementById('delete-selected-frames-btn').addEventListener('click', executeBatchDeleteFrames);
 
 
     checkForUpdates();
@@ -46946,38 +47159,46 @@ document.getElementById('delete-appearance-preset-btn').addEventListener('click'
         <div id="qzone-sticker-grid"></div>
     </div>
     <!-- ▼▼▼ 【全新 V2.0 | 支持上传】请用这整块代码，完整替换旧的 avatar-frame-modal ▼▼▼ -->
-    <div id="avatar-frame-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <span>选择头像框</span>
-                <!-- 【核心新增】添加操作按钮 -->
-                <div class="header-actions">
-                    <button id="upload-custom-frame-btn" class="action-button">上传</button>
-                    <button id="batch-import-frames-btn" class="action-button">批量</button>
-                </div>
-            </div>
-            <div class="modal-body">
-                <div class="frame-tabs">
-                    <div id="ai-frame-tab" class="frame-tab active">对方的</div>
-                    <div id="my-frame-tab" class="frame-tab">我的</div>
-                </div>
-                <div id="ai-frame-content" class="frame-content">
-                    <div id="ai-frame-grid" class="frame-grid">
-                    </div>
-                </div>
-                <div id="my-frame-content" class="frame-content" style="display: none;">
-                    <div id="my-frame-grid" class="frame-grid">
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="cancel" id="cancel-frame-settings-btn">取消</button>
-                <button class="save" id="save-frame-settings-btn">保存</button>
+<div id="avatar-frame-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <span>选择头像框</span>
+            <div class="header-actions">
+                <!-- 【核心新增1】这就是新的“管理”按钮 -->
+                <button id="manage-frames-btn" class="action-button">管理</button>
+                <button id="upload-custom-frame-btn" class="action-button">上传</button>
+                <button id="batch-import-frames-btn" class="action-button">批量</button>
             </div>
         </div>
+        <div class="modal-body">
+            <div class="frame-tabs">
+                <div id="ai-frame-tab" class="frame-tab active">对方的</div>
+                <div id="my-frame-tab" class="frame-tab">我的</div>
+            </div>
+            <div id="ai-frame-content" class="frame-content">
+                <div id="ai-frame-grid" class="frame-grid">
+                </div>
+            </div>
+            <div id="my-frame-content" class="frame-content" style="display: none;">
+                <div id="my-frame-grid" class="frame-grid">
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="cancel" id="cancel-frame-settings-btn">取消</button>
+            <button class="save" id="save-frame-settings-btn">保存</button>
+        </div>
+        <!-- 【核心新增2】这是底部批量操作栏 -->
+        <div id="frame-action-bar" style="display: none;">
+            <label class="select-all-label" style="display: flex; align-items: center; gap: 5px;">
+                <input type="checkbox" id="select-all-frames-checkbox"> 全选
+            </label>
+            <button id="delete-selected-frames-btn" class="action-bar-btn">删除 (0)</button>
+        </div>
     </div>
-    <!-- 【核心新增】用于本地上传的隐藏文件输入框 -->
-    <input type="file" id="custom-frame-upload-input" accept="image/*" hidden>
+</div>
+<!-- 【核心新增】用于本地上传的隐藏文件输入框 -->
+<input type="file" id="custom-frame-upload-input" accept="image/*" hidden>
     <!-- ▲▲▲ 替换结束 ▲▲▲ -->
 
 <div id="character-profile-modal" class="modal">
