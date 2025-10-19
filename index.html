@@ -28,6 +28,7 @@
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
      <script src="https://phoebeboo.github.io/mewoooo/pp.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/streamsaver@2.0.6/StreamSaver.min.js"></script>
     <style>
         @font-face { font-family: 'bulangni'; src: url('') format('truetype'); font-weight: normal; font-style: normal; font-display: swap; }
         :root { --screen-width: 350px; --screen-height: 650px; --secondary-bg: #ffffff; --border-color: #e0e0e0; --text-primary: #1f1f1f; --text-secondary: #8a8a8a; --accent-color: #007bff; }
@@ -42024,6 +42025,69 @@ async function handleWidgetImageChange(imageId) {
 window.handleWidgetImageChange = handleWidgetImageChange;
 
 /* ▲▲▲ 新增JS代码结束 ▲▲▲ */
+/**
+ * 使用流式传输，将所有数据导出到一个大文件中
+ */
+async function exportDataAsStream() {
+    // 检查库是否已加载
+    if (!window.streamSaver) {
+        alert("流式下载库 (StreamSaver.js) 未加载。请检查网络连接或HTML文件配置。");
+        return;
+    }
+    
+    await showCustomAlert("正在准备...", "即将开始下载您的完整备份文件。下载过程中请勿关闭页面。");
+    
+    // 创建一个写入流，并命名文件
+    const fileStream = streamSaver.createWriteStream(`EPhone-Full-Backup-Streamed-${new Date().toISOString().split('T')[0]}.json`);
+    const writer = fileStream.getWriter();
+    const encoder = new TextEncoder(); // 用于将字符串转换为二进制数据
+
+    try {
+        // 手动写入JSON文件的开头结构
+        await writer.write(encoder.encode('{\n"version": 3,\n"timestamp": ' + Date.now() + ',\n"data": {\n'));
+
+        const tablesToBackup = await db.tables.map(t => t.name);
+        
+        for (let i = 0; i < tablesToBackup.length; i++) {
+            const tableName = tablesToBackup[i];
+            const table = db.table(tableName);
+
+            // 写入表名作为key
+            await writer.write(encoder.encode(`"${tableName}": [\n`));
+            
+            let isFirstRecordInTable = true;
+            // 使用Dexie的each方法，逐条读取记录，内存占用极低
+            await table.each(record => {
+                if (!isFirstRecordInTable) {
+                    writer.write(encoder.encode(',\n'));
+                }
+                // 将单条记录转换为JSON字符串并写入流
+                writer.write(encoder.encode(JSON.stringify(record)));
+                isFirstRecordInTable = false;
+            });
+
+            // 写入表的结尾
+            await writer.write(encoder.encode('\n]'));
+            if (i < tablesToBackup.length - 1) {
+                // 如果不是最后一张表，就加一个逗号
+                await writer.write(encoder.encode(',\n'));
+            }
+        }
+
+        // 手动写入JSON文件的结尾结构
+        await writer.write(encoder.encode('\n}\n}'));
+        
+    } catch (error) {
+        console.error("流式导出过程中出错:", error);
+        await showCustomAlert('导出失败', `在写入文件流时发生错误: ${error.message}`);
+    } finally {
+        // 无论成功与否，都必须关闭写入流
+        await writer.close();
+    }
+}
+
+
+
 
 
               // ===================================================================
