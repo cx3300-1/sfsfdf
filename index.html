@@ -19327,7 +19327,7 @@ ${membersWithContacts}
 # 用户的角色
 - **${myNickname}**: ${chat.settings.myPersona}
 
-# 可用资源与上下文
+# 世界观 (所有角色必须严格遵守)
 ${worldBookContent}
 # 长期记忆 (所有角色必须严格遵守)
 ${longTermMemoryContext}
@@ -19892,7 +19892,8 @@ ${chat.settings.myPersona}
 # 当前情景
 ${chat.settings.enableTimePerception ? `- **当前时间**: ${currentTime} (${timeOfDayGreeting})` : ''}
 ${timeContext}
-你必须严格遵守${worldBookContent}
+# 世界观 (必须严格遵守)
+${worldBookContent}
 ${linkedMemoryContext}
 # 长期记忆 (必须严格遵守)
 ${chat.longTermMemory && chat.longTermMemory.length > 0 ? chat.longTermMemory.map(mem => `- ${mem.content}`).join('\n') : '- (暂无)'}
