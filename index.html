@@ -13400,6 +13400,22 @@ input, textarea, select {
     <input type="file" id="ai-avatar-upload-input" accept="image/*" hidden>
     <input type="file" id="group-avatar-upload-input" accept="image/*" hidden>
     <script>
+// 检查浏览器是否支持 Service Worker
+if ('serviceWorker' in navigator) {
+        // 当页面加载完成后
+        window.addEventListener('load', () => {
+          // 注册我们编写的 sw.js 文件
+          navigator.serviceWorker.register('./sw.js')
+            .then(registration => {
+              // 注册成功
+              console.log('ServiceWorker 注册成功，作用域为: ', registration.scope);
+            })
+            .catch(error => {
+              // 注册失败
+              console.log('ServiceWorker 注册失败: ', error);
+            });
+        });
+      }
 // ▼▼▼ 在这里粘贴下面的新代码 ▼▼▼
 if (!Array.prototype.findLastIndex) {
   Object.defineProperty(Array.prototype, 'findLastIndex', {
