@@ -10270,6 +10270,57 @@ input, textarea, select {
     overflow: hidden;
 }
 /* ▲▲▲ 新增CSS结束 ▲▲▲ */
+/* ▼▼▼ 请将这段【全新的CSS代码】，粘贴到 <style> 标签的最末尾 ▼▼▼ */
+
+/* 1. 让返回按钮成为小红点的定位“锚点” */
+#chat-interface-screen .back-btn {
+    position: relative; /* 关键！ */
+}
+
+/* 2. 定义返回按钮上小红点的具体样式和位置 */
+/* ▼▼▼ 这是修复后的新代码，请用它完整替换旧的 .back-btn .unread-indicator 样式 ▼▼▼ */
+
+/* 2. 定义返回按钮上小红点的具体样式和位置 */
+.back-btn .unread-indicator {
+    position: absolute;
+    top: -2px;
+    right: -10px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    background-color: #ff3b30;
+    color: white;
+    font-size: 11px;
+    font-weight: bold;
+    line-height: 18px;
+    text-align: center;
+    border-radius: 9px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    display: none;
+
+    /* 核心修复：将 z-index 提升到比顶部导航栏更高，确保它显示在最上层 */
+    z-index: 20; 
+
+    transform: scale(0.8);
+}
+
+/* ▲▲▲ 替换结束 ▲▲▲ */
+
+/* 3. (可选) 夜间模式下的适配 */
+#phone-screen.dark-mode .back-btn .unread-indicator {
+    border: 1px solid #333;
+}
+
+/* ▲▲▲ 新增CSS粘贴结束 ▲▲▲ */
+/* fedgr.html */
+
+/* ▼▼▼ 在这里粘贴下面的新代码 ▼▼▼ */
+/* 收藏按钮激活时的样式（填充黄色） */
+#favorite-article-btn.active svg {
+    fill: #ffc107; /* 您可以换成任何您喜欢的颜色 */
+    color: #ffc107;
+}
+/* ▲▲▲ 粘贴结束 ▲▲▲ */
     </style>
 </head>
 <body>
@@ -10567,7 +10618,15 @@ input, textarea, select {
     <div class="header">
         <span class="back-btn" onclick="switchToCharScreen('char-browser-screen')">‹</span>
         <span id="char-article-title" style="max-width: 70%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">文章</span>
-        <span style="width: 30px;"></span>
+        <!-- ▼▼▼ 在这里粘贴下面的新代码 ▼▼▼ -->
+        <div class="header-actions">
+            <span class="action-btn" id="favorite-article-btn" title="收藏">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                </svg>
+            </span>
+        </div>
+        <!-- ▲▲▲ 粘贴结束 ▲▲▲ -->
     </div>
     <div id="char-article-content" class="list-container" style="padding: 20px; font-size: 16px; line-height: 1.8; color: #333; overflow-y: auto;">
         <!-- 文章或图片内容将由JS动态生成在这里 -->
@@ -13717,6 +13776,7 @@ let activeCharacterId = null; // 用于跟踪当前正在查看的CphoneID
 let editingMemoId = null;
 let editingDiaryId = null;
 let activeDiaryForViewing = null; // 用于暂存当前正在查看的日记对象
+let activeArticleForViewing = null; // 用于暂存当前正在查看的文章对象
 let activeMemoForViewing = null; // <-- 在这里添加新变量
         // ▼▼▼ 在下方粘贴新变量 ▼▼▼
         let shoppingCart = []; // 数据结构将变为 [{ productId: 123, quantity: 1 }, ...]
@@ -15540,6 +15600,22 @@ for (const post of postsToAppend) {
                 <div class="fav-card-content-full">${formattedContent}</div>
             `;
         }  
+    // ▼▼▼ 在这里粘贴下面的新代码 ▼▼▼
+    else if (item.type === 'char_browser_article') {
+        const article = item.content;
+        sourceText = `来自 ${article.characterName} 的浏览记录`;
+
+        const charChat = state.chats[article.characterId];
+        const authorAvatar = charChat ? charChat.settings.aiAvatar : defaultAvatar;
+        
+        headerHtml = `<img src="${authorAvatar}" class="avatar"><div class="info"><div class="name">${article.characterName}</div></div>`;
+        
+        // 复用日记和备忘录的样式来渲染标题和内容预览
+        contentHtml = `
+            <span class="diary-title">${article.title}</span>
+            <div class="memo-content-preview">${(article.content || '').replace(/\n/g, '<br>')}</div>
+        `;
+    }
 // ▼▼▼ 【全新】在这里粘贴下面的新代码 ▼▼▼
 else if (item.type === 'char_memo') {
     const memo = item.content;
@@ -16278,6 +16354,7 @@ function formatTimestampForAI(timestamp) {
             notificationTimeout = setTimeout(() => {
                 newBar.classList.remove('visible');
             }, 4000);
+updateBackButtonUnreadCount();
         }
         
                function updateClock() { 
@@ -18415,7 +18492,7 @@ if (lastMessage && (msg.timestamp - lastMessage.timestamp > 600000)) { // 600000
             propelBtn.style.display = isGroup ? 'none' : 'flex';
         }
             // --- 修改结束 ---
-        
+updateBackButtonUnreadCount(); // 更新返回按钮上的总未读数        
             // 触发AI响应的逻辑（保持不变）
             if (!chat.isGroup && chat.relationship?.status === 'pending_ai_approval') {
                 console.log(`检测到好友申请待处理状态，为角色 "${chat.name}" 自动触发AI响应...`);
@@ -35513,20 +35590,70 @@ function renderCharBrowserHistory() {
     });
 }
 
+// fedgr.html
+
 /**
- * 【全新】打开文章查看页面
+ * 【全新 | V2.0 | 已添加收藏功能】打开文章查看页面
  * @param {number} index - 被点击的历史记录在数组中的索引
  */
-function openCharArticle(index) {
+async function openCharArticle(index) {
     const char = state.chats[activeCharacterId];
     const articleData = char.simulatedBrowserHistory[index];
     if (!articleData) return;
     
-    // 渲染文章内容并切换到文章屏幕
+    // ▼▼▼ 在这里粘贴下面的新代码 ▼▼▼
+    // 1. 将当前文章对象存入全局变量
+    activeArticleForViewing = articleData;
+    // ▲▲▲ 粘贴结束 ▲▲▲
+    
     renderCharArticle(articleData);
     switchToCharScreen('char-browser-article-screen');
-}
 
+    // ▼▼▼ 在这里粘贴下面的新代码 ▼▼▼
+    // 2. 检查这篇文章是否已被收藏，并更新按钮状态
+    const favBtn = document.getElementById('favorite-article-btn');
+    // 使用文章的URL作为唯一标识符来查询
+    const existingFavorite = await db.favorites.where({ type: 'char_browser_article', 'content.url': articleData.url }).first();
+    favBtn.classList.toggle('active', !!existingFavorite);
+    // ▲▲▲ 粘贴结束 ▲▲▲
+}
+// fedgr.html
+
+/**
+ * 【全新】切换当前浏览记录的收藏状态
+ */
+async function toggleBrowserArticleFavorite() {
+    if (!activeArticleForViewing || !activeCharacterId) return;
+
+    const article = activeArticleForViewing;
+    const char = state.chats[activeCharacterId];
+    const favBtn = document.getElementById('favorite-article-btn');
+
+    // 再次检查是否已收藏
+    const existingFavorite = await db.favorites.where({ type: 'char_browser_article', 'content.url': article.url }).first();
+
+    if (existingFavorite) {
+        // 如果已收藏，则取消收藏
+        await db.favorites.delete(existingFavorite.id);
+        favBtn.classList.remove('active');
+        await showCustomAlert('操作成功', '已取消收藏。');
+    } else {
+        // 如果未收藏，则执行收藏
+        const newFavorite = {
+            type: 'char_browser_article',
+            // 将文章的完整内容，连同作者信息一起存入
+            content: {
+                ...article, // 复制文章的所有属性 (title, url, content)
+                characterId: activeCharacterId,
+                characterName: char.name
+            },
+            timestamp: Date.now() // 收藏操作的时间
+        };
+        await db.favorites.add(newFavorite);
+        favBtn.classList.add('active');
+        await showCustomAlert('操作成功', '已成功收藏到“我的收藏”页面！');
+    }
+}
         /**
          * 【全新】根据文章数据渲染文章查看页面
          * @param {object} articleData - 单条历史记录的数据对象
@@ -42364,7 +42491,42 @@ async function exportDataAsBlob() {
         await showCustomAlert('导出失败', `发生了一个错误: ${error.message}`);
     }
 }
+// ▼▼▼ 请将这个【全新的函数】，粘贴到您的JS功能函数定义区 ▼▼▼
 
+/**
+ * 【全新】更新聊天界面左上角返回按钮上的总未读消息数
+ */
+function updateBackButtonUnreadCount() {
+    // 1. 计算除当前聊天外，所有其他聊天的未读消息总数
+    const totalUnread = Object.values(state.chats).reduce((sum, chat) => {
+        // 排除当前正在看的聊天
+        if (chat.id === state.activeChatId) {
+            return sum;
+        }
+        return sum + (chat.unreadCount || 0);
+    }, 0);
+
+    // 2. 找到返回按钮
+    const backBtn = document.getElementById('back-to-list-btn');
+    if (!backBtn) return;
+
+    // 3. 查找或创建小红点元素
+    let indicator = backBtn.querySelector('.unread-indicator');
+    if (!indicator) {
+        indicator = document.createElement('span');
+        indicator.className = 'unread-indicator';
+        backBtn.appendChild(indicator);
+    }
+
+    // 4. 根据总未读数更新UI
+    if (totalUnread > 0) {
+        indicator.textContent = totalUnread > 99 ? '99+' : totalUnread;
+        indicator.style.display = 'block'; // 显示
+    } else {
+        indicator.style.display = 'none'; // 隐藏
+    }
+}
+// ▲▲▲ 新增函数粘贴结束 ▲▲▲
 
 
 
@@ -46758,6 +46920,7 @@ document.getElementById('import-single-chat-input').addEventListener('change', (
 document.getElementById('add-char-memo-btn').addEventListener('click', () => openMemoEditor());
 document.getElementById('add-char-diary-btn').addEventListener('click', () => openDiaryEditor());
 document.getElementById('favorite-diary-btn').addEventListener('click', toggleDiaryFavorite);
+document.getElementById('favorite-article-btn').addEventListener('click', toggleBrowserArticleFavorite);
 document.getElementById('favorite-memo-btn').addEventListener('click', toggleMemoFavorite); 
 // ▲▲▲ 新增事件绑定结束 ▲▲▲
         // “重新生成”按钮
