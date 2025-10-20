@@ -10241,6 +10241,35 @@ input, textarea, select {
     color: white;
 }
 /* ▲▲▲ 新增CSS粘贴结束 ▲▲▲ */
+/* ▼▼▼ 【全新】这是为备忘录收藏功能添加的样式 ▼▼▼ */
+
+/* 收藏按钮激活时的样式（填充黄色） */
+#favorite-memo-btn.active svg {
+    fill: #ffc107; /* 您可以换成任何您喜欢的颜色 */
+    color: #ffc107;
+}
+
+/* 收藏卡片中备忘录标题的样式 */
+.favorite-item-card .memo-title {
+    font-weight: 600;
+    display: block;
+    margin-bottom: 8px;
+    font-size: 15px;
+}
+
+/* 收藏卡片中备忘录内容预览的样式 */
+.favorite-item-card .memo-content-preview {
+    font-size: 13px;
+    opacity: 0.8;
+    line-height: 1.6;
+    
+    /* 多行省略号效果 */
+    display: -webkit-box;
+    -webkit-line-clamp: 3; /* 最多显示3行 */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+/* ▲▲▲ 新增CSS结束 ▲▲▲ */
     </style>
 </head>
 <body>
@@ -10591,8 +10620,14 @@ input, textarea, select {
         <span class="back-btn" id="char-memo-detail-back-btn">‹</span>
         <!-- 这里会动态显示备忘录的标题 -->
         <span id="char-memo-detail-title"></span>
-        <!-- 右上角的占位符，保持标题居中 -->
-        <span style="width: 80px;"></span>
+        <!-- 【【【核心新增：在这里添加收藏按钮】】】 -->
+        <div class="header-actions">
+            <span class="action-btn" id="favorite-memo-btn" title="收藏">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                </svg>
+            </span>
+        </div>
     </div>
     <!-- 这个容器将用来显示备忘录的完整内容 -->
     <div class="form-container" style="padding: 0;">
@@ -13682,6 +13717,7 @@ let activeCharacterId = null; // 用于跟踪当前正在查看的CphoneID
 let editingMemoId = null;
 let editingDiaryId = null;
 let activeDiaryForViewing = null; // 用于暂存当前正在查看的日记对象
+let activeMemoForViewing = null; // <-- 在这里添加新变量
         // ▼▼▼ 在下方粘贴新变量 ▼▼▼
         let shoppingCart = []; // 数据结构将变为 [{ productId: 123, quantity: 1 }, ...]
         let editingProductId = null; // 用于存储正在编辑的商品ID
@@ -15503,7 +15539,24 @@ for (const post of postsToAppend) {
                 <span class="diary-title">${diary.title}</span>
                 <div class="fav-card-content-full">${formattedContent}</div>
             `;
-        }     
+        }  
+// ▼▼▼ 【全新】在这里粘贴下面的新代码 ▼▼▼
+else if (item.type === 'char_memo') {
+    const memo = item.content;
+    sourceText = `来自 ${memo.characterName} 的备忘录`;
+
+    const charChat = state.chats[memo.characterId];
+    const authorAvatar = charChat ? charChat.settings.aiAvatar : defaultAvatar;
+    
+    headerHtml = `<img src="${authorAvatar}" class="avatar"><div class="info"><div class="name">${memo.characterName}</div></div>`;
+    
+    // 使用我们新添加的CSS类来渲染标题和内容预览
+    contentHtml = `
+        <span class="memo-title">${memo.title}</span>
+        <div class="memo-content-preview">${memo.content.replace(/\n/g, '<br>')}</div>
+    `;
+}
+// ▲▲▲ 粘贴结束 ▲▲▲   
                 // ▼▼▼ 修改最终的HTML拼接，加入 footerHtml ▼▼▼
                 card.innerHTML = `
                     <div class="fav-card-header">${headerHtml}<div class="source">${sourceText}</div></div>
@@ -33887,7 +33940,7 @@ async function sendCharLocationShare(locationName) {
 
 
 /**
- * 【V2.1 | 全屏查看最终版】点击备忘录列表项时，打开详情页面查看其内容
+ * 【V2.1 | 已添加收藏功能】点击备忘录列表项时，打开详情页面查看其内容
  * @param {number} memoId - 要查看的备忘录的ID
  */
 async function viewMemo(memoId) {
@@ -33896,15 +33949,20 @@ async function viewMemo(memoId) {
 
     const memo = char.memos.find(m => m.id === memoId);
     if (memo) {
-        // 1. 【核心修复】现在我们直接通过ID查找标题和内容元素
+        // 1. 【核心新增】将当前备忘录对象存入全局变量
+        activeMemoForViewing = memo; 
+
         const titleEl = document.getElementById('char-memo-detail-title');
         const contentEl = document.getElementById('char-memo-detail-content');
+        const favBtn = document.getElementById('favorite-memo-btn');
 
-        // 2. 将备忘录的数据填充进去
         if (titleEl) titleEl.textContent = memo.title;
         if (contentEl) contentEl.value = memo.content;
+        
+        // 2. 【核心新增】检查这篇备忘录是否已被收藏，并更新按钮状态
+        const existingFavorite = await db.favorites.where({ type: 'char_memo', 'content.id': memoId }).first();
+        favBtn.classList.toggle('active', !!existingFavorite);
 
-        // 3. 切换到新的详情页屏幕
         switchToCharScreen('char-memo-detail-screen');
     }
 }
@@ -34356,6 +34414,47 @@ ${recentHistoryWithUser}
         }
     }
     // ▲▲▲ 新增函数结束 ▲▲▲
+// ▼▼▼ 【全新】这是收藏/取消收藏备忘录的核心功能 ▼▼▼
+/**
+ * 切换当前备忘录的收藏状态
+ */
+async function toggleMemoFavorite() {
+    // 1. 从全局变量中获取当前正在查看的备忘录
+    if (!activeMemoForViewing || !activeCharacterId) return;
+
+    const memo = activeMemoForViewing;
+    const char = state.chats[activeCharacterId];
+    const favBtn = document.getElementById('favorite-memo-btn');
+
+    // 2. 检查数据库，看这条备忘录是否已经被收藏过了
+    const existingFavorite = await db.favorites.where({ type: 'char_memo', 'content.id': memo.id }).first();
+
+    if (existingFavorite) {
+        // 3. 如果已经收藏了，就执行“取消收藏”
+        await db.favorites.delete(existingFavorite.id);
+        favBtn.classList.remove('active'); // 移除按钮的高亮状态
+        await showCustomAlert('操作成功', '已取消收藏。');
+    } else {
+        // 4. 如果还没收藏，就执行“添加收藏”
+        const newFavorite = {
+            type: 'char_memo',
+            // 将备忘录的完整内容，连同作者信息一起打包存入
+            content: {
+                id: memo.id,
+                title: memo.title,
+                content: memo.content,
+                timestamp: memo.timestamp,
+                characterId: activeCharacterId,
+                characterName: char.name
+            },
+            timestamp: Date.now() // 记录收藏操作的时间
+        };
+        await db.favorites.add(newFavorite);
+        favBtn.classList.add('active'); // 添加高亮状态
+        await showCustomAlert('操作成功', '已成功收藏到“我的收藏”页面！');
+    }
+}
+// ▲▲▲ 新增函数结束 ▲▲▲
         /**
          * 【全新】删除一篇日记
          * @param {number} diaryId - 要删除的日记的ID
@@ -46622,6 +46721,7 @@ document.getElementById('import-single-chat-input').addEventListener('change', (
 document.getElementById('add-char-memo-btn').addEventListener('click', () => openMemoEditor());
 document.getElementById('add-char-diary-btn').addEventListener('click', () => openDiaryEditor());
 document.getElementById('favorite-diary-btn').addEventListener('click', toggleDiaryFavorite);
+document.getElementById('favorite-memo-btn').addEventListener('click', toggleMemoFavorite); 
 // ▲▲▲ 新增事件绑定结束 ▲▲▲
         // “重新生成”按钮
 // 新代码 (解决方案)
