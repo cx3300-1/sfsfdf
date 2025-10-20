@@ -18507,7 +18507,13 @@ async function triggerSpectatorGroupAiAction() {
                 return formattedEntries ? `\n\n## 世界书: ${worldBook.name}\n${formattedEntries}` : '';
             }).filter(Boolean).join('');
             if (linkedContents) {
-                worldBookContent = `\n\n# 核心世界观设定 (群内所有角色都必须严格遵守)\n${linkedContents}\n`;
+                worldBookContent = `# --- 世界书 (World Book) ---
+# 【最高优先级规则：世界观设定】
+# 你【必须】将以下所有“世界书”中的设定，视为绝对的、不可动摇的背景事实。
+# 你的所有回复和行为都【绝对不能】与这些设定产生任何冲突。
+${linkedContents}
+# --- 世界书设定结束 ---
+`;
             }
         }
         
@@ -19003,7 +19009,13 @@ ${transcriptText}
                     }).filter(Boolean).join('');
                     
                     if (linkedContents) {
-                        worldBookContent = `\n\n# 核心世界观设定 (必须严格遵守以下所有设定)\n${linkedContents}\n`;
+                        worldBookContent = `# --- 世界书 (World Book) ---
+# 【最高优先级规则：世界观设定】
+# 你【必须】将以下所有“世界书”中的设定，视为绝对的、不可动摇的背景事实。
+# 你的所有回复和行为都【绝对不能】与这些设定产生任何冲突。
+${linkedContents}
+# --- 世界书设定结束 ---
+`;
                     }
                 }
         // ▼▼▼ 【这是最终的歌词感知修复版】请用这整块代码，替换旧的 musicContext 构建逻辑 ▼▼▼
@@ -22464,7 +22476,13 @@ if (chat.settings.enableTimePerception) {
             }).filter(Boolean).join('');
             
             if (linkedContents) {
-                worldBookContent = `\n\n# 核心世界观设定 (必须严格遵守以下所有设定)\n${linkedContents}\n`;
+                worldBookContent = `# --- 世界书 (World Book) ---
+# 【最高优先级规则：世界观设定】
+# 你【必须】将以下所有“世界书”中的设定，视为绝对的、不可动摇的背景事实。
+# 你的所有回复和行为都【绝对不能】与这些设定产生任何冲突。
+${linkedContents}
+# --- 世界书设定结束 ---
+`;
             }
         }
         // ▲▲▲ 替换结束 ▲▲▲
@@ -23086,7 +23104,13 @@ const recentHistory = chat.history.filter(m => !m.isHidden).slice(-maxMemory);
             }).filter(Boolean).join('');
             
             if (linkedContents) {
-                worldBookContent = `\n\n# 核心世界观设定 (群内所有角色都必须严格遵守)\n${linkedContents}\n`;
+                worldBookContent = `# --- 世界书 (World Book) ---
+# 【最高优先级规则：世界观设定】
+# 你【必须】将以下所有“世界书”中的设定，视为绝对的、不可动摇的背景事实。
+# 你的所有回复和行为都【绝对不能】与这些设定产生任何冲突。
+${linkedContents}
+# --- 世界书设定结束 ---
+`;
             }
         }
         // ▲▲▲ 替换结束 ▲▲▲
@@ -25273,7 +25297,13 @@ async function endVideoCall() {
                     return worldBook && worldBook.content ? `\n\n## 世界书: ${worldBook.name}\n${worldBook.content}` : '';
                 }).filter(Boolean).join('');
                 if (linkedContents) {
-                    worldBookContent = `\n\n# 核心世界观设定 (你必须严格遵守)\n${linkedContents}\n`;
+                    worldBookContent = `# --- 世界书 (World Book) ---
+# 【最高优先级规则：世界观设定】
+# 你【必须】将以下所有“世界书”中的设定，视为绝对的、不可动摇的背景事实。
+# 你的所有回复和行为都【绝对不能】与这些设定产生任何冲突。
+${linkedContents}
+# --- 世界书设定结束 ---
+`;
                 }
             }
         
@@ -32070,7 +32100,13 @@ async function handlePropelAction() {
                 return formattedEntries ? `\n\n## 世界书: ${worldBook.name}\n${formattedEntries}` : '';
             }).filter(Boolean).join('');
             if (linkedContents) {
-                worldBookContent = `\n\n# 核心世界观设定 (必须严格遵守以下所有设定)\n${linkedContents}\n`;
+                worldBookContent = `# --- 世界书 (World Book) ---
+# 【最高优先级规则：世界观设定】
+# 你【必须】将以下所有“世界书”中的设定，视为绝对的、不可动摇的背景事实。
+# 你的所有回复和行为都【绝对不能】与这些设定产生任何冲突。
+${linkedContents}
+# --- 世界书设定结束 ---
+`;
             }
         }
         let musicContext = '';
