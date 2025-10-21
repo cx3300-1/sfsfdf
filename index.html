@@ -32699,22 +32699,29 @@ const fallbackResult = await Http_Get(fallbackApiUrl);
 
     // 如果最终找到了可播放的链接
 if (playableResult) {
-                // ▼▼▼ 【核心新增】在这里强制将 http:// 替换为 https:// ▼▼▼
-                if (playableResult.url && typeof playableResult.url === 'string') {
-                    playableResult.url = playableResult.url.replace(/^http:\/\//i, 'https://');
-                }
-                // ▲▲▲ 修改结束 ▲▲▲
+        // ▼▼▼ 【核心新增】在这里强制将 http:// 替换为 https:// ▼▼▼
+        if (playableResult.url && typeof playableResult.url === 'string') {
+            playableResult.url = playableResult.url.replace(/^http:\/\//i, 'https://');
+        }
+        // ▲▲▲ 修改结束 ▲▲▲
 
-                const lrcContent = await getLyricsForSong(playableResult.id, finalSource) || "";
-                return {
-                    name: songData.name,
-                    artist: songData.artist,
-                    src: playableResult.url, // 现在这个URL已经是 https:// 开头的了
-                    cover: songData.cover,
-                    isLocal: false,
-                    lrcContent: lrcContent
-                };
-            }
+        // 【【【【 ★★★ 你的修复在这里 ★★★ 】】】】
+        // 同样地，也强制转换封面的URL
+        if (songData.cover && typeof songData.cover === 'string') {
+            songData.cover = songData.cover.replace(/^http:\/\//i, 'https://');
+        }
+        // 【【【【 ★★★ 修复结束 ★★★ 】】】】
+
+        const lrcContent = await getLyricsForSong(playableResult.id, finalSource) || "";
+        return {
+            name: songData.name,
+            artist: songData.artist,
+            src: playableResult.url, 
+            cover: songData.cover,   // <--- 现在这个URL是安全的了
+            isLocal: false,
+            lrcContent: lrcContent
+        };
+    }
 
     // 如果所有尝试都失败了
     return null;
