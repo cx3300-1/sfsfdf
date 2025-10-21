@@ -33273,16 +33273,11 @@ document.getElementById('thoughts-history-list').addEventListener('click', (e) =
             }
         }
         // ▲▲▲ 新增函数结束 ▲▲▲
-// ▼▼▼ 【全新】外观预设功能核心函数 ▼▼▼
-
-/**
- * 从数据库加载外观预设，并填充到下拉选择框中
- */
+// ▼▼▼ 【最终修复版】请用这个全新的函数，完整替换旧的 loadAppearancePresetsDropdown ▼▼▼
 async function loadAppearancePresetsDropdown() {
     const selectEl = document.getElementById('appearance-preset-select');
     selectEl.innerHTML = '<option value="">-- 选择一个预设 --</option>';
     
-    // 从数据库中只查找类型为 'appearance' 的预设
     const presets = await db.appearancePresets.where('type').equals('appearance').toArray();
     presets.forEach(preset => {
         const option = document.createElement('option');
@@ -33290,7 +33285,44 @@ async function loadAppearancePresetsDropdown() {
         option.textContent = preset.name;
         selectEl.appendChild(option);
     });
+
+    // --- ★★★★★ 这就是本次修复的核心代码！ ★★★★★ ---
+
+    // 1. 获取当前正在生效的全局外观设置
+    const currentSettings = {
+        wallpaper: state.globalSettings.wallpaper,
+        cphoneWallpaper: state.globalSettings.cphoneWallpaper,
+        globalChatBackground: state.globalSettings.globalChatBackground,
+        appIcons: state.globalSettings.appIcons,
+        cphoneAppIcons: state.globalSettings.cphoneAppIcons,
+        chatActionButtonsOrder: state.globalSettings.chatActionButtonsOrder,
+        theme: localStorage.getItem('ephone-theme') || 'light',
+        showStatusBar: state.globalSettings.showStatusBar,
+        notificationSoundUrl: state.globalSettings.notificationSoundUrl,
+        widgetData: state.globalSettings.widgetData
+    };
+
+    let matchingPresetId = null;
+
+    // 2. 遍历所有预设，检查哪个预设与当前设置完全匹配
+    for (const preset of presets) {
+        // 使用 JSON.stringify 来快速比较两个复杂的设置对象是否完全相等
+        if (JSON.stringify(preset.value) === JSON.stringify(currentSettings)) {
+            matchingPresetId = preset.id;
+            break; // 找到匹配项后就退出循环
+        }
+    }
+
+    // 3. 如果找到了匹配的预设，就让下拉框自动选中它
+    if (matchingPresetId) {
+        selectEl.value = matchingPresetId;
+    } else {
+        // 如果一个都匹配不上（说明当前是自定义状态），则保持在“请选择”
+        selectEl.value = '';
+    }
+    // --- ★★★★★ 修复结束 ★★★★★ ---
 }
+// ▲▲▲ 替换结束 ▲▲▲
 
 /**
  * 当用户从下拉框选择一个外观预设时，加载并应用该预设
