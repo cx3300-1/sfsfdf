@@ -21214,6 +21214,9 @@ chat.history.push(aiClaimedMessage);
         
                     if (aiMessage) {
                         chat.history.push(aiMessage);
+                       if (!isViewingThisChat) {
+                            chat.unreadCount = (chat.unreadCount || 0) + 1;
+                        }
                         if (!isViewingThisChat && !notificationShown) {
                             let notificationText;
                             switch (aiMessage.type) {
@@ -21230,9 +21233,7 @@ chat.history.push(aiClaimedMessage);
                             notificationShown = true;
                         }
         
-                        if (!isViewingThisChat) {
-                            chat.unreadCount = (chat.unreadCount || 0) + 1;
-                        }
+ 
                         
                         if (isViewingThisChat) {
                             appendMessage(aiMessage, chat);
@@ -22028,57 +22029,38 @@ async function deleteTrack(index) { if (index < 0 || index >= musicState.playlis
         }
         
         // --- ↑↑↑ 复制到这里结束 ↑↑↑ ---
-                // ▼▼▼ 请将这个新函数粘贴到你的JS功能函数定义区 ▼▼▼
-                
-                /**
-                 * 更新动态小红点的显示
-                 * @param {number} count - 未读动态的数量
-                 */
-                function updateUnreadIndicator(count) {
-                    unreadPostsCount = count;
-                    localStorage.setItem('unreadPostsCount', count); // 持久化存储
-        
-                    // --- 更新底部导航栏的“动态”按钮 ---
-                    const navItem = document.querySelector('.nav-item[data-view="qzone-screen"]');
-                    
-                    const targetSpan = navItem.querySelector('span'); // 定位到文字 "动态"
-                    let indicator = navItem.querySelector('.unread-indicator');           
-        
-                    if (count > 0) {
-                        if (!indicator) {
-                            indicator = document.createElement('span');
-                            indicator.className = 'unread-indicator';
-                                                                   targetSpan.style.position = 'relative'; // 把相对定位加在 span 上
-                            targetSpan.appendChild(indicator); // 把小红点作为 span 的子元素
-                            
-                        }
-                        indicator.textContent = count > 99 ? '99+' : count;
-                        indicator.style.display = 'block';
-                    } else {
-                        if (indicator) {
-                            indicator.style.display = 'none';
-                        }
-                    }
-        
-                    // --- 更新聊天界面返回列表的按钮 ---
-                    const backBtn = document.getElementById('back-to-list-btn');
-                    let backBtnIndicator = backBtn.querySelector('.unread-indicator');
-        
-                    if (count > 0) {
-                        if (!backBtnIndicator) {
-                            backBtnIndicator = document.createElement('span');
-                            backBtnIndicator.className = 'unread-indicator back-btn-indicator';
-                            backBtn.style.position = 'relative'; // 确保能正确定位
-                            backBtn.appendChild(backBtnIndicator);
-                        }
-                        // 返回键上的小红点通常不显示数字，只显示一个点
-                        backBtnIndicator.style.display = 'block';
-                    } else {
-                        if (backBtnIndicator) {
-                            backBtnIndicator.style.display = 'none';
-                        }
-                    }
+/**
+         * 【V2.0 | 已修复】更新动态小红点的显示 (只管底部导航栏)
+         * @param {number} count - 未读动态的数量
+         */
+        function updateUnreadIndicator(count) {
+            unreadPostsCount = count;
+            localStorage.setItem('unreadPostsCount', count); // 持久化存储
+
+            // --- 1. 更新底部导航栏的“动态”按钮 ---
+            const navItem = document.querySelector('.nav-item[data-view="qzone-screen"]');
+            
+            const targetSpan = navItem.querySelector('span'); // 定位到文字 "动态"
+            let indicator = navItem.querySelector('.unread-indicator');           
+
+            if (count > 0) {
+                if (!indicator) {
+                    indicator = document.createElement('span');
+                    indicator.className = 'unread-indicator';
+                    targetSpan.style.position = 'relative'; // 把相对定位加在 span 上
+                    targetSpan.appendChild(indicator); // 把小红点作为 span 的子元素
                 }
+                indicator.textContent = count > 99 ? '99+' : count;
+                indicator.style.display = 'block';
+            } else {
+                if (indicator) {
+                    indicator.style.display = 'none';
+                }
+            }
+
+            // --- 2. 【核心修改】不再自己操作返回按钮，而是调用统一的函数 ---
+            updateBackButtonUnreadCount();
+        }
                 
                 // ▲▲▲ 新函数粘贴结束 ▲▲▲
         
@@ -42550,42 +42532,56 @@ async function exportDataAsBlob() {
         await showCustomAlert('导出失败', `发生了一个错误: ${error.message}`);
     }
 }
-// ▼▼▼ 请将这个【全新的函数】，粘贴到您的JS功能函数定义区 ▼▼▼
-
 /**
- * 【全新】更新聊天界面左上角返回按钮上的总未读消息数
- */
-function updateBackButtonUnreadCount() {
-    // 1. 计算除当前聊天外，所有其他聊天的未读消息总数
-    const totalUnread = Object.values(state.chats).reduce((sum, chat) => {
-        // 排除当前正在看的聊天
-        if (chat.id === state.activeChatId) {
-            return sum;
+         * 【全新 | 统一版】更新聊天界面左上角返回按钮上的总未读消息数
+         * (此函数现在会合并计算“聊天未读”和“动态未读”)
+         */
+        function updateBackButtonUnreadCount() {
+            // 1. 计算总的“聊天”未读数
+            const totalChatUnread = Object.values(state.chats).reduce((sum, chat) => {
+                // 排除当前正在看的聊天
+                if (chat.id === state.activeChatId) {
+                    return sum;
+                }
+                return sum + (chat.unreadCount || 0);
+            }, 0);
+
+            // 2. 获取总的“动态”未读数
+            const totalQzoneUnread = unreadPostsCount || 0;
+            
+            // 3. 将两者相加，得到总的未读数
+            const totalUnread = totalChatUnread + totalQzoneUnread;
+
+            // 4. 找到返回按钮
+            const backBtn = document.getElementById('back-to-list-btn');
+            if (!backBtn) return;
+
+            // 5. 查找或创建唯一的红点指示器
+            // 我们将使用 .unread-indicator (带数字的大红点) 作为唯一的红点
+            let indicator = backBtn.querySelector('.unread-indicator');
+            if (!indicator) {
+                indicator = document.createElement('span');
+                indicator.className = 'unread-indicator';
+                backBtn.appendChild(indicator);
+            }
+            
+            // 6. 【关键】检查并移除旧的、冲突的QZone小红点 (back-btn-indicator)
+            let qzoneIndicator = backBtn.querySelector('.unread-indicator.back-btn-indicator');
+            if (qzoneIndicator) {
+                qzoneIndicator.remove();
+            }
+
+            // 7. 根据总未读数更新UI
+            if (totalUnread > 0) {
+                indicator.textContent = totalUnread > 99 ? '99+' : totalUnread;
+                indicator.style.display = 'block';
+                // (修复在 init 中新增的 z-index 样式)
+                indicator.style.zIndex = '20'; 
+                indicator.style.transform = 'scale(0.8)';
+            } else {
+                indicator.style.display = 'none';
+            }
         }
-        return sum + (chat.unreadCount || 0);
-    }, 0);
-
-    // 2. 找到返回按钮
-    const backBtn = document.getElementById('back-to-list-btn');
-    if (!backBtn) return;
-
-    // 3. 查找或创建小红点元素
-    let indicator = backBtn.querySelector('.unread-indicator');
-    if (!indicator) {
-        indicator = document.createElement('span');
-        indicator.className = 'unread-indicator';
-        backBtn.appendChild(indicator);
-    }
-
-    // 4. 根据总未读数更新UI
-    if (totalUnread > 0) {
-        indicator.textContent = totalUnread > 99 ? '99+' : totalUnread;
-        indicator.style.display = 'block'; // 显示
-    } else {
-        indicator.style.display = 'none'; // 隐藏
-    }
-}
-// ▲▲▲ 新增函数粘贴结束 ▲▲▲
 
 
 
@@ -48208,7 +48204,7 @@ document.getElementById('delete-selected-frames-btn').addEventListener('click', 
 <audio id="silent-audio-player" loop preload="auto" style="display:none;">
     <source src="https://phoebeboo.github.io/mewoooo/1-second-of-silence.mp3" type="audio/mpeg">
 </audio>
-<!-- ▲▲▲ 新增代码粘贴结 束 ▲▲▲ -->
+<!-- ▲▲▲ 新增代码粘贴结束 ▲▲▲ -->
 <audio id="tts-audio-player" style="display:none;"></audio>
 </body>
 </html>
