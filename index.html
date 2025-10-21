@@ -19853,7 +19853,8 @@ ${historySlice.map(msg => {
                                 } else if (post.type === 'image_post') {
                                     contentSummary = `[一张图片，描述为：“${post.imageDescription}”] ${post.publicText || ''}`.substring(0, 50) + '...';
                                 } else {
-                                    contentSummary = (post.publicText || post.content || "一条动态").substring(0, 50) + '...';
+                                    // 将其修改为 (Change it to this):
+                                contentSummary = String(post.publicText || post.content || "一条动态").substring(0, 50) + '...';
                                 }
                                 postsContext += `- (ID: ${post.id}) 作者: ${authorName}, 内容: "${contentSummary}"\n`;
             
@@ -22503,7 +22504,8 @@ if (chat.settings.enableTimePerception) {
                     } else if (post.type === 'image_post') {
                         contentSummary = `[一张图片，描述为：“${post.imageDescription}”] ${post.publicText || ''}`.substring(0, 50) + '...';
                     } else {
-                        contentSummary = (post.publicText || post.content || "一条动态").substring(0, 50) + '...';
+                        // 将其修改为 (Change it to this):
+                       contentSummary = String(post.publicText || post.content || "一条动态").substring(0, 50) + '...';
                     }
                     return `- "${contentSummary}"`;
                 });
@@ -22643,7 +22645,8 @@ ${linkedContents}
                     } else if (post.type === 'image_post') {
                         contentSummary = `[一张图片，描述为：“${post.imageDescription}”] ${post.publicText || ''}`.substring(0, 50) + '...';
                     } else {
-                        contentSummary = (post.publicText || post.content || "一条动态").substring(0, 50) + '...';
+                        // 将其修改为 (Change it to this):
+contentSummary = String(post.publicText || post.content || "一条动态").substring(0, 50) + '...';
                     }
         
                     postsContext += `- (ID: ${post.id}) 作者: ${authorName}, 内容: "${contentSummary}"\n`;
@@ -23267,7 +23270,8 @@ ${linkedContents}
                         } else if (post.type === 'image_post') {
                             contentSummary = `[一张图片，描述为：“${post.imageDescription}”] ${post.publicText || ''}`.substring(0, 50) + '...';
                         } else {
-                            contentSummary = (post.publicText || post.content || "一条动态").substring(0, 50) + '...';
+                            // 将其修改为 (Change it to this):
+                              contentSummary = String(post.publicText || post.content || "一条动态").substring(0, 50) + '...';
                         }
                         postsContext += `- (ID: ${post.id}) 作者: ${authorName}, 内容: "${contentSummary}"\n`;
                         if (post.comments && post.comments.length > 0) {
