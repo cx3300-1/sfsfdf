@@ -17906,7 +17906,7 @@ async function renderStickerPanel(rerenderTabs = true) {
          * 【总入口】打开批量导入表情的弹窗
          */
         async function openBatchStickerImportModal() {
-            const placeholderText = `请按照以下格式粘贴，一行一个：\n\n焦虑 2a9wte.jpeg\n大惊失色 or8qf4.png\n没有灵感 njwujh.jpeg`;
+            const placeholderText = `请按照以下通用格式粘贴，一行一个：\n\n开心: https://.../happy.gif\n哭泣: https://.../cry.png\n\n`;
             
             const pastedText = await showCustomPrompt(
                 '批量导入表情',
@@ -19464,7 +19464,7 @@ ${callTranscriptContext}
                     messagesPayload = historySlice.map(msg => {
                         const sender = msg.role === 'user' ? myNickname : msg.senderName;
                         let prefix = `${sender}`;
-                        prefix += ` (Timestamp: ${msg.timestamp})`;
+                     //   prefix += ` (Timestamp: ${msg.timestamp})`;
                             // 【核心修复】在这里，我们为引用消息构建了更完整的上下文
     if (msg.quote) {
         const quotedContent = String(msg.quote.content || '').substring(0, 50);
@@ -19709,13 +19709,13 @@ ${historySlice.map(msg => {
             }
 
             // 3. 将“翻译”后的内容，包装成一个标准的、AI能理解的消息对象返回
-            return { role: msg.role, content: `(Timestamp: ${msg.timestamp}) ${sender}: ${narrativeText}` };
+            return { role: msg.role, content: `${sender}: ${narrativeText}` };
         }
 
 
         // --- 对于所有其他线上模式的消息，保持原有的处理逻辑不变 ---
         if (msg.role === 'user') {
-            const prefix = `(Timestamp: ${msg.timestamp}) `;
+            const prefix = `${myNickname}: `;
             let contentStr = '';
             if (Array.isArray(msg.content) && msg.content[0]?.type === 'image_url') {
                 return { role: 'user', content: [{ type: 'text', text: prefix }, ...msg.content] };
@@ -34996,10 +34996,10 @@ ${historySlice.map(msg => `${msg.role === 'user' ? myNickname : chat.name}: ${St
         //            ★★★ 核心修改到此结束 ★★★
         // ==========================================================
 
-        const messagesPayload = historySlice.map(msg => ({
-            role: msg.role,
-            content: `${msg.role === 'user' ? myNickname : chat.name}: ${String(msg.content)}`
-        }));
+const messagesPayload = historySlice.map(msg => ({
+    role: msg.role,
+    content: `${msg.role === 'user' ? myNickname : chat.name}: ${String(msg.content)}`
+}));
         
         let isGemini = proxyUrl.includes('generativelanguage');
         let geminiConfig = toGeminiRequestData(model, apiKey, systemPrompt, messagesPayload);
