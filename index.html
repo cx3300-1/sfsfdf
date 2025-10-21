@@ -32673,8 +32673,8 @@ async function getPlayableSongDetails(songData) {
         ? `https://api.vkeys.cn/v2/music/netease?id=${songData.id}`
         : `https://api.vkeys.cn/v2/music/tencent?id=${songData.id}`;
     
-    let primaryResult = await Http_Get(primaryApiUrl);
-    if (primaryResult?.data?.url && await checkAudioAvailability(primaryResult.data.url)) {
+let primaryResult = await Http_Get(primaryApiUrl);
+        if (primaryResult?.data?.url) {
         playableResult = { url: primaryResult.data.url, id: songData.id, source: songData.source };
     }
 
@@ -32689,8 +32689,8 @@ async function getPlayableSongDetails(songData) {
             const fallbackApiUrl = fallbackSource === 'netease'
                 ? `https://api.vkeys.cn/v2/music/netease?id=${fallbackResults[0].id}`
                 : `https://api.vkeys.cn/v2/music/tencent?id=${fallbackResults[0].id}`;
-            const fallbackResult = await Http_Get(fallbackApiUrl);
-            if (fallbackResult?.data?.url && await checkAudioAvailability(fallbackResult.data.url)) {
+const fallbackResult = await Http_Get(fallbackApiUrl);
+            if (fallbackResult?.data?.url) {
                 playableResult = { url: fallbackResult.data.url, id: fallbackResults[0].id, source: fallbackSource };
                 finalSource = fallbackSource;
             }
@@ -32698,17 +32698,23 @@ async function getPlayableSongDetails(songData) {
     }
 
     // 如果最终找到了可播放的链接
-    if (playableResult) {
-        const lrcContent = await getLyricsForSong(playableResult.id, finalSource) || "";
-        return {
-            name: songData.name,
-            artist: songData.artist,
-            src: playableResult.url,
-            cover: songData.cover,
-            isLocal: false,
-            lrcContent: lrcContent
-        };
-    }
+if (playableResult) {
+                // ▼▼▼ 【核心新增】在这里强制将 http:// 替换为 https:// ▼▼▼
+                if (playableResult.url && typeof playableResult.url === 'string') {
+                    playableResult.url = playableResult.url.replace(/^http:\/\//i, 'https://');
+                }
+                // ▲▲▲ 修改结束 ▲▲▲
+
+                const lrcContent = await getLyricsForSong(playableResult.id, finalSource) || "";
+                return {
+                    name: songData.name,
+                    artist: songData.artist,
+                    src: playableResult.url, // 现在这个URL已经是 https:// 开头的了
+                    cover: songData.cover,
+                    isLocal: false,
+                    lrcContent: lrcContent
+                };
+            }
 
     // 如果所有尝试都失败了
     return null;
