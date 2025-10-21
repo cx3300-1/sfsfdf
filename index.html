@@ -10257,18 +10257,7 @@ input, textarea, select {
     font-size: 15px;
 }
 
-/* 收藏卡片中备忘录内容预览的样式 */
-.favorite-item-card .memo-content-preview {
-    font-size: 13px;
-    opacity: 0.8;
-    line-height: 1.6;
-    
-    /* 多行省略号效果 */
-    display: -webkit-box;
-    -webkit-line-clamp: 3; /* 最多显示3行 */
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
+
 /* ▲▲▲ 新增CSS结束 ▲▲▲ */
 /* ▼▼▼ 请将这段【全新的CSS代码】，粘贴到 <style> 标签的最末尾 ▼▼▼ */
 
@@ -43087,30 +43076,11 @@ document.getElementById('playlist-body').addEventListener('click', (e) => {
     document.getElementById('vinyl-view').classList.remove('spinning');
     playNext(); 
 });
-                    audioPlayer.addEventListener('ended', () => {
-    // 歌曲播放结束时，移除旋转样式
-    document.getElementById('vinyl-view').classList.remove('spinning');
-    playNext(); 
-});
 
-audioPlayer.addEventListener('pause', () => { 
-    if(musicState.isActive) { 
-        musicState.isPlaying = false; 
-        updatePlayerUI(); 
-        // 音乐暂停时，移除旋转样式
-        document.getElementById('vinyl-view').classList.remove('spinning');
-    } 
-});
 
-audioPlayer.addEventListener('play', () => { 
-    if(musicState.isActive) { 
-        musicState.isPlaying = true; 
-        updatePlayerUI(); 
-        // 音乐开始播放时，添加旋转样式
-        document.getElementById('vinyl-view').classList.add('spinning');
-    } 
-});
-        
+
+
+
                     const chatInput = document.getElementById('chat-input');
                     // ▼▼▼ 找到 id="send-btn" 的 click 事件监听器 ▼▼▼
 // 【最终性能优化版】
