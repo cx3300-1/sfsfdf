@@ -21314,6 +21314,7 @@ if (qzoneActionTaken) {
                     checkAndTriggerAutoSummary(chatId);
                  
                 }
+stopSilentAudio(); // <--- 在这里添加
             }
         }
         // ▲▲▲ 替换结束 ▲▲▲
@@ -43105,6 +43106,7 @@ audioPlayer.addEventListener('play', () => {
                     // ▼▼▼ 找到 id="send-btn" 的 click 事件监听器 ▼▼▼
 // 【最终性能优化版】
 document.getElementById('send-btn').addEventListener('click', () => { // 注意：移除了 async
+playSilentAudio();
     const content = chatInput.value.trim();
     if (!content || !state.activeChatId) return;
 
