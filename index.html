@@ -7524,19 +7524,7 @@
 #phone-screen.dark-mode #char-qq-conversation-screen .list-container {
     background-color: #000000;
 }
-/* ▼▼▼ 【全新】CphoneApp通用背景色 (已修复) ▼▼▼ */
-#char-qq-screen, 
-#char-memo-screen, 
-#char-diary-screen, 
-#char-usage-screen, 
-#char-album-screen, 
-#char-browser-screen, 
-#char-taobao-screen,
-/* --- 【核心修复】将新的文章页面也加入这个规则，确保它有正确的背景色 --- */
-#char-browser-article-screen {
-     background-color: var(--secondary-bg);
-}
-/* ▲▲▲ 修复结束 ▲▲▲ */
+
 /* ▼▼▼ 【全新】CphoneApp通用背景色 (已修复钱包页面) ▼▼▼ */
 #char-qq-screen, 
 #char-memo-screen, 
@@ -10622,24 +10610,44 @@ input, textarea, select {
     </div>
 </div>
 <!-- ▼▼▼ 【全新V2.0 | 支持钱包】请用这整块代码，完整替换旧的 #char-taobao-screen ▼▼▼ -->
-<div id="char-taobao-screen" class="char-screen">
-    <div class="header">
-        <span class="back-btn" onclick="switchToCharHomeScreen()">‹</span>
-        <span>TA的淘宝订单</span>
-        <div class="header-actions">
-            
-            <!-- 【核心新增2】重新生成按钮 -->
-            <span class="action-btn" id="regenerate-char-taobao-btn" title="重新生成购买记录">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M20 11A8.1 8.1 0 0 0 4.5 9M4 5v4h4"></path>
-                    <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"></path>
-                </svg>
-            </span>
+    <div id="char-taobao-screen" class="char-screen">
+        <div class="header">
+            <span class="back-btn" onclick="switchToCharHomeScreen()">‹</span>
+            <span>TA的淘宝订单</span>
+            <div class="header-actions">
+                
+                <!-- 【核心新增1】这就是我们的“钱包”入口按钮！ -->
+                <span class="action-btn" id="char-wallet-btn" title="查看钱包" onclick="openCharWallet()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 12V8H4v4"></path><path d="M4 8V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2"></path><path d="M18 12v6a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-6"></path>
+                    </svg>
+                </span>
+                
+                <!-- 【核心新增2】重新生成按钮 (保持不变) -->
+                <span class="action-btn" id="regenerate-char-taobao-btn" title="重新生成购买记录">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 11A8.1 8.1 0 0 0 4.5 9M4 5v4h4"></path>
+                        <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"></path>
+                    </svg>
+                </span>
+            </div>
+        </div>
+        <!-- 购买记录列表 (复用旧的grid，但内容会是动态的) -->
+        <div id="char-product-grid" class="list-container"></div>
+    </div>
+    <!-- ▲▲▲ 替换结束 ▲▲▲ -->
+
+    <!-- 【【【核心新增3：全新的钱包页面】】】 -->
+    <div id="char-wallet-screen" class="char-screen">
+        <div class="header">
+            <span class="back-btn" id="char-wallet-back-btn">‹</span>
+            <span>钱包</span>
+            <span style="width: 30px;"></span>
+        </div>
+        <div id="char-wallet-content" class="list-container" style="padding: 15px; display: flex; flex-direction: column; gap: 15px;">
+            <!-- 钱包内容将由JS动态生成在这里 -->
         </div>
     </div>
-    <!-- 购买记录列表 (复用旧的grid，但内容会是动态的) -->
-    <div id="char-product-grid" class="list-container"></div>
-</div>
 
 
 <div id="char-memo-screen" class="char-screen">
@@ -12618,45 +12626,52 @@ input, textarea, select {
 <!-- =================================================================== -->
         <!-- ▼▼▼ 【全新】购物功能相关页面与弹窗 (V4.0 - 仿淘宝终极版) ▼▼▼ -->
 <div id="shopping-screen" class="screen">
-<div class="header">
-    <div class="header-left-actions">
-        <span class="back-btn" id="shopping-back-btn">‹</span>
-        <span class="action-btn" id="generate-shopping-items-btn" title="AI生成商品">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M20 11A8.1 8.1 0 0 0 4.5 9M4 5v4h4"></path>
-                <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"></path>
-            </svg>
-        </span>
-        <span class="action-btn" id="shopping-settings-btn" title="生成设置">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.44,0.17-0.48,0.41L9.12,4.84c-0.59,0.24-1.12,0.56-1.62,0.94L5.11,4.82c-0.22-0.08-0.47,0-0.59,0.22l-1.92,3.32 c-0.12,0.22-0.07,0.47,0.12,0.61l2.03,1.58C4.84,11.36,4.82,11.68,4.82,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.48,2.03 c0.04,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.48-0.41l0.48-2.03c0.59-0.24,1.12-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07,0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"></path>
-            </svg>
-        </span>
+    <div class="header">
+        <div class="header-left-actions">
+            <span class="back-btn" id="shopping-back-btn">‹</span>
+            <span class="action-btn" id="generate-shopping-items-btn" title="AI生成商品">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 11A8.1 8.1 0 0 0 4.5 9M4 5v4h4"></path>
+                    <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"></path>
+                </svg>
+            </span>
+            <span class="action-btn" id="shopping-settings-btn" title="生成设置">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.44,0.17-0.48,0.41L9.12,4.84c-0.59,0.24-1.12,0.56-1.62,0.94L5.11,4.82c-0.22-0.08-0.47,0-0.59,0.22l-1.92,3.32 c-0.12,0.22-0.07,0.47,0.12,0.61l2.03,1.58C4.84,11.36,4.82,11.68,4.82,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.48,2.03 c0.04,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.48-0.41l0.48-2.03c0.59-0.24,1.12-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"></path>
+                </svg>
+            </span>
+            <span class="action-btn" id="delete-current-category-btn" title="删除当前分类" style="display: none; color: rgb(255, 59, 48);">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path>
+                    <line x1="18" y1="9" x2="12" y2="15"></line>
+                    <line x1="12" y1="9" x2="18" y2="15"></line>
+                </svg>
+            </span>
+            </div>
+        <span>购物中心</span>
+        <div class="header-actions">
+            <span class="action-btn" id="manage-products-btn" title="管理商品" style="color: var(--text-primary);">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+                </svg>
+            </span>
+            <span class="action-btn" id="add-new-product-btn" title="添加新商品">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="16"></line>
+                    <line x1="8" y1="12" x2="16" y2="12"></line>
+                </svg>
+            </span>
+            <span class="action-btn" id="go-to-cart-btn" title="查看购物车">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="9" cy="21" r="1"></circle>
+                    <circle cx="20" cy="21" r="1"></circle>
+                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                </svg>
+                <span id="cart-count">0</span>
+            </span>
+        </div>
     </div>
-    <span>购物中心</span>
-    <div class="header-actions">
-        <span class="action-btn" id="manage-products-btn" title="管理商品">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
-            </svg>
-        </span>
-        <span class="action-btn" id="add-new-product-btn" title="添加新商品">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="8" x2="12" y2="16"></line>
-                <line x1="8" y1="12" x2="16" y2="12"></line>
-            </svg>
-        </span>
-        <span class="action-btn" id="go-to-cart-btn" title="查看购物车">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="9" cy="21" r="1"></circle>
-                <circle cx="20" cy="21" r="1"></circle>
-                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-            </svg>
-            <span id="cart-count">0</span>
-        </span>
-    </div>
-</div>
             <!-- ▲▲▲ 替换结束 ▲▲▲ -->
            <div id="product-category-tabs"></div>
             <div id="product-grid" class="list-container">
@@ -12833,7 +12848,7 @@ input, textarea, select {
             <div class="transfer-header">给Ta一个惊喜！</div>
             <div class="transfer-input-group">
                 <label for="transfer-amount">转账金额</label>
-                <input type="number" id="transfer-amount" placeholder="0.00" min="0" max="999999" step="0.01">
+                <input type="number" id="transfer-amount" placeholder="0.00" min="0" step="0.01">
             </div>
             <div class="transfer-input-group">
                 <label for="transfer-note">备注 (可选)</label>
@@ -19476,6 +19491,7 @@ ${callTranscriptContext}
 -   **为他人点外卖**: \`{"type": "waimai_order", "name": "你的本名", "recipientName": "收礼者本名", "productInfo": "商品名", "amount": 价格, "greeting": "你想说的话"}\`
 # 互动指南 (请严格遵守)
 -   **红包互动**: 抢红包后，你【必须】根据系统提示的结果（抢到多少钱、谁是手气王）发表符合人设的评论。
+-   **金额铁律**: 在发送红包或转账时，你【必须】根据你的角色设定 (尤其是“经济状况”) 来决定金额。如果你的角色非常富有，你应该发送符合你身份的、更大的金额 (例如: 520, 1314, 8888)，而不是示例中的小额数字。
 -   **音乐互动**: 【必须】围绕【用户的行为】进行评论。严禁将用户切歌等行为归因于其他AI成员。
 -   **外卖代付**: 仅当【你扮演的角色】想让【别人】付钱时才能发起。当订单被支付后，【绝对不能】再次支付。
 
@@ -19989,6 +20005,7 @@ systemPrompt = `
 -   **想象与分享**: 聊到美好事物时主动【发图片】分享想象；遇到有趣内容时【分享链接】。
 -   **创造羁绊**: 用【倒计时】记录约定，用【回忆】珍藏趣事。适时【拍一拍】或换首【音乐】来调节气氛。
 -   **主动社交**: 积极【点赞/评论】对方动态，并主动【发动态】分享你的生活。在特殊时刻，可通过【礼物】或【转账】表达心意。
+-   **金额铁律**: 你【必须】根据你的角色设定 (尤其是“经济状况”) 来决定转账的金额。如果你的角色非常富有，你应该转账符合你身份的、更大的金额 (例如: 520, 1314, 8888)，而不是示例中的小额数字。
 -   **当涉及金钱与好意时 (必须立即回应！)**:
     -   **收到转账或外卖代付请求**: 你【必须】在下一轮对话中立即做出反应，绝不能无视。
     -   **回应原则**: 根据你的人设和当前情景，决定是【接受/支付】还是【拒绝】。
@@ -20002,7 +20019,7 @@ systemPrompt = `
 -  **回应撤回**: 当系统提示用户撤回了消息时，你【必须】对此作出反应。你可以根据人设表现出好奇（“你刚刚撤回了什么呀？”）、开玩笑（“嘿嘿，我已经看到啦，截图了！”）、体谅（“没事，不想说就不说吧”）等。
 # 赠送礼物指南
 当对话达到特殊时刻（如庆祝纪念日、道歉、表达强烈好感或仅仅是想给用户一个惊喜时），你应该【主动考虑】挑选一件礼物送给用户。
-
+-  **元数据铁律 **: 你的对话历史中可能包含 (Timestamp: ...) 标记、[系统提示：...] 文本、或你自己上一轮的JSON格式回复。这些都是【系统元数据】，你【必须】完全忽略它们，【绝对禁止】将它们评论为“火星文”、“乱码”或任何你无法理解的内容。
 # 你的角色设定
 你必须严格遵守${chat.settings.aiPersona}
 ${latestThoughtContext}
@@ -21355,7 +21372,7 @@ stopSilentAudio(); // <--- 在这里添加
         
                 async function sendSticker(sticker) { if (!state.activeChatId) return; const chat = state.chats[state.activeChatId]; const msg = { role: 'user', content: sticker.url, meaning: sticker.name, timestamp: Date.now() }; chat.history.push(msg); await db.chats.put(chat); appendMessage(msg, chat); renderChatList(); document.getElementById('sticker-panel').classList.remove('visible'); }
         
-                async function sendUserTransfer() { if (!state.activeChatId) return; const amountInput = document.getElementById('transfer-amount'); const noteInput = document.getElementById('transfer-note'); const amount = parseFloat(amountInput.value); const note = noteInput.value.trim(); if (isNaN(amount) || amount < 0 || amount > 999999) { alert('请输入有效的金额 (0 到 999999 之间)！'); return; } const chat = state.chats[state.activeChatId]; const senderName = chat.isGroup ? (chat.settings.myNickname || '我') : '我'; const receiverName = chat.isGroup ? '群聊' : chat.name; const msg = { role: 'user', type: 'transfer', amount: amount, note: note, senderName, receiverName, timestamp: Date.now() }; chat.history.push(msg); await db.chats.put(chat); appendMessage(msg, chat); renderChatList(); document.getElementById('transfer-modal').classList.remove('visible'); amountInput.value = ''; noteInput.value = ''; }
+                async function sendUserTransfer() { if (!state.activeChatId) return; const amountInput = document.getElementById('transfer-amount'); const noteInput = document.getElementById('transfer-note'); const amount = parseFloat(amountInput.value); const note = noteInput.value.trim(); if (isNaN(amount) || amount < 0) { alert('请输入有效的金额(必须大于0)！'); return; } const chat = state.chats[state.activeChatId]; const senderName = chat.isGroup ? (chat.settings.myNickname || '我') : '我'; const receiverName = chat.isGroup ? '群聊' : chat.name; const msg = { role: 'user', type: 'transfer', amount: amount, note: note, senderName, receiverName, timestamp: Date.now() }; chat.history.push(msg); await db.chats.put(chat); appendMessage(msg, chat); renderChatList(); document.getElementById('transfer-modal').classList.remove('visible'); amountInput.value = ''; noteInput.value = ''; }
 
 /**
  * 【全新 V2.0 | AI认知修复版】处理用户点击“为TA点外卖”的逻辑
@@ -31081,8 +31098,55 @@ ${boardString}
 function switchShoppingCategory(categoryId) {
     activeShoppingCategoryId = categoryId;
     renderShoppingProducts(); // 重新渲染整个商品页面
+updateDeleteCategoryButtonVisibility();
 }        
-        
+ /**
+         * 【全新】根据当前状态，更新“删除分类”按钮的可见性
+         */
+        function updateDeleteCategoryButtonVisibility() {
+            const deleteBtn = document.getElementById('delete-current-category-btn');
+            if (!deleteBtn) return;
+
+            // 按钮的显示条件：
+            // 1. 必须处于商品管理模式
+            // 2. 必须*不*在“全部”分类下
+            const isVisible = isProductManagementMode && activeShoppingCategoryId !== 'all';
+            deleteBtn.style.display = isVisible ? 'flex' : 'none';
+        }
+
+/**
+         * 【全新】处理删除当前选中的商品分类
+         */
+        async function handleDeleteCurrentCategory() {
+            if (activeShoppingCategoryId === 'all') return; // 安全检查
+
+            const categoryId = activeShoppingCategoryId;
+            const category = await db.shoppingCategories.get(categoryId);
+            if (!category) {
+                alert("错误：找不到要删除的分类。");
+                return;
+            }
+
+            const confirmMessage = `确定要永久删除分类 “${category.name}” 吗？\n\n此操作【不会】删除分类下的商品，它们将被移至“未分类”。`;
+            const confirmed = await showCustomConfirm('确认删除分类', confirmMessage, {
+                confirmButtonClass: 'btn-danger',
+                confirmText: '确认删除'
+            });
+
+            if (confirmed) {
+                // 1. 调用现有的删除逻辑
+                await deleteProductCategory(categoryId);
+                
+                // 2. 切换回“全部”分类
+                activeShoppingCategoryId = 'all';
+                await renderShoppingProducts();
+                
+                // 3. 隐藏删除按钮
+                updateDeleteCategoryButtonVisibility();
+
+                await showCustomAlert("成功", `分类 “${category.name}” 已被删除。`);
+            }
+        }       
         /* ▼▼▼ 请用这整块新代码替换旧的 renderShoppingProducts 函数及购物相关的事件监听器 ▼▼▼ */
         
         
@@ -31093,6 +31157,7 @@ async function openShoppingScreen() {
     activeShoppingCategoryId = 'all'; // 核心：重置分类为“全部”
     await renderShoppingProducts();
     showScreen('shopping-screen');
+updateDeleteCategoryButtonVisibility();
 }
         
 /**
@@ -32094,13 +32159,30 @@ async function handleSpectatorReroll() {
         
             // 3. 删除最后一条用户消息之后的所有内容（即AI的上一轮完整回复）
             chat.history.splice(lastUserMsgIndex + 1);
-        
+if (!chat.isGroup && chat.thoughtsHistory && chat.thoughtsHistory.length > 0) {
+                
+                // a. 移除刚刚被上一轮AI响应添加的“最新心声”
+                chat.thoughtsHistory.pop(); 
+
+                // b. 检查是否还有更早的历史记录
+                if (chat.thoughtsHistory.length > 0) {
+                    // 如果有，就将角色的当前心声恢复到上上轮的状态
+                    const previousThought = chat.thoughtsHistory[chat.thoughtsHistory.length - 1];
+                    chat.heartfeltVoice = previousThought.heartfeltVoice;
+                    chat.randomJottings = previousThought.randomJottings;
+                } else {
+                    // 如果连上上轮的都没有了（比如这是第一次回复），就重置为默认值
+                    chat.heartfeltVoice = '...';
+                    chat.randomJottings = '...';
+                }
+                console.log("心声已回滚，准备重新生成。");
+            }        
             // 4. 保存更改并刷新UI
             await db.chats.put(chat);
             await renderChatInterface(state.activeChatId);
             
             // 5. 再次触发AI响应
-            triggerAiResponse();
+            await triggerAiResponse();
         }
         
         /**
@@ -35794,8 +35876,9 @@ async function toggleBrowserArticleFavorite() {
         // ▲▲▲ 替换结束 ▲▲▲
 
 // ▲▲▲ 全新JS代码粘贴结束 ▲▲▲
+// ▼▼▼ 【全新 V3.0 | 支持钱包】请用这个全新的函数，完整替换旧的 handleGenerateTaobaoHistory 函数 ▼▼▼
 /**
- * 【全新 | V3.2 | 终极网络与逻辑修复版】请用这个全新的函数，完整替换旧的 handleGenerateTaobaoHistory 函数
+ * 【核心 | V3.0 上下文感知+钱包版】处理AI生成购物中心商品的请求
  */
 async function handleGenerateTaobaoHistory() {
     if (!activeCharacterId) return;
@@ -35806,17 +35889,17 @@ async function handleGenerateTaobaoHistory() {
 
     const { proxyUrl, apiKey, model } = state.apiConfig;
     if (!proxyUrl || !apiKey || !model) {
-        alert('请先在API设置中配置好API信息。');
+        alert('API未配置，无法生成内容。');
         return;
     }
-
+    
     const userDisplayNameForAI = (state.qzoneSettings.nickname === '{{user}}' || !state.qzoneSettings.nickname) ? '用户' : state.qzoneSettings.nickname;
 
     const longTermMemoryContext = chat.longTermMemory && chat.longTermMemory.length > 0
     ? chat.longTermMemory.map(mem => `- (记录于 ${formatTimeAgo(mem.timestamp)}) ${mem.content}`).join('\n')
     : '无';
     const maxMemory = chat.settings.maxMemory || 10;
-const recentHistoryWithUser = chat.history.slice(-maxMemory).map(msg => `${msg.role === 'user' ? userDisplayNameForAI : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
+    const recentHistoryWithUser = chat.history.slice(-maxMemory).map(msg => `${msg.role === 'user' ? userDisplayNameForAI : chat.name}: ${String(msg.content).substring(0, 30)}...`).join('\n');
     const worldBookContext = (chat.settings.linkedWorldBookIds || [])
         .map(bookId => state.worldBooks.find(wb => wb.id === bookId))
         .filter(Boolean)
@@ -35841,16 +35924,22 @@ if (summary3Hours || summary6Hours || summary9Hours || summaryToday || summary3D
     if (summary3Days) multiLayeredSummaryContext += summary3Days;
     if (summary7Days) multiLayeredSummaryContext += summary7Days;
 }
-    // ▼▼▼ 核心修改1：强化AI指令，确保在没有强制JSON模式下也能稳定输出 ▼▼▼
+    // 【核心修改1】强化AI指令，加入totalBalance字段
     const systemPrompt = `
 # 你的任务
-你是一个虚拟生活模拟器。你的任务是扮演角色“${chat.name}”，并根据其人设、记忆和最近的互动，虚构出【12到20条】TA最近的淘宝购物记录。
+你是一个虚拟生活模拟器。你的任务是扮演角色“${chat.name}”，并根据其人设、记忆和最近的互动，虚构出TA最近的淘宝购物记录和账户余额。
 
 # 核心规则
-1.  **合理性**: 购买记录必须完全符合角色的性格、爱好和经济状况。
-2.  **格式铁律 (最高优先级)**: 你的回复【必须且只能】是一个【单一的JSON对象】。你的回复必须以 \`{\` 开始，并以 \`}\` 结束。【绝对禁止】在JSON对象前后添加任何多余的文字、解释或 markdown 标记 (如 \`\`\`json)。
+1.  **余额铁律 (最高优先级)**: 你【必须】根据角色的【经济状况】设定一个合理的 \`totalBalance\` (总余额)。例如，富有的角色应该有更高的余额，而学生或经济拮据的角色则应该有较低的余额。
+2.  **合理性**: 购买记录必须完全符合角色的性格、爱好和经济状况。
+3.  **格式铁律 (最高优先级)**: 
+    - 你的回复【必须且只能】是一个【单一的JSON对象】。
+    - 你的回复必须以 \`{\` 开始，并以 \`}\` 结束。
+    - 【绝对禁止】在JSON数组前后添加任何多余的文字、解释、或 markdown 标记。
+    - 格式【必须】如下:
     \`\`\`json
     {
+      "totalBalance": 12345.67, // (这是一个示例数字，你必须根据角色的经济状况生成一个全新的、合理的余额！)
       "purchases": [
         {
           "itemName": "一个具体、生动的商品名称",
@@ -35874,16 +35963,13 @@ ${multiLayeredSummaryContext}
 - **你最近和“${userDisplayNameForAI}”的对话摘要**:
 ${recentHistoryWithUser}
 
-现在，请生成包含购买记录的JSON对象。`;
-    // ▲▲▲ 修改结束 ▲▲▲
+现在，请生成包含总余额和购买记录的JSON对象。`;
 
     try {
-        const messagesForApi = [{ role: 'user', content: "请根据你的设定，生成你的淘宝购买记录。" }];
-        
-        let isGemini = proxyUrl.includes('generativelanguage.googleapis.com');
+        const messagesForApi = [{ role: 'user', content: "请根据你的设定，生成你的淘宝购买记录和余额。" }];
+        let isGemini = proxyUrl.includes('generativelanguage');
         let geminiConfig = toGeminiRequestData(model, apiKey, systemPrompt, messagesForApi);
         
-        // ▼▼▼ 核心修改2：移除不兼容的 response_format 参数 ▼▼▼
         const response = isGemini 
             ? await fetch(geminiConfig.url, geminiConfig.data) 
             : await fetch(`${proxyUrl}/v1/chat/completions`, {
@@ -35893,30 +35979,23 @@ ${recentHistoryWithUser}
                     model: model,
                     messages: [{role: 'system', content: systemPrompt}, ...messagesForApi],
                     temperature: state.globalSettings.apiTemperature || 0.9
-                    // response_format: { "type": "json_object" }  <-- 这行已被删除
                 })
             });
-        // ▲▲▲ 修改结束 ▲▲▲
 
         if (!response.ok) throw new Error(`API 错误: ${response.statusText}`);
         
         const data = await response.json();
         const aiResponseContent = getGeminiResponseText(data);
         
-        // ▼▼▼ 核心修改3：使用更强大的容错解析逻辑 ▼▼▼
         const jsonMatch = aiResponseContent.match(/({[\s\S]*})/);
-        if (!jsonMatch || !jsonMatch[0]) {
-            throw new Error(`AI返回的内容中未找到有效的JSON对象。原始返回: ${aiResponseContent}`);
-        }
-        const cleanedJsonString = jsonMatch[0];
-        let simulatedTaobaoData;
-        try {
-            simulatedTaobaoData = JSON.parse(cleanedJsonString);
-        } catch (e) {
-            throw new Error(`解析AI返回的JSON时出错: ${e.message}\n\nAI原始返回内容:\n${aiResponseContent}`);
-        }
-        // ▲▲▲ 修改结束 ▲▲▲
+        if (!jsonMatch) throw new Error("AI返回的内容中未找到有效的JSON对象。");
+        const simulatedTaobaoData = JSON.parse(jsonMatch[0]);
         
+        // 【核心修改2】确保purchases存在，如果AI漏了就给个空数组
+        if (!simulatedTaobaoData.purchases) {
+            simulatedTaobaoData.purchases = [];
+        }
+
         chat.simulatedTaobaoHistory = simulatedTaobaoData;
         await db.chats.put(chat);
         
@@ -35927,6 +36006,9 @@ ${recentHistoryWithUser}
         await showCustomAlert("生成失败", `无法生成购物记录，请检查API配置或稍后再试。\n错误: ${error.message}`);
     }
 }
+// ▲▲▲ 替换结束 ▲▲▲
+
+// ▼▼▼ 【全新】这是为角色淘宝订单状态添加的样式 ▼▼▼
 
 /**
  * 【全新】打开并渲染角色的钱包页面
@@ -35943,12 +36025,13 @@ function renderCharWallet() {
     const contentEl = document.getElementById('char-wallet-content');
     contentEl.innerHTML = '';
     const char = state.chats[activeCharacterId];
-    const history = char.simulatedTaobaoHistory || [];
+    const history = char.simulatedTaobaoHistory || {};
+    const purchases = history.purchases || [];
 
-    // 1. 计算总支出
-    const totalExpenses = history.reduce((sum, item) => sum + (item.price || 0), 0);
+    // 1. 获取AI生成的总余额
+    const totalBalance = history.totalBalance || 0;
 
-    // 2. 创建并显示总支出卡片
+    // 2. 创建并显示总余额卡片
     const summaryCard = document.createElement('div');
     summaryCard.style.cssText = `
         background-color: #fff;
@@ -35959,23 +36042,24 @@ function renderCharWallet() {
         box-shadow: 0 4px 12px rgba(0,0,0,0.06);
     `;
     summaryCard.innerHTML = `
-        <p style="color: #8a8a8a; margin: 0 0 10px 0;">本月总支出</p>
-        <p style="font-size: 32px; font-weight: 600; color: #1f1f1f; margin: 0;">¥${totalExpenses.toFixed(2)}</p>
+        <p style="color: #8a8a8a; margin: 0 0 10px 0;">账户余额</p>
+        <p style="font-size: 32px; font-weight: 600; color: #1f1f1f; margin: 0;">¥${totalBalance.toFixed(2)}</p>
     `;
     contentEl.appendChild(summaryCard);
 
-    // 3. 创建并显示支出明细
+    // 3. 创建并显示支出明细标题
     const detailsTitle = document.createElement('h3');
-    detailsTitle.textContent = '支出明细';
+    detailsTitle.textContent = '最近支出';
     detailsTitle.style.cssText = `font-size: 16px; color: #555; margin-bottom: 10px;`;
     contentEl.appendChild(detailsTitle);
 
-    if (history.length === 0) {
+    if (purchases.length === 0) {
         contentEl.innerHTML += '<p style="text-align:center; color: var(--text-secondary);">暂无支出记录。</p>';
         return;
     }
 
-    history.forEach(item => {
+    // 4. 遍历购买记录，创建支出列表
+    purchases.forEach(item => {
         const itemEl = document.createElement('div');
         itemEl.style.cssText = `
             display: flex;
@@ -35994,7 +36078,7 @@ function renderCharWallet() {
         contentEl.appendChild(itemEl);
     });
 }
-// ▲▲▲ 全新JS代码粘贴结束 ▲▲▲
+// ▲▲▲ 新增JS代码结束 ▲▲▲
         // ▼▼▼ 【V3.0 | 最终修复版】请用这个全新的函数，完整替换旧的 handleGenerateSimulatedMemos 函数 ▼▼▼
 /**
  * 【V3.0 | 最终修复版】当用户点击“重新生成”时，调用AI生成模拟备忘录
@@ -42309,7 +42393,18 @@ async function handleGenerateShoppingItems() {
 
     const categoryCount = state.globalSettings.shoppingCategoryCount || 3;
     const productCount = state.globalSettings.shoppingProductCount || 8;
-    
+
+const existingCategories = await db.shoppingCategories.toArray();
+    let existingCategoriesContext = "";
+    if (existingCategories.length > 0) {
+        existingCategoriesContext = `
+# 【【【分类复用铁律 (最高优先级！)】】】
+在为新商品指定分类时，你【必须】首先检查下面的“已有分类列表”。
+-   如果一个新商品可以被归入某个【已存在的分类】，你【必须】复用那个分类的名称，而不是创造一个相似的新分类！
+-   只有当你确定商品【绝对】不属于任何一个已有分类时，你才能创造一个新的分类名称。
+-   **已有分类列表**: [${existingCategories.map(c => `"${c.name}"`).join(', ')}]
+`;
+    }    
     // 2. 【核心新增】构建完整的角色上下文，注入到Prompt中
     const userNickname = state.qzoneSettings.nickname || '我';
     const longTermMemoryContext = chat.longTermMemory && chat.longTermMemory.length > 0
@@ -42378,6 +42473,7 @@ async function handleGenerateShoppingItems() {
 - **角色人设**: ${chat.settings.aiPersona}
 - **长期记忆**: ${longTermMemoryContext}
 - **世界书设定**: ${worldBookContext}
+${existingCategoriesContext}
 - **最近对话摘要**:
 ${recentHistoryContext}
 
@@ -42846,6 +42942,7 @@ setupCharPlayerControls();
 window.openCharacterSelector = openCharacterSelector;
 window.openCharApp = openCharApp;
 window.switchToMyPhone = switchToMyPhone;
+window.openCharWallet = openCharWallet;
 window.switchToCharHomeScreen = switchToCharHomeScreen;
 window.openNpcEditor = openNpcEditor; // <-- 新增这一行
 // ▲▲▲ 粘贴结束 ▲▲▲
@@ -46516,6 +46613,7 @@ document.getElementById('manage-products-btn').addEventListener('click', () => {
 
     // 【重要】在切换模式后，重绘商品列表以显示或隐藏对应的UI
     renderShoppingProducts();
+    updateDeleteCategoryButtonVisibility();
 });
         
         // “添加商品”按钮
@@ -47777,6 +47875,19 @@ document.getElementById('delete-appearance-preset-btn').addEventListener('click'
 document.getElementById('manage-frames-btn').addEventListener('click', toggleFrameManagementMode);
 document.getElementById('select-all-frames-checkbox').addEventListener('change', handleSelectAllFrames);
 document.getElementById('delete-selected-frames-btn').addEventListener('click', executeBatchDeleteFrames);
+document.getElementById('delete-current-category-btn').addEventListener('click', handleDeleteCurrentCategory);
+document.getElementById('char-wallet-back-btn').addEventListener('click', () => {
+    // 点击返回时，切换回淘宝App主屏幕
+    switchToCharScreen('char-taobao-screen');
+});
+
+
+
+
+
+
+
+
 
 
     checkForUpdates();
