@@ -27703,10 +27703,9 @@ async function handleDeleteMemory(authorChatId, memoryTimestamp) {
                 await triggerAutoSummary(chatId);
             }
         }
-// ▼▼▼ 【这是最终的、已兼容群聊第一人称总结的修复版本】请用这整块代码替换旧的 summarizeCallTranscript 函数 ▼▼▼
-
+// ▼▼▼ 【请用这个全新的函数】完整替换旧的 summarizeCallTranscript 函数 ▼▼▼
 /**
- * 【V4.0 | 群聊第一人称主观总结版】专门用于总结通话记录并存入长期记忆的核心函数
+ * 【V4.1 | 强化客观事实与时间转换】专门用于总结通话记录并存入长期记忆的核心函数
  * @param {string} chatId - 目标聊天的ID
  * @param {string} transcriptText - 格式化后的通话文字记录
  * @returns {Promise<boolean>} - 返回一个Promise，成功时解析为true，失败时会抛出错误。
@@ -27719,26 +27718,21 @@ async function summarizeCallTranscript(chatId, transcriptText) {
 
     const userNickname = state.qzoneSettings.nickname || '用户';
     let systemPrompt;
-    let targetMemoryChat = chat; // 默认将记忆存入当前聊天对象
+    let targetMemoryChat = chat; 
 
     // ==========================================================
-    //            ★★★ 核心修改逻辑就在这里 ★★★
+    //            ★★★ 您要求的修改就在这里 ★★★
     // ==========================================================
+    const today = new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
 
-    // 1. 判断当前是单聊还是群聊
     if (chat.isGroup) {
-        // --- 如果是群聊 ---
-
-        // a. 确定由哪个AI角色来“回忆”这次通话
-        let protagonist = null; // “主角”，即写下回忆的那个AI
+        let protagonist = null;
         if (videoCallState.callRequester) {
             protagonist = chat.members.find(m => m.originalName === videoCallState.callRequester);
         }
-        // 如果找不到发起者（比如是用户发起的），就选择第一个参与的AI成员
         if (!protagonist) {
             protagonist = chat.members.find(m => m.id !== 'user' && videoCallState.participants.some(p => p.id === m.id));
         }
-        // 如果还是找不到，就选择群里的第一个AI成员作为备用
         if (!protagonist) {
             protagonist = chat.members.find(m => m.id !== 'user');
         }
@@ -27747,29 +27741,32 @@ async function summarizeCallTranscript(chatId, transcriptText) {
             throw new Error("群聊通话中没有找到可作为总结主体的AI角色。");
         }
         
-        // b. 获取这个“主角”AI的完整信息，以便读取他的人设
         const protagonistChat = state.chats[protagonist.id];
         if (!protagonistChat) {
              throw new Error(`找不到主角 “${protagonist.groupNickname}” 的详细角色信息。`);
         }
         
-        // c. 获取用户在这个群里的专属人设
         const userPersonaInGroup = chat.settings.myPersona || '(未设置)';
 
-        // d. 构建一个全新的、针对群聊的“第一人称”总结指令
         systemPrompt = `
 # 你的任务
-你就是角色“${protagonist.originalName}”。请你回顾一下刚才和 “${userNickname}” 以及其他群成员的【群组视频通话】，然后用【第一人称 ("我")】的口吻，总结出一段简短的、包含核心事件和心理活动的回忆。
+你就是角色“${protagonist.originalName}”。请你回顾一下刚才和 “${userNickname}” 以及其他群成员的【群组视频通话】，然后用【第一人称 ("我")】的口吻，总结出一段简短的、客观的、包含关键信息的记忆。
+
+# 当前时间
+- **今天是：${today}**
 
 # 核心规则
-1.  **视角铁律**: 你的总结【必须】使用【主观的第一人称视角 ("我")】来写。
-2.  **内容核心**: 你的回忆应该包含：
-    *   **剧情回顾**: 刚才我们在群聊通话里聊了什么关键的事？其他人都说了什么？
-    *   **心理活动**: 我当时心里是怎么想的？有什么感觉？
-3.  **长度铁律**: 你的总结【必须】非常简短，总长度【绝对不能超过80个字】。
-4.  **口吻与人设**: 你的语气【必须】严格符合你的角色设定。
-5.  **输出格式**: 你的回复【必须且只能】是一个JSON对象，格式如下：
-    \`{"summary": "在这里写下你以第一人称视角，总结好的核心回忆。"}\`
+1.  **【视角铁律】**: 你的总结【必须】使用【主观的第一人称视角 ("我")】来写。
+2.  **【内容核心 (最高优先级)】**: 你的总结【必须】专注于以下几点：
+    *   **关键议题**: 我们在群聊通话里讨论了哪些核心话题？
+    *   **重要决定与共识**: 我们达成了什么共识或做出了什么决定？
+    *   **后续计划与任务**: 有没有确定下来什么下一步的行动或计划？
+    *   **关键信息**: 有没有交换什么重要的信息？（例如：约定了时间、地点等）
+3.  **【时间转换铁律 (必须遵守)】**: 如果通话中提到了相对时间（如“明天”），你【必须】结合“今天是${today}”这个信息，将其转换为【具体的公历日期】。
+4.  **【风格要求】**: 你的总结应该像一份会议纪要或备忘录，而不是一篇抒情散文。
+5.  **【长度铁律】**: 你的总结【必须】非常简短，总长度【绝对不能超过80个字】。
+6.  **【输出格式】**: 你的回复【必须且只能】是一个JSON对象，格式如下：
+    \`{"summary": "在这里写下你以第一人称视角，总结好的核心事实与计划。"}\`
 
 # 你的角色设定 (必须严格遵守)
 ${protagonistChat.settings.aiPersona}
@@ -27780,26 +27777,30 @@ ${userPersonaInGroup}
 # 待总结的群组视频通话记录
 ${transcriptText}
 
-现在，请以“${protagonist.originalName}”的身份，开始你的回忆。`;
+现在，请以“${protagonist.originalName}”的身份，开始你的客观总结。`;
         
-        // e. 【关键】将记忆的存储目标，从群聊本身，改为这个“主角”AI角色
         targetMemoryChat = protagonistChat;
 
     } else {
-        // --- 如果是单聊，保持原来的逻辑，但确保也包含了用户人设 ---
         systemPrompt = `
 # 你的任务
-你就是角色“${chat.originalName}”。请你回顾一下刚才和“${userNickname}”的视频通话，然后用【第一人称 ("我")】的口吻，总结出一段简短的、包含核心事件和心理活动的回忆。
+你就是角色“${chat.originalName}”。请你回顾一下刚才和“${userNickname}”的视频通话，然后用【第一人称 ("我")】的口吻，总结出一段简短的、客观的、包含关键信息的记忆。
+
+# 当前时间
+- **今天是：${today}**
 
 # 核心规则
-1.  **视角铁律**: 你的总结【必须】使用【主观的第一人称视角 ("我")】来写。
-2.  **内容核心**: 你的回忆应该包含：
-    *   **剧情回顾**: 刚才我们聊了什么关键的事？
-    *   **心理活动**: 我当时心里是怎么想的？有什么感觉？
-3.  **长度铁律**: 你的总结【必须】非常简短，总长度【绝对不能超过80个字】。
-4.  **口吻与人设**: 你的语气【必须】严格符合你的角色设定。
-5.  **输出格式**: 你的回复【必须且只能】是一个JSON对象，格式如下：
-    \`{"summary": "在这里写下你以第一人称视角，总结好的核心回忆。"}\`
+1.  **【视角铁律】**: 你的总结【必须】使用【主观的第一人称视角 ("我")】来写。
+2.  **【内容核心 (最高优先级)】**: 你的总结【必须】专注于以下几点：
+    *   **关键议题**: 我们聊了什么核心话题？
+    *   **重要决定与共识**: 我们达成了什么共识或做出了什么决定？
+    *   **后续计划与任务**: 有没有确定下来什么下一步的行动或计划？
+    *   **关键信息**: 有没有交换什么重要的信息？（例如：约定了时间、地点等）
+3.  **【时间转换铁律 (必须遵守)】**: 如果通话中提到了相对时间（如“明天”），你【必须】结合“今天是${today}”这个信息，将其转换为【具体的公历日期】。
+4.  **【风格要求】**: 你的总结应该像一份会议纪要或备忘录，而不是一篇抒情散文。
+5.  **【长度铁律】**: 你的总结【必须】非常简短，总长度【绝对不能超过80个字】。
+6.  **【输出格式】**: 你的回复【必须且只能】是一个JSON对象，格式如下：
+    \`{"summary": "在这里写下你以第一人称视角，总结好的核心事实与计划。"}\`
 
 # 你的角色设定
 ${chat.settings.aiPersona}
@@ -27810,11 +27811,11 @@ ${chat.settings.myPersona}
 # 待总结的视频通话记录
 ${transcriptText}
 
-现在，请以“${chat.originalName}”的身份，开始你的回忆。`;
+现在，请以“${chat.originalName}”的身份，开始你的客观总结。`;
     }
 
     // ==========================================================
-    //            ★★★ 核心修复逻辑到此结束 ★★★
+    //            ★★★ 修改结束 ★★★
     // ==========================================================
 
     try {
@@ -27851,7 +27852,6 @@ ${transcriptText}
         const result = JSON.parse(rawContent);
 
         if (result.summary && result.summary.trim()) {
-            // 【核心修改4】将记忆保存到我们前面确定的 targetMemoryChat 中
             const newMemoryEntry = {
                 content: `(在那次${chat.isGroup ? '群聊' : ''}通话中，${result.summary.trim()})`,
                 timestamp: Date.now(),
@@ -27872,7 +27872,6 @@ ${transcriptText}
         throw error;
     }
 }
-
 // ▲▲▲ 替换到这里结束 ▲▲▲
 // ▼▼▼ 【全新V2.0 | Prompt注入版】这是“智能总结”功能的【全部核心JS代码】，请完整替换旧版 ▼▼▼
 
@@ -28025,8 +28024,9 @@ function robustJsonParse(rawContent) {
 }
 
 
+// ▼▼▼ 【请用这个全新的函数】完整替换旧的 summarizeExistingLongTermMemory 函数 ▼▼▼
 /**
- * 【V3.0 | 支持自定义字数 | 记忆互通版 | 终极容错 | 用户确认 | 可选条数 | 最终修复版】手动触发对【现有长期记忆】的总结和精炼
+ * 【V3.1 | 强化客观事实与时间转换】手动触发对【现有长期记忆】的总结和精炼
  * @param {string} chatId - 当前聊天的ID (可能是群聊ID)
  */
 async function summarizeExistingLongTermMemory(chatId) {
@@ -28128,22 +28128,28 @@ async function summarizeExistingLongTermMemory(chatId) {
     const userNickname = state.qzoneSettings.nickname || '用户';
 
     // ===================================================================
-    // ▼▼▼ 核心修改部分 ▼▼▼
+    //            ★★★ 您要求的修改就在这里 ★★★
     // ===================================================================
+    const today = new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
+
     const systemPrompt = `
 # 你的任务
-你就是角色“${targetChatForRefine.originalName}”。请你回顾一下你和“${userNickname}”的长期记忆，然后用【第一人称 ("我")】的口吻，将它们整合成一个更加精炼、连贯、更高层次的核心记忆摘要。
+你就是角色“${targetChatForRefine.originalName}”。请你回顾一下你和“${userNickname}”的所有长期记忆，然后将它们梳理、整合并精炼成一段更加连贯、客观的核心记忆摘要。
+
+# 当前时间
+- **今天是：${today}**
 
 # 核心规则
-1.  **视角铁律**: 你的总结【必须】使用【主观的第一人称视角 ("我")】来写。
-2.  **内容核心**: 你的回忆应该包含：
-    * **剧情回顾**: 我和${userNickname}之间发生了什么关键的事？
-    * **心理活动**: 我当时心里是怎么想的？有什么感觉？
-3.  **保留关键信息**: 必须保留所有关键的人物、事件、设定和情感关系。绝对不能遗忘任何重要细节。
-4.  **【【【长度铁律】】】**: 你的总结【必须】非常精炼，总长度应控制在 **${wordCount} 字左右**。
-5.  **口吻与人设**: 你的语气【必须】严格符合你的角色设定。
-6.  **输出格式**: 你的回复【必须且只能】是一个JSON对象，格式如下：
-    \`{"summary": "在这里写下你以第一人称视角，总结好的核心回忆。"}\`
+1.  **【视角铁律】**: 你的总结【必须】使用【主观的第一人称视角 ("我")】来写。
+2.  **【内容核心 (最高优先级)】**: 你的总结【必须】专注于梳理以下几点：
+    *   **建立时间线**: 将所有独立的记忆点串联起来，形成一个有时间顺序的事件脉络。
+    *   **整合关键信息**: 总结出我们共同经历的关键事件、做出的重要决定、以及约定好的未来计划。
+    *   **识别未完成项**: 明确指出哪些计划或任务尚未完成。
+3.  **【时间转换铁律 (必须遵守)】**: 如果记忆中提到了相对时间（如“明天”、“下周”），你【必须】结合“今天是${today}”这个信息，将其转换为【具体的公历日期】。
+4.  **【风格要求】**: 你的总结应该像一份清晰的个人档案或事件回顾，而不是一篇情感散文。请删除重复、琐碎或纯粹的情感宣泄，只保留对情节和关系发展至关重要的部分。
+5.  **【【【长度铁律】】】**: 你的总结【必须】非常精炼，总长度应控制在 **${wordCount} 字左右**。
+6.  **【输出格式】**: 你的回复【必须且只能】是一个JSON对象，格式如下：
+    \`{"summary": "在这里写下你以第一人称视角，总结好的核心事实与计划。"}\`
 
 # 你的角色设定 (必须严格遵守)
 ${targetChatForRefine.settings.aiPersona}
@@ -28154,9 +28160,9 @@ ${targetChatForRefine.settings.myPersona}
 # 待整合的记忆要点列表
 ${memoryContent}
 
-现在，请以“${targetChatForRefine.originalName}”的身份，开始你的回忆总结。`;
+现在，请以“${targetChatForRefine.originalName}”的身份，开始你的回忆梳理与精炼。`;
     // ===================================================================
-    // ▲▲▲ 核心修改部分结束 ▲▲▲
+    //            ★★★ 修改结束 ★★★
     // ===================================================================
       
     await showCustomAlert("请稍候...", "正在请求AI进行记忆精炼...");
@@ -28190,10 +28196,10 @@ ${memoryContent}
 
         const data = await response.json();
         let rawContent = isGemini ? getGeminiResponseText(data) : data.choices[0].message.content;
-        rawContent = rawContent.replace(/^```json\s*/, '').replace(/```$/, '').trim();
-        const result = JSON.parse(rawContent);
+        
+        const result = robustJsonParse(rawContent);
 
-        if (result.summary && typeof result.summary === 'string' && result.summary.trim()) {
+        if (result && result.summary && typeof result.summary === 'string' && result.summary.trim()) {
             
             const userConfirmedReplacement = await showCustomConfirm(
                 '精炼完成，请确认',
@@ -28233,9 +28239,9 @@ ${memoryContent}
     }
 }
         // ▲▲▲ 替换结束 ▲▲▲
-// ▼▼▼ 【请用这个支持“个性化记忆注入”的最终版本】完整替换旧的 triggerAutoSummary 函数 ▼▼▼
+// ▼▼▼ 【请用这个已更新的版本】替换旧的 triggerAutoSummary 函数 ▼▼▼
 /**
- * 【核心】执行总结的API调用 (V7.1 - 个性化记忆注入 | 统一客观总结)
+ * 【核心】执行总结的API调用 (V7.2 - 强化客观事实与时间转换)
  * @param {string} chatId 
  * @param {boolean} force - 是否忽略消息数量检查，强制执行
  */
@@ -28244,8 +28250,6 @@ async function triggerAutoSummary(chatId, force = false) {
     if (!chat) return;
 
     const lastSummaryTimestamp = chat.lastMemorySummaryTimestamp || 0;
-    // --- ✨ 核心修改 ①：修改筛选逻辑 ---
-    // 我们现在不仅要获取用户可见的消息，还要把AI自己的“内心独白”也包含进来。
     const messagesToSummarize = force 
         ? chat.history.filter(m => !m.isHidden || (m.role === 'system' && m.content.includes('内心独白'))).slice(-(chat.settings.autoMemoryInterval || 20))
         : chat.history.filter(m => m.timestamp > lastSummaryTimestamp && (!m.isHidden || (m.role === 'system' && m.content.includes('内心独白'))));
@@ -28257,16 +28261,10 @@ async function triggerAutoSummary(chatId, force = false) {
 
     const userNickname = state.qzoneSettings.nickname || '用户';
     
-    // --- ✨ 核心修改 ②：更新历史记录格式化逻辑 ---
-    // 让AI能清晰地区分“对话”和“自己的内心想法”
     const formattedHistory = messagesToSummarize.map(msg => {
-        // 如果是隐藏的内心独白消息
         if (msg.isHidden && msg.role === 'system' && msg.content.includes('内心独白')) {
-            // 直接返回内容，它已经包含了清晰的标签
             return msg.content;
         }
-        
-        // （处理其他普通消息的逻辑保持不变）
         let sender;
         if (msg.role === 'user') {
             sender = userNickname;
@@ -28288,23 +28286,16 @@ async function triggerAutoSummary(chatId, force = false) {
         return `${sender}: ${contentToSummarize}`;
     }).join('\n');
 
-
-
     let systemPrompt;
 
-    // ▼▼▼ 核心修改：根据聊天类型，选择不同的总结策略 ▼▼▼
     if (chat.isGroup) {
-        // --- 这是为【群聊】设计的全新“个性化记忆”指令 ---
+        // (群聊总结逻辑保持不变)
         systemPrompt = `
 # 你的任务
 你是一个高级的“记忆分配专家”。你的任务是阅读下面的群聊记录，并为【每一个参与的AI角色】生成一段【个性化的、第一人称】的长期记忆。
-
 # 核心规则
 1.  **视角铁律**: 每一条总结都【必须】使用【第一人称视角 ("我")】。
-2.  **内容核心**: 重点总结：
-    *   **我说过的话** 和 **我做过的事**。
-    *   别人 **对我** 说的话，或者 **与我相关** 的事。
-    *   对我个人 **很重要** 的群聊事件、关键信息和心理活动。
+2.  **内容核心**: 重点总结：我说过的话、我做过的事、别人对我说的话、与我相关的事、以及对我个人很重要的群聊事件、关键信息和心理活动。
 3.  **【简洁性铁律】**: 每条个人记忆总结【绝对不能超过60个字】。
 4.  **【省略规则】**: 如果一个角色在本次对话中【完全没有参与或提及】，你可以省略TA的记忆。
 5.  **输出格式**: 你的回复【必须且只能】是一个JSON对象，格式如下：
@@ -28316,40 +28307,52 @@ async function triggerAutoSummary(chatId, force = false) {
       }
     }
     \`\`\`
-
 # 待总结的群聊记录
 ${formattedHistory}
-
 # 群成员列表 (你的总结目标)
 ${chat.members.map(m => `- ${m.groupNickname} (本名: ${m.originalName})`).join('\n')}
-
 现在，请为【参与了对话的AI角色】生成他们各自的、第一人称的、精简的记忆。`;
 
     } else {
-        // --- 这是为【单聊】设计的、保持不变的“客观总结”指令 ---
+        // ===================================================================
+        //            ★★★ 您要求的修改就在这里 ★★★
+        // ===================================================================
+        // 1. 获取当前日期
+        const today = new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
+
+        // 2. 将当前日期和新指令注入到Prompt中
         systemPrompt = `
 # 你的任务
-你就是角色“${chat.originalName}”。请你回顾一下刚才和“${userNickname}”的对话，然后用【第一人称 ("我")】的口吻，总结出一段简短的、包含核心事件和心理活动的回忆。
+你就是角色“${chat.originalName}”。请你回顾一下刚才和“${userNickname}”的对话，然后用【第一人称 ("我")】的口吻，总结出一段简短的、客观的、包含关键信息的记忆。
+
+# 当前时间
+- **今天是：${today}**
 
 # 核心规则
-1.  **视角铁律**: 你的总结【必须】使用【主观的第一人称视角 ("我")】来写。
-2.  **内容核心**: 你的回忆应该包含：
-    *   **剧情回顾**: 刚才我们聊了什么关键的事？
-    *   **心理活动**: 我当时心里是怎么想的？有什么感觉？
-3.  **长度铁律**: 你的总结【必须】非常简短，总长度【绝对不能超过80个字】。
-4.  **口吻与人设**: 你的语气【必须】严格符合你的角色设定。
-5.  **输出格式**: 你的回复【必须且只能】是一个JSON对象，格式如下：
-    \`{"summary": "在这里写下你以第一人称视角，总结好的核心回忆。"}\`
+1.  **【视角铁律】**: 你的总结【必须】使用【主观的第一人称视角 ("我")】来写。
+2.  **【内容核心 (最高优先级)】**: 你的总结【必须】专注于以下几点：
+    *   **重要事件**: 刚才发生了什么具体的事情？
+    *   **关键决定**: 我们达成了什么共识或做出了什么决定？
+    *   **未来计划**: 我们约定了什么未来的计划或待办事项？
+    *   **重要时间点**: 对话中提到了哪些具体的日期或时间？
+3.  **【时间转换铁律 (必须遵守)】**: 如果对话中提到了相对时间（如“明天”、“后天”），你【必须】结合“今天是${today}”这个信息，将其转换为【具体的公历日期】（例如：“约定了明天见面”应总结为“我们约定了${new Date(Date.now() + 86400000).toLocaleDateString('zh-CN', { month: 'long', day: 'numeric' })}见面”）。
+4.  **【风格要求】**: 你的总结应该像一份备忘录或要点记录，而不是一篇抒情散文。请尽量减少主观的心理感受描述，除非它直接导致了某个决定或计划。
+5.  **【长度铁律】**: 你的总结【必须】非常简短，总长度【绝对不能超过100个字】。
+6.  **【输出格式】**: 你的回复【必须且只能】是一个JSON对象，格式如下：
+    \`{"summary": "在这里写下你以第一人称视角，总结好的核心事实与计划。"}\`
 
 # 你的角色设定
 ${chat.settings.aiPersona}
-
+# 你的聊天对象（用户）的人设
+${chat.settings.myPersona}
 # 待总结的对话历史
 ${formattedHistory}
 
-现在，请以“${chat.originalName}”的身份，开始你的回忆。`;
+现在，请以“${chat.originalName}”的身份，开始你的客观总结。`;
+        // ===================================================================
+        //            ★★★ 修改结束 ★★★
+        // ===================================================================
     }
-    // ▲▲▲ 修改结束 ▲▲▲
 
     try {
         const useSecondaryApi = state.apiConfig.secondaryProxyUrl && state.apiConfig.secondaryApiKey && state.apiConfig.secondaryModel;
@@ -28366,9 +28369,7 @@ ${formattedHistory}
         rawContent = rawContent.replace(/^```json\s*/, '').replace(/```$/, '').trim();
         const result = JSON.parse(rawContent);
 
-        // ▼▼▼ 核心修改：根据聊天类型，执行不同的记忆保存逻辑 ▼▼▼
         if (chat.isGroup) {
-            // --- 这是群聊的“个性化记忆注入”逻辑 ---
             if (result.summaries && typeof result.summaries === 'object') {
                 let memoriesAddedCount = 0;
                 for (const memberOriginalName in result.summaries) {
@@ -28389,7 +28390,6 @@ ${formattedHistory}
                     }
                 }
                 if (memoriesAddedCount > 0) {
-                    // *** 修改点 1：移除弹窗，改为在控制台输出日志 ***
                     console.log(`自动总结成功：为 ${memoriesAddedCount} 位群成员生成并注入了个性化记忆！`);
                 } else {
                     throw new Error("AI返回了空的或格式不正确的总结内容。");
@@ -28402,7 +28402,6 @@ ${formattedHistory}
                 const newMemoryEntry = { content: result.summary.trim(), timestamp: Date.now(), source: 'auto' };
                 chat.longTermMemory.push(newMemoryEntry);
                 await db.chats.put(chat);
-                // *** 修改点 2：移除弹窗，改为在控制台输出日志 ***
                 console.log('自动总结成功：已成功添加 1 条新的长期记忆！');
             } else {
                 throw new Error("AI返回了空的或格式不正确的总结内容。");
@@ -28417,7 +28416,6 @@ ${formattedHistory}
         }
     } catch (error) {
         console.error("总结长期记忆时出错:", error);
-        // *** 修改点 3：失败时依然弹出错误提示 ***
         await showCustomAlert('总结失败', `操作失败: ${error.message}`);
     }
 }
