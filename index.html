@@ -12228,8 +12228,23 @@ input, textarea, select {
         </div>
         <div class="form-group" id="my-group-nickname-group"><label for="my-group-nickname-input">我的群昵称</label><input type="text" id="my-group-nickname-input"></div>
         <button class="form-button form-button-secondary" id="search-history-btn" style="margin-top: 10px;">搜索聊天记录</button>
+
 <!-- ▼▼▼ 在这里粘贴下面的新代码 ▼▼▼ -->
 <div class="form-group" id="single-char-background-activity-group">
+<div class="form-group" id="inject-thought-group">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <label for="inject-thought-toggle" style="margin-bottom: 0;">
+                    注入最新心声
+                    <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;">
+                        开启后，AI在回应前会“看到”自己上一轮的内心独白。这能增强连贯性，但可能轻微增加Token消耗。
+                    </p>
+                </label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="inject-thought-toggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
     <div style="display: flex; justify-content: space-between; align-items: center;">
         <label for="char-background-activity-switch" style="margin-bottom: 0;">
             启用独立后台活动
@@ -16213,6 +16228,11 @@ async function loadAllDataFromDB() {
             if (typeof chat.settings.isOfflineMode === 'undefined') chat.settings.isOfflineMode = false;
             if (typeof chat.settings.offlineMinLength === 'undefined') chat.settings.offlineMinLength = 100;
             if (typeof chat.settings.offlineMaxLength === 'undefined') chat.settings.offlineMaxLength = 300;
+// ▼▼▼ 【核心修改】在这里将默认值改为 false ▼▼▼
+            if (typeof chat.settings.injectLatestThought === 'undefined') {
+                chat.settings.injectLatestThought = false; // 默认关闭
+            }
+            // ▲▲▲ 修改结束 ▲▲▲
             if (typeof chat.heartfeltVoice === 'undefined') chat.heartfeltVoice = '...';
             if (typeof chat.randomJottings === 'undefined') chat.randomJottings = '...';
             if (!Array.isArray(chat.thoughtsHistory)) {
@@ -19551,6 +19571,22 @@ ${callTranscriptContext}
                 } else {
                     const isOfflineMode = chat.settings.isOfflineMode;
 
+
+
+            // ▼▼▼ 【全新】这是您要求的心声注入逻辑 ▼▼▼
+            let latestThoughtContext = '';
+            // 检查：1. 开关是否开启  2. 是否有心声  3. 【重要】是否*不*处于线下模式
+            // (因为线下模式的Prompt有自己的思考逻辑，注入这个会造成干扰)
+            if (chat.settings.injectLatestThought && chat.heartfeltVoice && !isOfflineMode) {
+                latestThoughtContext = `
+# 你的内心独白 (上一轮的思考，仅你自己可见)
+- 心声: ${chat.heartfeltVoice}
+- 散记: ${chat.randomJottings}
+`;
+            }
+            // ▲▲▲ 新增代码结束 ▲▲▲
+
+ 
 // ▼▼▼ 在这里粘贴修复代码 ▼▼▼
                 let linkedMemoryContext = '';
                 const memoryCount = chat.settings.linkedMemoryCount || 10;
@@ -19944,6 +19980,7 @@ systemPrompt = `
 3.  **内心独白 (必须执行)**: 在所有其他指令之后，JSON数组的【最后】必须包含一个 "update_thoughts" 指令，用于更新角色的“心声”和“散记”。
     - **心声 (heartfelt_voice)**: 一句话概括角色此刻最核心、最私密的想法。
     - **散记 (random_jottings)**: 一段50字以上的、符合人设的思考或心情记录，禁止OOC。
+    - **记忆发展**: 你的新“心声”和“散记”【必须】是基于最新对话内容的【全新思考】。你【绝对不能】重复或简单改写上一轮的内心独白。你的思绪应该像真人一样，不断演进和发展。
 # 指令使用原则与动机 
 **核心目标**: 主动运用多种功能，创造丰富、真实的聊天体验，而不只是文字对话。
 
@@ -19968,6 +20005,7 @@ systemPrompt = `
 
 # 你的角色设定
 你必须严格遵守${chat.settings.aiPersona}
+${latestThoughtContext}
 # 对话者的角色设定
 ${chat.settings.myPersona}
 
@@ -43586,6 +43624,7 @@ if (voiceBody) {
             document.getElementById('assign-group-section').style.display = isGroup ? 'none' : 'block';
             document.getElementById('ai-original-name-group').style.display = isGroup ? 'none' : 'block';
             document.getElementById('ai-voice-id-group').style.display = isGroup ? 'none' : 'block';
+           document.getElementById('inject-thought-group').style.display = isGroup ? 'none' : 'block';
             document.getElementById('offline-mode-group').style.display = isGroup ? 'none' : 'block';
             document.getElementById('ai-cooldown-group').style.display = isGroup ? 'none' : 'block';
             document.getElementById('group-cooldown-group').style.display = isGroup ? 'block' : 'none';
@@ -43644,7 +43683,7 @@ if (isGroup) {
     // 【核心新增】在单聊设置中，显示并设置开关的当前状态
     document.getElementById('single-char-background-activity-group').style.display = 'block';
     document.getElementById('char-background-activity-switch').checked = chat.settings.enableBackgroundActivity;
-
+    document.getElementById('inject-thought-toggle').checked = chat.settings.injectLatestThought;
     // (其他单聊设置的读取逻辑保持不变)
     const offlineModeToggle = document.getElementById('offline-mode-toggle');
     const offlineModeOptions = document.getElementById('offline-mode-options');
@@ -43939,7 +43978,7 @@ document.getElementById('save-chat-settings-btn').addEventListener('click', asyn
         }
         
         // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
-        
+        chat.settings.injectLatestThought = document.getElementById('inject-thought-toggle').checked;        
         chat.settings.offlineMinLength = parseInt(document.getElementById('offline-min-length-input').value) || 100;
         chat.settings.offlineMaxLength = parseInt(document.getElementById('offline-max-length-input').value) || 300;
         chat.settings.offlinePresetId = document.getElementById('offline-preset-select').value || null;
