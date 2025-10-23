@@ -1,13 +1,15 @@
 // Service Worker 文件 (sw.js)
 
 // 缓存的版本号，当你更新了任何需要缓存的文件时，都需要更改这个版本号
-const CACHE_VERSION = 'v1.4.12';
+const CACHE_VERSION = 'v1.4.13';
 const CACHE_NAME = `ephone-cache-${CACHE_VERSION}`;
 
 // 需要被缓存的文件的列表
 // 我已经根据你的 HTML 文件，帮你把所有用到的外部 JS 和图片都列出来了
 const URLS_TO_CACHE = [
   './index.html', // 缓存你的主页面
+  './style.css',
+  './script.js',
   'https://unpkg.com/dexie/dist/dexie.js',
   'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
   'https://phoebeboo.github.io/mewoooo/pp.js',
