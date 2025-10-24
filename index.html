@@ -452,6 +452,13 @@
           style="background-color: #ffebee; color: #c62828; border-color: #ef9a9a; margin-top: 10px;">删除世界书</button><button class="form-button form-button-secondary" id="clear-specific-data-btn"
           style="background-color: #ffcdd2; color: #b71c1c; border-color: #ef9a9a; margin-top: 10px;">高级数据清理</button><button class="form-button form-button-secondary" id="check-and-fix-data-btn"
           style="background-color: #e3f2fd; color: #0d47a1; border-color: #bbdefb; margin-top: 10px;">数据检查与修复</button> <input id="import-data-input" type="file" accept="application/json" hidden>
+<hr style="margin: 30px 0; opacity: 0.3;">
+<h3 style="border-bottom: 1px solid #eee; padding-bottom: 10px;">应用更新</h3>
+<p style="font-size: 14px; color: #666; background-color: #f0f0f0; padding: 10px; border-radius: 8px;">
+    如果应用有新版本，点击这里强制刷新。
+</p>
+<button class="form-button" id="check-update-btn">检查更新</button>
+<span id="update-status" style="font-size: 12px; color: var(--text-secondary); text-align: center; margin-top: 10px; display: block;"></span>
       </div>
     </div>
     <div id="data-clear-wizard-modal" class="modal">
@@ -1779,3 +1786,5 @@
   </audio><audio id="tts-audio-player" style="display:none;"></audio>
 </body>
 </html>
+
+
