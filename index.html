@@ -713,8 +713,7 @@
       </div>
       <div id="sticker-panel">
         <div id="sticker-panel-header"> <span class="panel-btn" id="close-sticker-panel-btn">取消</span> <span class="title">我的表情</span>
-          <div style="display: flex; gap: 10px;"> <span class="panel-btn" id="manage-sticker-categories-btn">分类</span> <span class="panel-btn" id="manage-stickers-btn">管理</span> <span class="panel-btn" id="add-sticker-batch-btn">批量</span> <span class="panel-btn" id="add-sticker-url-btn">URL</span>
-            <span class="panel-btn" id="upload-sticker-btn">上传</span> </div>
+          <div style="display: flex; gap: 10px;"> <span class="panel-btn" id="manage-sticker-categories-btn">分类</span> <span class="panel-btn" id="manage-stickers-btn">管理</span> <span class="panel-btn" id="add-sticker-batch-btn">批量</span> <span class="panel-btn" id="upload-sticker-btn">上传</span> </div>
         </div>
         <div id="sticker-category-tabs"></div>
         <div id="sticker-search-container"> <input type="search" id="sticker-search-input" placeholder="搜索表情名称..."></div>
@@ -1781,10 +1780,26 @@
       </div>
       <div class="modal-footer"> <button class="cancel" id="cancel-shopping-settings-btn">取消</button> <button class="save" id="save-shopping-settings-btn">保存</button> </div>
     </div>
-  </div><audio id="silent-audio-player" loop preload="auto" style="display:none;">
+  </div>
+  <div id="sticker-binding-modal" class="modal">
+    <div class="modal-content" style="height: 70%;">
+      <div class="modal-header">
+        <span>绑定分类到聊天</span>
+      </div>
+      <div class="modal-body" id="sticker-binding-chat-list" style="padding: 0;">
+        <!-- 聊天列表将在此处动态渲染 -->
+      </div>
+      <div class="modal-footer">
+        <button class="cancel" id="cancel-sticker-binding-btn">取消</button>
+        <button class="save" id="save-sticker-binding-btn">保存</button>
+      </div>
+    </div>
+  </div>
+<audio id="silent-audio-player" loop preload="auto" style="display:none;">
     <source src="https://phoebeboo.github.io/mewoooo/1-second-of-silence.mp3" type="audio/mpeg">
   </audio><audio id="tts-audio-player" style="display:none;"></audio>
 </body>
 </html>
+
 
 
