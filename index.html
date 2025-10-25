@@ -444,9 +444,19 @@
         <h3 style="border-bottom: 1px solid #eee; padding-bottom: 10px;">生图功能设置</h3>
         <div class="form-group" style="display: flex; justify-content: space-between; align-items: center;"> <label for="enable-ai-drawing-switch" style="margin-bottom: 0;"> 启用AI生图功能 <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;">
               关闭后，所有需要AI生成的图片（动态、头像等）都将显示为占位图，以节省流量和API费用。 </p> </label> <label class="toggle-switch"> <input type="checkbox" id="enable-ai-drawing-switch"> <span class="slider"></span> </label> </div>
-        <hr style="margin: 30px 0; opacity: 0.3;">
-        <h3 style="border-bottom: 1px solid #eee; padding-bottom: 10px;">存储空间优化</h3><button class="form-button form-button-secondary" id="compress-images-btn" style="background-color: #e8f5e9; color: #2e7d32; border-color: #c8e6c9;"> 一键压缩本地图片</button>
-        <p style="font-size: 12px; color: #8a8a8a; margin-top: 8px; line-height: 1.5;"> 此功能会将您所有本地上传的图片（如头像、表情包、聊天图片、头像框、组件图等）压缩为JPEG格式，以大幅减小数据体积。 <br><strong style="color: #ff3b30;">警告：这是一个有损压缩且不可逆的操作，会轻微降低图片质量。建议操作前先备份数据。</strong></p>
+<hr style="margin: 30px 0; opacity: 0.3;">
+        <h3 style="border-bottom: 1px solid #eee; padding-bottom: 10px;">存储空间优化</h3>
+
+        <p id="total-image-size-display" style="font-size: 14px; color: var(--text-secondary); margin-bottom: 15px; text-align: center;">
+            正在计算本地图片总大小...
+        </p>
+        <button class="form-button form-button-secondary" id="compress-images-btn" style="background-color: #e8f5e9; color: #2e7d32; border-color: #c8e6c9;">
+             一键压缩本地图片
+        </button>
+        <p style="font-size: 12px; color: #8a8a8a; margin-top: 8px; line-height: 1.5;">
+            此功能会将您所有本地上传的图片（如头像、表情包、聊天图片、头像框、组件图等）压缩为JPEG格式，以大幅减小数据体积。
+            <br><strong style="color: #ff3b30;">警告：这是一个有损压缩且不可逆的操作，会轻微降低图片质量。建议操作前先备份数据。</strong>
+        </p>
         <hr style="margin: 30px 0; opacity: 0.3;"> <button class="form-button" id="save-api-settings-btn" style="margin-top: 20px;">保存所有设置</button> <button class="form-button" id="export-data-btn">导出数据</button> <button class="form-button" id="import-btn">导入备份文件</button><button
           class="form-button form-button-secondary" id="cleanup-data-btn" style="background-color: #ffebee; color: #c62828; border-color: #ef9a9a; margin-top: 10px;">清理冗余数据</button><button class="form-button form-button-secondary" id="delete-world-books-btn"
           style="background-color: #ffebee; color: #c62828; border-color: #ef9a9a; margin-top: 10px;">删除世界书</button><button class="form-button form-button-secondary" id="clear-specific-data-btn"
@@ -1800,6 +1810,7 @@
   </audio><audio id="tts-audio-player" style="display:none;"></audio>
 </body>
 </html>
+
 
 
 
