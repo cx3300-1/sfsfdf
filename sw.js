@@ -1,7 +1,7 @@
 // Service Worker 文件 (sw.js)
 
 // 👇 *** 关键：每次更新，都必须修改这个版本号 ***
-const CACHE_VERSION = 'v1.4.21'; // 比如从 v1.1 改成 v1.2
+const CACHE_VERSION = 'v1.5'; // 比如从 v1.1 改成 v1.2
 const CACHE_NAME = `ephone-cache-${CACHE_VERSION}`;
 
 // 需要被缓存的文件的列表
@@ -64,11 +64,28 @@ self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') {
     return;
   }
-  
+
+  const url = new URL(event.request.url);
+
+  // --- 👇 新增的规则：开始 👇 ---
+  // 如果请求的是 update-notice.html，则强制从网络获取，
+  // 绕过 Service Worker 缓存和浏览器的 HTTP 缓存。
+  if (url.pathname.endsWith('update-notice.html')) {
+    console.log('SW: 强制从网络获取 update-notice.html...');
+    event.respondWith(
+      // 使用 'no-store' 策略来确保获取到的是最新版本
+      fetch(event.request, { cache: 'no-store' })
+    );
+    return; // 结束，不执行下面的缓存逻辑
+  }
+  // --- 👆 新增的规则：结束 👆 ---
+
+  // (你原来的缓存优先逻辑，用于处理所有其他文件)
   event.respondWith(
     caches.match(event.request)
       .then(cachedResponse => {
         if (cachedResponse) {
+          // 如果缓存中有，直接返回缓存
           return cachedResponse;
         }
         // 如果缓存中没有，则从网络请求
@@ -80,8 +97,7 @@ self.addEventListener('fetch', event => {
   );
 });
 
-// --- 👇【新增代码】---
-// 监听来自客户端（script.js）的消息
+// 4. 监听来自客户端（script.js）的消息 (保持不变)
 self.addEventListener('message', event => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     console.log('SW 收到了 SKIP_WAITING 消息，将立即激活...');
