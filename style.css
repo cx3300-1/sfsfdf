@@ -399,6 +399,35 @@
         #remove-bg-btn { padding: 8px 12px; border: 1px solid #ff3b30; color: #ff3b30; background-color: #fff; border-radius: 5px; cursor: pointer; font-size: 14px; display: none; }
         .ai-generated-image { max-width: 180px; border-radius: 12px; display: block; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
         .ai-generated-image:hover { transform: scale(1.05); box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        
+        /* RealImag/NovelAI图片在私聊/群聊消息气泡里的样式 */
+        .realimag-image {
+            max-width: 250px;
+            max-height: 250px;
+            width: auto;
+            height: auto;
+            display: block;
+            border-radius: 10px;
+            object-fit: cover;
+            background-color: #f8f8f8;
+            min-width: 100px;
+            min-height: 100px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .realimag-image:hover {
+            transform: scale(1.02);
+        }
+        
+        .message-bubble.is-realimag .content {
+            padding: 5px;
+            background: transparent;
+            box-shadow: none;
+            border: none;
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+        }
+        
         .voice-message-body { display: flex; align-items: center; cursor: pointer; padding: 8px 12px; min-width: 80px; max-width: 200px; }
         .message-bubble.user .voice-message-body { color: #1a3d00; flex-direction: row-reverse; }
         .message-bubble.ai .voice-message-body { color: var(--text-primary); }
@@ -7894,5 +7923,128 @@ input, textarea, select {
     font-weight: 600;
     color: var(--text-primary); /* 让数字更醒目 */
 }
+
+/* ▼▼▼ RealImag多图布局样式 ▼▼▼ */
+/* 多图容器 */
+.post-images-grid {
+    display: grid;
+    gap: 8px;  /* 图片之间的固定间距 */
+    margin-top: 10px;
+}
+
+/* 单张图片 - 大图，等比例缩放 */
+.post-images-grid.grid-1 {
+    grid-template-columns: 1fr;
+    justify-items: start;
+}
+.post-images-grid.grid-1 .realimag-image,
+.post-images-grid.grid-1 .naiimag-image {
+    max-width: 280px;
+    max-height: 280px;
+    width: auto;
+    height: auto;
+}
+
+/* 2张图片 - 横向并排，等比例缩放 */
+.post-images-grid.grid-2 {
+    grid-template-columns: auto auto;
+    gap: 5px;
+    justify-content: start;
+}
+.post-images-grid.grid-2 .realimag-image,
+.post-images-grid.grid-2 .naiimag-image {
+    max-width: 135px;
+    max-height: 135px;
+    width: auto;
+    height: auto;
+}
+
+/* 3张图片 - 横向排列，等比例缩放 */
+.post-images-grid.grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+}
+.post-images-grid.grid-3 .realimag-image {
+    max-width: 130px;
+    max-height: 130px;
+    width: auto;
+    height: auto;
+}
+
+/* 4张图片 - 2x2方格，等比例缩放 */
+.post-images-grid.grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 5px;
+}
+.post-images-grid.grid-4 .realimag-image {
+    max-width: 195px;
+    max-height: 195px;
+    width: auto;
+    height: auto;
+}
+
+/* 5张图片 - 上2下3，等比例缩放 */
+.post-images-grid.grid-5 {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 5px;
+}
+.post-images-grid.grid-5 .realimag-image:nth-child(1),
+.post-images-grid.grid-5 .realimag-image:nth-child(2) {
+    grid-column: span 3;
+    max-width: 195px;
+    max-height: 195px;
+    width: auto;
+    height: auto;
+}
+.post-images-grid.grid-5 .realimag-image:nth-child(n+3) {
+    grid-column: span 2;
+    max-width: 130px;
+    max-height: 130px;
+    width: auto;
+    height: auto;
+}
+
+/* 6张图片 - 3x2网格，等比例缩放 */
+.post-images-grid.grid-6 {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+}
+.post-images-grid.grid-6 .realimag-image {
+    max-width: 130px;
+    max-height: 130px;
+    width: auto;
+    height: auto;
+}
+
+/* 7-9张图片 - 3x3九宫格，等比例缩放 */
+.post-images-grid.grid-7,
+.post-images-grid.grid-8,
+.post-images-grid.grid-9 {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+}
+.post-images-grid.grid-7 .realimag-image,
+.post-images-grid.grid-8 .realimag-image,
+.post-images-grid.grid-9 .realimag-image {
+    max-width: 130px;
+    max-height: 130px;
+    width: auto;
+    height: auto;
+}
+
+/* 图片基础样式 - 完整显示，等比例缩放，不裁剪 */
+.post-images-grid .realimag-image,
+.post-images-grid .naiimag-image {
+    object-fit: contain;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+.post-images-grid .realimag-image:hover,
+.post-images-grid .naiimag-image:hover {
+    transform: scale(1.05);
+}
+/* ▲▲▲ RealImag多图布局样式结束 ▲▲▲ */
 
 
