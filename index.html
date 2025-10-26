@@ -18,6 +18,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
   <script src="https://phoebeboo.github.io/mewoooo/pp.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/streamsaver@2.0.6/StreamSaver.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
   <script src="script.js" defer="defer"></script>
 </head>
 <body>
@@ -444,6 +445,75 @@
         <h3 style="border-bottom: 1px solid #eee; padding-bottom: 10px;">生图功能设置</h3>
         <div class="form-group" style="display: flex; justify-content: space-between; align-items: center;"> <label for="enable-ai-drawing-switch" style="margin-bottom: 0;"> 启用AI生图功能 <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;">
               关闭后，所有需要AI生成的图片（动态、头像等）都将显示为占位图，以节省流量和API费用。 </p> </label> <label class="toggle-switch"> <input type="checkbox" id="enable-ai-drawing-switch"> <span class="slider"></span> </label> </div>
+<!-- ▼▼▼ NovelAI 图像生成系统配置 ▼▼▼ -->
+<hr style="margin:20px 0; opacity:.3">
+<div class="form-group" style="display: flex; justify-content: space-between; align-items: center;">
+    <label for="novelai-switch" style="margin-bottom: 0;">
+        启用 NovelAI 图像生成
+        <p style="font-size: 12px; font-weight: normal; color: #666; margin-top: 5px;">
+            开启后可使用NovelAI官方API生成高质量动漫风格图像（必开🔮）
+        </p>
+        <p style="font-size: 12px; font-weight: normal; color: #666; margin-top: 5px;">
+            1. 三击下载图片，下面可测试模型或关键词画师串
+        </p>
+        <p style="font-size: 12px; font-weight: normal; color: #666; margin-top: 5px;">
+            2. 429是novel的访问频繁错误，等待几秒重新即可
+        </p>
+        <p style="font-size: 12px; font-weight: normal; color: #666; margin-top: 5px;">
+            3. 403是多人共号限制，限制oplus免费出小图但可扣点数
+        </p>
+        <p style="font-size: 12px; font-weight: normal; color: #666; margin-top: 5px;">
+            4. 403也会因为没开🔮报错，实在不行可更换出图尺寸
+        </p>
+        <p style="font-size: 12px; font-weight: normal; color: #666; margin-top: 5px;">
+            5. 401是key没权限，检查key是否正确
+        </p>
+        <p style="font-size: 12px; font-weight: normal; color: #666; margin-top: 5px;">
+            6. 生成失败:Failed to fetch是跨域限制，下方设置里换代理
+      </p>
+    </label>
+    <label class="toggle-switch">
+        <input type="checkbox" id="novelai-switch">
+        <span class="slider"></span>
+    </label>
+</div>
+
+<div id="novelai-details" style="display: none;">
+    <div class="form-group">
+        <label for="novelai-model" style="color: #333;">NovelAI 模型</label>
+        <select id="novelai-model" style="background-color: #f8f9fa; color: #333; border: 1px solid #ccc; padding: 8px; border-radius: 4px;">
+            <option value="nai-diffusion-4-curated-preview">NAI Diffusion V4.5 Curated (精选版无nsfw)</option>
+            <option value="nai-diffusion-4-5-full">NAI Diffusion V4.5 Full（完整版含nsfw）</option>
+            <option value="nai-diffusion-3">NAI Diffusion Anime V3（旧版）</option>
+            <option value="nai-diffusion-furry-3">NAI Diffusion Furry V3（旧旧版）</option>
+        </select>
+        <p style="font-size: 12px; color: #666; margin-top: 5px;">
+            💡 必须有oplus订阅的apikey才可以使用！
+        </p>
+    </div>
+
+    <div class="form-group">
+        <label for="novelai-api-key" style="color: #333;">NovelAI API Key</label>
+        <div style="position: relative;">
+            <input type="password" id="novelai-api-key" placeholder="pst-xxxxxxxxxxxxxxxx" style="background-color: #f8f9fa; color: #333; border: 1px solid #ccc; padding-right: 40px;">
+            <span id="novelai-key-toggle" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; user-select: none; font-size: 18px;">🧐</span>
+        </div>
+        <p style="font-size: 12px; color: #666; margin-top: 5px;">
+            💡 在 <a href="https://novelai.net" target="_blank" style="color: #007bff;">NovelAI官网</a> 获取API Key
+        </p>
+    </div>
+
+    <div style="display: flex; gap: 10px; margin-top: 15px;">
+        <button type="button" id="novelai-settings-btn" style="flex: 1; background-color: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
+            ⚙️ 生成设置
+        </button>
+        <button type="button" id="novelai-test-btn" style="flex: 1; background-color: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
+            🧪 测试生成
+        </button>
+    </div>
+</div>
+<!-- ▲▲▲ NovelAI 图像生成系统配置结束 ▲▲▲ -->
+
 <hr style="margin: 30px 0; opacity: 0.3;">
         <h3 style="border-bottom: 1px solid #eee; padding-bottom: 10px;">存储空间优化</h3>
 
@@ -462,13 +532,7 @@
           style="background-color: #ffebee; color: #c62828; border-color: #ef9a9a; margin-top: 10px;">删除世界书</button><button class="form-button form-button-secondary" id="clear-specific-data-btn"
           style="background-color: #ffcdd2; color: #b71c1c; border-color: #ef9a9a; margin-top: 10px;">高级数据清理</button><button class="form-button form-button-secondary" id="check-and-fix-data-btn"
           style="background-color: #e3f2fd; color: #0d47a1; border-color: #bbdefb; margin-top: 10px;">数据检查与修复</button> <input id="import-data-input" type="file" accept="application/json" hidden>
-<hr style="margin: 30px 0; opacity: 0.3;">
-<h3 style="border-bottom: 1px solid #eee; padding-bottom: 10px;">应用更新</h3>
-<p style="font-size: 14px; color: #666; background-color: #f0f0f0; padding: 10px; border-radius: 8px;">
-    如果应用有新版本，点击这里强制刷新。
-</p>
-<button class="form-button" id="check-update-btn">检查更新</button>
-<span id="update-status" style="font-size: 12px; color: var(--text-secondary); text-align: center; margin-top: 10px; display: block;"></span>
+
       </div>
     </div>
     <div id="data-clear-wizard-modal" class="modal">
@@ -1070,12 +1134,88 @@
         <div class="form-group" id="group-members-group"><label>群成员人设</label>
           <div id="group-members-settings"></div> <button id="manage-members-btn" class="form-button form-button-secondary" style="margin-top: 15px;">管理群成员</button>
         </div>
+        
+        <div class="form-group" id="group-nai-settings-group" style="display: none;">
+        <hr style="opacity: 0.2; margin: 20px 0;">
+        <label style="font-weight: 600; color: var(--accent-color);">NAI出图设置</label>
+        <p style="font-size: 12px; color: #666; margin-top: 5px;">
+            为当前角色配置专属的NovelAI出图提示词
+        </p>
+        
+        <div style="margin-top: 15px;">
+            <label style="font-weight: 500; color: #333;">提示词来源</label>
+            <div style="display: flex; gap: 15px; margin-top: 10px;">
+                <label style="display: flex; align-items: center; cursor: pointer;">
+                    <input type="radio" name="group-nai-prompt-source" value="system" checked style="width: auto; margin-right: 8px;">
+                    <span>使用系统设置</span>
+                </label>
+                <label style="display: flex; align-items: center; cursor: pointer;">
+                    <input type="radio" name="group-nai-prompt-source" value="character" style="width: auto; margin-right: 8px;">
+                    <span>使用当前角色配置</span>
+                </label>
+            </div>
+        </div>
+        
+        <button id="group-character-nai-prompts-btn" class="form-button form-button-secondary" style="width: 100%; margin-top: 15px;">配置角色专属提示词</button>
+    </div>
+        
         <div class="form-group" id="tts-enable-group">
           <div style="display: flex; justify-content: space-between; align-items: center;"> <label for="enable-tts-switch" style="margin-bottom: 0;"> 启用语音合成 (TTS) <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;"> 关闭后，即使AI回复包含 [V] 前缀，也不会生成语音消息。 </p> </label>
             <label class="toggle-switch"> <input type="checkbox" id="enable-tts-switch"> <span class="slider"></span> </label>
           </div>
         </div>
         <div class="form-group" id="ai-voice-id-group"> <label for="ai-voice-id-input">语音 ID (Minimax voice_id)</label> <input type="text" id="ai-voice-id-input" placeholder="例如: female-shaonv-jingpin"></div>
+        
+        <!-- NAI出图设置（单聊显示） -->
+    <div class="form-group" id="nai-character-settings-group" style="display: none;">
+        <hr style="opacity: 0.2; margin: 20px 0;">
+        <label style="font-weight: 600; color: var(--accent-color);">NAI出图设置</label>
+        <p style="font-size: 12px; color: #666; margin-top: 5px;">
+            为当前角色配置专属的NovelAI出图提示词
+        </p>
+        
+        <div style="margin-top: 15px;">
+            <label style="font-weight: 500; color: #333;">提示词来源</label>
+            <div style="display: flex; gap: 15px; margin-top: 10px;">
+                <label style="display: flex; align-items: center; cursor: pointer;">
+                    <input type="radio" name="nai-prompt-source" value="system" checked style="width: auto; margin-right: 8px;">
+                    <span>使用系统设置</span>
+                </label>
+                <label style="display: flex; align-items: center; cursor: pointer;">
+                    <input type="radio" name="nai-prompt-source" value="character" style="width: auto; margin-right: 8px;">
+                    <span>使用当前角色配置</span>
+                </label>
+            </div>
+        </div>
+        
+        <button id="character-nai-prompts-btn" class="form-button form-button-secondary" style="width: 100%; margin-top: 15px;">配置角色专属提示词</button>
+    </div>
+
+    <!-- NAI出图设置（群聊显示） -->
+    <div class="form-group" id="group-nai-settings-group" style="display: none;">
+        <hr style="opacity: 0.2; margin: 20px 0;">
+        <label style="font-weight: 600; color: var(--accent-color);">NAI出图设置</label>
+        <p style="font-size: 12px; color: #666; margin-top: 5px;">
+            为当前角色配置专属的NovelAI出图提示词
+        </p>
+        
+        <div style="margin-top: 15px;">
+            <label style="font-weight: 500; color: #333;">提示词来源</label>
+            <div style="display: flex; gap: 15px; margin-top: 10px;">
+                <label style="display: flex; align-items: center; cursor: pointer;">
+                    <input type="radio" name="group-nai-prompt-source" value="system" checked style="width: auto; margin-right: 8px;">
+                    <span>使用系统设置</span>
+                </label>
+                <label style="display: flex; align-items: center; cursor: pointer;">
+                    <input type="radio" name="group-nai-prompt-source" value="character" style="width: auto; margin-right: 8px;">
+                    <span>使用当前角色配置</span>
+                </label>
+            </div>
+        </div>
+        
+        <button id="group-character-nai-prompts-btn" class="form-button form-button-secondary" style="width: 100%; margin-top: 15px;">配置角色专属提示词</button>
+    </div>
+
         <div class="form-group"> <label for="max-memory">短期记忆（上下文）条数</label> <input type="number" id="max-memory" value="10"> </div>
         <div class="form-group"> <label for="linked-memory-count">挂载记忆条数</label> <input type="number" id="linked-memory-count" value="10">
           <p style="font-size: 12px; color: #8a8a8a; margin-top: 8px; line-height: 1.5;"> • 每次调用时，从每个“挂载的聊天”中提取最后几条记录作为参考记忆。 <br> • 建议值 5-20。值越大记忆越全，但API费用越高、响应越慢。 </p>
@@ -1805,11 +1945,426 @@
       </div>
     </div>
   </div>
+<!-- ▼▼▼ NovelAI 生成设置弹窗 ▼▼▼ -->
+<div id="novelai-settings-modal" class="modal" style="display: none;">
+    <div class="modal-content" style="max-width: 600px; width: 90%; max-height: 85vh; overflow-y: auto;">
+        <div class="modal-header">
+            <span>NovelAI 生成设置</span>
+            <span class="close" id="close-novelai-settings" style="cursor: pointer; float: right; font-size: 28px; font-weight: bold;">&times;</span>
+        </div>
+        <div class="modal-body" style="padding: 20px;">
+            <div class="form-group">
+                <label style="color: #333;">图像尺寸（oplus可无限出小图）</label>
+                <select id="nai-resolution" style="background-color: #f8f9fa; color: #333; border: 1px solid #ccc; padding: 8px; width: 100%; border-radius: 4px;">
+                    <optgroup label="小">
+                        <option value="512x768">纵向 (512x768)</option>
+                        <option value="768x512">横向 (768x512)</option>
+                        <option value="640x640">正方形 (640x640)</option>
+                    </optgroup>
+                    <optgroup label="正常">
+                        <option value="832x1216">竖图 (832x1216)</option>
+                        <option value="1216x832">横图 (1216x832)</option>
+                        <option value="1024x1024" selected>方图 (1024x1024)</option>
+                    </optgroup>
+                    <optgroup label="壁纸">
+                        <option value="1088x1920">纵向 (1088x1920)</option>
+                        <option value="1920x1088">风景 (1920x1088)</option>
+                    </optgroup>
+                </select>
+                <small style="color: #666;">建议使用官方支持的标准尺寸以获得最佳效果</small>
+            </div>
+
+            <div class="form-group">
+                <label style="color: #333;">采样步数 (Steps)</label>
+                <input type="number" id="nai-steps" value="28" min="1" max="50" style="background-color: #f8f9fa; color: #333; border: 1px solid #ccc; padding: 8px; width: 100%; border-radius: 4px;">
+                <small style="color: #666;">推荐值: 28 (值越高质量越好但耗时越长)</small>
+            </div>
+
+            <div class="form-group">
+                <label style="color: #333;">提示词相关性 (CFG Scale)</label>
+                <input type="number" id="nai-cfg-scale" value="5" min="1" max="20" step="0.5" style="background-color: #f8f9fa; color: #333; border: 1px solid #ccc; padding: 8px; width: 100%; border-radius: 4px;">
+                <small style="color: #666;">推荐值: 5 (控制图像与提示词的相关程度)</small>
+            </div>
+
+            <div class="form-group">
+                <label style="color: #333;">采样器 (Sampler)</label>
+                <select id="nai-sampler" style="background-color: #f8f9fa; color: #333; border: 1px solid #ccc; padding: 8px; width: 100%; border-radius: 4px;">
+                    <option value="k_euler">Euler</option>
+                    <option value="k_euler_ancestral" selected>Euler Ancestral</option>
+                    <option value="k_dpmpp_2s_ancestral">DPM++ 2S Ancestral</option>
+                    <option value="k_dpmpp_2m">DPM++ 2M</option>
+                    <option value="k_dpmpp_sde">DPM++ SDE</option>
+                    <option value="ddim">DDIM</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label style="color: #333;">随机种子 (Seed)</label>
+                <input type="number" id="nai-seed" value="-1" min="-1" max="9999999999" style="background-color: #f8f9fa; color: #333; border: 1px solid #ccc; padding: 8px; width: 100%; border-radius: 4px;">
+                <small style="color: #666;">-1 表示随机，固定种子可复现相同图像</small>
+            </div>
+
+            <div class="form-group">
+                <label style="color: #333;">负面提示词预设 (UC Preset)</label>
+                <select id="nai-uc-preset" style="background-color: #f8f9fa; color: #333; border: 1px solid #ccc; padding: 8px; width: 100%; border-radius: 4px;">
+                    <option value="0">Preset 0 - Heavy</option>
+                    <option value="1" selected>Preset 1 - Light</option>
+                    <option value="2">Preset 2 - Human Focus</option>
+                    <option value="3">Preset 3 - None</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label style="color: #333;">质量标签</label>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" id="nai-quality-toggle" checked style="width: auto;">
+                    <span style="color: #666; font-size: 14px;">自动添加质量提升标签</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label style="color: #333;">SMEA (提升细节)</label>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" id="nai-smea" checked style="width: auto;">
+                    <span style="color: #666; font-size: 14px;">启用SMEA增强</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label style="color: #333;">SMEA DYN (动态优化)</label>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" id="nai-smea-dyn" style="width: auto;">
+                    <span style="color: #666; font-size: 14px;">启用动态SMEA</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label style="color: #333;">默认正面提示词</label>
+                <textarea id="nai-default-positive" rows="3" style="background-color: #f8f9fa; color: #333; border: 1px solid #ccc; padding: 8px; width: 100%; border-radius: 4px; resize: vertical;" placeholder="masterpiece, best quality, 1girl, beautiful...">masterpiece, best quality, 1girl, beautiful, detailed face, detailed eyes, long hair, anime style</textarea>
+                <small style="color: #666;">此提示词将在生成时自动使用（如果测试弹窗中未填写）</small>
+            </div>
+
+            <div class="form-group">
+                <label style="color: #333;">默认负面提示词</label>
+                <textarea id="nai-default-negative" rows="3" style="background-color: #f8f9fa; color: #333; border: 1px solid #ccc; padding: 8px; width: 100%; border-radius: 4px; resize: vertical;" placeholder="lowres, bad anatomy, bad hands, text, error...">lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry</textarea>
+            </div>
+
+            <div class="form-group" style="border-top: 1px solid #ddd; padding-top: 15px; margin-top: 15px;">
+                <label style="color: #333;">🌐 CORS 代理设置</label>
+                <select id="nai-cors-proxy" style="background-color: #f8f9fa; color: #333; border: 1px solid #ccc; padding: 8px; width: 100%; border-radius: 4px;">
+                    <option value="">❌ 直连（无代理）</option>
+                    <option value="https://corsproxy.io/?" selected>✅ corsproxy.io（推荐）</option>
+                    <option value="https://api.allorigins.win/raw?url=">allorigins.win</option>
+                    <option value="https://cors-anywhere.herokuapp.com/">cors-anywhere（需激活）</option>
+                    <option value="custom">🔧 自定义代理</option>
+                </select>
+                <small style="color: #e74c3c; display: block; margin-top: 8px;">
+                    ⚠️ 本地运行会遇到CORS跨域问题，需使用代理。推荐使用 corsproxy.io
+                </small>
+            </div>
+
+            <div id="nai-custom-proxy-group" class="form-group" style="display: none;">
+                <label style="color: #333;">自定义代理地址</label>
+                <input type="text" id="nai-custom-proxy-url" placeholder="https://your-proxy.com/?" style="background-color: #f8f9fa; color: #333; border: 1px solid #ccc; padding: 8px; width: 100%; border-radius: 4px;">
+                <small style="color: #666;">代理URL应以 / 或 ? 结尾，例如：https://proxy.com/?</small>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button id="reset-nai-settings-btn" class="form-button form-button-secondary" style="margin-right: 10px;">恢复默认</button>
+            <button id="save-nai-settings-btn" class="form-button form-button-secondary">保存设置</button>
+        </div>
+    </div>
+</div>
+<!-- ▲▲▲ NovelAI 生成设置弹窗结束 ▲▲▲ -->
+
+<!-- ▼▼▼ NovelAI 测试生成弹窗 ▼▼▼ -->
+<div id="novelai-test-modal" class="modal" style="display: none;">
+    <div class="modal-content" style="max-width: 700px; width: 90%; max-height: 90vh; overflow-y: auto;">
+        <div class="modal-header">
+            <span>🖼️ NovelAI 测试生成</span>
+            <span class="close" id="close-novelai-test" style="cursor: pointer; float: right; font-size: 28px; font-weight: bold;">&times;</span>
+        </div>
+        <div class="modal-body" style="padding: 20px;">
+            <div class="form-group">
+                <label style="color: #333;">正面提示词（此处提示词仅用于该弹窗测试）</label>
+                <textarea id="nai-test-prompt" rows="4" style="background-color: #f8f9fa; color: #333; border: 1px solid #ccc; padding: 10px; width: 100%; border-radius: 4px; resize: vertical;" placeholder="1girl, solo, long hair, blue eyes, smile...">1girl, solo, long hair, blue eyes, smile, outdoors, cherry blossoms, spring</textarea>
+            </div>
+
+            <div class="form-group">
+                <label style="color: #333;">负面提示词（可选，留空使用默认）</label>
+                <textarea id="nai-test-negative" rows="3" style="background-color: #f8f9fa; color: #333; border: 1px solid #ccc; padding: 10px; width: 100%; border-radius: 4px; resize: vertical;" placeholder="留空将使用设置中的默认负面提示词"></textarea>
+            </div>
+
+            <div style="text-align: center; margin: 20px 0;">
+                <button id="nai-generate-btn" style="background-color: #007bff; color: white; border: none; padding: 12px 30px; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold;">
+                    生成图像
+                </button>
+            </div>
+
+            <div id="nai-test-status" style="text-align: center; color: #666; margin: 15px 0; display: none;">
+                正在生成中，请稍候...
+            </div>
+
+            <div id="nai-test-result" style="display: none; margin-top: 20px;">
+                <div style="font-weight: bold; color: #333; margin-bottom: 10px;">生成结果：</div>
+                <div style="text-align: center; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #e9ecef;">
+                    <img id="nai-result-image" style="max-width: 100%; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                </div>
+                <div style="margin-top: 10px; text-align: center;">
+                    <button id="nai-download-btn" class="form-button-secondary" style="margin: 0;">下载图像</button>
+                </div>
+            </div>
+
+            <div id="nai-test-error" style="display: none; margin-top: 15px; padding: 12px; background: #f8d7da; color: #721c24; border-radius: 6px; border: 1px solid #f5c6cb;"></div>
+        </div>
+        <div class="modal-footer">
+            <button id="close-nai-test-btn" class="form-button">关闭</button>
+        </div>
+    </div>
+</div>
+<!-- ▲▲▲ NovelAI 测试生成弹窗结束 ▲▲▲ -->
+
+<!-- ▼▼▼ 角色专属NAI出图设置弹窗 ▼▼▼ -->
+<div id="character-nai-prompts-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <span>角色专属NAI提示词配置</span>
+            <span class="close" id="close-character-nai-prompts" style="cursor: pointer; float: right; font-size: 28px; font-weight: bold;">&times;</span>
+        </div>
+        <div class="modal-body">
+            <p style="font-size: 13px; color: #666; margin-bottom: 20px; background-color: #f0f8ff; padding: 12px; border-radius: 6px; border-left: 3px solid #007bff;">
+                💡 这里配置的提示词仅用于当前角色的NAI出图，不影响其他角色或系统设置
+            </p>
+            
+            <div class="form-group">
+                <label for="character-nai-positive" style="color: #333; font-weight: 600;">
+                    正面提示词 (Positive Prompt)
+                </label>
+                <textarea id="character-nai-positive" rows="4" style="background-color: #f8f9fa; color: #333; border: 1px solid #ccc; padding: 10px; width: 100%; border-radius: 4px; resize: vertical; font-size: 13px;" placeholder="例如: masterpiece, best quality, 1girl, beautiful, detailed face, detailed eyes, long hair, anime style"></textarea>
+                <small style="display: block; color: #666; font-size: 12px; margin-top: 5px;">
+                    描述你希望生成的图像风格，可填入画师串
+                </small>
+            </div>
+
+            <div class="form-group">
+                <label for="character-nai-negative" style="color: #333; font-weight: 600;">
+                    负面提示词 (Negative Prompt)
+                </label>
+                <textarea id="character-nai-negative" rows="4" style="background-color: #f8f9fa; color: #333; border: 1px solid #ccc; padding: 10px; width: 100%; border-radius: 4px; resize: vertical; font-size: 13px;" placeholder="例如: lowres, bad anatomy, bad hands, text, error, missing fingers"></textarea>
+                <small style="display: block; color: #666; font-size: 12px; margin-top: 5px;">
+                    描述你希望避免的元素
+                </small>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button id="reset-character-nai-prompts-btn" class="form-button form-button-secondary" style="margin-right: 10px;">清空配置</button>
+            <button id="save-character-nai-prompts-btn" class="form-button form-button-secondary">保存</button>
+        </div>
+    </div>
+</div>
+<!-- ▲▲▲ 角色专属NAI出图设置弹窗结束 ▲▲▲ -->
+
 <audio id="silent-audio-player" loop preload="auto" style="display:none;">
     <source src="https://phoebeboo.github.io/mewoooo/1-second-of-silence.mp3" type="audio/mpeg">
   </audio><audio id="tts-audio-player" style="display:none;"></audio>
+
+<script>
+    // ========================================
+    // 🖼️ NAI图片三击下载功能（非入侵式）
+    // ========================================
+    // 功能：为所有NAI图片（realimag-image、naiimag-image）添加三击下载功能
+    // 适用场景：群聊、私聊、动态、测试弹窗等所有显示NAI图片的地方
+    // 实现方式：事件委托，不修改任何现有代码
+    // 触发方式：在图片上快速点击三次
+    // ========================================
+    
+    (function() {
+        'use strict';
+        
+        // 下载图片的核心函数
+        function downloadImage(imageSrc, filename) {
+            try {
+                // 创建一个隐藏的下载链接
+                const link = document.createElement('a');
+                link.href = imageSrc;
+                link.download = filename;
+                link.style.display = 'none';
+                
+                document.body.appendChild(link);
+                link.click();  // 触发下载
+                
+                // 短暂延迟后移除链接
+                setTimeout(() => {
+                    document.body.removeChild(link);
+                }, 100);
+                
+                console.log('✅ [NAI下载] 开始下载图片:', filename);
+                
+                // 显示下载提示
+                showDownloadToast();
+            } catch (error) {
+                console.error('❌ [NAI下载] 下载失败:', error);
+                showDownloadToast('下载失败，请重试', 'error');
+            }
+        }
+        
+        // 显示下载提示（临时Toast）
+        function showDownloadToast(message = '📥 图片下载中...', type = 'success') {
+            const toast = document.createElement('div');
+            toast.textContent = message;
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#4CAF50' : '#f44336'};
+                color: white;
+                padding: 12px 24px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                z-index: 10000;
+                font-size: 14px;
+                pointer-events: none;
+                opacity: 0;
+                transform: translateY(20px);
+                transition: all 0.3s ease;
+            `;
+            
+            document.body.appendChild(toast);
+            
+            // 动画进入
+            setTimeout(() => {
+                toast.style.opacity = '1';
+                toast.style.transform = 'translateY(0)';
+            }, 10);
+            
+            // 2秒后淡出并移除
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(-20px)';
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 2000);
+        }
+        
+        // 生成智能文件名
+        function generateFilename(imgElement) {
+            // 尝试从title属性获取prompt（用于文件名）
+            const title = imgElement.getAttribute('title') || imgElement.getAttribute('alt') || '';
+            
+            // 清理title，提取前30个有效字符
+            let cleanTitle = title
+                .replace(/[^a-zA-Z0-9\u4e00-\u9fa5\s]/g, '_')  // 保留中英文字母数字和空格
+                .replace(/\s+/g, '_')  // 空格转下划线
+                .substring(0, 30);
+            
+            if (!cleanTitle) {
+                cleanTitle = 'NAI_Image';
+            }
+            
+            // 添加时间戳（精确到秒）
+            const timestamp = new Date().toISOString()
+                .replace(/[-:]/g, '')
+                .replace('T', '_')
+                .split('.')[0];  // 格式：20250124_123045
+            
+            // 生成文件名
+            return `${cleanTitle}_${timestamp}.png`;
+        }
+        
+        // 为图片添加双击时的视觉反馈
+        function addVisualFeedback(imgElement) {
+            const originalTransform = imgElement.style.transform || '';
+            const originalTransition = imgElement.style.transition || '';
+            
+            // 添加缩放动画
+            imgElement.style.transition = 'transform 0.15s ease';
+            imgElement.style.transform = 'scale(0.95)';
+            
+            setTimeout(() => {
+                imgElement.style.transform = originalTransform;
+                setTimeout(() => {
+                    imgElement.style.transition = originalTransition;
+                }, 150);
+            }, 150);
+        }
+        
+        // 三击检测相关变量
+        let clickCount = 0;
+        let clickTimer = null;
+        let lastClickedElement = null;
+        
+        // 全局事件监听器（事件委托 - 三击触发）
+        document.addEventListener('click', function(e) {
+            const target = e.target;
+            
+            // 检查是否是NAI图片（realimag-image 或 naiimag-image）
+            if (target.tagName === 'IMG' && 
+                (target.classList.contains('realimag-image') || 
+                 target.classList.contains('naiimag-image'))) {
+                
+                // 如果点击的是同一个元素，增加计数
+                if (target === lastClickedElement) {
+                    clickCount++;
+                } else {
+                    // 点击了不同的元素，重置计数
+                    clickCount = 1;
+                    lastClickedElement = target;
+                }
+                
+                // 清除之前的定时器
+                if (clickTimer) {
+                    clearTimeout(clickTimer);
+                }
+                
+                // 如果达到三击
+                if (clickCount === 3) {
+                    // 重置计数
+                    clickCount = 0;
+                    lastClickedElement = null;
+                    
+                    // 阻止默认行为和事件冒泡
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    console.log('🖼️ [NAI下载] 检测到三击NAI图片');
+                    
+                    // 添加视觉反馈
+                    addVisualFeedback(target);
+                    
+                    // 获取图片源（可能是base64或URL）
+                    const imageSrc = target.src;
+                    
+                    if (!imageSrc || imageSrc === 'about:blank') {
+                        console.warn('⚠️ [NAI下载] 图片源为空，无法下载');
+                        showDownloadToast('图片加载中，请稍后重试', 'error');
+                        return;
+                    }
+                    
+                    // 生成文件名
+                    const filename = generateFilename(target);
+                    
+                    // 触发下载
+                    downloadImage(imageSrc, filename);
+                } else {
+                    // 设置定时器，500ms后重置计数（如果用户停止点击）
+                    clickTimer = setTimeout(() => {
+                        clickCount = 0;
+                        lastClickedElement = null;
+                    }, 500);
+                }
+            }
+        }, true);  // 使用捕获阶段，确保优先处理
+        
+        console.log('✅ [NAI下载] 三击下载功能已初始化');
+        console.log('💡 [NAI下载] 提示：三击任意NAI图片即可下载');
+    })();
+    
+    </script>
+
 </body>
 </html>
+
 
 
 
