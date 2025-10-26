@@ -8046,5 +8046,30 @@ input, textarea, select {
     transform: scale(1.05);
 }
 /* ▲▲▲ RealImag多图布局样式结束 ▲▲▲ */
+/* 【修复】解决夜间模式下浏览器和足迹页面文字颜色不正确的问题 */
+#phone-screen.dark-mode #browser-content {
+    color: #dcdcdc; /* 浏览器文章正文颜色 */
+}
+#phone-screen.dark-mode #browser-content .article-title {
+    color: #ffffff; /* 浏览器文章标题颜色 */
+}
+#phone-screen.dark-mode #browser-content .article-meta {
+    color: #8d8d92; /* 浏览器文章元数据（来源）颜色 */
+    border-bottom-color: #38383a;
+}
+#phone-screen.dark-mode .amap-item-title {
+    color: #f0f0f0; /* 足迹 - 地点标题颜色 */
+}
+#phone-screen.dark-mode .amap-item-comment {
+    color: #dcdcdc; /* 足迹 - 评论内容颜色 */
+}
+/* 【修复】CPhone 浏览器详情页在夜间模式下的文字颜色 */
+#phone-screen.dark-mode #char-article-content {
+    color: #dcdcdc; /* 设置为浅灰色，使其在深色背景上可见 */
+}
+#char-article-content {
+    color: #333; /* CPhone 浏览器文章正文 - 白天模式默认颜色 */
+}
+
 
 
