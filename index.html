@@ -19,6 +19,7 @@
   <script src="https://phoebeboo.github.io/mewoooo/pp.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/streamsaver@2.0.6/StreamSaver.min.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
   <script src="script.js" defer="defer"></script>
 </head>
 <body>
@@ -543,6 +544,48 @@
 
       </div>
     </div>
+<div id="import-options-modal" class="modal">
+  <div class="modal-content" style="height: auto;">
+    <div class="modal-header">
+      <span>发现备份文件</span>
+    </div>
+    <div class="modal-body">
+      <p>在此备份文件中找到了以下数据：</p>
+      <ul id="import-preview-list" style="text-align: left; margin-left: 20px; max-height: 200px; overflow-y: auto; background: #f9f9f9; padding: 10px; border-radius: 8px;">
+        </ul>
+      <hr style="opacity: 0.2; margin: 20px 0;">
+      <p style="font-weight: bold;">请选择导入方式：</p>
+    </div>
+    <div class="modal-footer" style="flex-direction: column; gap: 10px;">
+      <button class="save btn-danger" id="confirm-full-import-btn" style="width: 100%; background-color: #ff3b30; border-color: #ff3b30;">
+        <strong>完全导入 (覆盖所有数据)</strong>
+        <small style="display: block; font-weight: normal; opacity: 0.8;">将删除本地所有数据，并替换为备份文件中的数据。</small>
+      </button>
+      <button class="save" id="confirm-selective-import-btn" style="width: 100%;">
+        <strong>选择性导入 (合并数据)</strong>
+        <small style="display: block; font-weight: normal; opacity: 0.8;">将备份文件中的数据【添加】到您现有的数据中。</small>
+      </button>
+      <button class="cancel" id="cancel-import-options-btn" style="width: 100%; margin-top: 8px;" data-lang-key="cancel">取消</button>
+    </div>
+  </div>
+</div>
+
+<div id="selective-import-modal" class="modal">
+  <div class="modal-content" style="height: 70%;">
+    <div class="modal-header">
+      <span>选择要合并的数据</span>
+      <label style="font-size: 14px; font-weight: normal; display: flex; align-items: center; gap: 5px;">
+        <input type="checkbox" id="select-all-import-types"> 全选
+      </label>
+    </div>
+    <div class="modal-body" id="selective-import-list" style="padding: 0;">
+      </div>
+    <div class="modal-footer">
+      <button class="cancel" id="cancel-selective-import-btn" data-lang-key="cancel">取消</button>
+      <button class="save" id="confirm-merge-import-btn">确认合并</button>
+    </div>
+  </div>
+</div>
     <div id="data-clear-wizard-modal" class="modal">
       <div class="modal-content" style="height: 80%;">
         <div id="data-clear-step-1" class="wizard-step">
@@ -2407,6 +2450,7 @@
 
 </body>
 </html>
+
 
 
 
