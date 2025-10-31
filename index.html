@@ -785,7 +785,13 @@
             </svg></button><button id="read-together-btn" class="chat-action-icon-btn action-button" title="一起读书"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
               <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-            </svg></button> </div>
+            </svg></button> <button id="open-nai-gallery-btn" class="chat-action-icon-btn action-button" title="NAI画廊">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 3l1.91 5.86L20 10.9l-5.86 1.91L12 18.6l-1.91-5.86L4 10.9l5.86-1.91L12 3z"/>
+        <path d="M5 3l1.5 4.5L11 9l-4.5 1.5L5 12l-1.5-4.5L-1 6l4.5-1.5L5 3z"/>
+        <path d="M19 15l-1.5 4.5L13 21l4.5-1.5L19 18l1.5 4.5L25 21l-4.5-1.5L19 15z"/>
+    </svg>
+</button></div>
         <div id="chat-input-main-row"> <textarea id="chat-input" rows="1" placeholder="输入消息..."></textarea>
           <div id="input-actions-wrapper"> <button id="wait-reply-btn" title="等待回复"><img src="https://i.postimg.cc/q72zq80N/ECE92-BBC-BE57-48-E9-BB2-C-345-B6019-C4-B2.png" alt="等待回复"></button> <button id="send-btn" class="action-button">发送</button> </div>
         </div>
@@ -793,6 +799,26 @@
       <div id="chat-lock-overlay">
         <div id="chat-lock-content"></div>
       </div>
+<div id="nai-gallery-panel">
+    <div id="nai-gallery-panel-header">
+        <span class="panel-btn" id="close-nai-gallery-btn" data-lang-key="cancel">取消</span>
+        <span class="title">NAI画廊</span>
+        <div style="display: flex; gap: 10px;">
+            <span class="panel-btn" id="manage-nai-gallery-btn">管理</span>
+        </div>
+    </div>
+    
+    <div id="nai-gallery-grid">
+        </div>
+    
+<div id="nai-gallery-action-bar">
+    <label class="select-all-label" style="display: flex; align-items: center; gap: 5px;">
+        <input type="checkbox" id="select-all-nai-gallery-checkbox"> 全选
+    </label>
+    <button id="download-selected-nai-gallery-btn" class="action-bar-btn" style="background-color: #007bff; font-size: 14px; padding: 10px 15px;">下载 (0)</button>
+    <button id="delete-selected-nai-gallery-btn" class="action-bar-btn" style="font-size: 14px; padding: 10px 15px;">删除 (0)</button>
+</div>
+</div>
       <div id="sticker-panel">
         <div id="sticker-panel-header"> <span class="panel-btn" id="close-sticker-panel-btn"data-lang-key="cancel">取消</span> <span class="title">我的表情</span>
           <div style="display: flex; gap: 10px;"> <span class="panel-btn" id="manage-sticker-categories-btn">分类</span> <span class="panel-btn" id="manage-stickers-btn">管理</span> <span class="panel-btn" id="add-sticker-batch-btn">批量</span> <span class="panel-btn" id="upload-sticker-btn">上传</span> </div>
