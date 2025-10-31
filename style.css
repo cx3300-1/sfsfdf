@@ -8073,7 +8073,7 @@ input, textarea, select {
 #char-article-content {
     color: #333; /* CPhone 浏览器文章正文 - 白天模式默认颜色 */
 }
-/* ▼▼▼ 【新功能】NAI画廊样式 ▼▼▼ */
+
 #open-nai-gallery-btn svg path {
     fill: currentColor;
     stroke: none;
@@ -8126,23 +8126,44 @@ input, textarea, select {
     overflow-y: auto;
     padding: 15px;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 10px;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 15px;
 }
 
 .nai-gallery-item {
     position: relative;
-    aspect-ratio: 1 / 1;
-    border-radius: 10px;
-    background-size: cover;
-    background-position: center;
-    background-color: #e0e0e0;
+    display: flex;
+    flex-direction: column; 
+    align-items: center;    
+    gap: 6px;               
     cursor: pointer;
-    overflow: hidden;
+    /* 移除了背景、阴影等属性，因为它们将移到子元素上 */
+}
+/* 新增：NAI的图片容器，样式模仿 .sticker-image-container */
+.nai-image-container {
+    position: relative; /* 用于定位内部的 controls */
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background-color: white;
+    border-radius: 10px;
+    background-size: contain; /* 核心修改：保持图片完整 */
+    background-repeat: no-repeat;
+    background-position: center;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    overflow: hidden; /* 隐藏溢出的 controls */
 }
 
-.nai-gallery-item .nai-gallery-controls {
+/* 新增：NAI的文字标签，样式模仿 .sticker-name */
+.nai-gallery-name {
+    font-size: 12px;
+    color: var(--text-secondary);
+    width: 100%;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.nai-image-container .nai-gallery-controls {
     position: absolute;
     bottom: 0;
     left: 0;
@@ -8238,7 +8259,7 @@ input, textarea, select {
 #phone-screen.dark-mode #nai-gallery-action-bar .select-all-label {
     color: #f0f0f0;
 }
-/* ▲▲▲ NAI画廊样式结束 ▲▲▲ */
+
 
 
 
