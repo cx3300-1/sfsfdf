@@ -20,7 +20,7 @@
   <script src="https://cdn.jsdelivr.net/npm/streamsaver@2.0.6/StreamSaver.min.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/clarinet@0.12.6/clarinet.min.js"></script>
+
   <script src="script.js" defer="defer"></script>
 </head>
 <body>
@@ -681,6 +681,18 @@
           </div>
           <div class="form-group"> <label for="npc-name-input">NPC 昵称</label> <input type="text" id="npc-name-input" placeholder="输入NPC的常用名"> </div>
           <div class="form-group"> <label for="npc-persona-input">NPC 人设</label> <textarea id="npc-persona-input" rows="4" placeholder="详细描述这个NPC的性格、背景、说话方式等..."></textarea> </div>
+<div class="form-group" id="npc-group-section">
+            <label for="npc-group-select">NPC 分组 (用于NPC间互评)</label>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <select id="npc-group-select" style="flex-grow: 1;">
+                <option value="">-- 未分组 --</option>
+              </select>
+              <button id="manage-npc-groups-btn" type="button" class="form-button-secondary" style="margin-top: 0; padding: 12px;">管理分组</button>
+            </div>
+            <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;">
+                只有在同一个分组内的NPC才能互相看见和评论对方的动态。
+            </p>
+          </div>
           <hr style="opacity: 0.2;">
           <div class="form-group" style="display: flex; justify-content: space-between; align-items: center;"> <label for="npc-background-activity-switch" style="margin-bottom: 0;"> 启用独立后台活动 <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;">
                 允许该NPC在后台独立发表动态评论。需同时开启API设置中的总开关。 </p> </label> <label class="toggle-switch"> <input type="checkbox" id="npc-background-activity-switch"> <span class="slider"></span> </label> </div>
@@ -2250,207 +2262,28 @@
     </div>
 </div>
 <!-- ▲▲▲ 角色专属NAI出图设置弹窗结束 ▲▲▲ -->
-
+<div id="npc-group-manager-modal" class="modal">
+  <div class="modal-content" style="height: 60%;">
+    <div class="modal-header"> <span>管理NPC分组</span> </div>
+    <div class="modal-body">
+      <div class="form-group"> <label>新建分组</label>
+        <div style="display: flex; gap: 10px;"> <input type="text" id="new-npc-group-name-input" placeholder="输入分组名 (例如: 家人组, 朋友组)..." style="flex-grow: 1;"> <button id="add-new-npc-group-btn" class="form-button" style="width: auto; margin-top: 0; padding: 0 15px;"data-lang-key="add">添加</button> </div>
+      </div>
+      <hr style="opacity: 0.2;">
+      <div id="existing-npc-groups-list" style="display: flex; flex-direction: column; gap: 10px;"> </div>
+    </div>
+    <div class="modal-footer"> <button class="save" id="close-npc-group-manager-btn" style="width: 100%;"data-lang-key="done">完成</button> </div>
+  </div>
+</div>
 <audio id="silent-audio-player" loop preload="auto" style="display:none;">
     <source src="https://phoebeboo.github.io/mewoooo/1-second-of-silence.mp3" type="audio/mpeg">
   </audio><audio id="tts-audio-player" style="display:none;"></audio>
 
-<script>
-    // ========================================
-    // 🖼️ NAI图片三击下载功能（非入侵式）
-    // ========================================
-    // 功能：为所有NAI图片（realimag-image、naiimag-image）添加三击下载功能
-    // 适用场景：群聊、私聊、动态、测试弹窗等所有显示NAI图片的地方
-    // 实现方式：事件委托，不修改任何现有代码
-    // 触发方式：在图片上快速点击三次
-    // ========================================
-    
-    (function() {
-        'use strict';
-        
-        // 下载图片的核心函数
-        function downloadImage(imageSrc, filename) {
-            try {
-                // 创建一个隐藏的下载链接
-                const link = document.createElement('a');
-                link.href = imageSrc;
-                link.download = filename;
-                link.style.display = 'none';
-                
-                document.body.appendChild(link);
-                link.click();  // 触发下载
-                
-                // 短暂延迟后移除链接
-                setTimeout(() => {
-                    document.body.removeChild(link);
-                }, 100);
-                
-                console.log('✅ [NAI下载] 开始下载图片:', filename);
-                
-                // 显示下载提示
-                showDownloadToast();
-            } catch (error) {
-                console.error('❌ [NAI下载] 下载失败:', error);
-                showDownloadToast('下载失败，请重试', 'error');
-            }
-        }
-        
-        // 显示下载提示（临时Toast）
-        function showDownloadToast(message = '📥 图片下载中...', type = 'success') {
-            const toast = document.createElement('div');
-            toast.textContent = message;
-            toast.style.cssText = `
-                position: fixed;
-                bottom: 20px;
-                right: 20px;
-                background: ${type === 'success' ? '#4CAF50' : '#f44336'};
-                color: white;
-                padding: 12px 24px;
-                border-radius: 8px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-                z-index: 10000;
-                font-size: 14px;
-                pointer-events: none;
-                opacity: 0;
-                transform: translateY(20px);
-                transition: all 0.3s ease;
-            `;
-            
-            document.body.appendChild(toast);
-            
-            // 动画进入
-            setTimeout(() => {
-                toast.style.opacity = '1';
-                toast.style.transform = 'translateY(0)';
-            }, 10);
-            
-            // 2秒后淡出并移除
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transform = 'translateY(-20px)';
-                setTimeout(() => {
-                    toast.remove();
-                }, 300);
-            }, 2000);
-        }
-        
-        // 生成智能文件名
-        function generateFilename(imgElement) {
-            // 尝试从title属性获取prompt（用于文件名）
-            const title = imgElement.getAttribute('title') || imgElement.getAttribute('alt') || '';
-            
-            // 清理title，提取前30个有效字符
-            let cleanTitle = title
-                .replace(/[^a-zA-Z0-9\u4e00-\u9fa5\s]/g, '_')  // 保留中英文字母数字和空格
-                .replace(/\s+/g, '_')  // 空格转下划线
-                .substring(0, 30);
-            
-            if (!cleanTitle) {
-                cleanTitle = 'NAI_Image';
-            }
-            
-            // 添加时间戳（精确到秒）
-            const timestamp = new Date().toISOString()
-                .replace(/[-:]/g, '')
-                .replace('T', '_')
-                .split('.')[0];  // 格式：20250124_123045
-            
-            // 生成文件名
-            return `${cleanTitle}_${timestamp}.png`;
-        }
-        
-        // 为图片添加双击时的视觉反馈
-        function addVisualFeedback(imgElement) {
-            const originalTransform = imgElement.style.transform || '';
-            const originalTransition = imgElement.style.transition || '';
-            
-            // 添加缩放动画
-            imgElement.style.transition = 'transform 0.15s ease';
-            imgElement.style.transform = 'scale(0.95)';
-            
-            setTimeout(() => {
-                imgElement.style.transform = originalTransform;
-                setTimeout(() => {
-                    imgElement.style.transition = originalTransition;
-                }, 150);
-            }, 150);
-        }
-        
-        // 三击检测相关变量
-        let clickCount = 0;
-        let clickTimer = null;
-        let lastClickedElement = null;
-        
-        // 全局事件监听器（事件委托 - 三击触发）
-        document.addEventListener('click', function(e) {
-            const target = e.target;
-            
-            // 检查是否是NAI图片（realimag-image 或 naiimag-image）
-            if (target.tagName === 'IMG' && 
-                (target.classList.contains('realimag-image') || 
-                 target.classList.contains('naiimag-image'))) {
-                
-                // 如果点击的是同一个元素，增加计数
-                if (target === lastClickedElement) {
-                    clickCount++;
-                } else {
-                    // 点击了不同的元素，重置计数
-                    clickCount = 1;
-                    lastClickedElement = target;
-                }
-                
-                // 清除之前的定时器
-                if (clickTimer) {
-                    clearTimeout(clickTimer);
-                }
-                
-                // 如果达到三击
-                if (clickCount === 3) {
-                    // 重置计数
-                    clickCount = 0;
-                    lastClickedElement = null;
-                    
-                    // 阻止默认行为和事件冒泡
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    console.log('🖼️ [NAI下载] 检测到三击NAI图片');
-                    
-                    // 添加视觉反馈
-                    addVisualFeedback(target);
-                    
-                    // 获取图片源（可能是base64或URL）
-                    const imageSrc = target.src;
-                    
-                    if (!imageSrc || imageSrc === 'about:blank') {
-                        console.warn('⚠️ [NAI下载] 图片源为空，无法下载');
-                        showDownloadToast('图片加载中，请稍后重试', 'error');
-                        return;
-                    }
-                    
-                    // 生成文件名
-                    const filename = generateFilename(target);
-                    
-                    // 触发下载
-                    downloadImage(imageSrc, filename);
-                } else {
-                    // 设置定时器，500ms后重置计数（如果用户停止点击）
-                    clickTimer = setTimeout(() => {
-                        clickCount = 0;
-                        lastClickedElement = null;
-                    }, 500);
-                }
-            }
-        }, true);  // 使用捕获阶段，确保优先处理
-        
-        console.log('✅ [NAI下载] 三击下载功能已初始化');
-        console.log('💡 [NAI下载] 提示：三击任意NAI图片即可下载');
-    })();
-    
-    </script>
+
 
 </body>
 </html>
+
 
 
 
