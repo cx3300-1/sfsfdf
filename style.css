@@ -8259,6 +8259,70 @@ input, textarea, select {
 #phone-screen.dark-mode #nai-gallery-action-bar .select-all-label {
     color: #f0f0f0;
 }
+/* --- NAI 图片重新生成按钮 (V3 - 悬停显示修复版) --- */
+.nai-image-wrapper {
+    position: relative; /* 关键：必须有这行，用于按钮定位！ */
+    display: inline-block;
+    line-height: 0;
+}
+
+.nai-regenerate-btn {
+    position: absolute;
+    bottom: 10px; /* 从底部偏移 10px */
+    right: 10px;  /* 从右侧偏移 10px */
+    width: 32px;
+    height: 32px;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    
+    /* 核心修复：默认设置为透明，即隐藏 */
+    opacity: 0; 
+    
+    transition: opacity 0.2s ease-in-out;
+    z-index: 5;
+}
+
+/* 核心修复：当鼠标悬停在 *图片包裹层* 上时，才显示按钮 */
+.nai-image-wrapper:hover .nai-regenerate-btn {
+    opacity: 0.85; /* 悬停时显示 */
+}
+
+/* 按钮本身的悬停效果（变亮） */
+.nai-regenerate-btn:hover {
+    opacity: 1 !important; /* 确保悬停在按钮上时更亮 */
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+.nai-regenerate-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* 加载中状态 */
+.nai-regenerate-btn.loading {
+    pointer-events: none;
+    opacity: 1; /* 加载时强制显示 */
+}
+.nai-regenerate-btn.loading svg {
+    animation: spin 1s linear infinite;
+}
+
+/* 修复暗黑模式下的样式 */
+#phone-screen.dark-mode .nai-regenerate-btn {
+    background-color: rgba(30, 30, 30, 0.7);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+/* --- NAI 图片重新生成按钮 结束 --- */
+
 
 
 
