@@ -8353,7 +8353,7 @@ body.frame-mode-active #phone-screen {
       (这会使内部内容区域精确为 350x650px)
     */
     width: 374px;
-    height: 674px;
+    height: 700px;
     
     /* 12px 的黑色边框 */
     border: 12px solid #ffffff;
@@ -8432,9 +8432,7 @@ body.frame-mode-active #desktop-dock {
     transform: scale(0.9);
     margin-bottom: -5px;
 }
-body.frame-mode-active #home-screen-pages-container {
-    margin-top: 20px; /* <-- 调整这个数值来改变距离 */
-}
+
 /* ▼▼▼ CPhone 布局的核心修正 ▼▼▼ */
 body.frame-mode-active #char-clock-container {
     /* 替换默认的大间距，给一个适合框内视图的上边距 */
@@ -8513,6 +8511,44 @@ body.frame-mode-active #phone-screen.dynamic-island-active::after {
     font-size: 13px;
     font-weight: 500;
     display: inline-block; /* 动画需要 */
+}
+/* 您可以在 L2910 附近找到 .frame-mode-active 的相关样式
+   然后在这附近添加下面的新规则
+*/
+
+body.frame-mode-active #main-content-area {
+    /* * 在这里修改您想要的距离。
+     * 原本是 30px，您可以改成 40px 或 50px 来增大间距。
+     * * 请注意：在有框模式下，整个主页被 transform: scale(0.9) 缩小了，
+     * 所以您设置 50px，视觉上看起来会是 45px。
+     */
+    gap:10px; 
+}
+/* 仅在有框模式下，修改组件距离顶部的间距 */
+body.frame-mode-active #main-content-area {
+    /* * 原本是 20px。
+     * 您可以改成 0px 来让它更靠上，
+     * 或者改成 40px 来让它更靠下。
+     */
+    margin-top: 0px; 
+}
+/* 仅在有框模式下，调整【第二页】的间距 */
+body.frame-mode-active .home-screen-page:nth-child(2) .polaroid-widget-container {
+    
+    /* 1. 修改这个来调整 [拍立得] 与 [屏幕顶部] 的距离 (原为 20px) */
+    /* 您可以改成 0px 或 10px 来让它更靠上 */
+    margin-top: 0px;
+
+    /* 2. 修改这个来调整 [拍立得] 与 [下方应用/小组件] 的距离 (原为 30px) */
+    /* 您可以改成 40px 或 50px 来增大它们之间的间距 */
+    margin-bottom: 10px;
+}
+/* 【修复】在有框模式下，增加聊天页面头部的顶部内边距，以避开灵动岛 */
+body.frame-mode-active #chat-interface-screen > .header {
+    /* * 灵动岛区域大约在 22px + 25px = 47px 结束。
+     * 我们可以设置 55px 或 60px 来给它留出一些呼吸空间。
+     */
+    padding-top: 48px !important; 
 }
 
 
