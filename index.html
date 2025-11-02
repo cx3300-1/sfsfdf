@@ -38,6 +38,12 @@
         <div class="message"></div>
       </div>
     </div>
+<div id="dynamic-island-content">
+  <img id="island-album-art" src="">
+  <div id="island-lyric-container">
+    <span id="island-lyric-text"></span>
+  </div>
+</div>
     <div id="home-screen" class="screen active">
       <div id="home-screen-pages-container">
         <div id="home-screen-pages">
@@ -960,10 +966,22 @@
         <div class="bg-upload-container"> <button class="form-button-secondary" onclick="document.getElementById('global-bg-input').click()">本地上传</button> <button id="upload-global-bg-url-btn" class="form-button-secondary">网络URL</button> <button id="remove-global-bg-btn"
             class="form-button-secondary">移除全局背景</button> </div> <input type="file" id="global-bg-input" accept="image/*" style="display: none;">
         <hr style="width: 80%; opacity: 0.3; margin: 30px 0;">
-        <div class="form-group" style="display: flex; justify-content: space-between; align-items: center;"> <label for="theme-toggle-switch" style="margin-bottom: 0;">夜间模式 (Night Mode)</label> <label class="toggle-switch"> <input type="checkbox" id="theme-toggle-switch"> <span class="slider"></span>
+        <div class="form-group" style="display: flex; justify-content: space-between; align-items: center; width: 100%;"> <label for="theme-toggle-switch" style="margin-bottom: 0;">夜间模式 (Night Mode)</label> <label class="toggle-switch"> <input type="checkbox" id="theme-toggle-switch"> <span class="slider"></span>
           </label> </div>
-        <div class="form-group" style="display: flex; justify-content: space-between; align-items: center;"> <label for="status-bar-toggle-switch" style="margin-bottom: 0;">顶部状态栏 (top status bar)</label> <label class="toggle-switch"> <input type="checkbox" id="status-bar-toggle-switch"> <span
+        <div class="form-group" style="display: flex; justify-content: space-between; align-items: center; width: 100%;"> <label for="status-bar-toggle-switch" style="margin-bottom: 0;">顶部状态栏 (top status bar)</label> <label class="toggle-switch"> <input type="checkbox" id="status-bar-toggle-switch"> <span
               class="slider"></span> </label> </div>
+<div class="form-group" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+    <label for="phone-frame-toggle-switch" style="margin-bottom: 0;">
+        显示手机外框 (Show Phone Frame)
+        <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;">
+            为应用添加一个手机样式的边框，更具沉浸感。
+        </p>
+    </label>
+    <label class="toggle-switch">
+        <input type="checkbox" id="phone-frame-toggle-switch">
+        <span class="slider"></span>
+    </label>
+</div>
         <hr style="width: 80%; opacity: 0.3; margin: 30px 0;">
         <div style="width:100%; text-align: left; margin-bottom: 15px;"> <label style="font-weight: 500; color: var(--text-secondary);">消息提示音(Notification sound)</label> </div>
         <div class="form-group" style="width:100%;"> <label for="notification-sound-url-input">提示音文件 URL (.mp3, .wav, .ogg)</label>
@@ -2292,6 +2310,7 @@
 
 </body>
 </html>
+
 
 
 
