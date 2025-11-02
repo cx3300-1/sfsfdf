@@ -83,7 +83,13 @@
         .screen { width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: flex; flex-direction: column; overflow: hidden; opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s; }
         .screen.active { opacity: 1; visibility: visible; z-index: 1; }
         .header { position: relative; z-index: 15; flex-shrink: 0; padding: 15px 20px; padding-top: 45px; background-color: rgba(247, 247, 247, 0.8); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; font-size: 18px; font-weight: 600; }
-        .header .header-actions { display: flex; align-items: center; gap: 15px; }
+        .header .header-actions { 
+    display: flex; 
+    align-items: center; 
+    gap: 15px; 
+    position: relative; /* 新增：创建堆叠上下文 */
+    z-index: 1;         /* 新增：确保它在标题span之上 */
+}
         .header .back-btn, .header .action-btn { font-size: 24px; cursor: pointer; width: 30px; text-align: center; color: var(--accent-color); display: flex; align-items: center; justify-content: center; }
         .header .action-btn {
             font-size: 16px; 
@@ -8322,6 +8328,194 @@ input, textarea, select {
     border-color: rgba(255, 255, 255, 0.2);
 }
 /* --- NAI 图片重新生成按钮 结束 --- */
+/* ▼▼▼ 【新功能】手机外框样式 (374x674px 精确版) ▼▼▼ */
+
+/* 1. 手机外框的背景 (你想要的白色) */
+body.frame-mode-active {
+    background-color: #f0f2f5; /* 保持白色背景 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+    overflow: hidden; 
+}
+
+/* 在暗黑模式下，背景则为浅灰色 */
+body.dark-mode.frame-mode-active {
+    background-color: #f0f2f5;
+}
+
+/* 2. 手机外框本身 (使用你计算的精确尺寸) */
+body.frame-mode-active #phone-screen {
+    /* 总宽度: 374px
+      总高度: 674px
+      (这会使内部内容区域精确为 350x650px)
+    */
+    width: 374px;
+    height: 674px;
+    
+    /* 12px 的黑色边框 */
+    border: 12px solid #ffffff;
+    
+    /* 适配的圆角 */
+    border-radius: 54px; 
+    
+    /* 移除内边距 (padding) 来匹配你的计算 */
+    /* padding: 0; (移除) */
+
+    /* 覆盖全屏样式 */
+    min-height: auto; 
+    max-width: 100%;
+    max-height: 95vh; /* 最大高度，防止溢出 */
+    box-shadow: inset 0 0 0 1px #000,   
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box; 
+    position: relative; 
+    overflow: hidden; 
+}
+
+/* 3. 屏幕内部的圆角遮罩 */
+body.frame-mode-active #phone-screen::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    
+    /* 内部圆角 (比 54px 小 12px) */
+    border-radius: 42px; 
+    
+    /* 移除内边框，因为它不再需要 */
+    /* border: 0; (移除) */
+    
+    pointer-events: none;
+    z-index: 1000; 
+    
+    /* 添加一个非常细微的内阴影，模拟屏幕玻璃感 */
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+/* 4. 模拟灵动岛 (Dynamic Island) */
+body.frame-mode-active #phone-screen::after {
+    content: '';
+    position: absolute;
+    top: 22px; 
+    left: 50%;
+    transform: translateX(-50%);
+    /* 调整为更协调的灵动岛尺寸 (已缩小) */
+    width: 100px;  /* <-- 已从 120px 减小 */
+    height: 25px;  /* <-- 已从 28px 减小 */
+    background-color: #000; 
+    border-radius: 12.5px; /* <-- 调整圆角以保持形状 */
+    z-index: 1002; 
+}
+
+/* [新增] 当手机外框激活时，等比缩小主屏幕和CPhone内容以适应屏幕 (V3 - 最终布局修复版) */
+body.frame-mode-active #home-screen-pages-container,
+body.frame-mode-active #char-clock-container,
+body.frame-mode-active #char-app-grid {
+    transform: scale(0.9);
+    transform-origin: top center;
+    transition: transform 0.3s ease, margin-top 0.3s ease, margin-bottom 0.3s ease; /* 添加过渡效果 */
+}
+
+/* EPhone 主屏幕的布局修正 */
+body.frame-mode-active #home-screen-pages-container {
+    margin-bottom: -55px;
+}
+body.frame-mode-active #home-screen-pagination {
+    transform: scale(0.9);
+}
+body.frame-mode-active #desktop-dock {
+    transform: scale(0.9);
+    margin-bottom: -5px;
+}
+body.frame-mode-active #home-screen-pages-container {
+    margin-top: 20px; /* <-- 调整这个数值来改变距离 */
+}
+/* ▼▼▼ CPhone 布局的核心修正 ▼▼▼ */
+body.frame-mode-active #char-clock-container {
+    /* 替换默认的大间距，给一个适合框内视图的上边距 */
+    margin-top: 60px;
+    /* 大幅减小下边距，把下面的App图标拉上来 */
+    margin-bottom: 50px;
+}
+
+body.frame-mode-active #char-app-grid {
+    /* 移除之前过于激进的负边距，让它自然排列在时钟下方 */
+    margin-top: 0;
+}
+/* ▲▲▲ 修正结束 ▲▲▲ */
+#dynamic-island-content {
+    position: absolute;
+    top: 22px; /* 与手机外框的刘海伪元素位置完全重合 */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px; /* 默认宽度，与刘海一致 */
+    height: 28px; /* 默认高度，与刘海一致 */
+    background-color: #000;
+    border-radius: 14px;
+    z-index: 1003; /* 确保在刘海伪元素之上 */
+    
+    display: flex;
+    align-items: center;
+    padding: 3px;
+    box-sizing: border-box;
+    
+    /* 核心动画：宽度、透明度的变化都带过渡效果 */
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* 默认状态：完全透明，不可见，不响应点击 */
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+    overflow: hidden; /* 隐藏内部溢出的内容 */
+}
+
+/* 2. 当音乐播放时，灵动岛“展开” */
+body.frame-mode-active #phone-screen.dynamic-island-active #dynamic-island-content {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    width: 190px; /* 展开后的宽度 */
+}
+
+/* 3. 同时，隐藏掉原来的刘海伪元素，防止重叠 */
+body.frame-mode-active #phone-screen.dynamic-island-active::after {
+    opacity: 0;
+}
+
+/* 4. 岛内的专辑封面 */
+#island-album-art {
+    width: 22px; /* 高度28px - 上下各3px内边距 = 22px */
+    height: 22px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 8px;
+    flex-shrink: 0; /* 防止被压缩 */
+}
+
+/* 5. 歌词的容器，用于裁剪滚动文字 */
+#island-lyric-container {
+    flex-grow: 1; /* 占据剩余所有空间 */
+    overflow: hidden; /* 【关键】裁剪掉超出部分的歌词 */
+    white-space: nowrap; /* 【关键】强制歌词不换行 */
+}
+#island-lyric-container.center-content {
+    display: flex;
+    justify-content: center;
+}
+/* 6. 歌词文字本身 */
+#island-lyric-text {
+    color: #aeaeae; /* 柔和的灰色 */
+    font-size: 13px;
+    font-weight: 500;
+    display: inline-block; /* 动画需要 */
+}
+
+
 
 
 
