@@ -1,4 +1,4 @@
-          @font-face { font-family: 'bulangni'; src: url('') format('truetype'); font-weight: normal; font-style: normal; font-display: swap; }
+           @font-face { font-family: 'bulangni'; src: url('') format('truetype'); font-weight: normal; font-style: normal; font-display: swap; }
         :root { --screen-width: 350px; --screen-height: 650px; --secondary-bg: #ffffff; --border-color: #e0e0e0; --text-primary: #1f1f1f; --text-secondary: #8a8a8a; --accent-color: #007bff; }
         html {
             -webkit-text-size-adjust: 100%;
@@ -3793,7 +3793,7 @@
             transition: width 0.2s ease;
         }
         .avatar-group.has-frame {
-            width: 42px; 
+            width: 34px; 
         }
         .message-bubble .avatar {
             width: 34px;
@@ -3857,8 +3857,8 @@
     flex-shrink: 0 !important;
 }
         #chat-interface-screen .message-bubble .avatar-group.has-frame .avatar-with-frame {
-            width: 43px !important;
-            height: 43px !important;
+            width: 34px !important;
+            height: 34px !important;
         }
         #chat-interface-screen .message-bubble .avatar-with-frame .avatar-img {
             width: 100% !important;
@@ -3937,8 +3937,8 @@
             align-items: center;
         }
         #chat-interface-screen .message-bubble .avatar-group.has-frame .avatar-with-frame {
-            width: 43px !important;
-            height: 43px !important;
+            width: 34px !important;
+            height: 34px !important;
         }
         #chat-interface-screen .message-bubble .avatar-with-frame .avatar-img {
             width: 100% !important;
@@ -4024,7 +4024,7 @@
             overflow-y: auto !important; 
             box-sizing: border-box !important; 
             margin-top: 0 !important; 
-            padding-top: 150px !important;  
+            padding-top: 120px !important;  
             padding-bottom: 150px !important; 
         }
         .post-deleted-placeholder {
@@ -8653,6 +8653,86 @@ body.detach-mode-active #phone-screen::before {
 #desktop-dock {
     /* 移除 calc 和 env() */
     margin-bottom: 20px;
+}
+/* ======================================= */
+/* ▼▼▼ 【新功能】简洁聊天界面 (Minimal Chat UI) ▼▼▼ */
+/* ======================================= */
+
+/* 1. 默认隐藏“+”号展开按钮 */
+#chat-expand-btn {
+    display: none;
+    flex-shrink: 0;
+    width: 40px; /* 与发送按钮同高 */
+    height: 40px;
+    font-size: 28px;
+    font-weight: 300;
+    line-height: 38px; /* 垂直居中 */
+    padding: 0;
+    background-color: var(--secondary-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    transition: transform 0.3s ease, background-color 0.2s, color 0.2s;
+}
+
+/* 2. 当简洁模式开启时 (body上会有这个class) */
+body.minimal-chat-ui-active #chat-input-actions-top {
+    /* 默认隐藏工具栏 */
+    display: none;
+}
+body.minimal-chat-ui-active #chat-input-main-row {
+    /* 确保“+”按钮和输入框底对齐 */
+    align-items: flex-end;
+}
+body.minimal-chat-ui-active #chat-expand-btn {
+    /* 显示“+”按钮 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+body.minimal-chat-ui-active #chat-input {
+    /* 修复“+”按钮出现后，输入框没有自动适应宽度的问题 */
+    flex-grow: 1;
+}
+
+/* 3. 当用户点击“+”号，工具栏展开时 (body上会临时添加这个class) */
+body.minimal-chat-ui-active.chat-actions-expanded #chat-input-actions-top {
+    /* 重新显示工具栏 */
+    display: flex;
+}
+body.minimal-chat-ui-active.chat-actions-expanded #chat-expand-btn {
+    /* “+”号旋转45度变成“x”号 */
+    transform: rotate(45deg);
+    background-color: #f0f2f5;
+    color: #8a8a8a;
+}
+#phone-screen.dark-mode body.minimal-chat-ui-active.chat-actions-expanded #chat-expand-btn {
+    background-color: #3e3e42;
+    color: #8d8d92;
+}
+
+/* 4. 暗黑模式下的“+”按钮 */
+#phone-screen.dark-mode #chat-expand-btn {
+    background-color: #3e3e42;
+    color: #f0f0f0;
+    border: 1px solid #38383a;
+}
+/* ▲▲▲ 简洁聊天界面样式结束 ▲▲▲ */
+/* ======================================= */
+/* ▼▼▼ 【修复】简洁模式下的聊天边距 ▼▼▼ */
+/* ======================================= */
+
+/* 1. 当简洁模式开启 (且工具栏折叠时)，减小聊天列表的底部内边距 */
+body.minimal-chat-ui-active #chat-interface-screen #chat-messages {
+    /* 原本是 150px，我们把它缩小到 80px，刚好容纳单行输入框 */
+    padding-bottom: 80px !important;
+    /* 确保过渡平滑 */
+    transition: padding-bottom 0.3s ease;
+}
+
+/* 2. 当简洁模式开启 (且工具栏展开时)，恢复原来的内边距 */
+body.minimal-chat-ui-active.chat-actions-expanded #chat-interface-screen #chat-messages {
+    /* 恢复 150px，为展开的图标行腾出空间 */
+    padding-bottom: 150px !important;
 }
 
 
