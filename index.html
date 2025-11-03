@@ -2338,6 +2338,30 @@
     <div class="modal-footer"> <button class="save" id="close-npc-group-manager-btn" style="width: 100%;"data-lang-key="done">完成</button> </div>
   </div>
 </div>
+<div id="pin-modal-overlay" class="modal">
+    <div id="pin-modal-content" class="modal-content" style="width: 300px; height: auto;">
+        <div class="modal-header">
+            <span>功能激活</span>
+        </div>
+        <div class="modal-body" style="text-align: left;">
+            <p>此功能需要激活码 (PIN) 才能使用。</p>
+            
+            <div class="form-group">
+                <label for="pin-device-id-display">您的设备ID (请复制并发送给发布者)</label>
+                <input type="text" id="pin-device-id-display" readonly style="background: #eee; cursor: text; -webkit-user-select: text; user-select: text;">
+            </div>
+            
+            <div class="form-group">
+                <label for="pin-input">请输入激活码 (PIN)</label>
+                <input type="text" id="pin-input" placeholder="在此输入激活码...">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="cancel" id="pin-modal-cancel-btn">取消</button>
+            <button class="save" id="pin-modal-confirm-btn">确认激活</button>
+        </div>
+    </div>
+</div>
 <audio id="silent-audio-player" loop preload="auto" style="display:none;">
     <source src="https://phoebeboo.github.io/mewoooo/1-second-of-silence.mp3" type="audio/mpeg">
   </audio><audio id="tts-audio-player" style="display:none;"></audio>
