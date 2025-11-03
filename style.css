@@ -4024,8 +4024,8 @@
             overflow-y: auto !important; 
             box-sizing: border-box !important; 
             margin-top: 0 !important; 
-            padding-top: 120px !important;  
-            padding-bottom: 150px !important; 
+            padding-top: calc(120px + env(safe-area-inset-top)) !important; 
+            padding-bottom: calc(120px + env(safe-area-inset-bottom)) !important;
         }
         .post-deleted-placeholder {
             align-self: center;
@@ -8717,14 +8717,12 @@ body.minimal-chat-ui-active.chat-actions-expanded #chat-expand-btn {
     border: 1px solid #38383a;
 }
 /* ▲▲▲ 简洁聊天界面样式结束 ▲▲▲ */
-/* ======================================= */
-/* ▼▼▼ 【修复】简洁模式下的聊天边距 ▼▼▼ */
-/* ======================================= */
+
 
 /* 1. 当简洁模式开启 (且工具栏折叠时)，减小聊天列表的底部内边距 */
 body.minimal-chat-ui-active #chat-interface-screen #chat-messages {
     /* 原本是 150px，我们把它缩小到 80px，刚好容纳单行输入框 */
-    padding-bottom: 80px !important;
+    padding-bottom: calc(80px + env(safe-area-inset-bottom)) !important;
     /* 确保过渡平滑 */
     transition: padding-bottom 0.3s ease;
 }
@@ -8732,7 +8730,7 @@ body.minimal-chat-ui-active #chat-interface-screen #chat-messages {
 /* 2. 当简洁模式开启 (且工具栏展开时)，恢复原来的内边距 */
 body.minimal-chat-ui-active.chat-actions-expanded #chat-interface-screen #chat-messages {
     /* 恢复 150px，为展开的图标行腾出空间 */
-    padding-bottom: 150px !important;
+    padding-bottom: calc(120px + env(safe-area-inset-bottom)) !important;
 }
 
 
