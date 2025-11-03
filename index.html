@@ -863,7 +863,7 @@
         <path d="M19 15l-1.5 4.5L13 21l4.5-1.5L19 18l1.5 4.5L25 21l-4.5-1.5L19 15z"/>
     </svg>
 </button></div>
-        <div id="chat-input-main-row"> <textarea id="chat-input" rows="1" placeholder="输入消息..."></textarea>
+        <div id="chat-input-main-row"> <button id="chat-expand-btn" class="chat-action-icon-btn action-button" title="展开功能">+</button><textarea id="chat-input" rows="1" placeholder="输入消息..."></textarea>
           <div id="input-actions-wrapper"> <button id="wait-reply-btn" title="等待回复"><img src="https://i.postimg.cc/q72zq80N/ECE92-BBC-BE57-48-E9-BB2-C-345-B6019-C4-B2.png" alt="等待回复"></button> <button id="send-btn" class="action-button">发送</button> </div>
         </div>
       </div>
@@ -1006,6 +1006,18 @@
                 <span class="slider"></span>
             </label>
         </div>
+<div class="form-group" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+    <label for="minimal-chat-ui-switch" style="margin-bottom: 0;">
+        启用简洁聊天界面 (Minimal Chat UI)
+        <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;">
+            开启后，聊天栏的工具按钮将默认折叠，通过左侧“+”号展开。
+        </p>
+    </label>
+    <label class="toggle-switch">
+        <input type="checkbox" id="minimal-chat-ui-switch">
+        <span class="slider"></span>
+    </label>
+</div>
         <hr style="width: 80%; opacity: 0.3; margin: 30px 0;">
         <div style="width:100%; text-align: left; margin-bottom: 15px;"> <label style="font-weight: 500; color: var(--text-secondary);">消息提示音(Notification sound)</label> </div>
         <div class="form-group" style="width:100%;"> <label for="notification-sound-url-input">提示音文件 URL (.mp3, .wav, .ogg)</label>
@@ -2334,6 +2346,8 @@
 
 </body>
 </html>
+
+
 
 
 
