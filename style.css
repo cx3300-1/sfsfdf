@@ -1,4 +1,4 @@
-           @font-face { font-family: 'bulangni'; src: url('') format('truetype'); font-weight: normal; font-style: normal; font-display: swap; }
+          @font-face { font-family: 'bulangni'; src: url('') format('truetype'); font-weight: normal; font-style: normal; font-display: swap; }
         :root { --screen-width: 350px; --screen-height: 650px; --secondary-bg: #ffffff; --border-color: #e0e0e0; --text-primary: #1f1f1f; --text-secondary: #8a8a8a; --accent-color: #007bff; }
         html {
             -webkit-text-size-adjust: 100%;
@@ -8644,6 +8644,17 @@ body.detach-mode-active #phone-screen::after,
 body.detach-mode-active #phone-screen::before {
     display: none;
 }
+/* 【全局修复】将Dock栏和分页点的位置固定在更低的位置，忽略底部安全区 */
+#home-screen-pagination {
+    /* 移除 calc 和 env() */
+    padding-bottom: 10px;
+}
+
+#desktop-dock {
+    /* 移除 calc 和 env() */
+    margin-bottom: 20px;
+}
+
 
 
 
