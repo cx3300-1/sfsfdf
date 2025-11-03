@@ -8473,11 +8473,22 @@ body.frame-mode-active #char-app-grid {
 }
 
 /* 2. 当音乐播放时，灵动岛“展开” */
+/* 规则 1: 在有框模式下，调整回刘海的位置并展开 */
 body.frame-mode-active #phone-screen.dynamic-island-active #dynamic-island-content {
     opacity: 1;
     visibility: visible;
     pointer-events: auto;
-    width: 190px; /* 展开后的宽度 */
+    width: 190px;
+    top: 22px; /* 覆盖默认值，对齐刘海 */
+}
+
+/* 规则 2: 在无框模式下，在顶部展开 */
+body:not(.frame-mode-active) #phone-screen.dynamic-island-active #dynamic-island-content {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    width: 190px;
+    /* (这里会使用我们在第6303行设置的新top值) */
 }
 
 /* 3. 同时，隐藏掉原来的刘海伪元素，防止重叠 */
@@ -8511,6 +8522,7 @@ body.frame-mode-active #phone-screen.dynamic-island-active::after {
     font-size: 13px;
     font-weight: 500;
     display: inline-block; /* 动画需要 */
+    transition: opacity 0.2s ease-in-out;
 }
 /* 您可以在 L2910 附近找到 .frame-mode-active 的相关样式
    然后在这附近添加下面的新规则
@@ -8550,6 +8562,89 @@ body.frame-mode-active #chat-interface-screen > .header {
      */
     padding-top: 48px !important; 
 }
+body:not(.frame-mode-active) #phone-screen.dynamic-island-active #chat-interface-screen > .header {
+    padding-top: 48px !important;
+}
+/* --- 歌词循环滚动 (Marquee) 动画 --- */
+
+/* 1. 默认状态：居中 (用于短歌词) */
+#island-lyric-container.center-content {
+    display: flex;
+    justify-content: center;
+}
+#island-lyric-container.center-content #island-lyric-text.scrolling {
+    animation: none; /* 短歌词不需要滚动 */
+}
+#island-lyric-container.center-content #island-lyric-text span + span {
+    display: none; /* 短歌词只显示一个 */
+}
+
+/* 2. 滚动容器：内部有两个span */
+#island-lyric-text.scrolling {
+    /* 使用 --marquee-duration 变量作为动画时长，从JS传入 */
+    animation: marquee var(--marquee-duration, 10s) linear infinite;
+    display: block; /* 必须是 block 才能应用 transform */
+    width: fit-content; /* 确保宽度由内容撑开 */
+}
+
+/* 3. 两个span并排 */
+#island-lyric-text.scrolling span {
+    display: inline-block;
+    padding-right: 50px; /* 两个歌词之间的间距 */
+    white-space: nowrap;
+}
+
+/* 4. 定义动画 */
+@keyframes marquee {
+    0% {
+        transform: translateX(0%);
+    }
+    100% {
+        /* * 滚动 50% 的宽度。
+         * 因为我们的总宽度是两个 <span>，所以滚动 50% 
+         * 意味着第一个 <span> 刚好完全移出，第二个 <span> 完美接上。
+         */
+        transform: translateX(-50%); 
+    }
+}
+
+/* 【新功能】分离状态栏 / 真·全屏模式 v2.0 */
+
+/* 当 body 标签拥有 detach-mode-active 类时，应用以下样式 */
+body.detach-mode-active #phone-screen {
+    /* 核心修改1：保持固定定位，但只定义三边 */
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    /* 核心修改2：这是最关键的一步！
+       让元素的顶部从“安全区域的底部”开始，而不是屏幕的绝对顶部。
+       env(safe-area-inset-top) 会自动获取刘海或状态栏的高度。*/
+    top: env(safe-area-inset-top);
+
+    /* 核心修改3：移除固定的 height 属性，让 top 和 bottom 自动决定高度 */
+    height: auto;
+    width: auto; /* 同样移除固定的 width */
+
+    /* 移除手机外框样式，实现真正的全屏感 */
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+
+    /* 其他布局属性保持不变 */
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--secondary-bg);
+}
+
+/* 在此模式下，隐藏模拟的刘海和屏幕圆角遮罩，因为我们要显示物理的 */
+body.detach-mode-active #phone-screen::after,
+body.detach-mode-active #phone-screen::before {
+    display: none;
+}
+
 
 
 
