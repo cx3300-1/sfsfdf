@@ -5125,10 +5125,8 @@
      overflow: visible; 
     padding-top: 40px; 
 }
-#profile-history-icon-btn {
-    position: absolute;
-    top: 20px;
-    right: 20px;
+.profile-history-icon-btn { /* <--- 核心修改1：从 ID (#) 改为类 (.) */
+    /* 核心修改2：移除了 position, top, right, z-index 这些绝对定位属性 */
     width: 36px;
     height: 36px;
     background: none;
@@ -5140,10 +5138,9 @@
     justify-content: center;
     transition: background-color 0.2s;
     padding: 0;
-    z-index: 10;
 }
 #profile-history-icon-btn:hover { background-color: rgba(0,0,0,0.05); }
-#profile-history-icon-btn svg { width: 20px; height: 20px; stroke: #b0b0b0; stroke-width: 2; }
+.profile-history-icon-btn svg { width: 20px; height: 20px; stroke: #b0b0b0; stroke-width: 2; }
 #profile-main-content, #profile-thoughts-history-view {
     display: flex;
     flex-direction: column;
@@ -8783,6 +8780,17 @@ body.minimal-chat-ui-active.chat-actions-expanded #chat-interface-screen #chat-m
     background-color: #2c2c2e;
     color: #f0f0f0;
     border-color: #38383a;
+}
+/* [新增] 当心声或散记中包含自定义HTML卡片时，移除容器的默认样式，让卡片完全显示 */
+#character-profile-modal .thought-content .text:has(div),
+#character-profile-modal .thought-content .text:has(table) {
+    padding: 0 !important;
+    font-family: inherit !important; /* 恢复默认字体，让卡片自己控制 */
+    font-size: inherit !important;
+    line-height: normal !important; /* 恢复正常的行高 */
+    color: inherit !important;
+    background: none !important;
+    white-space: normal !important; /* 允许卡片正常换行和布局 */
 }
 
 
