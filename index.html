@@ -1437,6 +1437,18 @@
               placeholder="例如：<div class=`waimai-card`>...<span>$2</span>...</div>"></textarea> </div>
           <div class="form-group" style="display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;"> <label for="rule-enabled-switch" style="margin-bottom: 0;">启用规则</label> <label class="toggle-switch"> <input type="checkbox" id="rule-enabled-switch" checked>
               <span class="slider"></span> </label> </div>
+<div class="form-group" style="display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
+    <label for="rule-do-not-send-switch" style="margin-bottom: 0;">
+        渲染时从上下文中删除
+        <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;">
+            开启后，匹配此规则的消息将不会被发送给AI，仅用于前端显示。
+        </p>
+    </label>
+    <label class="toggle-switch">
+        <input type="checkbox" id="rule-do-not-send-switch">
+        <span class="slider"></span>
+    </label>
+</div>
         </div>
         <div class="modal-footer"> <button class="cancel" id="cancel-rule-editor-btn" data-lang-key="cancel">取消</button> <button class="save" id="save-rule-btn"data-lang-key="save">保存规则</button> </div>
       </div>
@@ -2380,6 +2392,7 @@
 
 </body>
 </html>
+
 
 
 
