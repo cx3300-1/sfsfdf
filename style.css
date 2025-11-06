@@ -8781,7 +8781,7 @@ body.minimal-chat-ui-active.chat-actions-expanded #chat-interface-screen #chat-m
     color: #f0f0f0;
     border-color: #38383a;
 }
-/* [新增] 当心声或散记中包含自定义HTML卡片时，移除容器的默认样式，让卡片完全显示 */
+
 #character-profile-modal .thought-content .text:has(div),
 #character-profile-modal .thought-content .text:has(table) {
     padding: 0 !important;
@@ -8792,6 +8792,81 @@ body.minimal-chat-ui-active.chat-actions-expanded #chat-interface-screen #chat-m
     background: none !important;
     white-space: normal !important; /* 允许卡片正常换行和布局 */
 }
+.quick-reply-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0; /* 防止在flex布局中被压缩 */
+}
+
+.quick-reply-item:last-child {
+    border-bottom: none;
+}
+
+.quick-reply-text {
+    font-size: 16px;
+    color: var(--text-primary);
+    cursor: pointer;
+    flex-grow: 1; /* 占据主要空间 */
+    padding-right: 15px; /* 和按钮保持距离 */
+    word-break: break-all; /* 修复长文本溢出 */
+    white-space: pre-wrap; /* 支持换行符显示 */
+}
+
+.quick-reply-text:hover {
+    color: var(--accent-color);
+}
+
+.quick-reply-actions {
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0; /* 防止按钮被压缩 */
+}
+
+.quick-reply-edit-btn,
+.quick-reply-delete-btn {
+    background: none;
+    border: none;
+    padding: 5px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+.quick-reply-edit-btn:hover {
+    background-color: #e9e9eb;
+    color: var(--accent-color);
+}
+.quick-reply-delete-btn:hover {
+    background-color: #ffebee;
+    color: #ff3b30;
+}
+
+#phone-screen.dark-mode .quick-reply-item {
+    border-bottom-color: #38383a;
+}
+#phone-screen.dark-mode .quick-reply-text:hover {
+    color: #58a6ff;
+}
+#phone-screen.dark-mode .quick-reply-edit-btn:hover {
+    background-color: #3a3a3c;
+    color: #58a6ff;
+}
+#phone-screen.dark-mode .quick-reply-delete-btn:hover {
+    background-color: #5c1f24;
+    color: #ff8080;
+}
+
+/* 确保 modal-body 可以滚动 */
+#quick-reply-modal .modal-body {
+    overflow-y: auto;
+}
+
 
 
 
