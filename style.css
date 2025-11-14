@@ -8886,7 +8886,7 @@ body.minimal-chat-ui-active.chat-actions-expanded #chat-interface-screen #chat-m
 .char-player-minimize-btn {
     position: absolute;
     top: 15px;
-    right: 50px; /* 放在关闭按钮左边 */
+    right: 85px; /* 放在关闭按钮左边 */
     background: none;
     border: none;
     color: #aaa;
