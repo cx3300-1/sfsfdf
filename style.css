@@ -6254,7 +6254,7 @@
     font-size: 14px; font-weight: 500; width: 50px;
 }
 #char-music-player-modal #char-music-lyrics {
-    display: none; 
+    //display: none; 
 }
 @keyframes spin-vinyl {
   from { transform: rotate(0deg); }
@@ -8866,6 +8866,105 @@ body.minimal-chat-ui-active.chat-actions-expanded #chat-interface-screen #chat-m
 #quick-reply-modal .modal-body {
     overflow-y: auto;
 }
+#char-music-player-modal #char-music-lyrics {
+    /* display: none;  <-- 删除这一行，或者改为下面这样: */
+    display: block; 
+    width: 100%;
+    height: 60px; /* 给个固定高度 */
+    overflow: hidden;
+    position: relative;
+    margin-bottom: 20px;
+    font-size: 14px;
+    line-height: 20px;
+    color: #888;
+    text-align: center;
+    transition: all 0.3s ease;
+    mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent);
+    -webkit-mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent);
+}
+
+.char-player-minimize-btn {
+    position: absolute;
+    top: 15px;
+    right: 50px; /* 放在关闭按钮左边 */
+    background: none;
+    border: none;
+    color: #aaa;
+    cursor: pointer;
+    line-height: 1;
+    z-index: 10;
+    padding: 5px; /* 给予点击区域 */
+    display: flex; /* 用于居中SVG */
+    align-items: center; /* 用于居中SVG */
+    justify-content: center; /* 用于居中SVG */
+}
+.char-player-minimize-btn:hover {
+    color: #333;
+}
+
+/* 3. 添加悬浮恢复球样式 */
+#char-music-restore-btn {
+    position: absolute;
+    top: 120px;
+    right: 15px;
+    width: 45px;
+    height: 45px;
+    background: transparent; /* 1. 改为完全透明 */
+    backdrop-filter: none; /* 2. 移除毛玻璃 */
+    -webkit-backdrop-filter: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: none; /* 3. 移除阴影 */
+    z-index: 900; /* 确保在最上层 */
+    cursor: pointer;
+    animation: float-music 3s ease-in-out infinite;
+    border: none; /* 4. 移除边框 */
+}
+
+@keyframes float-music {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+.video-call-top-bar #minimize-call-btn {
+    position: absolute;
+    left: 20px;
+    top: 48px; /* 适配顶部的 padding-top */
+    background: none;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 5px;
+    z-index: 11;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+    pointer-events: auto;
+}
+.video-call-top-bar #minimize-call-btn:hover {
+    opacity: 1;
+}
+#video-call-restore-btn {
+    position: absolute;
+    top: 120px; /* 默认显示位置，和音乐按钮错开一点 */
+    right: 15px;
+    width: 45px;
+    height: 45px;
+    background-color: #4cd964; /* 绿色，代表通话中 */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    z-index: 900; /* 确保在最上层 */
+    cursor: pointer;
+    animation: pulse 1.5s infinite; /* 复用充电/来电的呼吸动画 */
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
 
 
 
