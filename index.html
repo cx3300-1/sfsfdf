@@ -435,6 +435,65 @@
             <option value="speech-01">speech-01 (标准)</option>
             <option value="speech-02">speech-02 (高清)</option>
           </select></div>
+<hr style="margin: 30px 0; opacity: 0.3;">
+        
+        <h3 style="border-bottom: 1px solid #eee; padding-bottom: 10px;">ImgBB 自动图床设置</h3>
+        <p style="font-size: 14px; color: #666; background-color: #f0f0f0; padding: 10px; border-radius: 8px;">
+            开启后，所有本地上传的图片 (如头像、表情、聊天图片等) 将被自动上传到 ImgBB 图床，以极大减小本地数据库体积。
+            <br><strong style="color: #ff3b30;">警告：您的图片将被上传到公共互联网。请勿上传私密照片！</strong>
+        </p>
+        
+        <div class="form-group" style="display: flex; justify-content: space-between; align-items: center;">
+            <label for="imgbb-enable-switch" style="margin-bottom: 0;">
+                启用 ImgBB 自动上传
+            </label>
+            <label class="toggle-switch">
+                <input type="checkbox" id="imgbb-enable-switch">
+                <span class="slider"></span>
+            </label>
+        </div>
+        
+        <div id="imgbb-settings-details" style="display: none;">
+            <div class="form-group">
+                <label for="imgbb-api-key">ImgBB API Key</label>
+                <div style="position: relative;">
+                    <input type="password" id="imgbb-api-key" placeholder="在此输入您的 ImgBB API Key" style="background-color: #f8f9fa; color: #333; border: 1px solid #ccc; padding-right: 40px; width: 100%; box-sizing: border-box;">
+                    <span id="imgbb-key-toggle" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; user-select: none; font-size: 18px;">🧐</span>
+                </div>
+                <p style="font-size: 12px; color: #666; margin-top: 5px;">
+                    💡 请前往 <a href="https://api.imgbb.com/" target="_blank" style="color: #007bff;">api.imgbb.com</a> 注册并获取您的 API key (选择 "v1" API)。
+                </p>
+            </div>
+        </div>
+<hr style="margin: 30px 0; opacity: 0.3;">
+            <h3 style="border-bottom: 1px solid #eee; padding-bottom: 10px;">Catbox.moe 文件托管设置</h3>
+            <p style="font-size: 14px; color: #666; background-color: #f0f0f0; padding: 10px; border-radius: 8px;">
+                开启后，所有本地上传的【歌曲文件 (MP3/WAV等)】将被自动上传到 Catbox.moe 图床/文件托管，并使用外链保存。
+                <br><strong style="color: #007bff;">这可以极大减小本地数据库体积，但需要您提供自己的 Catbox User Hash。</strong>
+            </p>
+            
+            <div class="form-group" style="display: flex; justify-content: space-between; align-items: center;">
+                <label for="catbox-enable-switch" style="margin-bottom: 0;">
+                    启用 Catbox.moe 自动上传
+                </label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="catbox-enable-switch">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+            <div id="catbox-settings-details" style="display: none;">
+                <div class="form-group">
+                    <label for="catbox-userhash">Catbox User Hash</label>
+                    <div style="position: relative;">
+                        <input type="password" id="catbox-userhash" placeholder="在此输入您的 User Hash" style="background-color: #f8f9fa; color: #333; border: 1px solid #ccc; padding-right: 40px; width: 100%; box-sizing: border-box;">
+                        <span id="catbox-key-toggle" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; user-select: none; font-size: 18px;">🧐</span>
+                    </div>
+                    <p style="font-size: 12px; color: #666; margin-top: 5px;">
+                        💡 请登录您的 <a href="https://catbox.moe/" target="_blank" style="color: #007bff;">Catbox.moe</a> 账户，在 "Account Settings" 页面找到您的 User Hash。
+                    </p>
+                </div>
+            </div>
         <hr style="margin: 30px 0; opacity: 0.3;">
         <h3 style="border-bottom: 1px solid #eee; padding-bottom: 10px;"data-lang-key="apiPerformanceSettings"data-lang-key="apiPerformanceSettings">性能与显示设置</h3>
         <div class="form-group" style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;"> <label for="chat-list-render-window-input" style="margin-bottom: 0;"data-lang-key="apiChatListRenderWindowLabel"> 聊天列表每次加载条数 <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;">
@@ -853,20 +912,33 @@
 <div id="nai-gallery-panel">
     <div id="nai-gallery-panel-header">
         <span class="panel-btn" id="close-nai-gallery-btn" data-lang-key="cancel">取消</span>
-        <span class="title">NAI画廊</span>
+        
+        <div id="nai-gallery-tabs">
+            <div class="nai-gallery-tab active" data-tab-id="local">本地</div>
+            <div class="nai-gallery-tab" data-tab-id="cloud">图床</div>
+        </div>
+        
         <div style="display: flex; gap: 10px;">
             <span class="panel-btn" id="manage-nai-gallery-btn">管理</span>
         </div>
     </div>
     
-    <div id="nai-gallery-grid">
-        </div>
+    <div id="nai-gallery-grid-container">
+        <div id="nai-gallery-grid-local" class="nai-gallery-page active">
+            </div>
+        
+        <div id="nai-gallery-grid-cloud" class="nai-gallery-page">
+            </div>
+    </div>
+    
+  
     
 <div id="nai-gallery-action-bar">
     <label class="select-all-label" style="display: flex; align-items: center; gap: 5px;">
         <input type="checkbox" id="select-all-nai-gallery-checkbox"> 全选
     </label>
     <button id="download-selected-nai-gallery-btn" class="action-bar-btn" style="background-color: #007bff; font-size: 14px; padding: 10px 15px;">下载 (0)</button>
+   <button id="upload-selected-nai-gallery-btn" class="action-bar-btn" style="background-color: #4cd964; display: none; font-size: 14px; padding: 10px 15px;">上传 (0)</button>
     <button id="delete-selected-nai-gallery-btn" class="action-bar-btn" style="font-size: 14px; padding: 10px 15px;">删除 (0)</button>
 </div>
 </div>
@@ -925,10 +997,28 @@
         </div>
       </div>
       <div id="music-playlist-panel">
-        <div class="playlist-header"> <span class="panel-btn" id="close-playlist-btn">返回</span> <span>播放列表</span>
-          <div> <span class="panel-btn" id="cleanup-songs-btn">清理</span> <span class="panel-btn" id="add-song-local-btn">本地</span> <span class="panel-btn" id="add-song-url-btn">URL</span> <span class="panel-btn" id="add-song-search-btn">搜索</span> </div>
+        <div class="playlist-header">
+          <div class="header-left-actions" style="display: flex; align-items: center; gap: 10px;">
+            <span class="panel-btn" id="close-playlist-btn" data-lang-key="back">返回</span>
+            <span class="panel-btn" id="manage-playlist-btn" data-lang-key="manage">管理</span>
+          </div>
+          
+          <span data-lang-key="playlistTitle">播放列表</span>
+          
+          <div>
+            <span class="panel-btn" id="cleanup-songs-btn">清理</span> 
+            <span class="panel-btn" id="add-song-local-btn">本地</span> 
+            <span class="panel-btn" id="add-song-url-btn">URL</span> 
+            <span class="panel-btn" id="add-song-search-btn" data-lang-key="search">搜索</span>
+          </div>
         </div>
         <div class="playlist-body" id="playlist-body"></div>
+       <div id="playlist-action-bar">
+        <label class="select-all-label" style="display: flex; align-items: center; gap: 5px;">
+            <input type="checkbox" id="select-all-playlist-checkbox"> 全选
+        </label>
+        <button id="upload-selected-to-catbox-btn" class="action-bar-btn" style="background-color: #007bff;">上传Catbox (0)</button>
+      </div>
       </div> <input type="file" id="local-song-upload-input" accept="audio/*" multiple style="display: none;"> <input type="file" id="lrc-upload-input" accept=".lrc" style="display: none;">
     </div>
     <div id="wallpaper-screen" class="screen">
@@ -2433,6 +2523,8 @@
 
 </body>
 </html>
+
+
 
 
 
