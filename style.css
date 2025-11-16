@@ -9280,6 +9280,26 @@ body.minimal-chat-ui-active.chat-actions-expanded #chat-interface-screen #chat-m
 #phone-screen.dark-mode .playlist-header .panel-btn {
     color: #f0f0f0;
 }
+#sticker-action-bar button {
+    width: auto; /* 修改：不再是100%宽度 */
+    padding: 10px 20px; /* 修改：使用内边距来自动调整宽度 */
+    border-radius: 20px; /* 修改：改为圆角按钮，更美观 */
+    border: none;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    background-color: #ff3b30;
+    color: white;
+}
+
+
+#sticker-action-bar #export-selected-stickers-btn {
+    background-color: #007bff; /* 导出按钮设为蓝色 */
+}
+#sticker-action-bar #delete-selected-stickers-btn {
+    background-color: #ff3b30; /* 删除按钮保持红色 */
+}
+
 
 
 
