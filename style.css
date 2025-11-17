@@ -8999,7 +8999,7 @@ body.minimal-chat-ui-active.chat-actions-expanded #chat-interface-screen #chat-m
     padding: 0;
     
   
-    opacity: 0.85; 
+    opacity: 0; 
     
     transition: opacity 0.2s ease-in-out;
 }
@@ -9056,7 +9056,7 @@ body.minimal-chat-ui-active.chat-actions-expanded #chat-interface-screen #chat-m
     align-items: center;
     justify-content: center;
     padding: 0;
-    opacity: 0.85; /* DING: 默认显示 */
+    opacity: 0; /* DING: 默认显示 */
     transition: opacity 0.2s ease-in-out;
 }
 
@@ -9375,6 +9375,214 @@ body.minimal-chat-ui-active.chat-actions-expanded #chat-interface-screen #chat-m
 /* 暗黑模式适配 */
 #phone-screen.dark-mode #char-bilibili-player-screen .list-container {
     background-color: #1c1c1e;
+}
+#lock-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 3000; /* 确保在最上层 */
+    background-color: #000;
+    background-size: cover;
+    background-position: center;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s ease;
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(-100%); /* 默认藏在上面或者隐藏 */
+}
+
+#lock-screen.active {
+    visibility: visible;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+#lock-screen.unlocking {
+    transform: translateY(-100%);
+    opacity: 0;
+}
+
+#lock-screen-content {
+    width: 100%;
+    height: 100%;
+    backdrop-filter: blur(0px);
+    transition: backdrop-filter 0.3s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 60px;
+    box-sizing: border-box;
+    background: rgba(0,0,0,0.2); /* 轻微遮罩让文字更清晰 */
+}
+
+#lock-screen.input-mode #lock-screen-content {
+    backdrop-filter: blur(20px);
+    background: rgba(0,0,0,0.4);
+}
+
+.lock-icon {
+    font-size: 20px;
+    margin-bottom: 10px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+#lock-screen.input-mode .lock-icon { opacity: 0; } 
+
+.lock-time-container {
+    text-align: center;
+    transition: transform 0.3s, opacity 0.3s;
+}
+#lock-screen.input-mode .lock-time-container {
+    transform: scale(0.8) translateY(-20px);
+    opacity: 0; /* 输入密码时隐藏时间 */
+    pointer-events: none;
+}
+
+#lock-date {
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 5px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+#lock-time {
+    font-size: 80px;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: -2px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+/* 密码输入区域 */
+#lock-password-area {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    margin-top: 20px;
+    animation: fadeIn 0.3s ease;
+}
+
+.lock-instruction {
+    font-size: 16px;
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+
+.lock-dots {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 1px solid white;
+    box-sizing: border-box;
+    transition: background-color 0.2s;
+}
+
+.dot.filled {
+    background-color: white;
+}
+
+.lock-keypad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    column-gap: 25px;
+    row-gap: 15px;
+    margin-bottom: 20px;
+}
+
+.key {
+    width: 75px;
+    height: 75px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    font-weight: 400;
+    line-height: 1;
+    cursor: pointer;
+    transition: background-color 0.1s;
+    user-select: none;
+}
+
+.key:active {
+    background-color: rgba(255, 255, 255, 0.4);
+}
+
+.key span {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    margin-top: 2px;
+    opacity: 0.8;
+}
+
+.key.empty {
+    background: transparent;
+    cursor: default;
+}
+.key.delete {
+    background: transparent;
+    font-size: 24px;
+}
+.lock-cancel-btn {
+    margin-top: 20px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* 底部滑动条 */
+#lock-swipe-area {
+    position: absolute;
+    bottom: 25px; /* 调整这个值来控制离底边的距离 */
+    left: 0;
+    width: 100%;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 20;
+    cursor: grab;
+    
+}
+@keyframes swipe-hint {
+    0%, 100% { transform: translateY(0); opacity: 0.8; }
+    50% { transform: translateY(-10px); opacity: 1; }
+}
+/* 确保横条样式正确 */
+.swipe-bar {
+    width: 130px;
+    height: 5px;
+    background-color: white;
+    border-radius: 100px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-10px); }
+    40%, 80% { transform: translateX(10px); }
+}
+.shake-animation {
+    animation: shake 0.4s ease;
 }
 
 
