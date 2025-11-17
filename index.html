@@ -979,6 +979,7 @@
     <label class="select-all-label" style="display: flex; align-items: center; gap: 5px;">
         <input type="checkbox" id="select-all-nai-gallery-checkbox"> 全选
     </label>
+    <button id="export-selected-nai-gallery-btn" class="action-bar-btn" style="background-color: #17a2b8; display: none; font-size: 14px; padding: 10px 15px;">导出 (0)</button>
     <button id="download-selected-nai-gallery-btn" class="action-bar-btn" style="background-color: #007bff; font-size: 14px; padding: 10px 15px;">下载 (0)</button>
    <button id="upload-selected-nai-gallery-btn" class="action-bar-btn" style="background-color: #4cd964; display: none; font-size: 14px; padding: 10px 15px;">上传 (0)</button>
     <button id="delete-selected-nai-gallery-btn" class="action-bar-btn" style="font-size: 14px; padding: 10px 15px;">删除 (0)</button>
@@ -1438,7 +1439,30 @@
           </div>
         </div>
         <div class="form-group" id="ai-voice-id-group"> <label for="ai-voice-id-input">语音 ID (Minimax voice_id)</label> <input type="text" id="ai-voice-id-input" placeholder="例如: female-shaonv-jingpin"></div>
-        
+       <div class="form-group" id="ai-voice-lang-group" style="display: none;">
+          <label for="ai-voice-lang-select">语音语言/方言 (Voice Language/Dialect)</label>
+          <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;">
+             选择指定语言可让发音更地道，支持方言（需模型支持）。
+          </p>
+          <select id="ai-voice-lang-select" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px;">
+            <option value="">🤖 自动识别 (Auto)</option>
+            <option value="zh-CN">🇨🇳 国语/普通话 (Mandarin)</option>
+            <option value="zh-HK">🇭🇰 粤语/广东话 (Cantonese)</option>
+            <option value="zh-TW">🇹🇼 台湾国语 (Taiwanese Mandarin)</option>
+            <option value="zh-SC">🌶️ 四川话 (Sichuanese)</option>
+            <option value="zh-DN">🌲 东北话 (Northeastern Mandarin)</option>
+            <option value="zh-HN">🍜 河南话 (Henan Dialect)</option>
+            <option value="zh-SX">🍚 陕西话 (Shaanxi Dialect)</option>
+            <option value="zh-CS">长沙话 (Changsha Dialect)</option>
+            <option value="zh-TJ">天津话 (Tianjin Dialect)</option>
+            <option value="en-US">🇺🇸 英语 (English)</option>
+            <option value="ja-JP">🇯🇵 日语 (Japanese)</option>
+            <option value="ko-KR">🇰🇷 韩语 (Korean)</option>
+            <option value="es-ES">🇪🇸 西班牙语 (Spanish)</option>
+            <option value="fr-FR">🇫🇷 法语 (French)</option>
+            <option value="de-DE">🇩🇪 德语 (German)</option>
+          </select>
+        </div> 
         <!-- NAI出图设置（单聊显示） -->
     <div class="form-group" id="nai-character-settings-group" style="display: none;">
         <hr style="opacity: 0.2; margin: 20px 0;">
