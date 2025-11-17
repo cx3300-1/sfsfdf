@@ -175,6 +175,9 @@
             <div class="app-icon" onclick="openCharApp('music')">
               <div class="icon-bg"><img id="cphone-icon-img-music" src=""></div><span class="label"data-lang-key="cphoneAppMusic">网易云</span>
             </div>
+            <div class="app-icon" onclick="openCharApp('bilibili')">
+              <div class="icon-bg" style="background-color: #FB7299;"><img id="cphone-icon-img-bilibili" src="https://i.postimg.cc/Wz5gV0jB/bilibili-icon.png" style="border-radius:0;"></div><span class="label">Bilibili</span>
+            </div>
             <div class="app-icon" onclick="switchToMyPhone()">
               <div class="icon-bg"><img id="cphone-icon-img-ephone" src=""></div><span class="label"data-lang-key="cphoneAppEphone">Ephone</span>
             </div>
@@ -321,7 +324,46 @@
         </div>
         <div id="char-music-list" class="list-container"> </div>
       </div>
-      
+      <div id="char-bilibili-screen" class="char-screen">
+        <div class="header"> 
+            <span class="back-btn" onclick="switchToCharHomeScreen()">‹</span> 
+            <span>Bilibili</span> 
+            <div class="header-actions"> 
+                <span class="action-btn" id="regenerate-char-bilibili-btn" title="根据人设生成推荐"> 
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 11A8.1 8.1 0 0 0 4.5 9M4 5v4h4"></path>
+                        <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"></path>
+                    </svg> 
+                </span> 
+            </div>
+            </div>
+        <div class="search-bar-container" style="padding: 10px; background: transparent;"> 
+            <div style="display: flex; gap: 8px;">
+                <input type="search" id="char-bilibili-search-input" placeholder="搜索视频..." style="flex-grow:1; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color);"> 
+                <button id="char-bilibili-search-btn" class="form-button" style="width: auto; margin: 0; padding: 0 15px; background-color: #FB7299;">搜索</button> 
+            </div>
+        </div>
+        <div id="char-bilibili-list" class="list-container" style="padding: 10px;"> </div>
+      </div>
+
+      <div id="char-bilibili-player-screen" class="char-screen" style="background-color: var(--secondary-bg);">
+    <div class="header"> 
+        <span class="back-btn" onclick="closeCharBilibiliPlayer()">‹</span> 
+        <span>视频详情</span> 
+        <span style="width: 30px;"></span> 
+    </div>
+        <div style="display: flex; flex-direction: column; height: 100%;">
+            <div style="width: 100%; aspect-ratio: 16/9; background: black; display: flex; align-items: center;">
+                <video id="char-bilibili-video" controls playsinline style="width: 100%; max-height: 100%;"></video>
+            </div>
+            <div class="list-container" style="background-color: var(--secondary-bg); flex-grow: 1; padding: 15px;">
+                <h2 id="char-bilibili-player-title" style="font-size: 18px; margin: 0 0 10px 0; line-height: 1.4;"></h2>
+                <div id="char-bilibili-player-author" style="font-size: 14px; color: #FB7299; font-weight: 500; margin-bottom: 15px;"></div>
+                <div style="height: 1px; background: var(--border-color); margin-bottom: 15px;"></div>
+                <div id="char-bilibili-player-desc" style="font-size: 13px; color: var(--text-secondary); line-height: 1.6; white-space: pre-wrap;"></div>
+            </div>
+        </div>
+      </div>
     </div>
     <div id="world-book-screen" class="screen">
       <div class="header">
@@ -2523,13 +2565,6 @@
 
 </body>
 </html>
-
-
-
-
-
-
-
 
 
 
