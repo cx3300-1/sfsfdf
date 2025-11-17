@@ -32,6 +32,41 @@
         </div>
       </div>
     </div>
+    <div id="lock-screen">
+        <div id="lock-screen-content">
+            <div class="lock-icon">🔓</div>
+            <div class="lock-time-container">
+                <div id="lock-date">1月1日 星期一</div>
+                <div id="lock-time">12:00</div>
+            </div>
+            
+            <div id="lock-password-area" style="display: none;">
+                <div class="lock-instruction">输入密码</div>
+                <div class="lock-dots">
+                    <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                </div>
+                <div class="lock-keypad">
+                    <div class="key" data-num="1">1</div>
+                    <div class="key" data-num="2">2<br><span>ABC</span></div>
+                    <div class="key" data-num="3">3<br><span>DEF</span></div>
+                    <div class="key" data-num="4">4<br><span>GHI</span></div>
+                    <div class="key" data-num="5">5<br><span>JKL</span></div>
+                    <div class="key" data-num="6">6<br><span>MNO</span></div>
+                    <div class="key" data-num="7">7<br><span>PQRS</span></div>
+                    <div class="key" data-num="8">8<br><span>TUV</span></div>
+                    <div class="key" data-num="9">9<br><span>WXYZ</span></div>
+                    <div class="key empty"></div>
+                    <div class="key" data-num="0">0</div>
+                    <div class="key delete" data-action="delete">⌫</div>
+                </div>
+                <div class="lock-cancel-btn">取消</div>
+            </div>
+            
+            <div id="lock-swipe-area">
+                <div class="swipe-bar"></div>
+            </div>
+        </div>
+    </div>
     <div id="notification-bar"><img id="notification-avatar" src="">
       <div id="notification-content">
         <div class="name"></div>
@@ -44,6 +79,7 @@
     <span id="island-lyric-text"></span>
   </div>
 </div>
+
     <div id="home-screen" class="screen active">
       <div id="home-screen-pages-container">
         <div id="home-screen-pages">
@@ -1078,6 +1114,32 @@
         <div id="global-bg-preview" class="wallpaper-preview" style="height: 160px; width: 90px;">点击下方上传</div>
         <div class="bg-upload-container"> <button class="form-button-secondary" onclick="document.getElementById('global-bg-input').click()">本地上传</button> <button id="upload-global-bg-url-btn" class="form-button-secondary">网络URL</button> <button id="remove-global-bg-btn"
             class="form-button-secondary">移除全局背景</button> </div> <input type="file" id="global-bg-input" accept="image/*" style="display: none;">
+        <h3 style="margin-top:0; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; width:100%; text-align: left;">锁屏设置 (Lock Screen)</h3>
+        
+        <div class="form-group" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <label for="lock-screen-toggle" style="margin-bottom: 0;">启用锁屏密码</label>
+            <label class="toggle-switch">
+                <input type="checkbox" id="lock-screen-toggle">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div id="lock-screen-settings-detail" style="display: none; width: 100%;">
+            <div class="form-group">
+                <label>设置4位数字密码</label>
+                <input type="tel" id="lock-screen-password-input" maxlength="4" placeholder="例如: 1234" style="letter-spacing: 5px; font-weight: bold; text-align: center;">
+            </div>
+            
+            <div class="form-group">
+                <label>锁屏壁纸</label>
+                <div id="lock-wallpaper-preview" class="wallpaper-preview" style="height: 200px; width: 120px; margin: 0 auto 10px; background-color: #eee; background-size: cover; background-position: center; border-radius: 10px; display:flex; align-items:center; justify-content:center; color:#999;">无壁纸</div>
+                <div class="bg-upload-container">
+                    <button class="form-button-secondary" onclick="document.getElementById('lock-wallpaper-input').click()">本地上传</button>
+                    <button id="upload-lock-wallpaper-url-btn" class="form-button-secondary">网络URL</button>
+                    <input type="file" id="lock-wallpaper-input" accept="image/*" style="display: none;">
+                </div>
+            </div>
+        </div>
         <hr style="width: 80%; opacity: 0.3; margin: 30px 0;">
         <div class="form-group" style="display: flex; justify-content: space-between; align-items: center; width: 100%;"> <label for="theme-toggle-switch" style="margin-bottom: 0;">夜间模式 (Night Mode)</label> <label class="toggle-switch"> <input type="checkbox" id="theme-toggle-switch"> <span class="slider"></span>
           </label> </div>
@@ -1445,22 +1507,31 @@
              选择指定语言可让发音更地道，支持方言（需模型支持）。
           </p>
           <select id="ai-voice-lang-select" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px;">
-            <option value="">🤖 自动识别 (Auto)</option>
-            <option value="zh-CN">🇨🇳 国语/普通话 (Mandarin)</option>
+            <option value=""> 自动识别 (Auto)</option>
+            <hr disabled>
+            <option value="zh-CN">🇨🇳 国语/普通话 (Chinese)</option>
             <option value="zh-HK">🇭🇰 粤语/广东话 (Cantonese)</option>
-            <option value="zh-TW">🇹🇼 台湾国语 (Taiwanese Mandarin)</option>
-            <option value="zh-SC">🌶️ 四川话 (Sichuanese)</option>
-            <option value="zh-DN">🌲 东北话 (Northeastern Mandarin)</option>
-            <option value="zh-HN">🍜 河南话 (Henan Dialect)</option>
-            <option value="zh-SX">🍚 陕西话 (Shaanxi Dialect)</option>
-            <option value="zh-CS">长沙话 (Changsha Dialect)</option>
-            <option value="zh-TJ">天津话 (Tianjin Dialect)</option>
             <option value="en-US">🇺🇸 英语 (English)</option>
             <option value="ja-JP">🇯🇵 日语 (Japanese)</option>
             <option value="ko-KR">🇰🇷 韩语 (Korean)</option>
-            <option value="es-ES">🇪🇸 西班牙语 (Spanish)</option>
-            <option value="fr-FR">🇫🇷 法语 (French)</option>
+            <hr disabled>
             <option value="de-DE">🇩🇪 德语 (German)</option>
+            <option value="fr-FR">🇫🇷 法语 (French)</option>
+            <option value="es-ES">🇪🇸 西班牙语 (Spanish)</option>
+            <option value="it-IT">🇮🇹 意大利语 (Italian)</option>
+            <option value="ru-RU">🇷🇺 俄语 (Russian)</option>
+            <option value="pt-BR">🇧🇷 葡萄牙语 (Portuguese)</option>
+            <option value="nl-NL">🇳🇱 荷兰语 (Dutch)</option>
+            <option value="pl-PL">🇵🇱 波兰语 (Polish)</option>
+            <option value="sv-SE">🇸🇪 瑞典语 (Swedish)</option>
+            <hr disabled>
+            <option value="tr-TR">🇹🇷 土耳其语 (Turkish)</option>
+            <option value="id-ID">🇮🇩 印尼语 (Indonesian)</option>
+            <option value="ms-MY">🇲🇾 马来语 (Malay)</option>
+            <option value="vi-VN">🇻🇳 越南语 (Vietnamese)</option>
+            <option value="th-TH">🇹🇭 泰语 (Thai)</option>
+            <option value="hi-IN">🇮🇳 印地语 (Hindi)</option>
+            <option value="ar-SA">🇸🇦 阿拉伯语 (Arabic)</option>
           </select>
         </div> 
         <!-- NAI出图设置（单聊显示） -->
@@ -2589,6 +2660,7 @@
 
 </body>
 </html>
+
 
 
 
