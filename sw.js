@@ -1,7 +1,7 @@
 // Service Worker 文件 (sw.js)
 
 // 缓存的版本号，当你更新了任何需要缓存的文件时，都需要更改这个版本号
-const CACHE_VERSION = 'v1.6.19';
+const CACHE_VERSION = 'v1.6.20';
 const CACHE_NAME = `ephone-cache-${CACHE_VERSION}`;
 
 // 需要被缓存的文件的列表
