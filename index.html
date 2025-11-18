@@ -742,10 +742,27 @@
             </p>
         </div>
     </div>
-    <div style="display: flex; gap: 10px; margin-top: 15px;">
-        <button type="button" id="github-upload-btn" class="form-button" style="background-color: #24292e; margin-top:0;">⬆️ 上传备份</button>
-        <button type="button" id="github-download-btn" class="form-button form-button-secondary" style="margin-top:0;">⬇️ 从 GitHub 恢复</button>
-    </div>
+    <div style="display: flex; gap: 15px; margin-top: 20px;">
+    <button type="button" id="github-upload-btn" class="form-button" 
+            style="margin-top:0; flex: 1; background-color: #007bff; border: none; box-shadow: 0 4px 12px rgba(0,123,255,0.2); display: flex; align-items: center; justify-content: center; gap: 8px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+        </svg>
+        <span>上传备份</span>
+    </button>
+    
+    <button type="button" id="github-download-btn" class="form-button form-button-secondary" 
+            style="margin-top:0; flex: 1; background-color: #f1f3f5; color: #495057; border: 1px solid #dee2e6; display: flex; align-items: center; justify-content: center; gap: 8px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        <span>恢复备份</span>
+    </button>
+</div>
 </div>
 
 
@@ -2758,16 +2775,6 @@
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
 
 
 
