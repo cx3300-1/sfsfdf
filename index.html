@@ -650,6 +650,104 @@
     </div>
 </div>
 <!-- ▲▲▲ NovelAI 图像生成系统配置结束 ▲▲▲ -->
+<hr style="margin: 30px 0; opacity: 0.3;">
+<h3 style="border-bottom: 1px solid #eee; padding-bottom: 10px;">☁️ GitHub 云备份</h3>
+<p style="font-size: 14px; color: #666; background-color: #f0f0f0; padding: 10px; border-radius: 8px;">
+    开启后，可以将所有数据备份到您私有的 GitHub 仓库中，方便跨设备同步。<br>
+    <strong style="color: #007bff;">注意：请确保 Token 拥有 `repo` 权限。</strong>
+</p>
+
+<div class="form-group" style="display: flex; justify-content: space-between; align-items: center;">
+    <label for="github-enable-switch" style="margin-bottom: 0;">
+        启用 GitHub 云备份
+    </label>
+    <label class="toggle-switch">
+        <input type="checkbox" id="github-enable-switch">
+        <span class="slider"></span>
+    </label>
+</div>
+
+<div id="github-settings-details" style="display: none;">
+<div class="form-group" style="display: flex; justify-content: space-between; align-items: center; background: #f1f8e9; padding: 10px; border-radius: 8px; border: 1px solid #c5e1a5; margin-bottom: 15px;">
+    <div style="flex-grow: 1;">
+        <label for="github-auto-backup-switch" style="margin-bottom: 0; color: #33691e; font-weight: bold;">
+            🔄 自动后台备份
+        </label>
+        <div style="display: flex; align-items: center; margin-top: 5px; gap: 5px;">
+            <span style="font-size: 12px; color: #558b2f;">每</span>
+            <input type="number" id="github-backup-interval" value="30" min="5" style="width: 50px; padding: 2px 5px; border: 1px solid #aed581; border-radius: 4px; text-align: center; font-size: 12px;">
+            <span style="font-size: 12px; color: #558b2f;">分钟 (按日期归档)</span>
+        </div>
+    </div>
+    <label class="toggle-switch">
+        <input type="checkbox" id="github-auto-backup-switch">
+        <span class="slider"></span>
+    </label>
+</div>
+    <div class="form-group">
+        <label>GitHub 用户名 (Username)</label>
+        <input type="text" id="github-username" placeholder="例如: yourname">
+    </div>
+    
+    <div class="form-group">
+        <label>仓库名称 (Repository Name)</label>
+        <input type="text" id="github-repo" placeholder="例如: my-ephone-backups">
+        <p style="font-size: 12px; color: #666; margin-top: 5px;">
+            💡 该仓库必须已存在。建议设置为 <strong style="color: #d32f2f;">私有 (Private)</strong> 以保护隐私。<br>
+            👉 <a href="https://github.com/new" target="_blank" style="color: #007bff;">点击此处去创建新仓库</a>
+        </p>
+    </div>
+    
+    <div class="form-group">
+        <label>GitHub Token (PAT)</label>
+        <div style="position: relative;">
+            <input type="password" id="github-token" placeholder="ghp_xxxxxxxxxxxx" style="background-color: #f8f9fa; color: #333; border: 1px solid #ccc; padding-right: 40px; width: 100%; box-sizing: border-box;">
+            <span id="github-token-toggle" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; user-select: none; font-size: 18px;">🧐</span>
+        </div>
+        <p style="font-size: 12px; color: #666; margin-top: 5px;">
+            💡 请前往 <a href="https://github.com/settings/tokens" target="_blank" style="color: #007bff;">GitHub Developer Settings</a> 生成 Token (Classic)。<br>
+            ⚠️ <strong>必须勾选 <code>repo</code> 权限</strong> (Full control of private repositories)。
+        </p>
+    </div>
+    
+    <div class="form-group">
+        <label>备份文件名 (包含路径)</label>
+        <input type="text" id="github-filename" value="ephone_backup.json" placeholder="例如: ephone_backup.json">
+    </div>
+   <div class="form-group" style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+        <label for="github-proxy-switch" style="margin-bottom: 0;">
+            启用代理 (Cloudflare Worker)
+            <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;">
+                国内网络建议开启。关闭则直连 GitHub API。
+            </p>
+        </label>
+        <label class="toggle-switch">
+            <input type="checkbox" id="github-proxy-switch">
+            <span class="slider"></span>
+        </label>
+    </div>
+
+    <div id="github-proxy-input-group" style="display: none; margin-bottom: 15px;">
+        <div class="form-group">
+            <label>代理地址 (Proxy URL)</label>
+            <input type="text" id="github-proxy-url" placeholder="例如: https://your-worker.workers.dev/">
+            
+            <p style="font-size: 12px; color: #666; margin-top: 5px;">
+                程序会将 GitHub API 拼接到此地址后面。<br>
+                例如填: <code>https://my.proxy/</code>，请求变为: <code>https://my.proxy/https://api.github.com...</code>
+            </p>
+
+            <p style="font-size: 12px; color: #666; margin-top: 5px;">
+                💡 请前往 <a href="https://dash.cloudflare.com/" target="_blank" style="color: #007bff; text-decoration: none;">Cloudflare Dashboard</a> 注册/登录并创建一个 Worker。
+            </p>
+        </div>
+    </div>
+    <div style="display: flex; gap: 10px; margin-top: 15px;">
+        <button type="button" id="github-upload-btn" class="form-button" style="background-color: #24292e; margin-top:0;">⬆️ 上传备份</button>
+        <button type="button" id="github-download-btn" class="form-button form-button-secondary" style="margin-top:0;">⬇️ 从 GitHub 恢复</button>
+    </div>
+</div>
+
 
 <hr style="margin: 30px 0; opacity: 0.3;">
         <h3 style="border-bottom: 1px solid #eee; padding-bottom: 10px;"data-lang-key="apiStorageOptimization">存储空间优化</h3>
@@ -2660,7 +2758,6 @@
 
 </body>
 </html>
-
 
 
 
