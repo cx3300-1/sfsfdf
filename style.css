@@ -10995,7 +10995,7 @@ input[type=range] {
 #reading-window.fullscreen #reading-content {
     /* 给内容顶部增加更多的内边距，因为头部变高了 */
     padding-top: calc(100px + env(safe-area-inset-top)) !important;
-}
+} 
 
 
 
