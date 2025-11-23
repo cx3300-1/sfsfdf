@@ -464,327 +464,405 @@
         </div> <button type="button" id="add-preset-entry-btn" class="form-button form-button-secondary"data-lang-key="presetAddEntryBtn"> [+] 添加新条目 </button>
       </div>
     </div>
-    <div id="api-settings-screen" class="screen">
-      <div class="header"> <span class="back-btn" onclick="showScreen('home-screen')">‹</span> <span data-lang-key="apiSettingsTitle">API 设置</span> <span style="width: 30px;"></span> </div>
-      <div class="form-container">
-    <div class="form-group">
-        <label for="language-select" data-lang-key="languageLabel">语言 (Language)</label>
-        <select id="language-select">
-            <option value="zh-CN">简体中文</option>
-            <option value="en">English</option>
-        </select>
-    </div>
-    <hr style="margin: 30px 0; opacity: 0.3;">
-        <h3 style="margin-top:0; border-bottom: 1px solid #eee; padding-bottom: 10px;"data-lang-key="apiPresetManagement">API 预设管理</h3>
-        <div class="form-group"> <label for="api-preset-select"data-lang-key="apiPresetSelectLabel">选择或切换预设</label>
-          <div style="display: flex; gap: 10px; align-items: center;"> <select id="api-preset-select" style="flex-grow: 1;"></select> <button id="save-api-preset-btn" class="form-button-secondary" style="margin-top: 0; padding: 12px;"data-lang-key="save">保存</button> <button id="delete-api-preset-btn"
-              class="form-button-secondary" style="margin-top: 0; padding: 12px; background-color: #ffebee; color: #d32f2f; border-color: #ffcdd2;"data-lang-key="delete">删除</button> </div>
-        </div>
-        <hr style="margin: 30px 0; opacity: 0.3;">
-        <h3 style="margin-top:0; border-bottom: 1px solid #eee; padding-bottom: 10px;"data-lang-key="apiPrimarySettings">主API设置 (用于聊天)</h3>
-        <p style="font-size: 14px; color: #666; background-color: #f0f0f0; padding: 10px; border-radius: 8px;"> 提示: 若要使用“发送图片”功能, 请务必选择支持Vision(视觉)的模型, 如<code style="background-color: #e0e0e0; padding: 2px 4px; border-radius: 4px;">gpt-4o</code>或<code
-            style="background-color: #e0e0e0; padding: 2px 4px; border-radius: 4px;">gpt-4-vision-preview</code>。 </p>
-        <div class="form-group"> <label for="proxy-url"data-lang-key="apiProxyUrlLabel">反代地址 (不需要添加/v1噢~)</label> <input type="text" id="proxy-url" placeholder="例如: https://api.openai.com"> </div>
-        <div class="form-group"> <label for="api-key"data-lang-key="apiKeyLabel">密钥 (API Key)</label> <input type="password" id="api-key" placeholder="sk-..."> </div>
-        <div class="form-group"> <label for="model-select"data-lang-key="apiModelLabel">模型</label> <select id="model-select"></select> </div> <button class="form-button" id="fetch-models-btn"data-lang-key="apiFetchModelsBtn">拉取主模型</button>
-        <hr style="margin: 30px 0; opacity: 0.3;">
-        <h3 style="border-bottom: 1px solid #eee; padding-bottom: 10px;"data-lang-key="apiSecondarySettings">副API设置 (用于总结长期记忆)</h3>
-        <p style="font-size: 14px; color: #666; background-color: #f0f0f0; padding: 10px; border-radius: 8px;"> 您可以在此配置一个独立的、可能成本更低的API，专门用于后台的长期记忆总结任务，以节省主API的费用。如果留空，将默认使用主API进行总结。 </p>
-        <div class="form-group"> <label for="secondary-proxy-url"data-lang-key="apiSecondaryProxyUrlLabel">副反代地址</label> <input type="text" id="secondary-proxy-url" placeholder="例如: https://api.groq.com/openai"> </div>
-        <div class="form-group"> <label for="secondary-api-key"data-lang-key="apiSecondaryKeyLabel">副密钥</label> <input type="password" id="secondary-api-key" placeholder="gsk_..."> </div>
-        <div class="form-group"> <label for="secondary-model-select"data-lang-key="apiSecondaryModelLabel">副模型</label> <select id="secondary-model-select"></select> </div> <button class="form-button form-button-secondary" id="fetch-secondary-models-btn"data-lang-key="apiFetchSecondaryModelsBtn">拉取副模型</button>
-        <div class="form-group"> <label for="api-temperature-slider">API 温度 (Temperature) <span id="api-temperature-value">0.8</span></label>
-          <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;"> 控制AI回复的随机性和创造性。值越高，回复越随机；值越低，回复越确定。建议范围 0.7-1.0。 </p> <input type="range" id="api-temperature-slider" min="0" max="2" step="0.1" value="0.8" style="width: 100%; margin-top: 8px;">
-        </div>
-        <hr style="margin: 30px 0; opacity: 0.3;">
-        <h3 style="border-bottom: 1px solid #eee; padding-bottom: 10px;"data-lang-key="apiBgActivitySettings">后台活动设置</h3>
-        <div class="form-group" style="display: flex; justify-content: space-between; align-items: center;"> <label for="background-activity-switch" style="margin-bottom: 0;"data-lang-key="apiEnableBgActivityLabel"> 启用后台角色活动 <p style="font-size: 12px; font-weight: normal; color: #ff6b6b; margin-top: 5px;"> 警告：此功能会显著增加API调用和费用！ </p>
-          </label> <input type="checkbox" id="background-activity-switch" style="width: auto; height: 20px;"> </div>
-        <div class="form-group" style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;"> <label for="background-interval-input" style="margin-bottom: 0;"data-lang-key="apiBgIntervalLabel"> 后台活动检测间隔 (秒) <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;"> 建议值
-              60-300。值越大，费用越低，但角色反应越慢。 </p> </label> <input type="number" id="background-interval-input" min="30" value="60" style="width: 80px; text-align: center;"> </div>
-        <div class="form-group" style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;"> <label for="block-cooldown-input" style="margin-bottom: 0;"data-lang-key="apiBlockCooldownLabel"> AI被拉黑后冷静期 (小时) <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;">
-              被拉黑超过这个时间后，AI才有几率重新申请好友。 </p> </label> <input type="number" id="block-cooldown-input" min="0.1" step="0.1" value="1" style="width: 80px; text-align: center;"> </div>
-        <hr style="margin: 30px 0; opacity: 0.3;">
-        <h3 style="border-bottom: 1px solid #eee; padding-bottom: 10px;"data-lang-key="apiTtsSettings">语音消息设置 (Minimax TTS)</h3>
-        <p style="font-size: 14px; color: #666; background-color: #f0f0f0; padding: 10px; border-radius: 8px;"> 在 AI 回复的文字前加上 <code style="background-color: #e0e0e0; padding: 2px 4px; border-radius: 4px;">[V]</code> 前缀，即可让该条消息自动渲染为可播放的语音。</p>
-        <div class="form-group"> <label for="minimax-group-id">Minimax Group ID</label> <input type="text" id="minimax-group-id" placeholder="在此输入你的 Group ID"></div>
-        <div class="form-group"> <label for="minimax-api-key">Minimax API Key</label> <input type="password" id="minimax-api-key" placeholder="在此输入你的 API Key"></div>
-        <div class="form-group"> <label for="minimax-model-select"data-lang-key="apiTtsModelLabel">语音模型 (Model)</label> <select id="minimax-model-select">
-            <option value="speech-01">speech-01 (标准)</option>
-            <option value="speech-02">speech-02 (高清)</option>
-          </select></div>
-<hr style="margin: 30px 0; opacity: 0.3;">
+    <div id="api-settings-screen" class="screen ios-settings-screen">
+      <div class="header"> 
+        <span class="back-btn" onclick="showScreen('home-screen')">‹</span> 
+        <span data-lang-key="apiSettingsTitle">设置</span> 
+        <span class="save-btn" id="save-api-settings-btn" data-lang-key="save">完成</span> 
+      </div>
+      
+      <div class="settings-container ios-scroll-container">
         
-        <h3 style="border-bottom: 1px solid #eee; padding-bottom: 10px;">ImgBB 自动图床设置</h3>
-        <p style="font-size: 14px; color: #666; background-color: #f0f0f0; padding: 10px; border-radius: 8px;">
-            开启后，所有本地上传的图片 (如头像、表情、聊天图片等) 将被自动上传到 ImgBB 图床，以极大减小本地数据库体积。
-            <br><strong style="color: #ff3b30;">警告：您的图片将被上传到公共互联网。请勿上传私密照片！</strong>
-        </p>
-        
-        <div class="form-group" style="display: flex; justify-content: space-between; align-items: center;">
-            <label for="imgbb-enable-switch" style="margin-bottom: 0;">
-                启用 ImgBB 自动上传
-            </label>
-            <label class="toggle-switch">
-                <input type="checkbox" id="imgbb-enable-switch">
-                <span class="slider"></span>
-            </label>
-        </div>
-        
-        <div id="imgbb-settings-details" style="display: none;">
-            <div class="form-group">
-                <label for="imgbb-api-key">ImgBB API Key</label>
-                <div style="position: relative;">
-                    <input type="password" id="imgbb-api-key" placeholder="在此输入您的 ImgBB API Key" style="background-color: #f8f9fa; color: #333; border: 1px solid #ccc; padding-right: 40px; width: 100%; box-sizing: border-box;">
-                    <span id="imgbb-key-toggle" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; user-select: none; font-size: 18px;">🧐</span>
+        <!-- 语言设置 -->
+        <div class="settings-section">
+            <div class="settings-item">
+                <label for="language-select" data-lang-key="languageLabel">语言</label>
+                <div class="settings-right">
+                    <select id="language-select" class="settings-select">
+                        <option value="zh-CN">简体中文</option>
+                        <option value="en">English</option>
+                    </select>
                 </div>
-                <p style="font-size: 12px; color: #666; margin-top: 5px;">
-                    💡 请前往 <a href="https://api.imgbb.com/" target="_blank" style="color: #007bff;">api.imgbb.com</a> 注册并获取您的 API key (选择 "v1" API)。
-                </p>
             </div>
         </div>
-<hr style="margin: 30px 0; opacity: 0.3;">
-            <h3 style="border-bottom: 1px solid #eee; padding-bottom: 10px;">Catbox.moe 文件托管设置</h3>
-            <p style="font-size: 14px; color: #666; background-color: #f0f0f0; padding: 10px; border-radius: 8px;">
-                开启后，所有本地上传的【歌曲文件 (MP3/WAV等)】将被自动上传到 Catbox.moe 图床/文件托管，并使用外链保存。
-                <br><strong style="color: #007bff;">这可以极大减小本地数据库体积，但需要您提供自己的 Catbox User Hash。</strong>
-            </p>
-            
-            <div class="form-group" style="display: flex; justify-content: space-between; align-items: center;">
-                <label for="catbox-enable-switch" style="margin-bottom: 0;">
-                    启用 Catbox.moe 自动上传
+
+        <!-- API 预设 -->
+        <div class="settings-header" data-lang-key="apiPresetManagement">配置预设</div>
+        <div class="settings-section">
+            <div class="settings-item">
+                 <!-- 下拉框容器：flex-grow 占满左侧空间，内部左对齐 -->
+                 <div style="flex-grow: 1; display: flex; align-items: center; justify-content: flex-start; overflow: hidden;">
+                     <select id="api-preset-select" class="settings-select">
+                         <!-- JS 填充选项 -->
+                     </select>
+                 </div>
+                 
+                 <!-- 按钮组：固定在右侧 -->
+                 <div class="settings-right" style="flex-grow: 0; width: auto; margin-left: 10px;">
+                     <button id="save-api-preset-btn" class="settings-mini-btn">保存</button>
+                     <button id="delete-api-preset-btn" class="settings-mini-btn">删除</button>
+                 </div>
+            </div>
+        </div>
+
+        <!-- 主 API 设置 -->
+        <div class="settings-header" data-lang-key="apiPrimarySettings">主 API (对话)</div>
+        <div class="settings-section">
+            <!-- 1. 提示条 (还原截图效果) -->
+            <div class="settings-tip-wrapper">
+                <div class="settings-tip-content">
+                    提示: 若要使用“发送图片”功能，请务必选择支持 Vision(视觉) 的模型，如 <code>gpt-4o</code> 或 <code>gpt-4-vision-preview</code>。
+                </div>
+            </div>
+
+            <!-- 2. 输入框部分 -->
+            <div class="settings-item">
+                <label>反代地址</label>
+                <div class="settings-right">
+                    <input type="text" id="proxy-url" placeholder="https://api.openai.com">
+                </div>
+            </div>
+            <div class="settings-item">
+                <label>API Key</label>
+                <div class="settings-right">
+                    <input type="password" id="api-key" placeholder="sk-...">
+                </div>
+            </div>
+            <div class="settings-item">
+                <label>模型</label>
+                <div class="settings-right">
+                    <select id="model-select" class="settings-select" style="flex-grow: 1; width: auto;"></select>
+                    <button id="fetch-models-btn" class="settings-mini-btn">拉取</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 副 API 设置 -->
+        <div class="settings-header" data-lang-key="apiSecondarySettings">副 API (长记忆总结)</div>
+        <div class="settings-section">
+            <div class="settings-item">
+                <label>反代地址</label>
+                <div class="settings-right">
+                    <input type="text" id="secondary-proxy-url" placeholder="留空使用主API">
+                </div>
+            </div>
+            <div class="settings-item">
+                <label>API Key</label>
+                <div class="settings-right">
+                    <input type="password" id="secondary-api-key" placeholder="可选">
+                </div>
+            </div>
+            <!-- 修改点：模型和拉取按钮在一行 -->
+            <div class="settings-item">
+                <label>模型</label>
+                <div class="settings-right">
+                     <!-- 下拉框占据剩余空间 -->
+                    <select id="secondary-model-select" class="settings-select" style="flex-grow: 1; width: auto;"></select>
+                    <!-- 按钮放在旁边 -->
+                    <button id="fetch-secondary-models-btn" class="settings-mini-btn">拉取</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 参数设置 -->
+        <div class="settings-header">参数设置</div>
+        <div class="settings-section">
+             <div class="settings-item">
+                <label>温度 (Temperature) <span id="api-temperature-value" style="color:var(--accent-color);">0.8</span></label>
+                <div class="settings-right" style="width: 50%;">
+                    <input type="range" id="api-temperature-slider" min="0" max="2" step="0.1" value="0.8">
+                </div>
+            </div>
+        </div>
+
+        <!-- 后台与自动化 -->
+        <div class="settings-header" data-lang-key="apiBgActivitySettings">后台活动</div>
+        <div class="settings-section">
+            <div class="settings-item">
+                <label>启用后台角色活动</label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="background-activity-switch">
+                    <span class="slider"></span>
                 </label>
+            </div>
+            <div class="settings-item">
+                <label>检测间隔 (秒)</label>
+                <div class="settings-right">
+                    <input type="number" id="background-interval-input" min="30" value="60" class="settings-num-input">
+                </div>
+            </div>
+            <div class="settings-item">
+                <label>拉黑冷静期 (小时)</label>
+                <div class="settings-right">
+                    <input type="number" id="block-cooldown-input" min="0.1" step="0.1" value="1" class="settings-num-input">
+                </div>
+            </div>
+        </div>
+        <div class="settings-desc">开启后台活动会增加 API 费用。</div>
+
+        <!-- 语音设置 -->
+        <div class="settings-header" data-lang-key="apiTtsSettings">Minimax TTS 语音</div>
+        <div class="settings-section">
+            <div class="settings-item">
+                <label>Group ID</label>
+                <div class="settings-right">
+                     <input type="text" id="minimax-group-id" placeholder="输入 Group ID">
+                </div>
+            </div>
+            <div class="settings-item">
+                <label>API Key</label>
+                <div class="settings-right">
+                     <input type="password" id="minimax-api-key" placeholder="输入 API Key">
+                </div>
+            </div>
+            <!-- 分行 1: 模型 -->
+            <div class="settings-item">
+                <label>模型</label>
+                <div class="settings-right">
+                    <select id="minimax-model-select" class="settings-select">
+                        <!-- JS 会填充选项 -->
+                    </select>
+                </div>
+            </div>
+            <!-- 分行 2: 接口域名 (手动写死在这里，不再依赖 JS 动态插入) -->
+            <div class="settings-item">
+                <label>接口域名</label>
+                <div class="settings-right">
+                    <select id="minimax-domain-select" class="settings-select">
+                        <option value="https://api.minimax.chat">🇨🇳 国内 (api.minimax.chat)</option>
+                        <option value="https://api.minimaxi.chat">🌏 海外 (api.minimaxi.chat)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- 生图设置 (AI & NovelAI) -->
+        <div class="settings-header" data-lang-key="apiImageGenSettings">图像生成</div>
+        <div class="settings-section">
+            <!-- 通用生图 -->
+            <div class="settings-item">
+                <label>启用通用 AI 生图</label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="enable-ai-drawing-switch">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+            <!-- NovelAI -->
+            <div class="settings-item">
+                <label>启用 NovelAI</label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="novelai-switch">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+            <!-- NovelAI 详情 (JS控制显示/隐藏) -->
+            <div id="novelai-details" style="display:none; background-color: #f9f9f9; border-top: 0.5px solid #ebedf0;">
+                <div class="settings-item">
+                    <label>模型</label>
+                    <div class="settings-right">
+                         <select id="novelai-model" class="settings-select">
+                            <option value="nai-diffusion-4-curated-preview">V4.5 Curated</option>
+                            <option value="nai-diffusion-4-5-full">V4.5 Full</option>
+                            <option value="nai-diffusion-3">Anime V3</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="settings-item">
+                    <label>API Key</label>
+                    <div class="settings-right">
+                        <div style="position:relative; width:100%;">
+                             <input type="password" id="novelai-api-key" placeholder="pst-...">
+                             <span id="novelai-key-toggle" style="position: absolute; right: 0; top: 50%; transform: translateY(-50%); cursor: pointer;">🧐</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="settings-item" style="justify-content: space-around;">
+                    <button id="novelai-settings-btn" class="settings-mini-btn">⚙️ 生成参数</button>
+                    <button id="novelai-test-btn" class="settings-mini-btn">🧪 测试生成</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 云服务与存储 -->
+        <!-- 云服务与存储 (灰条下沉版) -->
+        <div class="settings-header">云服务与存储</div>
+        <div class="settings-section">
+             
+             <!-- === ImgBB === -->
+             <!-- 1. 先放开关行 -->
+             <div class="settings-item">
+                <label>ImgBB 图床</label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="imgbb-enable-switch">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <!-- 2. 再放详情容器 (灰条移入此处) -->
+            <div id="imgbb-settings-details" style="display:none;">
+                 <!-- 灰条被移到了这里 -->
+                 <div class="settings-tip-wrapper">
+                    <div class="settings-tip-content">
+                        开启后，本地图片将自动上传到 ImgBB 图床以减小体积。<br>
+                        ⚠️ 图片将上传到公共互联网，请勿上传私密照片！<br>
+                        🔗 <a href="https://api.imgbb.com/" target="_blank">点击此处注册并获取 API Key</a>
+                    </div>
+                </div>
+                
+                 <div class="settings-item">
+                    <label>API Key</label>
+                     <div class="settings-right">
+                        <div style="position:relative; width:100%;">
+                            <input type="password" id="imgbb-api-key" placeholder="输入 ImgBB Key">
+                            <span id="imgbb-key-toggle" style="position: absolute; right: 0; top: 50%; transform: translateY(-50%); cursor: pointer;">🧐</span>
+                        </div>
+                     </div>
+                 </div>
+            </div>
+
+            <!-- === Catbox === -->
+             <!-- 1. 开关 -->
+             <div class="settings-item">
+                <label>Catbox 托管</label>
                 <label class="toggle-switch">
                     <input type="checkbox" id="catbox-enable-switch">
                     <span class="slider"></span>
                 </label>
             </div>
-            
-            <div id="catbox-settings-details" style="display: none;">
-                <div class="form-group">
-                    <label for="catbox-userhash">Catbox User Hash</label>
-                    <div style="position: relative;">
-                        <input type="password" id="catbox-userhash" placeholder="在此输入您的 User Hash" style="background-color: #f8f9fa; color: #333; border: 1px solid #ccc; padding-right: 40px; width: 100%; box-sizing: border-box;">
-                        <span id="catbox-key-toggle" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; user-select: none; font-size: 18px;">🧐</span>
+            <!-- 2. 详情容器 (灰条移入此处) -->
+            <div id="catbox-settings-details" style="display:none;">
+                 <!-- 灰条被移到了这里 -->
+                 <div class="settings-tip-wrapper">
+                    <div class="settings-tip-content">
+                        开启后，歌曲文件将上传到 Catbox.moe 托管。<br>
+                        🔗 <a href="https://catbox.moe/user/manage.php" target="_blank">登录 Catbox 查看 User Hash</a>
                     </div>
-                    <p style="font-size: 12px; color: #666; margin-top: 5px;">
-                        💡 请登录您的 <a href="https://catbox.moe/" target="_blank" style="color: #007bff;">Catbox.moe</a> 账户，在 "Account Settings" 页面找到您的 User Hash。
-                    </p>
+                </div>
+
+                 <div class="settings-item">
+                    <label>User Hash</label>
+                     <div class="settings-right">
+                        <div style="position:relative; width:100%;">
+                            <input type="password" id="catbox-userhash" placeholder="输入 User Hash">
+                            <span id="catbox-key-toggle" style="position: absolute; right: 0; top: 50%; transform: translateY(-50%); cursor: pointer;">🧐</span>
+                        </div>
+                     </div>
+                 </div>
+            </div>
+
+             <!-- === GitHub === -->
+             <!-- 1. 开关 -->
+             <div class="settings-item">
+                <label>GitHub 云备份</label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="github-enable-switch">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <!-- 2. 详情容器 (灰条移入此处) -->
+            <div id="github-settings-details" style="display:none;">
+                <!-- 灰条被移到了这里 -->
+                <div class="settings-tip-wrapper">
+                    <div class="settings-tip-content">
+                        将数据备份到私有 GitHub 仓库，方便跨设备同步。<br>
+                        1. <a href="https://github.com/new" target="_blank">创建新仓库</a> (建议设为 Private)<br>
+                        2. <a href="https://github.com/settings/tokens" target="_blank">获取 Token</a> (必须勾选 <strong>repo</strong> 权限)
+                    </div>
+                </div>
+
+                <div class="settings-item">
+                    <label>自动备份 (分钟)</label>
+                    <div class="settings-right" style="gap: 5px;">
+                         <input type="number" id="github-backup-interval" value="30" class="settings-num-input">
+                         <label class="toggle-switch" style="transform: scale(0.8);">
+                            <input type="checkbox" id="github-auto-backup-switch">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                 <div class="settings-item"><label>用户名</label><div class="settings-right"><input type="text" id="github-username" placeholder="如: yourname"></div></div>
+                 <div class="settings-item"><label>仓库名</label><div class="settings-right"><input type="text" id="github-repo" placeholder="如: my-backup"></div></div>
+                 <div class="settings-item"><label>Token</label><div class="settings-right"><div style="position:relative; width:100%;"><input type="password" id="github-token"><span id="github-token-toggle" style="position: absolute; right: 0; top: 50%; transform: translateY(-50%); cursor: pointer;">🧐</span></div></div></div>
+                 <div class="settings-item"><label>文件名</label><div class="settings-right"><input type="text" id="github-filename" value="ephone_backup.json"></div></div>
+                 
+                 <!-- GitHub Proxy -->
+                 <div class="settings-item">
+                    <label>代理 (Worker)</label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="github-proxy-switch">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                 <div id="github-proxy-input-group" style="display:none;">
+                     <div class="settings-tip-wrapper" style="padding-top:10px !important;">
+                        <div class="settings-tip-content">
+                            国内网络建议开启。需自建 Cloudflare Worker。<br>
+                            🔗 <a href="https://dash.cloudflare.com/" target="_blank">前往 Cloudflare 控制台</a>
+                        </div>
+                    </div>
+                    <div class="settings-item">
+                        <label>代理地址</label>
+                        <div class="settings-right"><input type="text" id="github-proxy-url" placeholder="https://..."></div>
+                    </div>
+                 </div>
+                 
+                 <!-- GitHub 按钮 -->
+                 <div class="settings-item" style="justify-content: space-around;">
+                    <button id="github-upload-btn" class="settings-mini-btn">☁️ 上传备份</button>
+                    <button id="github-download-btn" class="settings-mini-btn">📥 恢复备份</button>
                 </div>
             </div>
-        <hr style="margin: 30px 0; opacity: 0.3;">
-        <h3 style="border-bottom: 1px solid #eee; padding-bottom: 10px;"data-lang-key="apiPerformanceSettings"data-lang-key="apiPerformanceSettings">性能与显示设置</h3>
-        <div class="form-group" style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;"> <label for="chat-list-render-window-input" style="margin-bottom: 0;"data-lang-key="apiChatListRenderWindowLabel"> 聊天列表每次加载条数 <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;">
-              控制主页聊天列表下拉时每次加载会话的数量。默认30。 </p> </label> <input type="number" id="chat-list-render-window-input" min="10" value="30" style="width: 80px; text-align: center;"> </div>
-        <div class="form-group" style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;"> <label for="chat-render-window-input" style="margin-bottom: 0;"data-lang-key="apiChatRenderWindowLabel"> 聊天界面初始加载条数 <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;">
-              打开聊天时默认显示的最近消息数量。值越大，初次加载越慢。 </p> </label> <input type="number" id="chat-render-window-input" min="10" value="50" style="width: 80px; text-align: center;"> </div>
-        <hr style="margin: 30px 0; opacity: 0.3;">
-        <h3 style="border-bottom: 1px solid #eee; padding-bottom: 10px;"data-lang-key="apiImageGenSettings">生图功能设置</h3>
-        <div class="form-group" style="display: flex; justify-content: space-between; align-items: center;"> <label for="enable-ai-drawing-switch" style="margin-bottom: 0;"data-lang-key="apiEnableImageGenLabel"> 启用AI生图功能 <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;">
-              关闭后，所有需要AI生成的图片（动态、头像等）都将显示为占位图，以节省流量和API费用。 </p> </label> <label class="toggle-switch"> <input type="checkbox" id="enable-ai-drawing-switch"> <span class="slider"></span> </label> </div>
-<!-- ▼▼▼ NovelAI 图像生成系统配置 ▼▼▼ -->
-<hr style="margin:20px 0; opacity:.3">
-<div class="form-group" style="display: flex; justify-content: space-between; align-items: center;">
-    <label for="novelai-switch" style="margin-bottom: 0;">
-        启用 NovelAI 图像生成
-        <p style="font-size: 12px; font-weight: normal; color: #666; margin-top: 5px;">
-            开启后可使用NovelAI官方API生成高质量动漫风格图像（必开🔮）
-        </p>
-        <p style="font-size: 12px; font-weight: normal; color: #666; margin-top: 5px;">
-            1. 三击下载图片，下面可测试模型或关键词画师串
-        </p>
-        <p style="font-size: 12px; font-weight: normal; color: #666; margin-top: 5px;">
-            2. 429是novel的访问频繁错误，等待几秒重新即可
-        </p>
-        <p style="font-size: 12px; font-weight: normal; color: #666; margin-top: 5px;">
-            3. 403是多人共号限制，限制oplus免费出小图但可扣点数
-        </p>
-        <p style="font-size: 12px; font-weight: normal; color: #666; margin-top: 5px;">
-            4. 403也会因为没开🔮报错，实在不行可更换出图尺寸
-        </p>
-        <p style="font-size: 12px; font-weight: normal; color: #666; margin-top: 5px;">
-            5. 401是key没权限，检查key是否正确
-        </p>
-        <p style="font-size: 12px; font-weight: normal; color: #666; margin-top: 5px;">
-            6. 生成失败:Failed to fetch是跨域限制，下方设置里换代理
-      </p>
-    </label>
-    <label class="toggle-switch">
-        <input type="checkbox" id="novelai-switch">
-        <span class="slider"></span>
-    </label>
-</div>
-
-<div id="novelai-details" style="display: none;">
-    <div class="form-group">
-        <label for="novelai-model" style="color: #333;"data-lang-key="apiNovelAIModelLabel">NovelAI 模型</label>
-        <select id="novelai-model" style="background-color: #f8f9fa; color: #333; border: 1px solid #ccc; padding: 8px; border-radius: 4px;">
-            <option value="nai-diffusion-4-curated-preview">NAI Diffusion V4.5 Curated (精选版无nsfw)</option>
-            <option value="nai-diffusion-4-5-full">NAI Diffusion V4.5 Full（完整版含nsfw）</option>
-            <option value="nai-diffusion-3">NAI Diffusion Anime V3（旧版）</option>
-            <option value="nai-diffusion-furry-3">NAI Diffusion Furry V3（旧旧版）</option>
-        </select>
-        <p style="font-size: 12px; color: #666; margin-top: 5px;">
-            💡 必须有oplus订阅的apikey才可以使用！
-        </p>
-    </div>
-
-    <div class="form-group">
-        <label for="novelai-api-key" style="color: #333;"data-lang-key="apiNovelAIKeyLabel">NovelAI API Key</label>
-        <div style="position: relative;">
-            <input type="password" id="novelai-api-key" placeholder="pst-xxxxxxxxxxxxxxxx" style="background-color: #f8f9fa; color: #333; border: 1px solid #ccc; padding-right: 40px;">
-            <span id="novelai-key-toggle" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; user-select: none; font-size: 18px;">🧐</span>
         </div>
-        <p style="font-size: 12px; color: #666; margin-top: 5px;">
-            💡 在 <a href="https://novelai.net" target="_blank" style="color: #007bff;">NovelAI官网</a> 获取API Key
-        </p>
-    </div>
-
-    <div style="display: flex; gap: 10px; margin-top: 15px;">
-        <button type="button" id="novelai-settings-btn" style="flex: 1; background-color: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;"data-lang-key="apiNovelAIGenSettingsBtn">
-            ⚙️ 生成设置
-        </button>
-        <button type="button" id="novelai-test-btn" style="flex: 1; background-color: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;"data-lang-key="apiNovelAITestBtn">
-            🧪 测试生成
-        </button>
-    </div>
-</div>
-<!-- ▲▲▲ NovelAI 图像生成系统配置结束 ▲▲▲ -->
-<hr style="margin: 30px 0; opacity: 0.3;">
-<h3 style="border-bottom: 1px solid #eee; padding-bottom: 10px;">☁️ GitHub 云备份</h3>
-<p style="font-size: 14px; color: #666; background-color: #f0f0f0; padding: 10px; border-radius: 8px;">
-    开启后，可以将所有数据备份到您私有的 GitHub 仓库中，方便跨设备同步。<br>
-    <strong style="color: #007bff;">注意：请确保 Token 拥有 `repo` 权限。</strong>
-</p>
-
-<div class="form-group" style="display: flex; justify-content: space-between; align-items: center;">
-    <label for="github-enable-switch" style="margin-bottom: 0;">
-        启用 GitHub 云备份
-    </label>
-    <label class="toggle-switch">
-        <input type="checkbox" id="github-enable-switch">
-        <span class="slider"></span>
-    </label>
-</div>
-
-<div id="github-settings-details" style="display: none;">
-<div class="form-group" style="display: flex; justify-content: space-between; align-items: center; background: #f1f8e9; padding: 10px; border-radius: 8px; border: 1px solid #c5e1a5; margin-bottom: 15px;">
-    <div style="flex-grow: 1;">
-        <label for="github-auto-backup-switch" style="margin-bottom: 0; color: #33691e; font-weight: bold;">
-            🔄 自动后台备份
-        </label>
-        <div style="display: flex; align-items: center; margin-top: 5px; gap: 5px;">
-            <span style="font-size: 12px; color: #558b2f;">每</span>
-            <input type="number" id="github-backup-interval" value="30" min="5" style="width: 50px; padding: 2px 5px; border: 1px solid #aed581; border-radius: 4px; text-align: center; font-size: 12px;">
-            <span style="font-size: 12px; color: #558b2f;">分钟 (按日期归档)</span>
+        <!-- 性能 -->
+        <div class="settings-header">性能与显示</div>
+        <div class="settings-section">
+            <div class="settings-item">
+                <label>聊天列表加载数</label>
+                <div class="settings-right">
+                    <input type="number" id="chat-list-render-window-input" class="settings-num-input">
+                </div>
+            </div>
+             <div class="settings-item">
+                <label>聊天内加载数</label>
+                <div class="settings-right">
+                    <input type="number" id="chat-render-window-input" class="settings-num-input">
+                </div>
+            </div>
         </div>
-    </div>
-    <label class="toggle-switch">
-        <input type="checkbox" id="github-auto-backup-switch">
-        <span class="slider"></span>
-    </label>
-</div>
-    <div class="form-group">
-        <label>GitHub 用户名 (Username)</label>
-        <input type="text" id="github-username" placeholder="例如: yourname">
-    </div>
-    
-    <div class="form-group">
-        <label>仓库名称 (Repository Name)</label>
-        <input type="text" id="github-repo" placeholder="例如: my-ephone-backups">
-        <p style="font-size: 12px; color: #666; margin-top: 5px;">
-            💡 该仓库必须已存在。建议设置为 <strong style="color: #d32f2f;">私有 (Private)</strong> 以保护隐私。<br>
-            👉 <a href="https://github.com/new" target="_blank" style="color: #007bff;">点击此处去创建新仓库</a>
-        </p>
-    </div>
-    
-    <div class="form-group">
-        <label>GitHub Token (PAT)</label>
-        <div style="position: relative;">
-            <input type="password" id="github-token" placeholder="ghp_xxxxxxxxxxxx" style="background-color: #f8f9fa; color: #333; border: 1px solid #ccc; padding-right: 40px; width: 100%; box-sizing: border-box;">
-            <span id="github-token-toggle" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; user-select: none; font-size: 18px;">🧐</span>
-        </div>
-        <p style="font-size: 12px; color: #666; margin-top: 5px;">
-            💡 请前往 <a href="https://github.com/settings/tokens" target="_blank" style="color: #007bff;">GitHub Developer Settings</a> 生成 Token (Classic)。<br>
-            ⚠️ <strong>必须勾选 <code>repo</code> 权限</strong> (Full control of private repositories)。
-        </p>
-    </div>
-    
-    <div class="form-group">
-        <label>备份文件名 (包含路径)</label>
-        <input type="text" id="github-filename" value="ephone_backup.json" placeholder="例如: ephone_backup.json">
-    </div>
-   <div class="form-group" style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
-        <label for="github-proxy-switch" style="margin-bottom: 0;">
-            启用代理 (Cloudflare Worker)
-            <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;">
-                国内网络建议开启。关闭则直连 GitHub API。
-            </p>
-        </label>
-        <label class="toggle-switch">
-            <input type="checkbox" id="github-proxy-switch">
-            <span class="slider"></span>
-        </label>
-    </div>
 
-    <div id="github-proxy-input-group" style="display: none; margin-bottom: 15px;">
-        <div class="form-group">
-            <label>代理地址 (Proxy URL)</label>
-            <input type="text" id="github-proxy-url" placeholder="例如: https://your-worker.workers.dev/">
+        <!-- 数据管理 (危险区域) -->
+        <div class="settings-header">数据管理</div>
+        
+        <div class="settings-section">
+            <!-- 1. 图片占用 + 压缩按钮 (同一行) -->
+            <div class="settings-item">
+                <!-- 左侧标题 -->
+                <label style="flex-shrink: 0;">本地图片占用</label>
+                
+                <!-- 右侧区域：数值 + 按钮 -->
+                <div class="data-row-right">
+                    <!-- 数值 (由JS填充，CSS会隐藏多余文字只留MB) -->
+                    <span id="total-image-size-display">计算中...</span>
+                    
+                    <!-- 压缩按钮 -->
+                    <button id="compress-images-btn" class="settings-mini-btn">压缩</button>
+                </div>
+            </div>
             
-            <p style="font-size: 12px; color: #666; margin-top: 5px;">
-                程序会将 GitHub API 拼接到此地址后面。<br>
-                例如填: <code>https://my.proxy/</code>，请求变为: <code>https://my.proxy/https://api.github.com...</code>
-            </p>
-
-            <p style="font-size: 12px; color: #666; margin-top: 5px;">
-                💡 请前往 <a href="https://dash.cloudflare.com/" target="_blank" style="color: #007bff; text-decoration: none;">Cloudflare Dashboard</a> 注册/登录并创建一个 Worker。
-            </p>
+            <!-- 列表按钮：黑色左对齐 -->
+            <button class="settings-full-btn" id="export-data-btn">导出所有数据</button>
+            <button class="settings-full-btn" id="import-btn">导入备份文件</button>
+            <input id="import-data-input" type="file" accept="application/json" hidden>
+            
+            <button class="settings-full-btn" id="cleanup-data-btn">清理冗余数据</button>
+            <button class="settings-full-btn" id="delete-world-books-btn">删除世界书</button>
+            <button class="settings-full-btn" id="clear-specific-data-btn">高级数据清理</button>
+            <button class="settings-full-btn" id="check-and-fix-data-btn">数据检查与修复</button>
         </div>
-    </div>
-    <div style="display: flex; gap: 15px; margin-top: 20px;">
-    <button type="button" id="github-upload-btn" class="form-button" 
-            style="margin-top:0; flex: 1; background-color: #007bff; border: none; box-shadow: 0 4px 12px rgba(0,123,255,0.2); display: flex; align-items: center; justify-content: center; gap: 8px;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="17 8 12 3 7 8"></polyline>
-            <line x1="12" y1="3" x2="12" y2="15"></line>
-        </svg>
-        <span>上传备份</span>
-    </button>
-    
-    <button type="button" id="github-download-btn" class="form-button form-button-secondary" 
-            style="margin-top:0; flex: 1; background-color: #f1f3f5; color: #495057; border: 1px solid #dee2e6; display: flex; align-items: center; justify-content: center; gap: 8px;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="7 10 12 15 17 10"></polyline>
-            <line x1="12" y1="15" x2="12" y2="3"></line>
-        </svg>
-        <span>恢复备份</span>
-    </button>
-</div>
-</div>
-
-
-<hr style="margin: 30px 0; opacity: 0.3;">
-        <h3 style="border-bottom: 1px solid #eee; padding-bottom: 10px;"data-lang-key="apiStorageOptimization">存储空间优化</h3>
-
-        <p id="total-image-size-display" style="font-size: 14px; color: var(--text-secondary); margin-bottom: 15px; text-align: center;">
-            正在计算本地图片总大小...
-        </p>
-        <button class="form-button form-button-secondary" id="compress-images-btn" style="background-color: #e8f5e9; color: #2e7d32; border-color: #c8e6c9;"data-lang-key="apiCompressImagesBtn">
-             一键压缩本地图片
-        </button>
-        <p style="font-size: 12px; color: #8a8a8a; margin-top: 8px; line-height: 1.5;">
-            此功能会将您所有本地上传的图片（如头像、表情包、聊天图片、头像框、组件图等）压缩为JPEG格式，以大幅减小数据体积。
-            <br><strong style="color: #ff3b30;">警告：这是一个有损压缩且不可逆的操作，会轻微降低图片质量。建议操作前先备份数据。</strong>
-        </p>
-        <hr style="margin: 30px 0; opacity: 0.3;"> <button class="form-button" id="save-api-settings-btn" style="margin-top: 20px;"data-lang-key="apiSaveAllBtn">保存所有设置</button> <button class="form-button" id="export-data-btn"data-lang-key="apiExportDataBtn">导出数据</button> <button class="form-button" id="import-btn"data-lang-key="apiImportDataBtn">导入备份文件</button><button
-          class="form-button form-button-secondary" id="cleanup-data-btn" style="background-color: #ffebee; color: #c62828; border-color: #ef9a9a; margin-top: 10px;"data-lang-key="apiCleanupDataBtn">清理冗余数据</button><button class="form-button form-button-secondary" id="delete-world-books-btn"
-          style="background-color: #ffebee; color: #c62828; border-color: #ef9a9a; margin-top: 10px;"data-lang-key="apiDeleteWorldBooksBtn">删除世界书</button><button class="form-button form-button-secondary" id="clear-specific-data-btn"
-          style="background-color: #ffcdd2; color: #b71c1c; border-color: #ef9a9a; margin-top: 10px;"data-lang-key="apiAdvancedCleanupBtn">高级数据清理</button><button class="form-button form-button-secondary" id="check-and-fix-data-btn"
-          style="background-color: #e3f2fd; color: #0d47a1; border-color: #bbdefb; margin-top: 10px;"data-lang-key="apiCheckAndFixDataBtn">数据检查与修复</button> <input id="import-data-input" type="file" accept="application/json" hidden>
-
+        
+        <!-- 底部垫高 -->
+        <div style="height: 60px;"></div>
       </div>
     </div>
 <div id="import-options-modal" class="modal">
@@ -964,7 +1042,14 @@
         <div id="reading-restore-btn" style="display: none;">📖</div>
         <div id="reading-window">
           <div class="reading-header"> <span id="reading-title">未选择书籍</span>
-            <div class="reading-controls"> <button id="minimize-reading-btn" title="最小化" style="font-size: 20px; line-height: 1;"> <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+            <div class="reading-controls"> <button id="toggle-reading-fullscreen-btn" title="切换全屏">
+        <svg class="icon-maximize" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+        </svg>
+        <svg class="icon-minimize" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+            <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"></path>
+        </svg>
+    </button><button id="minimize-reading-btn" title="最小化" style="font-size: 20px; line-height: 1;"> <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
                   <line x1="5" y1="12" x2="19" y2="12"></line>
                 </svg> </button> <button id="open-reading-library-btn" title="打开书库" style="font-size: 22px; line-height: 1;"> <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                   <line x1="3" y1="12" x2="21" y2="12"></line>
@@ -994,9 +1079,52 @@
               </svg> </span> <span class="action-btn" id="listen-together-btn" title="一起听"><img src="https://i.postimg.cc/dV8sdNcx/210-20250618115221.png" alt="一起听"></span> <span class="action-btn" id="chat-settings-btn" title="聊天设置"><img
                 src="https://i.postimg.cc/bvPq64cv/CCA834-BA-5-A90-408-D-94-FA-7-EE156-B6-A765.png" alt="设置"></span> </div>
         </div>
-        <div class="selection-controls"> <span id="selection-cancel-btn"data-lang-key="chatSelectionCancel">取消</span> <span id="selection-count"></span>
-          <div class="header-actions"> <span id="selection-screenshot-btn" class="action-btn"data-lang-key="chatSelectionScreenshot">长截图</span> <span id="selection-favorite-btn" class="action-btn"data-lang-key="chatSelectionFavorite">收藏</span> <span id="selection-share-btn" class="action-btn"data-lang-key="chatSelectionShare">分享</span> <span id="selection-soft-delete-btn" class="action-btn"data-lang-key="chatSelectionSoftDelete">删除(通知AI)</span>
-            <span id="selection-erase-btn" class="action-btn" style="color: #ff3b30;"data-lang-key="chatSelectionHardDelete">彻底删除</span> </div>
+        <div class="selection-controls"> 
+          <!-- 取消按钮 (替换为 X 图标) -->
+          <span id="selection-cancel-btn" title="取消"> 
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+               <line x1="18" y1="6" x2="6" y2="18"></line>
+               <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </span> 
+
+          <span id="selection-count"></span>
+          
+          <div class="header-actions"> 
+            <!-- 右侧的其他按钮保持你刚才修改的 SVG 不变 -->
+            <span id="selection-screenshot-btn" class="action-btn" title="长截图"> 
+               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                  <circle cx="12" cy="13" r="4"></circle>
+               </svg>
+            </span> 
+            <span id="selection-favorite-btn" class="action-btn" title="收藏"> 
+               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+               </svg>
+            </span> 
+            <span id="selection-share-btn" class="action-btn" title="分享"> 
+               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="18" cy="5" r="3"></circle>
+                  <circle cx="6" cy="12" r="3"></circle>
+                  <circle cx="18" cy="19" r="3"></circle>
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+               </svg>
+            </span> 
+            <span id="selection-soft-delete-btn" class="action-btn" title="删除(通知AI)"> 
+               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+               </svg>
+            </span>
+            <span id="selection-erase-btn" class="action-btn" style="color: #ff3b30;" title="彻底删除">
+               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 20H7L3 16C2 15 2 13 3 12L13 2L22 11L20 20Z"></path>
+                  <path d="M17 17L7 7"></path>
+               </svg>
+            </span> 
+          </div>
         </div>
       </div>
       <div id="chat-messages">
@@ -1491,261 +1619,488 @@
     </div>
     <div id="long-term-memory-screen" class="screen">
       <div class="header"> <span class="back-btn" id="memory-screen-back-btn">‹</span> <span data-lang-key="chatHeaderLongTermMemory">长期记忆</span>
-        <div class="header-actions"> <span class="action-btn" id="refine-memory-btn-header">精炼</span> <span class="action-btn" id="summarize-recent-btn-header">总结</span> <span class="action-btn" id="add-manual-memory-btn-header">+</span> </div>
+        <div class="header-actions"> 
+            <!-- 精炼按钮 (替换为 漏斗/过滤 图标) -->
+            <span class="action-btn" id="refine-memory-btn-header" title="精炼 (整合旧记忆)"> 
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                </svg>
+            </span> 
+            
+            <!-- 总结按钮 (替换为 文档/列表 图标) -->
+            <span class="action-btn" id="summarize-recent-btn-header" title="总结 (最近对话)"> 
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+            </span> 
+            
+            <!-- 添加按钮 (统一替换为 SVG 加号) -->
+            <span class="action-btn" id="add-manual-memory-btn-header" title="手动添加">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+            </span> 
+        </div>
       </div>
       <div class="list-container" id="memory-list-container" style="padding: 15px; display: flex; flex-direction: column; gap: 15px; background-color: #f0f2f5;"> </div>
     </div>
     <div id="chat-settings-screen" class="screen">
-      <div class="header"> <span class="back-btn" onclick="showScreen('chat-interface-screen')">‹</span> <span data-lang-key="chatHeaderChatSettings">聊天设置</span> <span class="save-btn" id="save-chat-settings-btn"data-lang-key="save">保存</span> </div>
-      <div class="form-container">
-        <div class="form-group" id="chat-name-group"><label for="chat-name-input">备注名 / 群名(Remark Name / Group Name)</label><input type="text" id="chat-name-input"></div>
-        <div class="form-group" id="my-nickname-group"> <label for="my-nickname-input">我的昵称(My nickname)</label> <input type="text" id="my-nickname-input"> </div>
-        <div class="form-group" id="assign-group-section" style="display: none;"> <label for="assign-group-select">好友分组(Friend Group)</label>
-          <div style="display: flex; align-items: center; gap: 10px;"> <select id="assign-group-select" style="flex-grow: 1;"></select> <button id="manage-groups-btn" class="form-button-secondary" style="margin-top: 0; padding: 12px;">管理分组</button> </div>
-        </div>
-        <div class="form-group" id="my-group-nickname-group"><label for="my-group-nickname-input">我的群昵称(My group nickname)</label><input type="text" id="my-group-nickname-input"></div> <button class="form-button form-button-secondary" id="search-history-btn" style="margin-top: 10px;">搜索聊天记录</button>
-        <div class="form-group" id="single-char-background-activity-group">
-          <div class="form-group" id="inject-thought-group">
-            <div style="display: flex; justify-content: space-between; align-items: center;"> <label for="inject-thought-toggle" style="margin-bottom: 0;"> 注入最新心声(Inject the latest thoughts)<p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;"> 开启后，AI在回应前会“看到”自己上一轮的内心独白。这能增强连贯性，但可能轻微增加Token消耗。 </p>
-              </label> <label class="toggle-switch"> <input type="checkbox" id="inject-thought-toggle"> <span class="slider"></span> </label> </div>
-          </div>
-          <div style="display: flex; justify-content: space-between; align-items: center;"> <label for="char-background-activity-switch" style="margin-bottom: 0;"> 启用独立后台活动 (Enable standalone background activity)<p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;"> 允许该角色在后台独立发消息或动态。需同时开启API设置中的总开关。 </p> </label>
-            <label class="toggle-switch"> <input type="checkbox" id="char-background-activity-switch"> <span class="slider"></span> </label> </div>
-        </div>
-        <div class="form-group" id="ai-cooldown-group"> <label for="ai-action-cooldown-input"> 独立行动冷却 (分钟)(Independent Action Cooldown (minutes)) <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;"> AI在后台主动发消息或动态的最小间隔。 </p> </label> <input type="number" id="ai-action-cooldown-input" min="1" value="10"
-            style="width: 80px; text-align: center;"> </div>
-        <div class="form-group" id="time-perception-group">
-          <div style="display: flex; justify-content: space-between; align-items: center;"> <label for="time-perception-toggle" style="margin-bottom: 0;"> 启用时间感知 (Enable time awareness)<p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;"> 关闭后，AI将不会接收到当前时间信息，对话中不再体现时间变化。 </p> </label>
-            <label class="toggle-switch"> <input type="checkbox" id="time-perception-toggle"> <span class="slider"></span> </label>
-          </div>
-        </div>
-        <div class="form-group" id="time-zone-group" style="display: none;"> <label for="time-zone-select">选择时区(Select Time Zone)</label> <input type="search" id="time-zone-search-input" placeholder="搜索时区，例如 Shanghai, New York..."> <select id="time-zone-select" style="width: 100%;"></select></div>
-        <div class="form-group" id="group-background-activity-group">
-          <div style="display: flex; justify-content: space-between; align-items: center;"> <label for="group-background-activity-switch" style="margin-bottom: 0;"> 启用群内后台活动(Enable in-group background activities) <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;"> 允许AI成员在该群聊中独立行动。需同时开启API设置中的总开关。 </p> </label>
-            <label class="toggle-switch"> <input type="checkbox" id="group-background-activity-switch"> <span class="slider"></span> </label> </div>
-        </div>
-        <div class="form-group" id="group-cooldown-group"> <label for="group-action-cooldown-input"> 群聊行动冷却 (分钟) (Group Chat Action Cooldown (minutes))<p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;"> AI在后台主动在群内行动的最小间隔。 </p> </label> <input type="number" id="group-action-cooldown-input" min="1" value="10"
-            style="width: 80px; text-align: center;"> </div>
-        <div class="form-group" id="group-avatar-group"> <label>群头像(Group Avatar)</label>
-          <div class="avatar-upload"> <img id="group-avatar-preview"> <button onclick="document.getElementById('group-avatar-input').click()">上传群头像</button> <button id="manage-group-avatar-library-btn">管理头像库</button> <input type="file" id="group-avatar-input" accept="image/*"> </div>
-        </div>
-        <div class="form-group" id="world-book-link-group"> <label>关联世界书 (可多选)(Associated World Book (multiple selections allowed))</label>
-          <div class="custom-multiselect">
-            <div class="select-box"> <span class="selected-options-text">-- 点击选择 --</span> <span class="arrow-down">▼</span> </div>
-            <div id="world-book-checkboxes-container" class="checkboxes-container"> </div>
-          </div>
-        </div>
-        <div class="form-group" id="lyrics-position-group" style="display: none;">
-          <hr style="opacity: 0.3; margin: 20px 0;"> <label>歌词栏位置(Lyrics section position)</label>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px;">
-            <div> <label for="lyrics-vertical-pos" style="font-size: 0.9em; color: var(--text-secondary);">垂直位置(Vertical position)</label> <select id="lyrics-vertical-pos" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px;">
-                <option value="top">顶部</option>
-                <option value="bottom">底部</option>
-              </select> </div>
-            <div> <label for="lyrics-horizontal-pos" style="font-size: 0.9em; color: var(--text-secondary);">水平对齐(Horizontal alignment)</label> <select id="lyrics-horizontal-pos" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px;">
-                <option value="left">居左</option>
-                <option value="center">居中</option>
-                <option value="right">居右</option>
-              </select> </div>
-          </div>
-          <div style="margin-top: 10px;"> <label for="lyrics-offset-input" style="font-size: 0.9em; color: var(--text-secondary);">垂直偏移 (px)</label> <input type="number" id="lyrics-offset-input" value="10"
-              style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px; box-sizing: border-box;"> </div>
-        </div>
-        <div class="form-group" id="offline-mode-group">
-          <hr style="opacity: 0.3; margin: 20px 0;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;"> <label for="offline-mode-toggle" style="margin-bottom: 0;"> 启用线下模式 (Enable offline mode)<p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;"> 开启后, AI的回复将变为包含「对话」和<i
-                  style="color: #666;">动作/环境描写</i>的剧情模式。 </p> </label> <label class="toggle-switch"> <input type="checkbox" id="offline-mode-toggle"> <span class="slider"></span> </label> </div>
-          <div id="offline-mode-options" style="display: none; margin-top: 15px;"> <label for="offline-min-length-input">回复字数范围(Range of reply word count)</label>
-            <div style="display: flex; align-items: center; gap: 10px; margin-top: 5px;"> <input type="number" id="offline-min-length-input" value="100" style="width: 80px; text-align: center;"> <span>到</span> <input type="number" id="offline-max-length-input" value="300"
-                style="width: 80px; text-align: center;"> <span>字</span> </div>
-            <div class="form-group" style="margin-top: 15px; margin-bottom: 0;"> <label for="offline-preset-select">文风预设 (将影响AI的描写风格)(Writing Style Preset)</label> <select id="offline-preset-select" style="width: 100%; margin-top: 5px;"></select> </div>
-          </div>
-        </div>
-        <div class="form-group" id="linked-memory-group"> <label for="link-memory-toggle">挂载其他聊天记忆(Mount other chat memories)</label> <input type="checkbox" id="link-memory-toggle" style="width: auto; height: 20px; vertical-align: middle; margin-left: 10px;">
-          <div id="linked-memory-selection" style="display: none; margin-top: 10px;"> <label>选择要挂载记忆的聊天 (可多选):(Select the chats to mount memory to (multiple selections allowed))</label>
-            <div class="custom-multiselect">
-              <div class="select-box"> <span class="selected-options-text">-- 点击选择 --</span> <span class="arrow-down">▼</span> </div>
-              <div id="linked-chats-checkboxes-container" class="checkboxes-container" style="max-height: 120px;"> </div>
+      <div class="header"> 
+          <span class="back-btn" onclick="showScreen('chat-interface-screen')">‹</span> 
+          <span>聊天详情</span> 
+          <span class="save-btn" id="save-chat-settings-btn" data-lang-key="save">完成</span> 
+      </div>
+      
+      <div class="settings-container">
+        
+        <!-- 第一组：基础信息 -->
+        <div class="settings-section">
+            <div class="settings-item" id="chat-name-group">
+                <label>备注名 / 群名</label>
+                <div class="settings-right">
+                    <input type="text" id="chat-name-input" placeholder="未设置">
+                </div>
             </div>
-            <p style="font-size: 12px; color: #8a8a8a; margin-top: 8px; line-height: 1.5;"> • 挂载的记忆会以“参考记忆”的形式提供给AI，不会直接显示在聊天界面。<br> • 建议每个聊天挂载3-10轮记忆，避免影响响应速度。 </p>
-          </div>
-        </div>
-        <div class="form-group" id="ai-original-name-group"> <label for="ai-original-name-input">对方本名 (The other party's real name)</label> <input type="text" id="ai-original-name-input"> </div>
-        <div class="form-group" id="ai-persona-group"><label for="ai-persona">对方人设 (AI Persona)</label><textarea id="ai-persona" rows="3"></textarea></div>
-        <div class="form-group" id="ai-avatar-group"><label>对方头像(Opponent's avatar)</label>
-          <div class="avatar-upload"><img id="ai-avatar-preview"><button onclick="document.getElementById('ai-avatar-input').click()">上传对方头像</button><button id="manage-ai-avatar-library-btn">管理头像库</button><button class="change-frame-btn" data-type="ai">更换头像框</button> <input type="file"
-              id="ai-avatar-input" accept="image/*"> </div>
-        </div>
-        <div class="form-group" id="my-persona-group"><label for="my-persona">我的人设 (My Persona)</label><textarea id="my-persona" rows="3"></textarea></div>
-        <div class="form-group" id="switch-greeting-group" style="display: none;"> <label>切换开场 (会清空当前对话)</label> <button id="switch-greeting-btn" class="form-button form-button-secondary" style="margin-top: 5px;">选择其他开场故事...</button> </div>
-        <div class="form-group" id="my-avatar-group"> <label>我的头像(My profile picture)</label>
-          <div class="avatar-upload"> <img id="my-avatar-preview"> <button onclick="document.getElementById('my-avatar-input').click()">上传我的头像</button> <button id="manage-my-avatar-library-btn">管理头像库</button> <button class="change-frame-btn" data-type="my">更换头像框</button> <button
-              id="open-persona-library-btn">预设</button> <input type="file" id="my-avatar-input" accept="image/*"> </div>
-        </div>
-        <div class="form-group" id="group-members-group"><label>群成员人设(Character setting of group members)</label>
-          <div id="group-members-settings"></div> <button id="manage-members-btn" class="form-button form-button-secondary" style="margin-top: 15px;">管理群成员</button>
-        </div>
-        
-        <div class="form-group" id="group-nai-settings-group" style="display: none;">
-        <hr style="opacity: 0.2; margin: 20px 0;">
-        <label style="font-weight: 600; color: var(--accent-color);">NAI出图设置</label>
-        <p style="font-size: 12px; color: #666; margin-top: 5px;">
-            为当前角色配置专属的NovelAI出图提示词
-        </p>
-        
-        <div style="margin-top: 15px;">
-            <label style="font-weight: 500; color: #333;">提示词来源</label>
-            <div style="display: flex; gap: 15px; margin-top: 10px;">
-                <label style="display: flex; align-items: center; cursor: pointer;">
-                    <input type="radio" name="group-nai-prompt-source" value="system" checked style="width: auto; margin-right: 8px;">
-                    <span>使用系统设置</span>
-                </label>
-                <label style="display: flex; align-items: center; cursor: pointer;">
-                    <input type="radio" name="group-nai-prompt-source" value="character" style="width: auto; margin-right: 8px;">
-                    <span>使用当前角色配置</span>
-                </label>
+            
+            <div class="settings-item" id="ai-original-name-group">
+                <label>对方本名 (AI识别用)</label>
+                <div class="settings-right">
+                    <input type="text" id="ai-original-name-input" placeholder="必填">
+                </div>
             </div>
-        </div>
-        
-        <button id="group-character-nai-prompts-btn" class="form-button form-button-secondary" style="width: 100%; margin-top: 15px;">配置角色专属提示词</button>
-    </div>
-        
-        <div class="form-group" id="tts-enable-group">
-          <div style="display: flex; justify-content: space-between; align-items: center;"> <label for="enable-tts-switch" style="margin-bottom: 0;"> 启用语音合成 (TTS) <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;"> 关闭后，即使AI回复包含 [V] 前缀，也不会生成语音消息。 </p> </label>
-            <label class="toggle-switch"> <input type="checkbox" id="enable-tts-switch"> <span class="slider"></span> </label>
-          </div>
-        </div>
-        <div class="form-group" id="ai-voice-id-group"> <label for="ai-voice-id-input">语音 ID (Minimax voice_id)</label> <input type="text" id="ai-voice-id-input" placeholder="例如: female-shaonv-jingpin"></div>
-       <div class="form-group" id="ai-voice-lang-group" style="display: none;">
-          <label for="ai-voice-lang-select">语音语言/方言 (Voice Language/Dialect)</label>
-          <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;">
-             选择指定语言可让发音更地道，支持方言（需模型支持）。
-          </p>
-          <select id="ai-voice-lang-select" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px;">
-            <option value=""> 自动识别 (Auto)</option>
-            <hr disabled>
-            <option value="zh-CN">🇨🇳 国语/普通话 (Chinese)</option>
-            <option value="zh-HK">🇭🇰 粤语/广东话 (Cantonese)</option>
-            <option value="en-US">🇺🇸 英语 (English)</option>
-            <option value="ja-JP">🇯🇵 日语 (Japanese)</option>
-            <option value="ko-KR">🇰🇷 韩语 (Korean)</option>
-            <hr disabled>
-            <option value="de-DE">🇩🇪 德语 (German)</option>
-            <option value="fr-FR">🇫🇷 法语 (French)</option>
-            <option value="es-ES">🇪🇸 西班牙语 (Spanish)</option>
-            <option value="it-IT">🇮🇹 意大利语 (Italian)</option>
-            <option value="ru-RU">🇷🇺 俄语 (Russian)</option>
-            <option value="pt-BR">🇧🇷 葡萄牙语 (Portuguese)</option>
-            <option value="nl-NL">🇳🇱 荷兰语 (Dutch)</option>
-            <option value="pl-PL">🇵🇱 波兰语 (Polish)</option>
-            <option value="sv-SE">🇸🇪 瑞典语 (Swedish)</option>
-            <hr disabled>
-            <option value="tr-TR">🇹🇷 土耳其语 (Turkish)</option>
-            <option value="id-ID">🇮🇩 印尼语 (Indonesian)</option>
-            <option value="ms-MY">🇲🇾 马来语 (Malay)</option>
-            <option value="vi-VN">🇻🇳 越南语 (Vietnamese)</option>
-            <option value="th-TH">🇹🇭 泰语 (Thai)</option>
-            <option value="hi-IN">🇮🇳 印地语 (Hindi)</option>
-            <option value="ar-SA">🇸🇦 阿拉伯语 (Arabic)</option>
-          </select>
-        </div> 
-        <!-- NAI出图设置（单聊显示） -->
-    <div class="form-group" id="nai-character-settings-group" style="display: none;">
-        <hr style="opacity: 0.2; margin: 20px 0;">
-        <label style="font-weight: 600; color: var(--accent-color);">NAI出图设置</label>
-        <p style="font-size: 12px; color: #666; margin-top: 5px;">
-            为当前角色配置专属的NovelAI出图提示词
-        </p>
-        
-        <div style="margin-top: 15px;">
-            <label style="font-weight: 500; color: #333;">提示词来源</label>
-            <div style="display: flex; gap: 15px; margin-top: 10px;">
-                <label style="display: flex; align-items: center; cursor: pointer;">
-                    <input type="radio" name="nai-prompt-source" value="system" checked style="width: auto; margin-right: 8px;">
-                    <span>使用系统设置</span>
-                </label>
-                <label style="display: flex; align-items: center; cursor: pointer;">
-                    <input type="radio" name="nai-prompt-source" value="character" style="width: auto; margin-right: 8px;">
-                    <span>使用当前角色配置</span>
-                </label>
-            </div>
-        </div>
-        
-        <button id="character-nai-prompts-btn" class="form-button form-button-secondary" style="width: 100%; margin-top: 15px;">配置角色专属提示词</button>
-    </div>
 
-    <!-- NAI出图设置（群聊显示） -->
-    <div class="form-group" id="group-nai-settings-group" style="display: none;">
-        <hr style="opacity: 0.2; margin: 20px 0;">
-        <label style="font-weight: 600; color: var(--accent-color);">NAI出图设置</label>
-        <p style="font-size: 12px; color: #666; margin-top: 5px;">
-            为当前角色配置专属的NovelAI出图提示词
-        </p>
-        
-        <div style="margin-top: 15px;">
-            <label style="font-weight: 500; color: #333;">提示词来源</label>
-            <div style="display: flex; gap: 15px; margin-top: 10px;">
-                <label style="display: flex; align-items: center; cursor: pointer;">
-                    <input type="radio" name="group-nai-prompt-source" value="system" checked style="width: auto; margin-right: 8px;">
-                    <span>使用系统设置</span>
-                </label>
-                <label style="display: flex; align-items: center; cursor: pointer;">
-                    <input type="radio" name="group-nai-prompt-source" value="character" style="width: auto; margin-right: 8px;">
-                    <span>使用当前角色配置</span>
-                </label>
+            <div class="settings-item" id="my-nickname-group">
+                <label>我的昵称</label>
+                <div class="settings-right">
+                    <input type="text" id="my-nickname-input" placeholder="我">
+                </div>
+            </div>
+
+            <div class="settings-item" id="my-group-nickname-group">
+                <label>我的群昵称</label>
+                <div class="settings-right">
+                    <input type="text" id="my-group-nickname-input">
+                </div>
+            </div>
+            
+            <!-- 头像相关 -->
+            <div class="settings-item" id="ai-avatar-group">
+                 <label>对方头像</label>
+                 <div class="settings-right full-width">
+                    <div class="avatar-action-wrapper">
+                         <!-- 头像在左 -->
+                         <img id="ai-avatar-preview" class="settings-avatar">
+                         <!-- 按钮组在右 -->
+                         <div class="avatar-btn-group">
+                             <button class="settings-mini-btn" onclick="document.getElementById('ai-avatar-input').click()">更换</button>
+                             <button class="settings-mini-btn" id="manage-ai-avatar-library-btn">图库</button>
+                             <button class="settings-mini-btn change-frame-btn" data-type="ai">挂件</button>
+                             <input type="file" id="ai-avatar-input" accept="image/*" hidden>
+                         </div>
+                    </div>
+                 </div>
+            </div>
+
+            <div class="settings-item" id="group-avatar-group">
+                 <label>群头像</label>
+                 <div class="settings-right full-width">
+                    <div class="avatar-action-wrapper">
+                         <img id="group-avatar-preview" class="settings-avatar">
+                         <div class="avatar-btn-group">
+                             <button class="settings-mini-btn" onclick="document.getElementById('group-avatar-input').click()">更换</button>
+                             <button class="settings-mini-btn" id="manage-group-avatar-library-btn">图库</button>
+                             <input type="file" id="group-avatar-input" accept="image/*" hidden>
+                         </div>
+                    </div>
+                 </div>
+            </div>
+
+            <div class="settings-item" id="my-avatar-group">
+                 <label>我的头像</label>
+                 <div class="settings-right full-width">
+                    <div class="avatar-action-wrapper">
+                         <img id="my-avatar-preview" class="settings-avatar">
+                         <div class="avatar-btn-group">
+                             <button class="settings-mini-btn" onclick="document.getElementById('my-avatar-input').click()">更换</button>
+                             <button class="settings-mini-btn" id="manage-my-avatar-library-btn">图库</button>
+                             <button class="settings-mini-btn change-frame-btn" data-type="my">挂件</button>
+                             <button class="settings-mini-btn" id="open-persona-library-btn">预设</button>
+                             <input type="file" id="my-avatar-input" accept="image/*" hidden>
+                         </div>
+                    </div>
+                 </div>
+            </div>
+            
+            <div class="settings-item" id="assign-group-section" style="display: none;"> 
+                <label>好友分组</label>
+                <div class="settings-right"> 
+                    <select id="assign-group-select" class="settings-select"></select> 
+                    <button id="manage-groups-btn" class="settings-icon-btn">⚙️</button> 
+                </div>
             </div>
         </div>
-        
-        <button id="group-character-nai-prompts-btn" class="form-button form-button-secondary" style="width: 100%; margin-top: 15px;">配置角色专属提示词</button>
-    </div>
 
-        <div class="form-group"> <label for="max-memory">短期记忆（上下文）条数</label> <input type="number" id="max-memory" value="10"> </div>
-        <div class="form-group"> <label for="linked-memory-count">挂载记忆条数</label> <input type="number" id="linked-memory-count" value="10">
-          <p style="font-size: 12px; color: #8a8a8a; margin-top: 8px; line-height: 1.5;"> • 每次调用时，从每个“挂载的聊天”中提取最后几条记录作为参考记忆。 <br> • 建议值 5-20。值越大记忆越全，但API费用越高、响应越慢。 </p>
+        <!-- 第二组：人设与剧情 (核心) -->
+        <div class="settings-section">
+            <div class="settings-item-block" id="ai-persona-group">
+                <label>对方人设 (AI Persona)</label>
+                <textarea id="ai-persona" rows="3" class="settings-textarea" placeholder="输入详细的角色设定..."></textarea>
+            </div>
+            
+            <div class="settings-item-block" id="my-persona-group">
+                <label>我的人设 (My Persona)</label>
+                <textarea id="my-persona" rows="3" class="settings-textarea" placeholder="输入你的角色设定..."></textarea>
+            </div>
+            
+            <div class="settings-item-block" id="group-members-group">
+                <label>群成员管理</label>
+                <div id="group-members-settings" class="horizontal-scroll-list"></div> 
+                <button id="manage-members-btn" class="settings-full-btn">管理所有群成员</button>
+            </div>
+            
+            <div class="settings-item" id="switch-greeting-group" style="display: none;">
+                 <label>开场白</label>
+                 <div class="settings-right">
+                     <!-- 升级为实体按钮样式 -->
+                     <button id="switch-greeting-btn" class="settings-mini-btn">切换开场故事</button>
+                 </div>
+            </div>
+            
+            <div class="settings-item-block" id="world-book-link-group"> 
+                <label>关联世界书</label>
+                <div class="custom-multiselect" style="margin-top: 5px; position: relative;">
+                    <div class="select-box"> <span class="selected-options-text">-- 点击选择 --</span> <span class="arrow-down">▼</span> </div>
+                    <div id="world-book-checkboxes-container" class="checkboxes-container"> </div>
+                </div>
+            </div>
         </div>
-        <div class="form-group">
-            <label for="token-count-display">
-                预估总上下文Token数 (仅供参考)
-                <span title="这是一个基于字符数和复杂规则的估算值，与模型实际计算结果可能存在差异。" style="cursor: help; color: #999;"></span>
-            </label>
-<p id="token-count-display">
-            正在计算...
-        </p>
+
+        <!-- 第三组：模型与智能设置 -->
+        <div class="settings-section">
+            <!-- 单聊独立后台 -->
+            <div id="single-char-background-activity-group">
+                
+                <!-- 注入最新心声 -->
+                <div class="settings-item" id="inject-thought-group" style="display: flex !important; justify-content: space-between !important; align-items: center !important; flex-direction: row !important;">
+                    <div style="flex: 1; padding-right: 10px; display: flex; flex-direction: column; align-items: flex-start;">
+                        <label style="margin-bottom: 2px;">注入最新心声</label>
+                        <div class="settings-desc">回复前注入上一轮的内心独白</div>
+                    </div>
+                    <label class="toggle-switch" style="margin: 0;"> 
+                        <input type="checkbox" id="inject-thought-toggle"> 
+                        <span class="slider"></span> 
+                    </label>
+                </div>
+                
+                <!-- 启用独立后台活动 -->
+                <div class="settings-item" style="display: flex !important; justify-content: space-between !important; align-items: center !important; flex-direction: row !important;">
+                     <div style="flex: 1; padding-right: 10px; display: flex; flex-direction: column; align-items: flex-start;">
+                        <label style="margin-bottom: 2px;">启用独立后台活动</label>
+                        <div class="settings-desc">允许角色在后台主动发消息</div>
+                    </div>
+                    <label class="toggle-switch" style="margin: 0;"> 
+                        <input type="checkbox" id="char-background-activity-switch"> 
+                        <span class="slider"></span> 
+                    </label>
+                </div>
+
+            </div>
+
+            <!-- 群聊后台 -->
+            <div class="settings-item" id="group-background-activity-group">
+                 <div>
+                    <label>启用群内后台活动</label>
+                    <div class="settings-desc">允许AI在群内自由互动</div>
+                </div>
+                <label class="toggle-switch"> <input type="checkbox" id="group-background-activity-switch"> <span class="slider"></span> </label>
+            </div>
+
+            <!-- 冷却时间 -->
+            <div class="settings-item" id="ai-cooldown-group">
+                <label>独立行动冷却 (分钟)</label>
+                <div class="settings-right">
+                     <input type="number" id="ai-action-cooldown-input" class="settings-num-input">
+                </div>
+            </div>
+            <div class="settings-item" id="group-cooldown-group">
+                <label>群聊行动冷却 (分钟)</label>
+                <div class="settings-right">
+                     <input type="number" id="group-action-cooldown-input" class="settings-num-input">
+                </div>
+            </div>
+
+            <!-- 记忆设置 -->
+            <div class="settings-item">
+                 <label>短期记忆条数</label>
+                 <div class="settings-right">
+                    <input type="number" id="max-memory" class="settings-num-input">
+                 </div>
+            </div>
+            <div class="settings-item">
+                 <label>挂载记忆条数</label>
+                 <div class="settings-right">
+                    <input type="number" id="linked-memory-count" class="settings-num-input">
+                 </div>
+            </div>
+            
+            <div class="settings-item">
+                 <div>
+                    <label>自动总结长期记忆</label>
+                    <div class="settings-desc">对话达到一定长度自动提炼</div>
+                </div>
+                <label class="toggle-switch"> <input type="checkbox" id="auto-memory-toggle"> <span class="slider"></span> </label>
+            </div>
+            <div class="settings-item">
+                 <label>自动总结间隔 (条)</label>
+                 <div class="settings-right">
+                    <input type="number" id="auto-memory-interval" class="settings-num-input">
+                 </div>
+            </div>
+
+            <!-- 挂载聊天 -->
+            <div class="settings-item-block" id="linked-memory-group"> 
+                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; height: 30px;">
+                    <label for="link-memory-toggle" style="line-height: 30px;">挂载其他聊天记忆</label> 
+                    <!-- 修复：使用美化的 toggle-switch 结构替代原生 checkbox -->
+                    <label class="toggle-switch"> 
+                        <input type="checkbox" id="link-memory-toggle"> 
+                        <span class="slider"></span> 
+                    </label>
+                 </div>
+                 <div id="linked-memory-selection" style="display: none; position: relative;"> 
+                    <div class="custom-multiselect">
+                      <div class="select-box"> <span class="selected-options-text">-- 选择聊天 --</span> <span class="arrow-down">▼</span> </div>
+                      <div id="linked-chats-checkboxes-container" class="checkboxes-container" style="max-height: 150px;"> </div>
+                    </div>
+                 </div>
+            </div>
+            
+            <!-- Token 统计 -->
+            <div class="settings-section">
+                <div class="settings-item">
+                    <label>当前对话条数</label>
+                    <div class="settings-right">
+                        <span id="message-count-value" style="color: #8a8a8a;">计算中...</span>
+                    </div>
+                </div>
+                <div class="settings-item">
+                    <label>预估上下文 Token</label>
+                    <div class="settings-right">
+                        <span id="token-count-value" style="color: #8a8a8a;">计算中...</span>
+                    </div>
+                </div>
+            </div>
         </div>
-        <hr style="opacity: 0.3; margin: 20px 0;">
-        <div class="form-group" style="display: flex; justify-content: space-between; align-items: center;"> <label for="auto-memory-toggle" style="margin-bottom: 0;"> 启用自动总结长期记忆(Enable automatic long-term memory summarization) <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;"> 开启后，AI会在对话达到一定长度时，自动将内容提炼为长期记忆。 </p>
-          </label> <label class="toggle-switch"> <input type="checkbox" id="auto-memory-toggle"> <span class="slider"></span> </label> </div>
-        <div class="form-group"> <label for="auto-memory-interval">自动总结间隔（消息条数）(Automatic summary interval (number of messages))</label> <input type="number" id="auto-memory-interval" min="10" value="20" style="width: 80px; text-align: center;">
-          <p style="font-size: 12px; color: #8a8a8a; margin-top: 8px;"> 建议值 60-150。值越小，总结越频繁，但API费用也越高。 </p>
+
+        <!-- 第四组：高级功能 (TTS, NAI, 线下模式) -->
+        <div class="settings-section">
+             <!-- 语音 -->
+             <div class="settings-item" id="tts-enable-group">
+                 <label>启用语音合成 (TTS)</label>
+                 <label class="toggle-switch"> <input type="checkbox" id="enable-tts-switch"> <span class="slider"></span> </label>
+             </div>
+             <div class="settings-item" id="ai-voice-id-group">
+                 <label>语音 ID</label>
+                 <div class="settings-right">
+                    <input type="text" id="ai-voice-id-input" placeholder="minimax voice_id">
+                 </div>
+             </div>
+             <div class="settings-item" id="ai-voice-lang-group">
+                <label>语音语言/方言</label>
+                <div class="settings-right">
+                  <select id="ai-voice-lang-select" class="settings-select" style="width: 100%; text-align: right;">
+                    <option value=""> 自动识别 (Auto)</option>
+                    <hr disabled>
+                    <option value="zh-CN">🇨🇳 国语/普通话 (Chinese)</option>
+                    <option value="zh-HK">🇭🇰 粤语/广东话 (Cantonese)</option>
+                    <option value="en-US">🇺🇸 英语 (English)</option>
+                    <option value="ja-JP">🇯🇵 日语 (Japanese)</option>
+                    <option value="ko-KR">🇰🇷 韩语 (Korean)</option>
+                    <hr disabled>
+                    <option value="de-DE">🇩🇪 德语 (German)</option>
+                    <option value="fr-FR">🇫🇷 法语 (French)</option>
+                    <option value="es-ES">🇪🇸 西班牙语 (Spanish)</option>
+                    <option value="it-IT">🇮🇹 意大利语 (Italian)</option>
+                    <option value="ru-RU">🇷🇺 俄语 (Russian)</option>
+                    <option value="pt-BR">🇧🇷 葡萄牙语 (Portuguese)</option>
+                    <option value="nl-NL">🇳🇱 荷兰语 (Dutch)</option>
+                    <option value="pl-PL">🇵🇱 波兰语 (Polish)</option>
+                    <option value="sv-SE">🇸🇪 瑞典语 (Swedish)</option>
+                    <hr disabled>
+                    <option value="tr-TR">🇹🇷 土耳其语 (Turkish)</option>
+                    <option value="id-ID">🇮🇩 印尼语 (Indonesian)</option>
+                    <option value="ms-MY">🇲🇾 马来语 (Malay)</option>
+                    <option value="vi-VN">🇻🇳 越南语 (Vietnamese)</option>
+                    <option value="th-TH">🇹🇭 泰语 (Thai)</option>
+                    <option value="hi-IN">🇮🇳 印地语 (Hindi)</option>
+                    <option value="ar-SA">🇸🇦 阿拉伯语 (Arabic)</option>
+                  </select>
+                </div>
+             </div>
+
+             <!-- 线下模式 -->
+             <div id="offline-mode-group">
+                 <div class="settings-item">
+                     <div>
+                        <label>线下模式 (描写模式)</label>
+                        <div class="settings-desc">AI将输出包含动作/心理的描写文本</div>
+                     </div>
+                     <label class="toggle-switch"> <input type="checkbox" id="offline-mode-toggle"> <span class="slider"></span> </label>
+                 </div>
+                 <div id="offline-mode-options" style="display: none; padding: 0 16px 16px 16px;">
+                     <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                        <span style="font-size:13px; color:#666;">字数范围:</span>
+                        <input type="number" id="offline-min-length-input" class="settings-num-input" value="100">
+                        <span>-</span>
+                        <input type="number" id="offline-max-length-input" class="settings-num-input" value="300">
+                     </div>
+                     <label style="font-size:13px; color:#666;">文风预设:</label>
+                     <select id="offline-preset-select" class="settings-select" style="width:100%; margin-top:5px;"></select>
+                 </div>
+             </div>
+
+             <!-- 时间感知 -->
+             <div class="settings-item" id="time-perception-group">
+                 <label>时间感知</label>
+                 <label class="toggle-switch"> <input type="checkbox" id="time-perception-toggle"> <span class="slider"></span> </label>
+             </div>
+             <div class="settings-item-block" id="time-zone-group" style="display: none;">
+                 <label>时区设置</label>
+                 <div style="margin-top: 10px; width: 100%;">
+                     <input type="search" id="time-zone-search-input" placeholder="搜索时区..." class="settings-textarea" style="height: 36px; padding: 8px; margin-bottom: 8px;">
+                     <select id="time-zone-select" class="settings-select" style="width: 100%; padding: 10px; background-color: #f5f5f7;"></select>
+                 </div>
+             </div>
+             
+             <!-- NAI设置 (单聊/群聊复用ID，JS控制) -->
+             <div class="settings-item-block" id="nai-character-settings-group" style="display: none;">
+                <label>NAI 出图设置 (角色专属)</label>
+                <div style="margin-top: 10px;">
+                    <button id="character-nai-prompts-btn" class="settings-full-btn">配置专属提示词</button>
+                </div>
+             </div>
+             <div class="settings-item-block" id="group-nai-settings-group" style="display: none;">
+                <label>NAI 出图设置 (群聊专属)</label>
+                <div style="margin-top: 10px;">
+                    <button id="group-character-nai-prompts-btn" class="settings-full-btn">配置专属提示词</button>
+                </div>
+             </div>
         </div>
-        <hr style="opacity: 0.3; margin: 20px 0;">
-        <div class="form-group"> <label>聊天气泡主题(Chat bubble theme) <button id="reset-theme-btn" type="button">重置</button></label>
-          <div class="theme-selector"> <label><input type="radio" name="theme-select" value="default" id="theme-default"> 默认</label> <label><input type="radio" name="theme-select" value="pink_blue"> 粉蓝</label> <label><input type="radio" name="theme-select" value="blue_white"> 蓝白</label>
-            <label><input type="radio" name="theme-select" value="purple_yellow"> 紫黄</label> <label><input type="radio" name="theme-select" value="black_white"> 黑白</label> <label><input type="radio" name="theme-select" value="yellow_white"> 黄白</label> <label><input type="radio" name="theme-select"
-                value="red_black"> 红黑</label> <label><input type="radio" name="theme-select" value="blue_yellow"> 蓝黄</label> <label><input type="radio" name="theme-select" value="pink_yellow"> 粉黄</label> <label><input type="radio" name="theme-select" value="pink_purple"> 粉紫</label> <label><input
-                type="radio" name="theme-select" value="gray_white"> 灰白</label> <label><input type="radio" name="theme-select" value="blue_green"> 蓝绿</label> <label><input type="radio" name="theme-select" value="pink_white"> 粉白</label>
-            <label><input type="radio" name="theme-select" value="pink_black"> 粉黑</label> <label><input type="radio" name="theme-select" value="pink_green"> 粉绿</label> <label><input type="radio" name="theme-select" value="green_black"> 绿黑</label>
-          </div>
+
+        <!-- 第五组：外观与视觉 -->
+        <div class="settings-section">
+            <div class="settings-item">
+                 <label>聊天背景</label>
+                 <!-- 增加 full-width 类以保持右对齐，内部使用 avatar-btn-group 保持间距一致 -->
+                 <div class="settings-right full-width">
+                     <div class="avatar-btn-group" style="justify-content: flex-end; width: 100%;">
+                         <!-- 升级为实体小按钮 -->
+                         <button class="settings-mini-btn" onclick="document.getElementById('bg-input').click()">上传</button>
+                         <button class="settings-mini-btn" id="remove-bg-btn">移除</button>
+                         
+                         <!-- 保持原有的隐藏 input 和预览图逻辑 -->
+                         <input type="file" id="bg-input" accept="image/*" hidden>
+                         <img id="bg-preview" class="settings-bg-preview">
+                     </div>
+                 </div>
+            </div>
+            
+            <div class="settings-item-block">
+                <label>气泡主题</label>
+                 <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                    <select id="theme-preset-select" class="settings-select" style="flex:1; margin-right:10px;"></select>
+                    <div style="display:flex; gap:5px;">
+                        <button id="save-theme-preset-btn" class="settings-icon-btn">💾</button>
+                        <button id="delete-theme-preset-btn" class="settings-icon-btn" style="color:#ff3b30;">🗑️</button>
+                    </div>
+                 </div>
+                 <!-- 补全所有主题选项 -->
+                 <div class="theme-selector" style="max-height: 120px; overflow-y: auto; display: flex; flex-wrap: wrap; gap: 12px; padding: 5px 0;">
+                      <label><input type="radio" name="theme-select" value="default" id="theme-default"> 默认</label>
+                      <label><input type="radio" name="theme-select" value="pink_blue"> 粉蓝</label> 
+                      <label><input type="radio" name="theme-select" value="blue_white"> 蓝白</label>
+                      <label><input type="radio" name="theme-select" value="purple_yellow"> 紫黄</label>
+                      <label><input type="radio" name="theme-select" value="black_white"> 黑白</label>
+                      <label><input type="radio" name="theme-select" value="yellow_white"> 黄白</label>
+                      <label><input type="radio" name="theme-select" value="red_black"> 红黑</label>
+                      <label><input type="radio" name="theme-select" value="blue_yellow"> 蓝黄</label>
+                      <label><input type="radio" name="theme-select" value="pink_yellow"> 粉黄</label>
+                      <label><input type="radio" name="theme-select" value="pink_purple"> 粉紫</label>
+                      <label><input type="radio" name="theme-select" value="gray_white"> 灰白</label>
+                      <label><input type="radio" name="theme-select" value="blue_green"> 蓝绿</label>
+                      <label><input type="radio" name="theme-select" value="pink_white"> 粉白</label>
+                      <label><input type="radio" name="theme-select" value="pink_black"> 粉黑</label>
+                      <label><input type="radio" name="theme-select" value="pink_green"> 粉绿</label>
+                      <label><input type="radio" name="theme-select" value="green_black"> 绿黑</label>
+                      
+                      <button id="reset-theme-btn" class="settings-text-btn" style="margin-left: auto;">重置默认</button>
+                 </div>
+            </div>
+
+            <div class="settings-item">
+                 <label>字体大小 <span id="font-size-value" style="color:#888; font-size:12px;">13px</span></label>
+                 <div class="settings-right" style="width: 50%;">
+                    <input type="range" id="font-size-slider" min="12" max="20" step="1" style="width:100%;">
+                 </div>
+            </div>
+            
+            <div class="settings-item-block">
+                 <label>自定义 CSS <button id="reset-custom-css-btn" style="float:right; font-size:12px;">重置</button></label>
+                 <textarea id="custom-css-input" rows="3" class="settings-textarea" placeholder="/* 针对当前聊天的CSS */"></textarea>
+            </div>
+
+            <div class="settings-item-block">
+                <label>效果预览</label>
+                <div id="settings-preview-area" style="margin-top:10px;"></div>
+            </div>
+            
+            <div class="settings-item-block" id="lyrics-position-group" style="display: none;">
+                 <label>歌词栏设置</label>
+                 <div style="display:flex; gap:10px; margin-top:10px;">
+                     <select id="lyrics-vertical-pos" class="settings-select"><option value="top">顶部</option><option value="bottom">底部</option></select>
+                     <select id="lyrics-horizontal-pos" class="settings-select"><option value="center">居中</option><option value="left">居左</option><option value="right">居右</option></select>
+                     <input type="number" id="lyrics-offset-input" class="settings-num-input" value="10" placeholder="偏移">
+                 </div>
+            </div>
         </div>
-        <div class="form-group"> <label for="font-size-slider">聊天字体大小 (Chat font size)<span id="font-size-value">13px</span></label> <input type="range" id="font-size-slider" min="12" max="20" step="1" value="13" style="width: 100%; margin-top: 8px;"> </div>
-        <hr style="opacity: 0.3; margin: 20px 0;">
-        <div class="form-group"> <label for="theme-preset-select">主题预设管理(Theme Preset Management)</label>
-          <div style="display: flex; gap: 10px; align-items: center;"> <select id="theme-preset-select" style="flex-grow: 1;"></select> <button id="save-theme-preset-btn" class="form-button-secondary" style="margin-top: 0; padding: 12px;"data-lang-key="save">保存</button> <button id="delete-theme-preset-btn"
-              class="form-button-secondary" style="margin-top: 0; padding: 12px; background-color: #ffebee; color: #d32f2f; border-color: #ffcdd2;"data-lang-key="delete">删除</button> </div>
+
+        <!-- 第六组：数据与操作 (底部) -->
+        <div class="settings-section">
+             <div class="settings-item clickable" id="search-history-btn">
+                 <label>查找聊天记录</label>
+                 <div class="settings-right">›</div>
+             </div>
+             
+             <div class="settings-item clickable" id="export-single-chat-btn">
+                 <label>导出聊天记录</label>
+                 <div class="settings-right">›</div>
+             </div>
+             
+             <div class="settings-item clickable" id="import-single-chat-btn">
+                 <label>导入聊天记录</label>
+                 <div class="settings-right">
+                     ›
+                     <input type="file" id="import-single-chat-input" accept="application/json" hidden>
+                 </div>
+             </div>
+
+             <div class="settings-item clickable" id="clear-chat-btn">
+                 <label style="color: #ff3b30;">清空聊天记录</label>
+                 <div class="settings-right">›</div>
+             </div>
+             
+             <div class="settings-item clickable" id="block-chat-btn">
+                 <label style="color: #ff3b30;">拉黑对方 / 移出群聊</label>
+                 <div class="settings-right">›</div>
+             </div>
         </div>
-        <div class="form-group"> <label for="custom-css-input"> 自定义气泡样式 (CSS) <button id="reset-custom-css-btn" type="button" style="background: none; border: 1px solid #ccc; color: #555; font-size: 12px; padding: 2px 8px; border-radius: 5px; cursor: pointer; margin-left: 10px;">重置</button>
-          </label> <textarea id="custom-css-input" rows="5" style="width: 100%; margin-top: 8px; font-family: monospace; font-size: 16px; resize: vertical;"
-            placeholder="/* 示例：为“我”的气泡添加渐变背景和阴影 */ .message-bubble.user .content { background: linear-gradient(135deg, #a1c4fd, #c2e9fb); box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-radius: 15px 4px 15px 15px; }"></textarea> </div>
-        <div class="form-group"> <label>实时预览</label>
-          <div id="settings-preview-area"></div>
-        </div>
-        <div class="form-group"> <label>聊天背景(Chat background)</label>
-          <div class="bg-upload-container"> <button type="button" class="form-button-secondary" style="width: auto; padding: 8px 12px; margin-top: 0;" onclick="document.getElementById('bg-input').click()">上传背景图</button> <button type="button" id="remove-bg-btn">移除背景</button> </div> <img
-            id="bg-preview" class="bg-preview-img"> <input type="file" id="bg-input" accept="image/*" style="display: none;">
-        </div>
-        <hr style="margin: 25px 0; border: none; border-top: 1px solid #eee;"> <button class="form-button form-button-secondary" id="block-chat-btn" style="background-color: #ff3b30; color: white; border-color: #ff3b30;">拉黑对方</button>
-        <hr style="margin: 25px 0; border: none; border-top: 1px solid #eee;"><button class="form-button form-button-secondary" id="export-single-chat-btn" style="background-color: #e8f5e9; color: #2e7d32; border-color: #c8e6c9;">导出该聊天</button><button class="form-button form-button-secondary"
-          id="import-single-chat-btn" style="background-color: #fff3e0; color: #ef6c00; border-color: #ffe0b2;">导入该聊天</button><input type="file" id="import-single-chat-input" accept="application/json" hidden> <button class="form-button form-button-secondary" id="clear-chat-btn">清空聊天记录</button>
+        
+        <div style="height: 40px;"></div> <!-- 底部垫高 -->
       </div>
     </div>
     <div id="rendering-rules-screen" class="screen">
@@ -2775,6 +3130,7 @@
 
 </body>
 </html>
+
 
 
 
