@@ -7899,8 +7899,7 @@ input, textarea, select {
 #character-profile-modal .jottings .label {
     display: flex !important;
 }
-#total-image-size-display,
-#token-count-display {
+#total-image-size-display{ /* <--- 在这里添加了 ID */
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -7913,19 +7912,18 @@ input, textarea, select {
     border: 1px solid var(--border-color);
 }
 
-#phone-screen.dark-mode #total-image-size-display,
-#phone-screen.dark-mode #token-count-display {
+#phone-screen.dark-mode #total-image-size-display{ /* <--- 在这里添加了 ID */
     background-color: #2c2c2e; 
     border-color: #38383a;
 }
 
-#total-image-size-display #image-size-label,
-#token-count-display #token-count-label {
+#total-image-size-display #image-size-label{ /* <--- 新增 */
     font-weight: 500;
 }
 
 #total-image-size-display #image-size-value,
-#token-count-display #token-count-value {
+#token-count-display #token-count-value,
+#message-count-display #message-count-value { /* <--- 新增 */
     font-weight: 600;
     color: var(--text-primary);
 }
@@ -9583,15 +9581,1421 @@ body.minimal-chat-ui-active.chat-actions-expanded #chat-interface-screen #chat-m
 }
 .shake-animation {
     animation: shake 0.4s ease;
+}/* --- 聊天设置页 (Chat Settings) QQ风格重构 --- */
+
+/* 背景色 */
+#chat-settings-screen {
+    background-color: #f2f2f7 !important; /* 浅灰底色 */
+}
+#phone-screen.dark-mode #chat-settings-screen {
+    background-color: #000 !important;
 }
 
+/* 容器 */
+.settings-container {
+    padding: 16px;
+    padding-top: calc(80px + env(safe-area-inset-top));
+    padding-bottom: calc(20px + env(safe-area-inset-bottom));
+    overflow-y: auto;
+    height: 100%;
+    box-sizing: border-box;
+}
 
+/* 分组卡片 */
+.settings-section {
+    background-color: #ffffff;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+    
+    /* 【核心修复】：移除 overflow: hidden，允许下拉框溢出 */
+    /* overflow: hidden;  <-- 删除这行 */
+    position: relative; /* 确保内部定位正常 */
+}
+#phone-screen.dark-mode .settings-section {
+    background-color: #1c1c1e;
+}
 
+/* 手动处理圆角，替代 overflow: hidden */
+.settings-section > .settings-item:first-child,
+.settings-section > .settings-item-block:first-child {
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+}
+.settings-section > .settings-item:last-child,
+.settings-section > .settings-item-block:last-child {
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+    border-bottom: none; /* 去除最后一条线 */
+}
 
+/* 单行设置项 */
+.settings-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+    background-color: #fff;
+    border-bottom: 0.5px solid #ebedf0;
+    min-height: 24px;
+    transition: background-color 0.2s;
+    position: relative; /* 确保点击反馈正常 */
+}
+#phone-screen.dark-mode .settings-item {
+    background-color: #1c1c1e;
+    border-bottom-color: #2c2c2e;
+}
 
+/* 可点击项反馈 */
+.settings-item.clickable:active {
+    background-color: #f5f5f5;
+}
+#phone-screen.dark-mode .settings-item.clickable:active {
+    background-color: #2c2c2e;
+}
 
+/* 块级设置项 (用于多行内容) */
+.settings-item-block {
+    padding: 14px 16px;
+    background-color: #fff;
+    border-bottom: 0.5px solid #ebedf0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+}
+#phone-screen.dark-mode .settings-item-block {
+    background-color: #1c1c1e;
+    border-bottom-color: #2c2c2e;
+}
 
+/* 标签文本 */
+.settings-item label, .settings-item-block label {
+    font-size: 16px;
+    color: #000;
+    font-weight: 400;
+    margin: 0;
+    flex-shrink: 0;
+}
+#phone-screen.dark-mode .settings-item label,
+#phone-screen.dark-mode .settings-item-block label {
+    color: #fff;
+}
 
+/* 描述文本 (小字) */
+.settings-desc {
+    font-size: 12px;
+    color: #8a8a8a;
+    margin-top: 2px;
+}
+
+/* 右侧区域 (输入框、按钮等) */
+.settings-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-grow: 1;
+    justify-content: flex-end;
+    min-width: 0; /* 防止溢出 */
+}
+
+/* 输入框样式 (无边框，右对齐) */
+.settings-item input[type="text"],
+.settings-item input[type="number"] {
+    text-align: right;
+    border: none;
+    background: transparent;
+    font-size: 15px;
+    color: #666;
+    width: 100%;
+    padding: 0;
+    outline: none;
+}
+#phone-screen.dark-mode .settings-item input {
+    color: #aaa;
+}
+.settings-item input::placeholder {
+    color: #ccc;
+}
+
+/* 文本域样式 */
+.settings-textarea {
+    width: 100%;
+    border: 1px solid #f0f0f0;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 14px;
+    resize: vertical;
+    box-sizing: border-box;
+    color: #333;
+}
+#phone-screen.dark-mode .settings-textarea {
+    background-color: #2c2c2e;
+    border-color: #38383a;
+    color: #eee;
+}
+
+/* 头像预览 */
+.settings-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #eee;
+}
+
+/* 纯文本按钮 (蓝色小字) */
+.settings-text-btn {
+    background: none;
+    border: none;
+    color: #007bff;
+    font-size: 14px;
+    padding: 4px 8px;
+    cursor: pointer;
+}
+.settings-text-btn:active {
+    opacity: 0.7;
+}
+
+/* 块级按钮 (灰色背景) */
+.settings-full-btn {
+    width: 100%;
+    padding: 10px;
+    background-color: #f5f5f7;
+    color: #333;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+}
+#phone-screen.dark-mode .settings-full-btn {
+    background-color: #2c2c2e;
+    color: #fff;
+}
+
+/* 下拉框 */
+.settings-select {
+    padding: 6px 20px 6px 10px;
+    border-radius: 6px;
+    border: none;
+    background-color: #f2f2f7;
+    font-size: 14px;
+    color: #333;
+    appearance: none;
+    -webkit-appearance: none;
+    /* 这里可以加个箭头图标base64 */
+}
+#phone-screen.dark-mode .settings-select {
+    background-color: #3a3a3c;
+    color: #fff;
+}
+
+/* 数字输入框 (小) */
+.settings-num-input {
+    width: 60px !important;
+    text-align: center !important;
+    background-color: #f2f2f7 !important;
+    border-radius: 6px;
+    padding: 4px !important;
+}
+#phone-screen.dark-mode .settings-num-input {
+    background-color: #3a3a3c !important;
+    color: #fff !important;
+}
+
+/* 头部右侧按钮 */
+.header .save-btn {
+    font-size: 16px;
+    background-color: #4cd964; /* 绿色完成按钮 */
+    color: white !important;
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+/* 头像操作区 */
+.avatar-action-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* 背景预览图 */
+.settings-bg-preview {
+    width: 30px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid #eee;
+    display: none; /* JS 控制显示 */
+}
+
+/* 修复多选框在设置页的样式 */
+.settings-item-block .custom-multiselect .select-box {
+    background-color: #f5f5f7;
+    border: none;
+}
+#phone-screen.dark-mode .settings-item-block .custom-multiselect .select-box {
+    background-color: #2c2c2e;
+}
+
+/* 【核心修复】：多选下拉框层级问题 */
+.checkboxes-container {
+    z-index: 1000 !important; /* 确保在最上层 */
+    background-color: #ffffff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-radius: 8px;
+    max-height: 200px; /* 限制高度 */
+    overflow-y: auto;
+}
+#phone-screen.dark-mode .checkboxes-container {
+    background-color: #2c2c2e;
+    border: 1px solid #38383a;
+}
+
+/* 横向滚动列表 (群成员) */
+.horizontal-scroll-list {
+    display: flex;
+    overflow-x: auto;
+    gap: 10px;
+    padding-bottom: 5px;
+}
+.horizontal-scroll-list .member-editor {
+    flex-shrink: 0;
+}
+/* 气泡主题选择器美化 */
+.theme-selector label {
+    display: inline-flex;
+    align-items: center;
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+    padding: 4px 8px;
+    background-color: #f5f5f7;
+    border-radius: 6px;
+    transition: background-color 0.2s;
+}
+#phone-screen.dark-mode .theme-selector label {
+    background-color: #2c2c2e;
+    color: #fff;
+}
+.theme-selector label:has(input:checked) {
+    background-color: #e7f3ff; /* 选中态高亮 */
+    color: #007bff;
+    font-weight: 500;
+}
+#phone-screen.dark-mode .theme-selector label:has(input:checked) {
+    background-color: #0a84ff33;
+    color: #0a84ff;
+}
+.theme-selector input[type="radio"] {
+    margin-right: 6px;
+    accent-color: #007bff;
+}
+/* --- 核心修复：强制纠正“注入心声”的布局 --- */
+#inject-thought-group {
+    display: flex !important;       /* 强制左右横向排列，覆盖 JS 的 block */
+    justify-content: space-between; /* 左右撑开 */
+    align-items: center;            /* 垂直居中 */
+}
+
+/* 针对该选项下的文字区域，防止被压缩 */
+#inject-thought-group > div:first-child {
+    flex: 1;            /* 占据左侧所有空间 */
+    padding-right: 10px; /* 和开关保持距离 */
+}
+/* --- 头像设置栏专用样式修复 --- */
+
+/* 让右侧容器占满剩余空间 */
+.settings-right.full-width {
+    flex: 1;
+    width: 100%;
+    margin-left: 15px; /* 让头像和左边标签保持一点距离 */
+}
+
+/* 头像操作区容器：两端对齐 */
+.avatar-action-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* 关键：头像靠左，按钮靠右 */
+    width: 100%;
+}
+
+/* 按钮组容器 */
+.avatar-btn-group {
+    display: flex;
+    gap: 8px; /* 按钮之间的间距 */
+}
+
+/* 新的实体小按钮样式 (有框框了！) */
+.settings-mini-btn {
+    background-color: #f2f2f7; /* 浅灰背景 */
+    border: 1px solid #e5e5ea; /* 淡淡的边框 */
+    color: #333;
+    padding: 5px 12px;
+    border-radius: 6px; /* 圆角 */
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    line-height: 1.2;
+}
+
+/* 按钮悬停效果 */
+.settings-mini-btn:active {
+    background-color: #e5e5ea;
+    transform: scale(0.95);
+}
+
+/* 暗黑模式适配 */
+#phone-screen.dark-mode .settings-mini-btn {
+    background-color: #3a3a3c;
+    border-color: #48484a;
+    color: #fff;
+}
+#phone-screen.dark-mode .settings-mini-btn:active {
+    background-color: #48484a;
+}
+
+/* 修复头像大小，确保不会过大 */
+.settings-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 6px; /* 微信风格的小圆角，或者50%变成圆形 */
+    object-fit: cover;
+    border: 1px solid #eee;
+    flex-shrink: 0;
+}
+#phone-screen.dark-mode .settings-avatar {
+    border-color: #333;
+}
+/* --- 1. 修复顶部空白过大的问题 --- */
+.settings-container {
+    /* 原来是 80px，改为 10px 即可，因为 header 已经占据了空间 */
+    padding-top: 10px !important; 
+    /* 保持底部 padding */
+    padding-bottom: calc(20px + env(safe-area-inset-bottom));
+}
+
+/* --- 2. 优化头像右侧按钮的间距和样式 --- */
+
+/* 按钮组容器：稍微缩小按钮之间的距离 */
+.avatar-btn-group {
+    display: flex;
+    gap: 6px; /* 从 8px 减小到 6px，更紧凑 */
+    align-items: center;
+}
+
+/* 按钮样式微调：让按钮更精致 */
+.settings-mini-btn {
+    /* 稍微减小内边距，让按钮不那么“胖” */
+    padding: 4px 10px !important; 
+    
+    /* 字体稍微调小一点点，更显精致 */
+    font-size: 12px !important; 
+    
+    /* 增加一点边框颜色深度，更有质感 */
+    border: 1px solid #d1d1d6 !important;
+    
+    /* 稍微缩小圆角 */
+    border-radius: 4px !important;
+    
+    /* 确保背景色 */
+    background-color: #fff !important;
+    
+    /* 确保文字颜色 */
+    color: #333 !important;
+    
+    /* 防止换行 */
+    white-space: nowrap;
+}
+
+/* 暗黑模式适配 */
+#phone-screen.dark-mode .settings-mini-btn {
+    background-color: #2c2c2e !important;
+    border-color: #48484a !important;
+    color: #fff !important;
+}
+
+/* 头部样式微调：确保 Header 和 内容的连接处自然 */
+#chat-settings-screen .header {
+    /* 确保头部背景色与 body 一致或为白色，去除多余阴影 */
+    background-color: #f2f2f7 !important;
+    border-bottom: none !important; /* 去掉分割线，看起来更像原生设置页 */
+    box-shadow: none !important;
+    padding-bottom: 0 !important; /* 减小头部下方的留白 */
+}
+#phone-screen.dark-mode #chat-settings-screen .header {
+    background-color: #000 !important;
+}
+.settings-mini-btn {
+    /* 强制去掉旧代码可能残留的外边距，解决间距不一致问题 */
+    margin: 0 !important; 
+    
+    /* 改为浅灰色背景，让按钮在白色卡片上更显眼，更有“框”的感觉 */
+    background-color: #f5f5f7 !important; 
+    
+    /* 稍微加深一点边框 */
+    border: 1px solid #e0e0e0 !important; 
+    
+    /* 稍微增加内边距，不那么挤 */
+    padding: 6px 12px !important;
+}
+
+/* 2. 统一调整按钮之间的间距 */
+.avatar-btn-group {
+    /* 增大间距，不再“贴着” */
+    gap: 12px !important; 
+}
+
+/* 暗黑模式下的适配 */
+#phone-screen.dark-mode .settings-mini-btn {
+    background-color: #2c2c2e !important;
+    border-color: #3a3a3c !important;
+}
+/* --- 终极修复 V2：完美解决显隐冲突与布局问题 --- */
+
+/* 1. 基础布局：去掉 display 的 !important */
+/* 这样当 JS 设置 display: none 时，元素就能正常隐藏了 */
+.settings-item {
+    display: flex; 
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-direction: row !important; 
+}
+
+/* 2. 关键拦截：当 JS 把它设为显示(block)时，强制转为 flex */
+/* 解释：JS 默认会用 display: block 来显示元素，这会导致换行。
+   我们用属性选择器捕获这种情况，并强制改为 flex 布局 */
+.settings-item[style*="display: block"],
+.settings-item[style*="display:block"] {
+    display: flex !important;
+}
+
+/* 3. 修复“按钮贴边”问题 (保持不变) */
+.settings-right.full-width {
+    width: auto !important; 
+    flex: 1; 
+    margin-left: 15px;
+    padding-right: 4px !important; 
+}
+
+/* 4. 确保头像操作区布局 (保持不变) */
+.avatar-action-wrapper {
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+/* --- 终极圆角修复方案 --- */
+
+/* 1. 全局强制卡片圆角裁剪 */
+/* 这会让所有卡片（包括时区设置那一组）的头尾自动变成圆角，无论内部是否有隐藏元素 */
+.settings-section {
+    overflow: hidden !important;
+    border-radius: 12px !important;
+}
+
+/* 2. 特例豁免：只有包含“自定义多选下拉框”的卡片才允许内容溢出 */
+/* 这是为了防止“关联世界书”或“挂载记忆”的下拉菜单被卡片边缘切断 */
+/* 注意：时区设置使用的是原生下拉框，不受 overflow 影响，所以不需要豁免 */
+.settings-section:has(.custom-multiselect) {
+    overflow: visible !important;
+}
+
+/* 3. 针对上述“豁免”的卡片，手动修补首尾圆角 */
+/* 因为允许溢出了，所以必须手动给第一个和最后一个元素加圆角 */
+.settings-section:has(.custom-multiselect) > div:first-child {
+    border-top-left-radius: 12px !important;
+    border-top-right-radius: 12px !important;
+}
+
+.settings-section:has(.custom-multiselect) > div:last-child {
+    border-bottom-left-radius: 12px !important;
+    border-bottom-right-radius: 12px !important;
+    border-bottom: none !important;
+}
+/* --- 核心修复：给嵌套在透明容器里的“注入心声”补圆角 --- */
+
+/* 当卡片允许溢出时，如果第一个孩子是包裹容器，
+   那么包裹容器里的第一个 .settings-item 必须有顶部圆角 */
+.settings-section:has(.custom-multiselect) > div:first-child > .settings-item:first-child {
+    border-top-left-radius: 12px !important;
+    border-top-right-radius: 12px !important;
+}
+
+/* --- 补充修复：群聊模式下的顶部圆角 --- */
+/* 如果第一个孩子（单聊设置）隐藏了，那么第二个孩子（群聊设置）就是视觉上的第一个，
+   它也需要圆角。CSS无法直接检测 display:none，
+   所以我们直接给“群聊后台活动”也加上条件性的圆角 */
+#group-background-activity-group {
+    /* 只有当它上面那个兄弟隐藏时才需要圆角，但在纯CSS里很难判断。
+       这里做一个权衡：如果它是该组第一个可见元素，赋予它圆角 */
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+}
+/* --- 修复群聊模式下“我的人设”直角问题 --- */
+
+/* 当 AI人设被 JS 设置为隐藏(display: none)时，
+   紧随其后的 我的人设 必须变成顶部圆角 */
+#ai-persona-group[style*="none"] + #my-persona-group {
+    border-top-left-radius: 12px !important;
+    border-top-right-radius: 12px !important;
+}
+
+/* --- 修复群成员管理在特殊情况下的圆角 --- */
+/* 如果群聊中 我的人设 也是隐藏的（虽然一般不会），兜底给群成员管理加圆角 */
+#my-persona-group[style*="none"] + #group-members-group {
+    border-top-left-radius: 12px !important;
+    border-top-right-radius: 12px !important;
+}
+/* 多选模式下的头部图标样式调整 */
+#chat-interface-screen .selection-controls .header-actions {
+    gap: 15px; /* 图标之间的间距 */
+}
+
+#chat-interface-screen .selection-controls .action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+#chat-interface-screen .selection-controls .action-btn:hover {
+    opacity: 0.7;
+    background-color: rgba(0,0,0,0.05); /* 鼠标悬停时的轻微背景 */
+    border-radius: 50%;
+}
+
+#chat-interface-screen .selection-controls .action-btn svg {
+    width: 24px;
+    height: 24px;
+    stroke-width: 2; /* 确保线条粗细适中 */
+}
+
+/* 暗黑模式适配 */
+#phone-screen.dark-mode #chat-interface-screen .selection-controls .action-btn:hover {
+    background-color: rgba(255,255,255,0.1);
+}
+#contact-picker-screen .header #cancel-contact-picker-btn {
+    font-size: 16px;       /* 将字体改回正常的 16px */
+    width: auto;           /* 取消图标专用的固定宽度，让文字自然撑开 */
+    font-weight: normal;   /* 不需要太粗 */
+    padding: 0 5px;        /* 增加一点点击区域 */
+}/* --- iOS Settings UI Transformation --- */
+
+/* --- iOS Settings UI Transformation --- */
+
+/* 背景色 */
+#api-settings-screen.ios-settings-screen {
+    background-color: #f2f2f7 !important;
+}
+#phone-screen.dark-mode #api-settings-screen.ios-settings-screen {
+    background-color: #000 !important;
+}
+
+/* 头部调整 */
+#api-settings-screen .header {
+    background-color: #f2f2f7 !important;
+    border-bottom: none !important;
+    box-shadow: none !important;
+}
+#phone-screen.dark-mode #api-settings-screen .header {
+    background-color: #000 !important;
+}
+
+/* 滚动容器 */
+.ios-scroll-container {
+    padding: 20px 16px;
+    overflow-y: auto;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+/* 分组标题 */
+.settings-header {
+    font-size: 13px;
+    color: #6d6d72;
+    margin: 24px 0 8px 16px;
+    text-transform: uppercase;
+}
+#phone-screen.dark-mode .settings-header {
+    color: #8d8d93;
+}
+
+/* 描述文本 */
+.settings-desc {
+    font-size: 13px;
+    color: #6d6d72;
+    margin: 8px 16px 0 16px;
+    line-height: 1.4;
+}
+
+/* 卡片分组 (Settings Section) */
+.settings-section {
+    background-color: #ffffff;
+    border-radius: 10px;
+    overflow: hidden; /* 关键：切圆角 */
+    margin-bottom: 20px;
+}
+#phone-screen.dark-mode .settings-section {
+    background-color: #1c1c1e;
+}
+
+/* 列表项 (Settings Item) */
+.settings-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 11px 16px; /* iOS 标准高度 */
+    background-color: #fff;
+    border-bottom: 0.5px solid #c6c6c8;
+    min-height: 44px;
+    box-sizing: border-box;
+}
+#phone-screen.dark-mode .settings-item {
+    background-color: #1c1c1e;
+    border-bottom-color: #38383a;
+}
+
+/* 去掉每组最后一个元素的下边框 */
+.settings-section > .settings-item:last-child {
+    border-bottom: none;
+}
+/* 针对隐藏的详情块 (如 ImgBB, NovelAI) */
+#novelai-details, #imgbb-settings-details, #catbox-settings-details, #github-settings-details {
+    background-color: #f9f9f9; /* 稍微深一点区分层级 */
+}
+#phone-screen.dark-mode #novelai-details, 
+#phone-screen.dark-mode #imgbb-settings-details, 
+#phone-screen.dark-mode #catbox-settings-details, 
+#phone-screen.dark-mode #github-settings-details {
+    background-color: #252527;
+}
+
+/* 标签文本 */
+.settings-item label {
+    font-size: 17px;
+    color: #000;
+    flex-shrink: 0;
+    margin: 0;
+}
+#phone-screen.dark-mode .settings-item label {
+    color: #fff;
+}
+
+/* 右侧控件区域 */
+.settings-right {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-grow: 1;
+    margin-left: 16px;
+    min-width: 0;
+}
+
+/* 输入框 & 选择框 (无边框风格) */
+.settings-item input[type="text"],
+.settings-item input[type="password"],
+.settings-item input[type="number"],
+.settings-select {
+    width: 100%;
+    border: none;
+    background: transparent;
+    text-align: right;
+    font-size: 17px;
+    color: #3c3c4399; /* iOS 灰色占位符色 */
+    padding: 0;
+    outline: none;
+}
+/* 有值时的颜色 */
+/* --- 修复 1: 将输入框和选择框的文字颜色改为黑色 --- */
+.settings-item input:not(:placeholder-shown),
+.settings-select {
+    color: #000000 !important; /* 改为黑色 */
+}
+
+/* 暗黑模式下改为白色 */
+#phone-screen.dark-mode .settings-item input:not(:placeholder-shown),
+#phone-screen.dark-mode .settings-select {
+    color: #ffffff !important;
+}
+
+/* 占位符颜色 */
+.settings-item input::placeholder {
+    color: #c7c7cc;
+}
+
+/* 按钮样式 */
+.settings-text-btn {
+    background: none;
+    border: none;
+    font-size: 17px;
+    color: #007aff;
+    cursor: pointer;
+    padding: 4px 0;
+}
+.settings-text-btn.destructive {
+    color: #ff3b30;
+}
+
+/* --- 修复 2: 优化全宽按钮，去除奇怪的黑线问题 --- */
+.settings-full-btn {
+    width: 100%;
+    background: #fff; /* 确保有背景色 */
+    border: none;
+    border-top: 0.5px solid #c6c6c8; /* 分割线 */
+    padding: 14px;
+    font-size: 17px;
+    color: #007aff;
+    cursor: pointer;
+    font-weight: 400; /* iOS 按钮字体通常不需要加粗 */
+    margin: 0; /* 清除外边距 */
+    display: block; /* 确保是块级元素 */
+}
+
+#phone-screen.dark-mode .settings-full-btn {
+    background: #1c1c1e;
+    border-top-color: #38383a;
+    color: #0a84ff;
+}
+
+/* 如果按钮是分组里的第一个元素，去掉顶部分割线 */
+.settings-section .settings-full-btn:first-child {
+    border-top: none;
+}
+.settings-full-btn:active {
+    background-color: #e5e5ea;
+}
+#phone-screen.dark-mode .settings-full-btn:active {
+    background-color: #3a3a3c;
+}
+
+/* 可点击项 (Clickable Rows) */
+.settings-item.clickable {
+    cursor: pointer;
+    justify-content: center; /* 居中文字 */
+}
+.settings-item.clickable:active {
+    background-color: #e5e5ea;
+}
+#phone-screen.dark-mode .settings-item.clickable:active {
+    background-color: #3a3a3c;
+}
+
+/* 修复 Slider */
+input[type=range] {
+    height: 24px;
+    margin: 0;
+}
+
+/* 修复 Toggle Switch (复用之前的，只需确保 vertical-align) */
+.toggle-switch {
+    display: flex;
+    align-items: center;
+}
+
+/* 小按钮 (Mini Btn) */
+.settings-mini-btn {
+    background-color: #f2f2f7;
+    color: #007aff;
+    border: none;
+    border-radius: 14px;
+    padding: 6px 12px;
+    font-size: 14px;
+    cursor: pointer;
+}
+#phone-screen.dark-mode .settings-mini-btn {
+    background-color: #3a3a3c;
+    color: #0a84ff;
+}
+
+/* 数字输入框特殊处理 */
+.settings-num-input {
+    max-width: 80px;
+    background-color: #f2f2f7 !important;
+    border-radius: 6px !important;
+    text-align: center !important;
+    padding: 4px !important;
+    color: #000 !important;
+}
+#phone-screen.dark-mode .settings-num-input {
+    background-color: #3a3a3c !important;
+    color: #fff !important;
+}
+
+/* Block Item (用于图片大小计算等) */
+.settings-item-block {
+    padding: 11px 16px;
+    background-color: #fff;
+}
+#phone-screen.dark-mode .settings-item-block {
+    background-color: #1c1c1e;
+}
+/* --- 修复 1: 下拉框对齐逻辑 (闭合右对齐，展开左对齐) --- */
+.settings-select {
+    text-align: right !important;       /* 闭合状态：文字靠右 */
+    text-align-last: right !important;  /* 强制最后一行靠右 (针对部分浏览器) */
+    direction: ltr !important;          /* 保持从左到右的文字方向 */
+    padding-right: 24px;                /* 留出右侧空间给箭头或后面加的按钮 */
+    background-position: right center;  /* 确保原生箭头在右侧 */
+}
+
+/* 展开后的选项强制左对齐 */
+.settings-select option {
+    text-align: left !important;
+    direction: ltr !important;
+}
+
+/* --- 修复 2: 按钮改为行内简约风格 (去背景) --- */
+/* 定义一个新的行内按钮样式 */
+.settings-inline-btn {
+    background: none !important;     /* 去掉灰色背景 */
+    border: none !important;         /* 去掉边框 */
+    font-size: 15px !important;      /* 字体大小 */
+    font-weight: 500 !important;
+    padding: 4px 8px !important;     /* 减小内边距 */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 30px;                 /* 保证触摸区域 */
+}
+
+/* 保存按钮 (蓝色) */
+.settings-inline-btn.save-btn {
+    color: #007aff !important;
+}
+
+/* 删除按钮 (红色) */
+.settings-inline-btn.delete-btn {
+    color: #ff3b30 !important;
+    border-left: 1px solid #c6c6c8 !important; /* 加个左边框分隔线 */
+    padding-left: 12px !important;
+    margin-left: 4px;
+}
+
+/* 按钮点击态 */
+.settings-inline-btn:active {
+    opacity: 0.5;
+}
+
+/* 调整右侧容器，让下拉框和按钮排成一行 */
+.settings-right {
+    gap: 2px !important; /* 减小元素间距 */
+}
+/* --- 修复 1: 截图同款“更换”按钮样式 --- */
+.settings-mini-btn {
+    background-color: #f2f2f7 !important; /* 浅灰背景 */
+    border: 1px solid #e5e5ea !important; /* 极淡的边框 */
+    color: #007aff !important;            /* iOS 蓝色文字 */
+    border-radius: 6px !important;        /* 小圆角 */
+    padding: 5px 12px !important;         /* 内边距 */
+    font-size: 13px !important;           /* 字体稍小 */
+    font-weight: 500 !important;          /* 适中字重 */
+    cursor: pointer;
+    white-space: nowrap;                  /* 防止换行 */
+    margin-left: 8px;                     /* 与左边的输入框保持距离 */
+    transition: opacity 0.2s;
+}
+
+/* 点击时的反馈 */
+.settings-mini-btn:active {
+    opacity: 0.6;
+    background-color: #e5e5ea !important;
+}
+
+/* 暗黑模式适配 */
+#phone-screen.dark-mode .settings-mini-btn {
+    background-color: #2c2c2e !important;
+    border-color: #3a3a3c !important;
+    color: #0a84ff !important;
+}
+#phone-screen.dark-mode .settings-mini-btn:active {
+    background-color: #3a3a3c !important;
+}
+/* --- 修正 1: 数据管理按钮改为 iOS 标准列表风格 (黑字、左对齐) --- */
+.settings-full-btn {
+    width: 100%;
+    background-color: #fff !important;
+    border: none;
+    border-top: 0.5px solid #c6c6c8 !important; /* 细分割线 */
+    padding: 14px 16px !important; /* 标准内边距 */
+    font-size: 17px !important;
+    color: #000000 !important; /* 改为黑色 */
+    font-weight: 400 !important; /* 正常字重 */
+    text-align: left !important; /* 强制左对齐 */
+    cursor: pointer;
+    margin: 0 !important;
+    display: block;
+    border-radius: 0 !important;
+}
+
+/* 危险按钮保持红色，但依然左对齐 */
+.settings-full-btn[style*="color: #ff3b30"],
+.settings-full-btn[style*="color:#ff3b30"] {
+    color: #ff3b30 !important;
+}
+
+/* 按钮点击态 */
+.settings-full-btn:active {
+    background-color: #e5e5ea !important;
+}
+
+/* --- 修正 2: 清除“图片占用大小”旧样式的灰框和黑线 --- */
+#total-image-size-display {
+    background: transparent !important; /* 去掉灰色背景 */
+    border: none !important;            /* 去掉边框 */
+    padding: 0 !important;
+    margin: 0 !important;
+    color: #8a8a8a;
+    font-size: 17px;
+}
+
+/* --- 修正 3: 让预设部分的下拉框和按钮布局更紧凑 --- */
+/* 针对预设管理那一行的特殊微调 */
+#api-settings-screen .settings-item .settings-right {
+    gap: 8px !important; /* 增加一点间距 */
+}
+
+/* 暗黑模式适配 */
+#phone-screen.dark-mode .settings-full-btn {
+    background-color: #1c1c1e !important;
+    border-top-color: #38383a !important;
+    color: #ffffff !important;
+}
+#phone-screen.dark-mode .settings-full-btn:active {
+    background-color: #2c2c2e !important;
+}
+/* --- 修正 1: 下拉框完全左对齐，去除右侧内边距 --- */
+.settings-select {
+    text-align: left !important;
+    padding-left: 0 !important; /* 紧贴左侧 */
+    direction: ltr !important;
+}
+
+/* --- 修正 2: 列表按钮颜色统一 (强制黑色) --- */
+.settings-full-btn {
+    color: #000000 !important; /* 统一为黑色 */
+}
+
+/* 暗黑模式下统一为白色 */
+#phone-screen.dark-mode .settings-full-btn {
+    color: #ffffff !important;
+}
+/* --- 修正 1: 按钮颜色统一为黑色 (去蓝去红) --- */
+/* 小按钮 (保存、删除、压缩) */
+.settings-mini-btn {
+    color: #333333 !important; /* 黑色文字 */
+    background-color: #f2f2f7 !important;
+    border: 1px solid #e5e5ea !important;
+    margin-left: 8px;
+}
+
+/* 大列表按钮 (导出、导入、清理) */
+.settings-full-btn {
+    color: #333333 !important; /* 黑色文字 */
+    text-align: left !important;
+    justify-content: flex-start !important;
+    padding-left: 16px !important;
+}
+
+/* 暗黑模式下改为白色 */
+#phone-screen.dark-mode .settings-mini-btn,
+#phone-screen.dark-mode .settings-full-btn {
+    color: #ffffff !important;
+}
+
+/* --- 修正 2: 强制清洗 JS 生成的冗余文本 --- */
+/* 隐藏 JS 生成的 "本地图片(头像/表情...):" 这串长字 */
+#total-image-size-display #image-size-label {
+    display: none !important;
+}
+
+/* 只显示大小数值，并调整样式 */
+#total-image-size-display #image-size-value {
+    font-size: 13px;
+    color: #8a8a8a; /* 次要信息灰色 */
+    margin-top: 2px;
+    display: block;
+    text-align: left;
+}
+
+/* 移除外层容器的干扰样式 */
+#total-image-size-display {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+}
+
+/* --- 修正 3: 下拉框对齐调整 --- */
+/* 让下拉框文字紧贴左侧 */
+.settings-select {
+    text-align: left !important;
+    padding-left: 0 !important;
+}
+/* --- 修复 1: 暴力清除下拉框的所有间隙 --- */
+.settings-select {
+    appearance: none !important;        /* 清除系统默认外观 */
+    -webkit-appearance: none !important;
+    background: transparent !important; /* 去除背景 */
+    border: none !important;            /* 去除边框 */
+    padding: 0 !important;              /* 清除内边距 */
+    margin: 0 !important;               /* 清除外边距 */
+    text-indent: 0 !important;          /* 清除首行缩进 */
+    text-align: left !important;        /* 强制左对齐 */
+    font-size: 17px !important;
+    line-height: normal !important;
+    color: #000 !important;
+    width: 100%;
+}
+
+/* 暗黑模式文字颜色 */
+#phone-screen.dark-mode .settings-select {
+    color: #fff !important;
+}
+
+/* --- 修复 2: 数据管理行布局 (实现：标题------数值 [按钮]) --- */
+/* 让右侧容器里的内容紧凑排列 */
+.data-row-right {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px; /* 数值和按钮之间的间距 */
+    flex-grow: 1;
+}
+
+/* 纯净显示数值，去掉JS生成的标签文字 */
+#total-image-size-display {
+    font-size: 15px !important;
+    color: #8a8a8a !important; /* 次要信息用灰色 */
+    background: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+/* 隐藏掉 JS 自动生成的 "本地图片(xxx):" 这种长文本，只留数字 */
+#total-image-size-display #image-size-label {
+    display: none !important;
+}
+#total-image-size-display #image-size-value {
+    font-weight: 400 !important;
+    color: #8a8a8a !important;
+}
+#api-preset-select.settings-select {
+    text-align: left !important;       /* 强制左对齐 */
+    text-align-last: left !important;  /* 针对选中值的强制左对齐 (关键) */
+    padding-left: 0 !important;        /* 去除左侧内边距 */
+    direction: ltr !important;         /* 从左到右排列 */
+    width: 100% !important;            /* 占满容器 */
+    display: block !important;
+}
+/* --- 修复: 还原灰色的说明/教程条 --- */
+/* 这是一个列表项容器，确保它在白色卡片内占位 */
+.settings-tip-wrapper {
+    padding: 10px 16px;
+    background-color: #fff;
+    border-bottom: 0.5px solid #c6c6c8;
+}
+
+/* 这是里面的灰色圆角框 (对应你截图的样子) */
+.settings-tip-content {
+    background-color: #f0f0f0; /* 浅灰背景 */
+    color: #666666;            /* 深灰文字 */
+    font-size: 13px;
+    padding: 10px;
+    border-radius: 8px;        /* 圆角 */
+    line-height: 1.5;          /* 行高，易读 */
+}
+/* 强调文字 (红色警告) */
+.settings-tip-content strong {
+    color: #ff3b30;
+    font-weight: 600;
+}
+/* 链接样式 */
+.settings-tip-content a {
+    color: #007aff;
+    text-decoration: none;
+}
+
+/* 暗黑模式适配 */
+#phone-screen.dark-mode .settings-tip-wrapper {
+    background-color: #1c1c1e;
+    border-bottom-color: #38383a;
+}
+#phone-screen.dark-mode .settings-tip-content {
+    background-color: #2c2c2e; /* 深色背景 */
+    color: #aeaeb2;
+}
+/* ============================================================
+   【独立修复】聊天详情页下拉框 (不影响 API 设置页)
+   ============================================================ */
+
+/* 1. 将选择器限定在 #chat-settings-screen 内 */
+#chat-settings-screen .settings-select {
+    /* 恢复灰色背景条 */
+    background-color: #f2f2f7 !important;
+    
+    /* 加回边框和圆角，让它看起来像个按钮 */
+    border: 1px solid #e5e5ea !important;
+    border-radius: 6px !important;
+    
+    /* 调整内边距：上下 6px 保证高度与旁边的“更换”按钮一致 */
+    padding: 6px 25px 6px 12px !important; 
+    
+    /* 恢复黑色文字 */
+    color: #333 !important;
+    
+    /* 默认：强制左对齐 */
+    text-align: left !important;
+    text-align-last: left !important;
+    
+    /* 添加一个小箭头图标，让它看起来更像下拉框 */
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238a8a8a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 8px center !important;
+    background-size: 12px !important;
+    
+    /* 确保高度撑开 */
+    min-height: 28px !important;
+    line-height: normal !important;
+}
+
+/* 2. 【特例】语音语言选择：强制右对齐 */
+#chat-settings-screen #ai-voice-lang-select {
+    text-align: right !important;
+    text-align-last: right !important;
+    direction: ltr !important;
+    /* 右侧留出一点空间给箭头，但文字靠右 */
+    padding-right: 30px !important; 
+    padding-left: 0 !important;
+}
+
+/* 3. 暗黑模式适配 (仅针对聊天设置页) */
+#phone-screen.dark-mode #chat-settings-screen .settings-select {
+    background-color: #3a3a3c !important;
+    border-color: #48484a !important;
+    color: #fff !important;
+    
+    /* 暗黑模式下箭头变白一点 */
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e") !important;
+}
+#ai-avatar-group,
+#group-avatar-group,
+#my-avatar-group {
+    /* 1. 改变主轴方向为垂直，让标签和内容换行 */
+    flex-direction: column !important;
+    
+    /* 2. 让子元素拉伸填满宽度 */
+    align-items: stretch !important;
+    
+    /* 3. 增加标签和下方内容之间的间距 */
+    gap: 8px !important;
+    
+    /* 4. 确保高度自适应 */
+    height: auto !important;
+    padding-bottom: 12px !important;
+}
+
+/* 修正下方内容区域的边距 */
+#ai-avatar-group .settings-right,
+#group-avatar-group .settings-right,
+#my-avatar-group .settings-right {
+    /* 换行后不再需要左边距 */
+    margin-left: 0 !important; 
+    
+    /* 确保占满整行宽度 */
+    width: 100% !important;
+}
+
+/* 确保头像操作区两端对齐 (头像在左，按钮在右) */
+#ai-avatar-group .avatar-action-wrapper,
+#group-avatar-group .avatar-action-wrapper,
+#my-avatar-group .avatar-action-wrapper {
+    justify-content: space-between !important;
+    width: 100% !important;
+}
+#toggle-reading-fullscreen-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-secondary);
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+}
+#toggle-reading-fullscreen-btn:hover {
+    background-color: rgba(0,0,0,0.1);
+}
+
+/* 2. 当窗口全屏时，切换按钮内的图标 */
+#reading-window.fullscreen #toggle-reading-fullscreen-btn .icon-maximize {
+    display: none;
+}
+#reading-window.fullscreen #toggle-reading-fullscreen-btn .icon-minimize {
+    display: block;
+}
+
+/* 3. 窗口全屏时的核心样式 */
+#reading-window.fullscreen {
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    top: 0 !important;
+    left: 0 !important;
+    border-radius: 0;
+    box-shadow: none;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 4. 遮罩层在全屏时的样式 */
+#reading-overlay.fullscreen-active {
+    align-items: stretch;
+    justify-content: stretch;
+}
+/* --- “一起读书”全屏功能样式 优化版 --- */
+
+/* 1. 修复头部布局，防止标题过长把按钮挤下去 */
+.reading-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px; /* 标题和按钮组之间的间距 */
+    flex-wrap: nowrap; /* 强制不换行 */
+}
+
+#reading-title {
+    flex: 1; /* 占据可用空间 */
+    min-width: 0; /* 允许被压缩 */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 标题过长时显示省略号 */
+}
+
+.reading-controls {
+    flex-shrink: 0; /* 防止按钮组被压缩 */
+    display: flex; /* 确保内部按钮水平排列 */
+    align-items: center;
+}
+
+/* 2. 美化新的全屏/最小化按钮 */
+#toggle-reading-fullscreen-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-secondary);
+    padding: 4px 8px; /* 调整点击区域 */
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+}
+#toggle-reading-fullscreen-btn:hover {
+    background-color: rgba(0,0,0,0.1);
+}
+
+/* 3. 当窗口全屏时，切换按钮内的图标显示 */
+#reading-window.fullscreen #toggle-reading-fullscreen-btn .icon-maximize {
+    display: none;
+}
+#reading-window.fullscreen #toggle-reading-fullscreen-btn .icon-minimize {
+    display: block;
+}
+
+/* 4. 窗口全屏时的核心样式 (与上次相同) */
+#reading-window.fullscreen {
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    top: 0 !important;
+    left: 0 !important;
+    border-radius: 0;
+    box-shadow: none;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 5. 遮罩层在全屏时的样式 (与上次相同) */
+#reading-overlay.fullscreen-active {
+    align-items: stretch;
+    justify-content: stretch;
+}/* =========================================== */
+/* ▼▼▼ 阅读模式全屏/头部修复补丁 ▼▼▼ */
+/* =========================================== */
+
+/* 1. 修复全屏状态下的图标切换逻辑 */
+/* 默认状态：显示最大化图标，隐藏还原图标 */
+#toggle-reading-fullscreen-btn .icon-maximize {
+    display: block !important;
+}
+#toggle-reading-fullscreen-btn .icon-minimize {
+    display: none !important;
+}
+
+/* 全屏状态：隐藏最大化图标，显示还原图标 */
+#reading-window.fullscreen #toggle-reading-fullscreen-btn .icon-maximize {
+    display: none !important;
+}
+#reading-window.fullscreen #toggle-reading-fullscreen-btn .icon-minimize {
+    display: block !important;
+}
+
+/* 2. 修复全屏时的头部布局与间距 (解决重叠问题) */
+#reading-window.fullscreen .reading-header {
+    /* 【核心修复】增加顶部内边距：
+       45px 是避让状态栏的基础高度，
+       env(safe-area-inset-top) 是适配刘海屏/灵动岛
+    */
+    padding-top: calc(45px + env(safe-area-inset-top)) !important;
+    padding-bottom: 15px !important;
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+
+    /* 强制高度自适应 */
+    height: auto !important;
+    min-height: 80px !important; /* 保证有足够的高度 */
+
+    /* 修复背景色：全屏时必须有不透明背景，否则内容会透出来 */
+    background-color: #fff !important; 
+    /* 加上底部边框线 */
+    border-bottom: 1px solid var(--border-color) !important;
+    
+    /* 确保头部在最上层 */
+    z-index: 10 !important;
+    
+    /* 强制且绝对的顶部定位，防止被父级flex影响 */
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* 3. 暗黑模式适配 */
+#phone-screen.dark-mode #reading-window.fullscreen .reading-header {
+    background-color: #1c1c1e !important; /* 暗黑模式背景色 */
+    border-bottom-color: #38383a !important;
+}
+
+/* 4. 修复全屏时的内容区域，防止被加高的头部遮挡 */
+#reading-window.fullscreen #reading-content {
+    /* 给内容顶部增加更多的内边距，因为头部变高了 */
+    padding-top: calc(100px + env(safe-area-inset-top)) !important;
+}
 
 
 
