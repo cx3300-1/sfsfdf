@@ -10995,9 +10995,173 @@ input[type=range] {
 #reading-window.fullscreen #reading-content {
     /* 给内容顶部增加更多的内边距，因为头部变高了 */
     padding-top: calc(100px + env(safe-area-inset-top)) !important;
-} 
+}
+/* --- iOS 风格通用化适配 (适配外观设置页) --- */
 
+/* 让两个页面都使用 iOS 背景色 */
+#api-settings-screen.ios-settings-screen,
+#wallpaper-screen {
+    background-color: #f2f2f7 !important;
+}
+#phone-screen.dark-mode #api-settings-screen.ios-settings-screen,
+#phone-screen.dark-mode #wallpaper-screen {
+    background-color: #000 !important;
+}
 
+/* 头部适配 */
+#wallpaper-screen .header {
+    background-color: #f2f2f7 !important;
+    border-bottom: none !important;
+    box-shadow: none !important;
+}
+#phone-screen.dark-mode #wallpaper-screen .header {
+    background-color: #000 !important;
+}
+
+/* 确保外观设置页使用滚动容器样式 */
+#wallpaper-screen .settings-container {
+    padding: 10px 16px;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom));
+    box-sizing: border-box;
+    overflow-y: auto;
+}
+
+/* 壁纸预览图样式优化 (小图模式) */
+.wallpaper-thumbnail {
+    width: 40px;
+    height: 70px; /* 9:16 比例 */
+    border-radius: 6px;
+    background-color: #eee;
+    background-size: cover;
+    background-position: center;
+    border: 1px solid #d1d1d6;
+    margin-right: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: #999;
+    overflow: hidden;
+    text-align: center;
+    line-height: 1.2;
+}
+#phone-screen.dark-mode .wallpaper-thumbnail {
+    background-color: #2c2c2e;
+    border-color: #3a3a3c;
+}
+
+/* 按钮组微调 */
+.action-btn-group {
+    display: flex;
+    gap: 6px;
+}
+
+/* 隐藏的 Input 保持隐藏 */
+.hidden-input {
+    display: none !important;
+}
+
+/* 图标网格在白色卡片内的适配 */
+.settings-icon-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    gap: 15px;
+    padding: 10px 0;
+}
+.settings-icon-grid .icon-setting-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+.settings-icon-grid .icon-preview {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+/* 拖拽排序区域适配 */
+#button-order-editor {
+    background-color: transparent !important; /* 移除原有的灰色背景 */
+    border: none !important;
+    padding: 0 !important;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.draggable-button-item {
+    background-color: #f2f2f7;
+    border: 1px solid #e5e5ea;
+    border-radius: 8px;
+    padding: 6px 10px;
+}
+#phone-screen.dark-mode .draggable-button-item {
+    background-color: #2c2c2e;
+    border-color: #3a3a3c;
+}
+
+/* 锁屏密码输入框适配 */
+#lock-screen-password-input {
+    letter-spacing: 8px !important;
+    font-weight: bold !important;
+    font-size: 20px !important;
+    text-align: center !important;
+    background-color: #f2f2f7 !important;
+    border-radius: 8px;
+    height: 40px;
+}
+#phone-screen.dark-mode #lock-screen-password-input {
+    background-color: #2c2c2e !important;
+}
+
+/* 文本域适配 */
+#global-css-input {
+    font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+    font-size: 12px;
+    background-color: #f2f2f7;
+    border: none;
+    border-radius: 8px;
+    padding: 10px;
+    min-height: 100px;
+}
+#phone-screen.dark-mode #global-css-input {
+    background-color: #2c2c2e;
+    color: #fff;
+}
+/* --- 修复：壁纸预览图样式 (带强制覆盖) --- */
+.wallpaper-thumbnail {
+    /* 使用 !important 强制覆盖旧的 #wallpaper-preview 样式 */
+    width: 40px !important;
+    height: 70px !important; /* 9:16 比例 */
+    
+    border-radius: 6px;
+    background-color: #eee;
+    background-size: cover;
+    background-position: center;
+    
+    /* 覆盖旧的边框样式 */
+    border: 1px solid #d1d1d6 !important;
+    margin: 0 !important;
+    margin-right: 8px !important;
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: #999;
+    overflow: hidden;
+    text-align: center;
+    line-height: 1.2;
+    flex-shrink: 0; /* 防止被挤压 */
+}
+
+/* 暗黑模式适配 */
+#phone-screen.dark-mode .wallpaper-thumbnail {
+    background-color: #2c2c2e;
+    border-color: #3a3a3c !important;
+}
 
 
 
