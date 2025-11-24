@@ -11162,8 +11162,40 @@ input[type=range] {
     background-color: #2c2c2e;
     border-color: #3a3a3c !important;
 }
+/* 天气设置专用样式 - 保持原生风格 */
+.weather-input-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    width: 100%;
+}
 
+.weather-input {
+    flex: 1; /* 让输入框平分宽度 */
+    background-color: #f2f2f7; /* 与原生输入框背景一致 */
+    border: none;
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 14px;
+    color: #333;
+    outline: none;
+    min-width: 0; /* 防止溢出 */
+}
 
+.weather-result-text {
+    font-size: 12px;
+    color: #8a8a8a;
+    margin-top: 6px;
+    text-align: left; /* 左对齐看起来更整齐 */
+    padding-left: 2px;
+}
+
+/* 暗黑模式适配 */
+#phone-screen.dark-mode .weather-input {
+    background-color: #3a3a3c;
+    color: #fff;
+}
 
 
 
