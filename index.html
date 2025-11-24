@@ -1343,134 +1343,242 @@
       </div>
       </div> <input type="file" id="local-song-upload-input" accept="audio/*" multiple style="display: none;"> <input type="file" id="lrc-upload-input" accept=".lrc" style="display: none;">
     </div>
-    <div id="wallpaper-screen" class="screen">
-      <div class="header"> <span class="back-btn" onclick="showScreen('home-screen')">‹</span> <span data-lang-key="appearanceTitle">外观设置</span> <span style="width: 30px;"></span> </div>
-      <div class="form-container"> <label style="font-weight: 500; color: var(--text-secondary);">EPhone 主屏幕壁纸 (Screen Wallpaper)</label>
-        <div id="wallpaper-preview">点击下方上传</div>
-        <div class="bg-upload-container"> <button class="form-button-secondary" onclick="document.getElementById('wallpaper-upload-input').click();">本地上传</button> <button id="upload-ephone-bg-url-btn" class="form-button-secondary">网络URL</button> <button id="remove-ephone-bg-btn"
-            class="form-button-secondary">移除壁纸</button> </div> <input type="file" id="wallpaper-upload-input" accept="image/*" hidden>
-        <hr style="width: 80%; opacity: 0.3; margin: 30px 0;"> <label style="font-weight: 500; color: var(--text-secondary);">CPhone 手机壁纸 (Screen Wallpaper)</label>
-        <div id="cphone-wallpaper-preview">点击下方上传</div>
-        <div class="bg-upload-container"> <button class="form-button-secondary" onclick="document.getElementById('cphone-wallpaper-upload-input').click();">本地上传</button> <button id="upload-cphone-bg-url-btn" class="form-button-secondary">网络URL</button> <button id="remove-cphone-bg-btn"
-            class="form-button-secondary">移除壁纸</button> </div> <input type="file" id="cphone-wallpaper-upload-input" accept="image/*" hidden>
-        <hr style="width: 80%; opacity: 0.3; margin: 30px 0;"> <label style="font-weight: 500; color: var(--text-secondary);">全局聊天背景 (Global chat background)</label>
-        <div id="global-bg-preview" class="wallpaper-preview" style="height: 160px; width: 90px;">点击下方上传</div>
-        <div class="bg-upload-container"> <button class="form-button-secondary" onclick="document.getElementById('global-bg-input').click()">本地上传</button> <button id="upload-global-bg-url-btn" class="form-button-secondary">网络URL</button> <button id="remove-global-bg-btn"
-            class="form-button-secondary">移除全局背景</button> </div> <input type="file" id="global-bg-input" accept="image/*" style="display: none;">
-        <h3 style="margin-top:0; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; width:100%; text-align: left;">锁屏设置 (Lock Screen)</h3>
-        
-        <div class="form-group" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-            <label for="lock-screen-toggle" style="margin-bottom: 0;">启用锁屏密码</label>
-            <label class="toggle-switch">
-                <input type="checkbox" id="lock-screen-toggle">
-                <span class="slider"></span>
-            </label>
-        </div>
+    <div id="wallpaper-screen" class="screen ios-settings-screen">
+      <div class="header"> 
+        <span class="back-btn" onclick="showScreen('home-screen')">‹</span> 
+        <span data-lang-key="appearanceTitle">外观设置</span> 
+        <!-- 保留原有保存按钮逻辑 -->
+        <span class="save-btn" id="save-wallpaper-btn" data-lang-key="save">完成</span> 
+      </div>
 
-        <div id="lock-screen-settings-detail" style="display: none; width: 100%;">
-            <div class="form-group">
-                <label>设置4位数字密码</label>
-                <input type="tel" id="lock-screen-password-input" maxlength="4" placeholder="例如: 1234" style="letter-spacing: 5px; font-weight: bold; text-align: center;">
+      <div class="settings-container ios-scroll-container">
+
+        <!-- 1. 壁纸与背景 -->
+        <div class="settings-header">壁纸与背景</div>
+        <div class="settings-section">
+            <!-- EPhone 主屏幕 -->
+            <div class="settings-item">
+                <label>主屏幕壁纸</label>
+                <div class="settings-right">
+                    <!-- 预览图 -->
+                    <div id="wallpaper-preview" class="wallpaper-thumbnail">预览</div>
+                    <!-- 按钮组 -->
+                    <div class="action-btn-group">
+                        <button class="settings-mini-btn" onclick="document.getElementById('wallpaper-upload-input').click()">本地</button>
+                        <button id="upload-ephone-bg-url-btn" class="settings-mini-btn">URL</button>
+                        <button id="remove-ephone-bg-btn" class="settings-mini-btn" style="display:none; color:#ff3b30;">×</button>
+                    </div>
+                    <!-- 隐藏的文件输入 -->
+                    <input type="file" id="wallpaper-upload-input" accept="image/*" class="hidden-input">
+                </div>
             </div>
-            
-            <div class="form-group">
-                <label>锁屏壁纸</label>
-                <div id="lock-wallpaper-preview" class="wallpaper-preview" style="height: 200px; width: 120px; margin: 0 auto 10px; background-color: #eee; background-size: cover; background-position: center; border-radius: 10px; display:flex; align-items:center; justify-content:center; color:#999;">无壁纸</div>
-                <div class="bg-upload-container">
-                    <button class="form-button-secondary" onclick="document.getElementById('lock-wallpaper-input').click()">本地上传</button>
-                    <button id="upload-lock-wallpaper-url-btn" class="form-button-secondary">网络URL</button>
-                    <input type="file" id="lock-wallpaper-input" accept="image/*" style="display: none;">
+
+            <!-- CPhone 手机 -->
+            <div class="settings-item">
+                <label>CPhone 壁纸</label>
+                <div class="settings-right">
+                    <div id="cphone-wallpaper-preview" class="wallpaper-thumbnail">预览</div>
+                    <div class="action-btn-group">
+                        <button class="settings-mini-btn" onclick="document.getElementById('cphone-wallpaper-upload-input').click()">本地</button>
+                        <button id="upload-cphone-bg-url-btn" class="settings-mini-btn">URL</button>
+                        <button id="remove-cphone-bg-btn" class="settings-mini-btn" style="display:none; color:#ff3b30;">×</button>
+                    </div>
+                    <input type="file" id="cphone-wallpaper-upload-input" accept="image/*" class="hidden-input">
+                </div>
+            </div>
+
+            <!-- 全局聊天背景 -->
+            <div class="settings-item">
+                <label>聊天背景 (全局)</label>
+                <div class="settings-right">
+                    <div id="global-bg-preview" class="wallpaper-thumbnail">预览</div>
+                    <div class="action-btn-group">
+                        <button class="settings-mini-btn" onclick="document.getElementById('global-bg-input').click()">本地</button>
+                        <button id="upload-global-bg-url-btn" class="settings-mini-btn">URL</button>
+                        <button id="remove-global-bg-btn" class="settings-mini-btn" style="display:none; color:#ff3b30;">×</button>
+                    </div>
+                    <input type="file" id="global-bg-input" accept="image/*" class="hidden-input">
                 </div>
             </div>
         </div>
-        <hr style="width: 80%; opacity: 0.3; margin: 30px 0;">
-        <div class="form-group" style="display: flex; justify-content: space-between; align-items: center; width: 100%;"> <label for="theme-toggle-switch" style="margin-bottom: 0;">夜间模式 (Night Mode)</label> <label class="toggle-switch"> <input type="checkbox" id="theme-toggle-switch"> <span class="slider"></span>
-          </label> </div>
-        <div class="form-group" style="display: flex; justify-content: space-between; align-items: center; width: 100%;"> <label for="status-bar-toggle-switch" style="margin-bottom: 0;">顶部状态栏 (top status bar)</label> <label class="toggle-switch"> <input type="checkbox" id="status-bar-toggle-switch"> <span
-              class="slider"></span> </label> </div>
-<div class="form-group" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-    <label for="phone-frame-toggle-switch" style="margin-bottom: 0;">
-        显示手机外框 (Show Phone Frame)
-        <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;">
-            为应用添加一个手机样式的边框，更具沉浸感。
-        </p>
-    </label>
-    <label class="toggle-switch">
-        <input type="checkbox" id="phone-frame-toggle-switch">
-        <span class="slider"></span>
-    </label>
-</div>
-<div class="form-group" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-    <label for="detach-status-bar-switch" style="margin-bottom: 0;">
-        分离状态栏 (Detach Status Bar)
-        <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;">
-            开启后，应用将不会覆盖ios的状态栏。
-        </p>
-    </label>
-    <label class="toggle-switch">
-        <input type="checkbox" id="detach-status-bar-switch">
-        <span class="slider"></span>
-    </label>
-</div>
-<div class="form-group" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-            <label for="dynamic-island-music-toggle-switch" style="margin-bottom: 0;">
-                启用音乐灵动岛 (Enable Music Island)
-                <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;">
-                    开启后，听歌时将始终使用灵动岛UI，即使在无边框模式下。
-                </p>
-            </label>
-            <label class="toggle-switch">
-                <input type="checkbox" id="dynamic-island-music-toggle-switch">
-                <span class="slider"></span>
-            </label>
+
+        <!-- 2. 显示与交互 -->
+        <div class="settings-header">显示与交互</div>
+        <div class="settings-section">
+            <div class="settings-item">
+                <label>夜间模式</label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="theme-toggle-switch">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="settings-item">
+                <label>顶部状态栏</label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="status-bar-toggle-switch">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="settings-item">
+                <div>
+                    <label>手机外框</label>
+                    <div class="settings-desc">沉浸式仿真边框</div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="phone-frame-toggle-switch">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="settings-item">
+                <div>
+                    <label>分离状态栏</label>
+                    <div class="settings-desc">不覆盖顶部区域 (刘海屏适配)</div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="detach-status-bar-switch">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="settings-item">
+                <div>
+                    <label>音乐灵动岛</label>
+                    <div class="settings-desc">听歌时始终显示灵动岛UI</div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="dynamic-island-music-toggle-switch">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="settings-item">
+                <div>
+                    <label>简洁聊天界面</label>
+                    <div class="settings-desc">默认折叠聊天工具栏</div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="minimal-chat-ui-switch">
+                    <span class="slider"></span>
+                </label>
+            </div>
         </div>
-<div class="form-group" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-    <label for="minimal-chat-ui-switch" style="margin-bottom: 0;">
-        启用简洁聊天界面 (Minimal Chat UI)
-        <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;">
-            开启后，聊天栏的工具按钮将默认折叠，通过左侧“+”号展开。
-        </p>
-    </label>
-    <label class="toggle-switch">
-        <input type="checkbox" id="minimal-chat-ui-switch">
-        <span class="slider"></span>
-    </label>
-</div>
-        <hr style="width: 80%; opacity: 0.3; margin: 30px 0;">
-        <div style="width:100%; text-align: left; margin-bottom: 15px;"> <label style="font-weight: 500; color: var(--text-secondary);">消息提示音(Notification sound)</label> </div>
-        <div class="form-group" style="width:100%;"> <label for="notification-sound-url-input">提示音文件 URL (.mp3, .wav, .ogg)</label>
-          <div style="display: flex; gap: 10px; align-items: center; margin-top: 8px;"> <input type="text" id="notification-sound-url-input" placeholder="留空则使用默认提示音" style="flex-grow: 1;"> <button id="test-sound-btn" class="form-button-secondary" style="margin-top: 0; padding: 12px;">▶</button>
-            <button id="reset-sound-btn" class="form-button-secondary" style="margin-top: 0; padding: 12px;">重置</button> </div>
+
+        <!-- 3. 锁屏设置 -->
+        <div class="settings-header">锁屏安全</div>
+        <div class="settings-section">
+            <div class="settings-item">
+                <label>启用锁屏密码</label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="lock-screen-toggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+            <!-- 锁屏详情 (JS控制显示隐藏) -->
+            <div id="lock-screen-settings-detail" style="display: none; background-color: #f9f9f9; border-top: 0.5px solid #ebedf0;">
+                <div class="settings-item">
+                    <label>4位数字密码</label>
+                    <div class="settings-right">
+                        <input type="tel" id="lock-screen-password-input" maxlength="4" placeholder="1234" class="settings-num-input" style="width: 80px !important; letter-spacing: 2px;">
+                    </div>
+                </div>
+                <div class="settings-item">
+                    <label>锁屏壁纸</label>
+                    <div class="settings-right">
+                         <div id="lock-wallpaper-preview" class="wallpaper-thumbnail" style="margin-right: 10px;">无</div>
+                         <div class="action-btn-group">
+                             <button class="settings-mini-btn" onclick="document.getElementById('lock-wallpaper-input').click()">本地</button>
+                             <button id="upload-lock-wallpaper-url-btn" class="settings-mini-btn">URL</button>
+                         </div>
+                         <input type="file" id="lock-wallpaper-input" accept="image/*" class="hidden-input">
+                    </div>
+                </div>
+            </div>
         </div>
-        <hr style="width: 80%; opacity: 0.3; margin: 30px 0;">
-        <div style="width:100%; text-align: left; margin-bottom: 15px;"> <label style="font-weight: 500; color: var(--text-secondary);">EPhone App 图标设置(Icon Settings)</label> </div>
-        <div id="icon-settings-grid"></div>
-        <hr style="width: 80%; opacity: 0.3; margin: 30px 0;">
-        <div class="form-group" style="width:100%;">
-          <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;"> <label>聊天工具栏按钮排序(Chat toolbar button sorting)</label> <button id="reset-button-order-btn" title="恢复默认顺序" class="form-button-secondary" style="margin: 0; padding: 4px 12px; font-size: 13px;">重置顺序</button> </div>
-          <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;"> 按住下方的按钮并拖动即可排序，设置会自动保存。 </p>
-          <div id="button-order-editor" style="display: flex; flex-wrap: wrap; gap: 10px; padding: 10px; background-color: #f0f2f5; border-radius: 8px; border: 1px solid var(--border-color);"> </div>
+
+        <!-- 4. 提示音 -->
+        <div class="settings-header">声音</div>
+        <div class="settings-section">
+            <div class="settings-item-block">
+                <label style="display:block; margin-bottom:8px;">消息提示音 URL</label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="notification-sound-url-input" placeholder="留空使用默认" class="settings-textarea" style="flex-grow:1; min-height:36px; padding:8px;">
+                    <button id="test-sound-btn" class="settings-mini-btn" style="width:auto;">▶</button>
+                    <button id="reset-sound-btn" class="settings-mini-btn" style="width:auto;">重置</button>
+                </div>
+            </div>
         </div>
-        <hr style="width: 80%; opacity: 0.3; margin: 30px 0;">
-        <div style="width:100%; text-align: left; margin-bottom: 15px;"> <label style="font-weight: 500; color: var(--text-secondary);">CPhone App 图标设置(Icon Settings)</label> </div>
-        <div id="cphone-icon-settings-grid"></div>
-        <hr style="width: 80%; opacity: 0.3; margin: 30px 0;">
-        <h3 style="margin-top:0; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; width:100%; text-align: left;">外观预设管理(Appearance Preset)</h3>
-        <p style="font-size: 12px; color: #8a8a8a; margin-top: -5px; line-height: 1.5; width:100%; text-align: left;"> 一键保存或加载壁纸、图标、按钮排序、主题等所有非CSS的视觉风格。</p>
-        <div class="form-group" style="width:100%;"> <label for="appearance-preset-select"data-lang-key="apiPresetSelectLabel">选择或切换预设</label>
-          <div style="display: flex; gap: 10px; align-items: center;"> <select id="appearance-preset-select" style="flex-grow: 1;"></select> <button id="save-appearance-preset-btn" class="form-button-secondary" style="margin-top: 0; padding: 12px;"data-lang-key="save">保存</button> <button
-              id="delete-appearance-preset-btn" class="form-button-secondary" style="margin-top: 0; padding: 12px; background-color: #ffebee; color: #d32f2f; border-color: #ffcdd2;"data-lang-key="delete">删除</button> </div>
+
+        <!-- 5. 图标定制 -->
+        <div class="settings-header">图标定制</div>
+        <div class="settings-section">
+            <div class="settings-item-block">
+                <label style="margin-bottom: 10px; display:block; font-weight:600;">EPhone 主屏幕图标</label>
+                <div id="icon-settings-grid" class="settings-icon-grid">
+                    <!-- JS 填充 -->
+                </div>
+            </div>
+            <div class="settings-item-block" style="border-top: 0.5px solid #c6c6c8;">
+                <label style="margin-bottom: 10px; display:block; font-weight:600;">CPhone 应用图标</label>
+                <div id="cphone-icon-settings-grid" class="settings-icon-grid">
+                    <!-- JS 填充 -->
+                </div>
+            </div>
         </div>
-        <hr style="width: 80%; opacity: 0.3; margin: 30px 0;">
-        <h3 style="margin-top:0; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; width:100%; text-align: left;">CSS 预设管理(CSS Preset)</h3>
-        <div class="form-group" style="width:100%;"> <label for="css-preset-select"data-lang-key="apiPresetSelectLabel">选择或切换预设</label>
-          <div style="display: flex; gap: 10px; align-items: center;"> <select id="css-preset-select" style="flex-grow: 1;"></select> <button id="save-css-preset-btn" class="form-button-secondary" style="margin-top: 0; padding: 12px;"data-lang-key="save">保存</button> <button id="delete-css-preset-btn"
-              class="form-button-secondary" style="margin-top: 0; padding: 12px; background-color: #ffebee; color: #d32f2f; border-color: #ffcdd2;"data-lang-key="delete">删除</button> </div>
+
+        <!-- 6. 工具栏排序 -->
+        <div class="settings-header">聊天工具栏</div>
+        <div class="settings-section">
+            <div class="settings-item-block">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <label>按钮排序</label>
+                    <button id="reset-button-order-btn" class="settings-mini-btn">恢复默认</button>
+                </div>
+                <div class="settings-desc" style="margin: 0 0 10px 0;">拖动下方按钮调整顺序：</div>
+                <div id="button-order-editor">
+                    <!-- JS 填充 -->
+                </div>
+            </div>
         </div>
-        <div class="form-group" style="width:100%;"> <label for="global-css-input"> 全局美化样式 (CSS) <button id="reset-global-css-btn" type="button"
-              style="background: none; border: 1px solid #ccc; color: #555; font-size: 12px; padding: 2px 8px; border-radius: 5px; cursor: pointer; margin-left: 10px;">重置</button> </label> <textarea id="global-css-input" rows="6"
-            style="width: 100%; margin-top: 8px; font-family: monospace; font-size: 16px; resize: vertical;" placeholder="/* 在此输入自定义CSS */"></textarea> </div> <button class="form-button form-button-secondary" id="import-appearance-btn" style="margin-top: 10px;">导入外观 (JSON)</button>
-        <input type="file" id="import-appearance-input" accept="application/json" hidden> <button class="form-button" id="save-wallpaper-btn" style="margin-top: 30px;"data-lang-key="appearanceSaveAll">保存所有外观设置</button>
+
+        <!-- 7. 预设管理 (高级) -->
+        <div class="settings-header">预设与高级</div>
+        <div class="settings-section">
+            <!-- 外观预设 -->
+            <div class="settings-item">
+                 <label>外观预设</label>
+                 <div class="settings-right">
+                     <select id="appearance-preset-select" class="settings-select" style="width:auto; flex-grow:1; margin-right:5px;"></select>
+                     <!-- 修改点：改为 settings-mini-btn -->
+                     <button id="save-appearance-preset-btn" class="settings-mini-btn">保存</button>
+                     <button id="delete-appearance-preset-btn" class="settings-mini-btn" style="color: #ff3b30;">删除</button>
+                 </div>
+            </div>
+            <!-- CSS 预设 -->
+            <div class="settings-item">
+                 <label>CSS 预设</label>
+                 <div class="settings-right">
+                     <select id="css-preset-select" class="settings-select" style="width:auto; flex-grow:1; margin-right:5px;"></select>
+                     <!-- 修改点：改为 settings-mini-btn -->
+                     <button id="save-css-preset-btn" class="settings-mini-btn">保存</button>
+                     <button id="delete-css-preset-btn" class="settings-mini-btn" style="color: #ff3b30;">删除</button>
+                 </div>
+            </div>
+            
+            <!-- 自定义 CSS -->
+            <div class="settings-item-block">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <label>全局自定义 CSS</label>
+                    <!-- 修改点：改为 settings-mini-btn -->
+                    <button id="reset-global-css-btn" class="settings-mini-btn">重置</button>
+                </div>
+                <textarea id="global-css-input" class="settings-textarea" placeholder="/*在此输入CSS*/"></textarea>
+            </div>
+            
+            <!-- 导入 -->
+            <button class="settings-full-btn" id="import-appearance-btn">导入外观配置 (JSON)</button>
+            <input type="file" id="import-appearance-input" accept="application/json" class="hidden-input">
+        </div>
+
+        <div style="height: 40px;"></div>
       </div>
     </div>
     <div id="browser-screen" class="screen">
