@@ -141,9 +141,15 @@
             <!-- 支付宝图标 -->
             <div class="desktop-app-icon" onclick="openAlipayScreen()">
     <div class="icon-bg-desktop alipay-icon-bg">
-        <img id="icon-img-alipay" src="https://img.icons8.com/color/96/alipay.png" alt="支付宝">
+        <img id="icon-img-alipay" src="https://i.postimg.cc/SK31X0Bb/IMG_2231.png" alt="支付宝">
     </div> 
     <span class="label" style="color:white; text-shadow:0 1px 2px rgba(0,0,0,0.5);">支付宝</span>
+</div>
+<div class="desktop-app-icon" onclick="openAuctionScreen()">
+    <div class="icon-bg-desktop" style="background: #1a1a1a; display:flex; align-items:center; justify-content:center; border: 1px solid #333;">
+        <span style="font-size: 24px;">⚖️</span>
+    </div> 
+    <span class="label" style="color:white; text-shadow:0 1px 2px rgba(0,0,0,0.5);">黑市</span>
 </div>
             <!-- 未来可以在这里加更多 App -->
         </div>
@@ -2320,7 +2326,6 @@
 <!-- 支付宝屏幕 -->
 <div id="alipay-screen" class="screen">
     <div class="alipay-header-area">
-        <div class="status-placeholder"></div> <!-- 占位状态栏 -->
         <div class="alipay-nav">
             <span class="back-btn" onclick="showScreen('home-screen')">‹</span>
             <span class="alipay-title">支付宝</span>
@@ -2330,30 +2335,29 @@
     
     <div class="alipay-card-container">
         <div class="alipay-balance-card">
-            <div class="balance-label">总资产(CNY)</div>
+            <div class="balance-label">
+                <span>总资产(CNY)</span>
+                </div>
             <div class="balance-amount" id="alipay-balance-display">0.00</div>
             <div class="balance-status-tag" id="alipay-status-tag">标准会员</div>
         </div>
-    </div>
-   <!-- 将原来的 .alipay-grid-menu 替换为这个 -->
-<div class="alipay-grid-menu">
-    <div class="alipay-menu-item" onclick="openFundScreen()">
-        <div class="menu-icon">📈</div>
-        <div class="menu-info">
-            <div class="menu-title">基金理财</div>
-            <div class="menu-trend" id="fund-market-trend-preview">+2.35%</div>
+
+        <div class="alipay-grid-menu">
+            <div class="alipay-menu-item" onclick="openFundScreen()">
+                <div class="menu-icon">📈</div>
+                <div class="menu-info">
+                    <div class="menu-title">基金理财</div>
+                    <div class="menu-trend" id="fund-market-trend-preview" style="font-size:12px;">+2.35%</div>
+                </div>
+                <div class="menu-arrow">›</div>
+            </div>
+            </div>
+        
         </div>
-        <div class="menu-arrow">›</div> <!-- 增加一个小箭头，更像入口 -->
-    </div>
-</div>
-    <div class="alipay-bill-container">
-        <div class="bill-header">
-            <span>账单明细</span>
-            <span style="font-size: 12px; color: rgba(255,255,255,0.6);">最近交易</span>
-        </div>
+
+    <div class="alipay-bill-container" style="margin: 0 12px; border-radius: 16px;">
         <div id="alipay-transaction-list">
-            <!-- JS 填充账单 -->
-        </div>
+            </div>
     </div>
 </div>
 <!-- 基金理财屏幕 (已去掉了内联颜色，改为 class 控制) -->
@@ -2417,6 +2421,50 @@
             <button class="cancel" onclick="document.getElementById('fund-trade-modal').classList.remove('visible')">取消</button>
             <!-- 修复：直接绑定 onclick 函数，不再依赖 addEventListener -->
             <button class="save" id="fund-confirm-btn" onclick="handleFundTradeConfirm()">确认</button>
+        </div>
+    </div>
+</div>
+<div id="auction-screen" class="screen" style="background-color: #121212; color: #e0e0e0;">
+    <div class="header" style="background-color: #1c1c1e; color: #d4af37; border-bottom: 1px solid #333;">
+        <span class="back-btn" onclick="showScreen('home-screen')" style="color: #d4af37;">‹</span>
+        <span>黑市拍卖</span>
+        <span class="action-btn" onclick="generateNewAuctionItem()" style="font-size:14px; color:#d4af37;">新拍品</span>
+    </div>
+    
+    <!-- 拍品展示区 -->
+    <div id="auction-main-display" style="padding: 20px; text-align: center; height: 45%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+        <div id="auction-item-image-container" style="width: 200px; height: 200px; border: 2px solid #d4af37; border-radius: 10px; overflow: hidden; box-shadow: 0 0 20px rgba(212, 175, 55, 0.3); background: #000; margin-bottom: 15px; position: relative;">
+            <img id="auction-item-img" src="" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+            <div id="auction-loading" style="color: #666; margin-top: 90px;">等待拍品...</div>
+        </div>
+        <h2 id="auction-item-name" style="margin: 5px 0; font-size: 20px; color: #fff;">---</h2>
+        <p id="auction-item-desc" style="font-size: 12px; color: #888; margin: 0; max-height: 40px; overflow: hidden;">---</p>
+    </div>
+
+    <!-- 竞价信息区 -->
+    <div style="background-color: #1c1c1e; padding: 15px; border-radius: 20px 20px 0 0; flex-grow: 1; display: flex; flex-direction: column; box-shadow: 0 -4px 20px rgba(0,0,0,0.5);">
+        
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #333;">
+            <div>
+                <div style="font-size: 12px; color: #888;">当前最高价</div>
+                <div id="auction-current-price" style="font-size: 32px; font-weight: bold; color: #ff4d4f; font-family: monospace;">¥ 0</div>
+            </div>
+            <div style="text-align: right;">
+                <div style="font-size: 12px; color: #888;">倒计时</div>
+                <div id="auction-timer" style="font-size: 24px; font-weight: bold; color: #d4af37;">--</div>
+            </div>
+        </div>
+
+        <!-- 实时出价记录 -->
+        <div id="auction-log" style="flex-grow: 1; overflow-y: auto; font-size: 13px; margin-bottom: 15px; height: 100px;">
+            <div style="color: #666; text-align: center;">等待开拍...</div>
+        </div>
+
+        <!-- 操作按钮 -->
+        <div id="auction-controls" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+            <button class="form-button-secondary" onclick="placeBid(1.1)" style="background: #333; color: white; border: 1px solid #555;">+10%</button>
+            <button class="form-button-secondary" onclick="placeBid(1.5)" style="background: #333; color: white; border: 1px solid #555;">+50%</button>
+            <button class="form-button" onclick="placeBid('custom')" style="background: linear-gradient(135deg, #d4af37, #f2d06b); color: black; font-weight: bold; border: none;">出价</button>
         </div>
     </div>
 </div>
@@ -3443,9 +3491,6 @@
 
 </body>
 </html>
-
-
-
 
 
 
