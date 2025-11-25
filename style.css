@@ -11196,7 +11196,1185 @@ input[type=range] {
     background-color: #3a3a3c;
     color: #fff;
 }
+/* --- 主屏幕第二页布局调整 --- */
+#page-2-app-container {
+    display: grid;
+    grid-template-columns: 155px 1fr; /* 保持原来的列宽比例 */
+    gap: 15px;
+    width: 100%;
+    padding-top: 20px;
+    align-items: start;
+}
+
+.left-column-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* 组件和下方App的间距 */
+}
+
+.left-app-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 左侧下方也是两列 */
+    gap: 15px;
+    justify-items: center;
+}
+
+/* 支付宝图标专用样式 */
+.alipay-icon-bg {
+    background-color: #1677ff; /* 支付宝蓝 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.alipay-icon-bg img {
+    width: 80%;
+    height: 80%;
+    object-fit: contain;
+}
+
+/* --- 支付宝 App 界面样式 --- */
+#alipay-screen {
+    background-color: #f5f5f5;
+    display: flex;
+    flex-direction: column;
+    transition: background-color 0.5s;
+}
+
+/* 默认蓝色主题 */
+#alipay-screen {
+    --alipay-primary: #1677ff;
+    --alipay-text: #ffffff;
+    --alipay-card-bg: #1677ff;
+    --alipay-bill-bg: #ffffff;
+    --alipay-bill-text: #333333;
+}
+
+/* 黑金主题 (通过JS添加 class .theme-blackgold) */
+#alipay-screen.theme-blackgold {
+    --alipay-primary: #1a1a1a;
+    --alipay-text: #d4af37; /* 金色 */
+    --alipay-card-bg: linear-gradient(135deg, #2b2b2b, #000000);
+    --alipay-bill-bg: #1c1c1e;
+    --alipay-bill-text: #e0e0e0;
+    background-color: #121212 !important;
+}
+
+.alipay-header-area {
+    background-color: var(--alipay-primary);
+    color: var(--alipay-text);
+    padding-bottom: 60px; /* 为卡片留出空间 */
+    padding-top: calc(50px + env(safe-area-inset-top));
+    transition: background-color 0.5s;
+}
+
+.alipay-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    font-size: 18px;
+}
+
+.alipay-action {
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.alipay-card-container {
+    padding: 0 15px;
+    margin-top: -50px; /* 上浮效果 */
+}
+
+.alipay-balance-card {
+    background: var(--alipay-card-bg);
+    color: var(--alipay-text);
+    border-radius: 12px;
+    padding: 25px 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: all 0.5s;
+}
+
+#alipay-screen.theme-blackgold .alipay-balance-card {
+    box-shadow: 0 4px 20px rgba(212, 175, 55, 0.2); /* 金色光晕 */
+    border: 1px solid #333;
+}
+
+.balance-label {
+    font-size: 13px;
+    opacity: 0.8;
+}
+
+.balance-amount {
+    font-size: 42px;
+    font-weight: 700;
+    margin: 5px 0 10px 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.balance-status-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border: 1px solid currentColor;
+    border-radius: 4px;
+    font-size: 11px;
+    opacity: 0.8;
+}
+
+.alipay-bill-container {
+    flex-grow: 1;
+    background-color: var(--alipay-bill-bg);
+    margin-top: 20px;
+    border-radius: 20px 20px 0 0;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    color: var(--alipay-bill-text);
+}
+
+.bill-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+/* 账单列表项 */
+.bill-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+#alipay-screen.theme-blackgold .bill-item {
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.bill-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.bill-title { font-size: 15px; font-weight: 500; }
+.bill-time { font-size: 12px; opacity: 0.6; }
+
+.bill-amount { font-size: 17px; font-weight: 600; }
+.bill-amount.income { color: #ff3b30; } /* 收入红色 */
+.bill-amount.expense { color: #1f1f1f; } /* 支出黑色 */
+
+#alipay-screen.theme-blackgold .bill-amount.expense { color: #e0e0e0; }
+#alipay-screen.theme-blackgold .bill-amount.income { color: #ff4d4f; }
+.kinship-invite-card {
+    width: 250px; /* 稍微加宽一点 */
+    background-color: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08); /* 更柔和的阴影 */
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    border: none; /* 去掉默认边框 */
+}
+
+/* 头部：渐变背景 + 装饰 */
+.kinship-invite-header {
+    background: linear-gradient(135deg, #FF6B6B, #EE0979); /* 更加现代的红粉渐变 */
+    padding: 20px 15px;
+    color: white;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+/* 头部背景装饰圆圈（纯CSS画的） */
+.kinship-invite-header::before {
+    content: '';
+    position: absolute;
+    top: -20px;
+    right: -20px;
+    width: 80px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+}
+.kinship-invite-header::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: -10px;
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+}
+
+.kinship-title {
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    position: relative;
+    z-index: 2;
+}
+
+.kinship-subtitle {
+    font-size: 12px;
+    opacity: 0.9;
+    margin-top: 4px;
+    position: relative;
+    z-index: 2;
+}
+
+/* 主体内容：金额显示 */
+.kinship-invite-body {
+    padding: 25px 15px;
+    text-align: center;
+    background-color: #fff;
+}
+
+.kinship-limit-label {
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 8px;
+}
+
+.kinship-limit-amount {
+    font-size: 36px;
+    font-weight: 700;
+    color: #333; /* 改为深色，更有金融质感 */
+    font-family: "DIN Alternate", "Roboto", sans-serif; /* 如果系统支持，数字会更好看 */
+    line-height: 1;
+}
+
+.kinship-limit-amount::first-letter {
+    font-size: 20px; /* 货币符号稍微小一点 */
+    margin-right: 2px;
+    font-weight: 500;
+}
+
+/* 底部状态栏 */
+.kinship-status {
+    font-size: 12px;
+    padding: 12px 15px;
+    background: #F9F9F9; /* 很浅的灰色 */
+    color: #999;
+    text-align: left; /* 左对齐看起来更像系统单据 */
+    border-top: 1px solid #eee;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* 状态点 (可选) */
+.kinship-status::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: #ccc;
+}
+
+/* 不同状态的颜色修饰 */
+.kinship-status[data-status="pending"]::before { background-color: #ff9800; }
+.kinship-status[data-status="accepted"]::before { background-color: #52c41a; }
+.kinship-status[data-status="rejected"]::before { background-color: #ff4d4f; }
+
+/* 聊天中的亲属卡气泡去背景 */
+.message-bubble.is-kinship-request .content {
+    padding: 0;
+    background: transparent !important;
+    box-shadow: none;
+}
+/* --- 支付宝钱包页面的亲属卡列表样式 (补回) --- */
+.kinship-card-entry {
+    background: linear-gradient(135deg, #ff5252, #ff1744);
+    border-radius: 12px;
+    padding: 15px;
+    color: white;
+    margin-bottom: 15px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(255, 23, 68, 0.3);
+    cursor: pointer;
+}
+
+/* 右下角的装饰爱心 */
+.kinship-card-entry::after {
+    content: '❤️';
+    position: absolute;
+    right: -10px;
+    bottom: -20px;
+    font-size: 80px;
+    opacity: 0.2;
+    transform: rotate(-15deg);
+}
+
+.kinship-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 2;
+}
+
+.kinship-provider {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+/* 这里就是控制那张大图变回小头像的关键代码 */
+.kinship-provider img {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.5);
+    object-fit: cover;
+}
+
+.kinship-limit {
+    font-size: 24px;
+    font-weight: bold;
+    position: relative;
+    z-index: 2;
+    font-family: "DIN Alternate", sans-serif;
+}
+
+.kinship-label {
+    font-size: 12px;
+    opacity: 0.8;
+    position: relative;
+    z-index: 2;
+}
+/* 支付宝亲属卡卡片内的解绑按钮 */
+.kinship-card-entry .alipay-unbind-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.2); /* 半透明黑底 */
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    cursor: pointer;
+    z-index: 10; /* 保证点得到 */
+    transition: background 0.2s;
+}
+
+.kinship-card-entry .alipay-unbind-btn:hover {
+    background: rgba(0, 0, 0, 0.4);
+}
+/* --- 支付宝黑金模式适配补丁 --- */
+
+/* 暂无亲属卡的空状态样式 */
+.kinship-empty-state {
+    text-align: center; 
+    padding: 20px; 
+    background: white; 
+    border-radius: 12px; 
+    color: #999; 
+    font-size: 13px;
+    transition: all 0.3s;
+}
+
+/* 黑金模式下的空状态 */
+.theme-blackgold .kinship-empty-state {
+    background: rgba(255, 255, 255, 0.1) !important; /* 半透明深色 */
+    color: #d4af37 !important; /* 金色文字 */
+    border: 1px solid rgba(212, 175, 55, 0.3); /* 金色边框 */
+}
+
+/* 黑金模式下的添加按钮 */
+.theme-blackgold #add-kinship-btn {
+    color: #d4af37 !important; /* 按钮变金 */
+}
+
+/* 黑金模式下的标题文字 */
+.theme-blackgold #alipay-kinship-section span {
+    color: #d4af37 !important; /* 标题变金 */
+}
+/* --- 支付收银台弹窗美化 --- */
+
+/* 1. 弹窗内的按钮容器 */
+#custom-modal .custom-modal-footer {
+    /* 让列表更紧凑，去掉默认的居中 */
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+/* 2. 支付选项按钮 (原来那些蓝色的字) */
+.payment-option-item {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 15px 20px !important;
+    background-color: #fff !important;
+    border: none !important;
+    border-bottom: 1px solid #f5f5f5 !important;
+    cursor: pointer;
+    text-decoration: none !important;
+    transition: background-color 0.2s;
+    margin: 0 !important;
+    height: auto !important;
+}
+
+.payment-option-item:active {
+    background-color: #f9f9f9 !important;
+}
+
+/* 最后一项去掉边框 */
+.payment-option-item:last-child {
+    border-bottom: none !important;
+}
+
+/* 3. 内部元素布局 */
+.pay-opt-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-align: left;
+}
+
+/* 图标样式 */
+.pay-opt-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+}
+
+/* 文字信息 */
+.pay-opt-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.pay-opt-title {
+    font-size: 16px;
+    color: #333;
+    font-weight: 500;
+}
+
+.pay-opt-desc {
+    font-size: 12px;
+    color: #999;
+}
+
+/* 余额不足时的样式 (可选) */
+.payment-option-item.disabled {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* 适配暗黑模式 */
+#phone-screen.dark-mode .payment-option-item {
+    background-color: #1c1c1e !important;
+    border-bottom-color: #2c2c2e !important;
+}
+#phone-screen.dark-mode .pay-opt-title { color: #fff; }
+#phone-screen.dark-mode .pay-opt-desc { color: #666; }
+/* --- 支付宝亲属卡布局终极修复 --- */
+
+/* 1. 滚动容器 */
+#alipay-kinship-section {
+    display: flex !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    gap: 15px;
+    padding: 5px 5px 15px 5px; /* 增加内边距，防止阴影被切 */
+    
+    /* 关键：让内容在只有一张卡时也能撑开容器 */
+    width: 100%; 
+    box-sizing: border-box;
+    
+    /* 隐藏滚动条 */
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; 
+}
+#alipay-kinship-section::-webkit-scrollbar {
+    display: none; 
+}
+
+/* 2. 单卡样式优化 */
+.kinship-card-entry {
+    /* 核心修改：使用 flex-shrink: 0 防止被挤压 */
+    flex-shrink: 0;
+    
+    /* 核心修改：宽度逻辑 */
+    /* 默认宽度，适合多卡并排 */
+    width: 85vw; 
+    max-width: 320px; 
+    min-width: 260px;
+
+    margin-bottom: 0 !important;
+    
+    /* 视觉美化 */
+    box-shadow: 0 4px 15px rgba(255, 23, 68, 0.25);
+    border-radius: 16px;
+}
 
 
+/* 1. 修复亲属卡宽度问题 */
+/* 逻辑：如果列表里只有一张卡，强制占满容器宽度，和余额卡对齐 */
+#alipay-kinship-section:has(.kinship-card-entry:only-child) .kinship-card-entry {
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    margin-right: 0 !important;
+}
+
+/* 确保容器本身的内边距不会导致对齐偏差 */
+#alipay-kinship-section {
+    padding-left: 0 !important; /* 移除左边距，依靠父容器对齐 */
+    padding-right: 0 !important;
+}
+
+/* 2. 修复支付宝图标不铺满的问题 */
+/* 去掉原本给支付宝特意留的边距，让图片强制撑满 */
+.alipay-icon-bg {
+    padding: 0 !important; /* 去掉内边距 */
+    display: block !important; /* 确保是块级布局 */
+}
+
+.alipay-icon-bg img {
+    width: 100% !important;  /* 宽度撑满 */
+    height: 100% !important; /* 高度撑满 */
+    object-fit: cover !important; /* 裁剪以铺满，不留白边 */
+    border-radius: inherit !important; /* 继承父级的圆角 */
+    margin: 0 !important;
+}
+
+/* 4. 空状态优化 */
+.kinship-empty-state {
+    width: 100%;
+    flex-shrink: 0;
+    padding: 30px 20px;
+    background-color: #fff;
+    border-radius: 12px;
+    text-align: center;
+    color: #999;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+#alipay-kinship-section:has(.kinship-card-entry:only-child) {
+    display: block !important;        /* 关键：取消 Flex */
+    overflow: visible !important;     /* 关键：不需要滚动 */
+    white-space: normal !important;
+    padding-right: 5px !important;    /* 保持一点右边距美观 */
+}
+
+/* 2. 针对只有一张卡的情况：卡片样式重置 */
+#alipay-kinship-section:has(.kinship-card-entry:only-child) .kinship-card-entry {
+    width: auto !important;           /* 关键：自动宽度 (Block布局下等于占满) */
+    max-width: 100% !important;       /* 双重保险：绝不超过父容器 */
+    min-width: 0 !important;          /* 清除之前设置的 260px 最小宽度 */
+    margin: 0 !important;             /* 清除边距 */
+    flex: none !important;            /* 禁用 flex 属性 */
+    transform: none !important;       /* 防止变换导致的位置偏移 */
+}
+
+/* 3. 确保多张卡片时（Flex布局）依然正常 */
+#alipay-kinship-section {
+    /* 这里保持之前的设置，确保多张卡时横向滚动 */
+    box-sizing: border-box; 
+}
+
+/* 4. 再次确保图标铺满 (以防被覆盖) */
+.alipay-icon-bg {
+    padding: 0 !important;
+    display: block !important;
+}
+.alipay-icon-bg img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    border-radius: inherit !important;
+    margin: 0 !important;
+}
+/* --- 支付宝账单筛选与分页样式 --- */
+.alipay-bill-container {
+    padding: 0 !important; /*以此覆盖旧padding，由内部元素控制 */
+    background-color: #f5f5f5;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* 容器本身不滚动，内部列表滚动 */
+}
+
+/* 筛选栏头部 */
+.bill-filter-header {
+    background-color: #fff;
+    padding: 10px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    flex-shrink: 0;
+    z-index: 10;
+}
+
+/* 日期选择器美化 */
+.bill-date-picker-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background-color: #f5f5f5;
+    border-radius: 20px;
+    padding: 5px 12px;
+}
+
+.bill-date-input {
+    border: none;
+    background: transparent;
+    font-size: 14px;
+    color: #333;
+    font-weight: 500;
+    outline: none;
+    width: 110px;
+}
+
+/* 类型切换标签 */
+.bill-type-tabs {
+    display: flex;
+    gap: 15px;
+}
+
+.bill-type-tab {
+    font-size: 14px;
+    color: #666;
+    cursor: pointer;
+    padding: 4px 0;
+    position: relative;
+    transition: color 0.2s;
+}
+
+.bill-type-tab.active {
+    color: #1677ff; /* 支付宝蓝 */
+    font-weight: 600;
+}
+/* 黑金模式下的选中态 */
+.theme-blackgold .bill-type-tab.active {
+    color: #d4af37;
+}
+
+.bill-type-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    height: 2px;
+    background-color: currentColor;
+    border-radius: 2px;
+}
+
+/* 滚动列表区域 */
+#bill-scroll-list {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 0 15px;
+    background-color: #fff;
+}
+
+/* 列表月份分割线 */
+.bill-month-separator {
+    padding: 15px 0 5px 0;
+    font-size: 13px;
+    color: #999;
+    background-color: #fff;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+}
+
+/* 加载更多提示 */
+.bill-loading-more {
+    text-align: center;
+    padding: 15px;
+    color: #999;
+    font-size: 12px;
+}
+.bill-loading-more.hidden {
+    display: none;
+}
+/* 1. 容器与背景变黑 */
+#alipay-screen.theme-blackgold .alipay-bill-container,
+#alipay-screen.theme-blackgold .bill-filter-header,
+#alipay-screen.theme-blackgold #bill-scroll-list {
+    background-color: #121212 !important; /* 深黑背景 */
+    border-color: #333 !important;
+}
+
+/* 2. 筛选栏头部 */
+#alipay-screen.theme-blackgold .bill-filter-header {
+    border-bottom: 1px solid #2c2c2e;
+}
+
+/* 3. 日期选择器美化 */
+#alipay-screen.theme-blackgold .bill-date-picker-wrapper {
+    background-color: #2c2c2e !important; /* 比背景稍亮的灰色 */
+    border: 1px solid #444;
+}
+
+#alipay-screen.theme-blackgold .bill-date-input {
+    color: #d4af37 !important; /* 金色文字 */
+    color-scheme: dark; /* 让浏览器自带的日期弹窗也变成深色 */
+}
+
+/* 4. 类型切换标签 */
+#alipay-screen.theme-blackgold .bill-type-tab {
+    color: #888;
+}
+
+#alipay-screen.theme-blackgold .bill-type-tab.active {
+    color: #d4af37 !important; /* 选中变为金色 */
+}
+
+/* 5. 列表内容适配 */
+#alipay-screen.theme-blackgold .bill-month-separator {
+    background-color: #121212 !important; /* 与背景同色 */
+    color: #d4af37 !important; /* 月份标题变金 */
+}
+
+#alipay-screen.theme-blackgold .bill-item {
+    border-bottom-color: #2c2c2e !important;
+}
+
+/* 账单标题 */
+#alipay-screen.theme-blackgold .bill-title {
+    color: #e0e0e0 !important; /* 浅灰偏白 */
+}
+
+/* 账单时间 */
+#alipay-screen.theme-blackgold .bill-time {
+    color: #666 !important;
+}
+
+/* 支出金额 (原本是黑色，现在变白) */
+#alipay-screen.theme-blackgold .bill-amount.expense {
+    color: #ffffff !important;
+}
+
+/* 收入金额 (原本是红色，现在变金或者淡红，这里选金色呼应主题) */
+#alipay-screen.theme-blackgold .bill-amount.income {
+    color: #d4af37 !important; 
+}
+
+/* 底部加载提示 */
+#alipay-screen.theme-blackgold .bill-loading-more {
+    color: #666 !important;
+}
+
+/* 如果列表为空的提示文字 */
+#alipay-screen.theme-blackgold .bill-empty-msg {
+    color: #666 !important;
+}
+.alipay-bill-container {
+    border-radius: 5px 5px 0 0 !important;
+}
+
+/* 2. 让筛选栏头部也拥有圆角，与容器贴合 */
+.bill-filter-header {
+    border-radius: 5px 5px 0 0;
+    /* 稍微增加一点左侧内边距，让文字离边缘远一点 */
+    padding-left: 20px !important; 
+}
+
+/* --- 基金理财模块样式 --- */
+.fund-item {
+    background-color: white;
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    transition: transform 0.1s;
+}
+.fund-item:active {
+    transform: scale(0.98);
+    background-color: #f9f9f9;
+}
+
+.fund-info h4 {
+    margin: 0 0 4px 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: #333;
+}
+
+.fund-tags {
+    display: flex;
+    gap: 5px;
+}
+
+.fund-tag {
+    font-size: 10px;
+    padding: 1px 4px;
+    border-radius: 3px;
+    background-color: #f0f2f5;
+    color: #666;
+}
+.fund-tag.high-risk {
+    background-color: #fff1f0;
+    color: #ff4d4f;
+}
+
+.fund-data {
+    text-align: right;
+}
+
+.fund-change {
+    font-size: 18px;
+    font-weight: 600;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* 红涨绿跌 */
+.fund-up { color: #ff3b30; }
+.fund-down { color: #4cd964; }
+.fund-flat { color: #999; }
+
+.fund-nav {
+    font-size: 12px;
+    color: #999;
+    margin-top: 2px;
+}
+
+/* 黑金模式适配 */
+#alipay-screen.theme-blackgold .alipay-grid-menu .alipay-menu-item {
+    background-color: #1c1c1e;
+    color: #e0e0e0;
+    box-shadow: none;
+    border: 1px solid #333;
+}
+#alipay-screen.theme-blackgold #fund-market-trend-preview {
+    color: #d4af37 !important;
+}
+/* --- 支付宝布局修复：确保账单不被挤压 --- */
+#alipay-screen {
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* 强制占满屏幕 */
+    overflow: hidden; /* 禁止整个屏幕滚动，只让内部区域滚动 */
+}
+
+/* 头部区域 (包含蓝色背景、余额、亲属卡、基金入口) */
+.alipay-header-area {
+    flex-shrink: 0; /* 禁止头部被压缩 */
+    background-color: var(--alipay-primary);
+    /* 注意：这里去掉了 padding-bottom，由内容撑开 */
+    padding-bottom: 20px; 
+    transition: background-color 0.5s;
+}
+
+/* 卡片容器 */
+.alipay-card-container {
+    margin-top: 0; /* 调整间距 */
+    padding: 0 15px;
+}
+
+/* --- 基金入口样式优化 (更紧凑) --- */
+.alipay-grid-menu {
+    padding: 0 15px;
+    margin-top: 10px;     /* 与上方卡片保持距离 */
+    margin-bottom: 10px;  /* 与下方账单保持距离 */
+}
+
+.alipay-menu-item {
+    background: white;
+    padding: 12px 15px;   /* 减小内边距，更扁平 */
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    cursor: pointer;
+    transition: all 0.3s;
+    border: 1px solid transparent; /* 预留边框位 */
+}
+
+.alipay-menu-item:active {
+    transform: scale(0.98);
+}
+
+.menu-icon {
+    width: 36px;
+    height: 36px;
+    background: #FFF5E5;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+.menu-info {
+    flex-grow: 1;
+}
+
+.menu-title {
+    font-weight: 600;
+    font-size: 15px;
+    color: #333;
+}
+
+.menu-trend {
+    font-size: 11px;
+    color: #ff3b30;
+    margin-top: 2px;
+}
+
+.menu-arrow {
+    color: #ccc;
+    font-size: 18px;
+    font-weight: 300;
+}
+
+/* --- 账单容器自适应 (关键！) --- */
+.alipay-bill-container {
+    flex-grow: 1;  /* 占据剩余所有空间 */
+    min-height: 0; /* 允许 Flex 子元素收缩，防止溢出 */
+    margin-top: 0; /* 紧贴上方 */
+    background-color: var(--alipay-bill-bg);
+    border-radius: 20px 20px 0 0;
+    padding: 0;    /* 内部元素处理 padding */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* 容器本身不滚 */
+    box-shadow: 0 -5px 15px rgba(0,0,0,0.05); /* 增加顶部阴影，产生层次感 */
+}
+
+/* 账单列表滚动区域 */
+#bill-scroll-list {
+    flex-grow: 1;
+    overflow-y: auto; /* 只有这里滚动 */
+    padding: 0 15px 20px 15px;
+    -webkit-overflow-scrolling: touch;
+}
+
+
+/* --- 支付宝布局修复：确保账单不被挤压 --- */
+#alipay-screen {
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* 强制占满屏幕 */
+    overflow: hidden; /* 禁止整个屏幕滚动，只让内部区域滚动 */
+}
+
+/* 头部区域 (包含蓝色背景、余额、亲属卡、基金入口) */
+.alipay-header-area {
+    flex-shrink: 0; /* 禁止头部被压缩 */
+    background-color: var(--alipay-primary);
+    /* 注意：这里去掉了 padding-bottom，由内容撑开 */
+    padding-bottom: 20px; 
+    transition: background-color 0.5s;
+}
+
+/* 卡片容器 */
+.alipay-card-container {
+    margin-top: 0; /* 调整间距 */
+    padding: 0 15px;
+}
+
+/* --- 基金入口样式优化 (更紧凑) --- */
+.alipay-grid-menu {
+    padding: 0 15px;
+    margin-top: 10px;     /* 与上方卡片保持距离 */
+    margin-bottom: 10px;  /* 与下方账单保持距离 */
+}
+
+.alipay-menu-item {
+    background: white;
+    padding: 12px 15px;   /* 减小内边距，更扁平 */
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    cursor: pointer;
+    transition: all 0.3s;
+    border: 1px solid transparent; /* 预留边框位 */
+}
+
+.alipay-menu-item:active {
+    transform: scale(0.98);
+}
+
+.menu-icon {
+    width: 36px;
+    height: 36px;
+    background: #FFF5E5;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+.menu-info {
+    flex-grow: 1;
+}
+
+.menu-title {
+    font-weight: 600;
+    font-size: 15px;
+    color: #333;
+}
+
+.menu-trend {
+    font-size: 11px;
+    color: #ff3b30;
+    margin-top: 2px;
+}
+
+.menu-arrow {
+    color: #ccc;
+    font-size: 18px;
+    font-weight: 300;
+}
+
+/* --- 账单容器自适应 (关键！) --- */
+.alipay-bill-container {
+    flex-grow: 1;  /* 占据剩余所有空间 */
+    min-height: 0; /* 允许 Flex 子元素收缩，防止溢出 */
+    margin-top: 0; /* 紧贴上方 */
+    background-color: var(--alipay-bill-bg);
+    border-radius: 20px 20px 0 0;
+    padding: 0;    /* 内部元素处理 padding */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* 容器本身不滚 */
+    box-shadow: 0 -5px 15px rgba(0,0,0,0.05); /* 增加顶部阴影，产生层次感 */
+}
+
+/* 账单列表滚动区域 */
+#bill-scroll-list {
+    flex-grow: 1;
+    overflow-y: auto; /* 只有这里滚动 */
+    padding: 0 15px 20px 15px;
+    -webkit-overflow-scrolling: touch;
+}
+
+
+
+/* 1. 基金入口黑金化 */
+#alipay-screen.theme-blackgold .alipay-menu-item {
+    background-color: #1c1c1e; /* 深色背景 */
+    border: 1px solid #333;    /* 微弱边框 */
+    box-shadow: none;
+}
+
+#alipay-screen.theme-blackgold .menu-icon {
+    background-color: #2c2c2e; /* 图标背景变深 */
+    border: 1px solid #444;
+}
+
+#alipay-screen.theme-blackgold .menu-title {
+    color: #e0e0e0; /* 标题变白/灰 */
+}
+
+#alipay-screen.theme-blackgold .menu-trend {
+    color: #d4af37 !important; /* 涨跌幅变金色 */
+}
+
+#alipay-screen.theme-blackgold .menu-arrow {
+    color: #666;
+}
+
+/* 2. 账单区域黑金化完善 */
+#alipay-screen.theme-blackgold .alipay-bill-container {
+    background-color: #000000; /* 账单背景全黑 */
+    border-top: 1px solid #222;
+}
+
+#alipay-screen.theme-blackgold #bill-scroll-list {
+    background-color: #000000;
+}
+
+/* --- 基金页面主题适配 --- */
+
+/* 1. 默认蓝色主题 */
+.fund-header-area {
+    background-color: #1677ff;
+    color: white;
+    border-bottom: none;
+}
+
+.fund-asset-card {
+    background-color: #1677ff;
+    color: white;
+    padding: 10px 20px 40px 20px; /* 增加底部内边距 */
+    margin-bottom: -20px; /* 让下方列表上浮覆盖 */
+    transition: background-color 0.5s;
+}
+
+/* 2. 黑金模式适配 (当 fund-screen 拥有 .theme-blackgold 类时) */
+#fund-screen.theme-blackgold {
+    background-color: #121212 !important;
+}
+
+#fund-screen.theme-blackgold .fund-header-area {
+    background-color: #1a1a1a; /* 头部变深黑 */
+    color: #d4af37; /* 金色文字 */
+}
+
+#fund-screen.theme-blackgold .fund-asset-card {
+    background: linear-gradient(180deg, #1a1a1a 0%, #000000 100%); /* 黑金渐变 */
+    color: #d4af37;
+}
+
+#fund-screen.theme-blackgold .list-container {
+    background-color: #121212 !important; /* 列表背景变黑 */
+}
+
+#fund-screen.theme-blackgold .frame-tabs {
+    background-color: #1c1c1e !important;
+    box-shadow: none;
+    border: 1px solid #333;
+}
+
+#fund-screen.theme-blackgold .frame-tab {
+    color: #888;
+}
+#fund-screen.theme-blackgold .frame-tab.active {
+    background-color: #333 !important;
+    color: #d4af37 !important;
+}
+
+#fund-screen.theme-blackgold .fund-item {
+    background-color: #1c1c1e;
+    border: 1px solid #2c2c2e;
+    color: #e0e0e0;
+}
+
+#fund-screen.theme-blackgold .fund-info h4 {
+    color: #e0e0e0;
+}
+/* --- 亲属卡标题适配 --- */
+.kinship-section-title {
+    color: #333; /* 默认模式：深灰色 */
+    transition: color 0.3s;
+}
+
+/* 黑金模式下，标题变金 */
+#alipay-screen.theme-blackgold .kinship-section-title {
+    color: #d4af37 !important;
+}
+
+/* 黑金模式下，添加按钮也变金 */
+#alipay-screen.theme-blackgold #add-kinship-btn {
+    color: #d4af37 !important;
+}
 
 
