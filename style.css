@@ -12453,3 +12453,535 @@ input[type=range] {
     background-color: #2c2c2e !important; /* 统一深灰块 */
     color: #0a84ff !important;
 }
+/* ========================================= */
+/* ▼▼▼ 支付宝 UI 美化版 (Modern Fintech) ▼▼▼ */
+/* ========================================= */
+
+/* 1. 屏幕整体容器 */
+#alipay-screen {
+    /* 定义变量：默认财富蓝主题 */
+    --alipay-header-bg: linear-gradient(180deg, #1677ff 0%, #0a5ad3 100%);
+    --alipay-bg-color: #f5f7fa; /* 更柔和的浅灰底色 */
+    --alipay-card-bg: #ffffff;
+    --alipay-text-primary: #1f1f1f;
+    --alipay-text-secondary: #8a8a8a;
+    --alipay-money-font: -apple-system, BlinkMacSystemFont, "DIN Alternate", "Roboto", sans-serif;
+    
+    background-color: var(--alipay-bg-color);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* 2. 头部区域 (包含导航栏和蓝色背景层) */
+.alipay-header-area {
+    background: var(--alipay-header-bg);
+    color: white;
+    padding-top: calc(35px + env(safe-area-inset-top));
+    padding-bottom: 60px; /* 留出空间给卡片上浮 */
+    border-radius: 0 0 20px 20px; /* 底部微圆角 */
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+}
+
+/* 导航栏 */
+.alipay-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 15px;
+    height: 44px;
+    font-size: 17px;
+    font-weight: 500;
+}
+
+.alipay-nav .back-btn {
+    font-size: 24px;
+    font-weight: 300;
+    cursor: pointer;
+    width: 30px;
+    opacity: 0.9;
+}
+
+.alipay-action {
+    font-size: 15px;
+    opacity: 0.9;
+    cursor: pointer;
+    padding: 4px 10px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 15px;
+    backdrop-filter: blur(5px);
+    transition: background 0.2s;
+}
+.alipay-action:active {
+    background: rgba(255,255,255,0.3);
+}
+
+/* 3. 卡片容器 (负责上浮布局) */
+.alipay-card-container {
+    flex-grow: 1;
+    overflow-y: auto; /* 让卡片和下方内容整体滚动 */
+    padding: 0 12px;
+    margin-top: -50px; /* 核心：卡片上浮覆盖蓝色背景 */
+    position: relative;
+    z-index: 2;
+    /* 隐藏滚动条 */
+    -webkit-overflow-scrolling: touch;
+}
+.alipay-card-container::-webkit-scrollbar { display: none; }
+
+/* 4. 总资产卡片 (深色质感卡片) */
+.alipay-balance-card {
+    background: linear-gradient(180deg, #1677ff 0%, #0a5ad3 100%);
+    color: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 8px 20px rgba(22, 119, 255, 0.2);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+/* 卡片内部装饰光纹 */
+.alipay-balance-card::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.balance-label {
+    font-size: 13px;
+    opacity: 0.7;
+    margin-bottom: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.balance-amount {
+    font-family: var(--alipay-money-font);
+    font-size: 38px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.balance-status-tag {
+    font-size: 11px;
+    padding: 2px 8px;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 4px;
+    color: rgba(255,255,255,0.9);
+    backdrop-filter: blur(4px);
+}
+
+/* 5. 功能菜单网格 (Funds, etc.) */
+.alipay-grid-menu {
+    display: grid;
+    grid-template-columns: 1fr; /* 保持单行，也可以改成 1fr 1fr */
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.alipay-menu-item {
+    background: var(--alipay-card-bg);
+    padding: 16px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+.alipay-menu-item:active {
+    transform: scale(0.98);
+}
+
+.menu-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: #eff4ff; /* 浅蓝底 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+.menu-info {
+    flex-grow: 1;
+}
+
+.menu-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--alipay-text-primary);
+    margin-bottom: 2px;
+}
+
+.menu-trend {
+    font-size: 12px;
+    color: #ff3b30; /* 红涨 */
+    font-family: var(--alipay-money-font);
+    font-weight: 500;
+}
+
+.menu-arrow {
+    color: #ccc;
+    font-size: 16px;
+}
+
+/* 6. 亲属卡区域 */
+#alipay-kinship-section-wrapper {
+    margin-bottom: 15px;
+}
+.kinship-section-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--alipay-text-primary);
+    margin-left: 5px;
+}
+
+/* 亲属卡容器 */
+#alipay-kinship-section {
+    display: flex;
+    overflow-x: auto;
+    gap: 10px;
+    padding: 10px 5px 15px 5px; /* 留出阴影空间 */
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+#alipay-kinship-section::-webkit-scrollbar { display: none; }
+
+/* 亲属卡单卡 */
+.kinship-card-entry {
+    flex-shrink: 0;
+    width: 85%; /* 稍微露出下一张 */
+    max-width: 300px;
+    background: linear-gradient(135deg, #ff5252, #e00f38);
+    border-radius: 12px;
+    padding: 16px;
+    color: white;
+    position: relative;
+    box-shadow: 0 4px 12px rgba(255, 82, 82, 0.3);
+    overflow: hidden;
+}
+
+.kinship-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+.kinship-provider {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    background: rgba(0,0,0,0.1);
+    padding: 4px 10px 4px 4px;
+    border-radius: 20px;
+}
+.kinship-provider img {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.6);
+}
+.kinship-limit {
+    font-family: var(--alipay-money-font);
+    font-size: 26px;
+    font-weight: 700;
+}
+.kinship-label {
+    font-size: 11px;
+    opacity: 0.8;
+    margin-bottom: 2px;
+}
+
+/* 7. 账单区域 */
+.alipay-bill-container {
+    background-color: var(--alipay-card-bg);
+    border-radius: 16px;
+    padding: 0;
+    overflow: hidden; /* 内部滚动 */
+    box-shadow: 0 2px 15px rgba(0,0,0,0.04);
+    margin-bottom: 20px; /* 底部留白 */
+    min-height: 300px;
+}
+
+/* 账单筛选头 */
+.bill-filter-header {
+    padding: 15px;
+    background: var(--alipay-card-bg);
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* 账单列表 */
+#bill-scroll-list {
+    max-height: 500px; /* 给个最大高度，防止撑破页面 */
+    overflow-y: auto;
+}
+
+.bill-month-separator {
+    background-color: #f9f9f9;
+    padding: 8px 15px;
+    font-size: 12px;
+    color: #999;
+    font-weight: 500;
+    position: sticky;
+    top: 0;
+}
+
+.bill-item {
+    padding: 16px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #f7f7f7;
+}
+.bill-item:last-child { border-bottom: none; }
+
+.bill-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.bill-title {
+    font-size: 15px;
+    color: var(--alipay-text-primary);
+    font-weight: 500;
+}
+.bill-time {
+    font-size: 12px;
+    color: #ccc;
+}
+.bill-amount {
+    font-family: var(--alipay-money-font);
+    font-size: 17px;
+    font-weight: 600;
+}
+.bill-amount.income { color: #ff3b30; }
+.bill-amount.expense { color: var(--alipay-text-primary); }
+
+
+/* 8. 黑金主题适配 (Black Gold Theme) */
+#alipay-screen.theme-blackgold {
+    --alipay-header-bg: #1a1a1a; /* 纯黑头部 */
+    --alipay-bg-color: #121212;
+    --alipay-card-bg: #1c1c1e;
+    --alipay-text-primary: #e5e5e5;
+    --alipay-text-secondary: #888;
+}
+
+#alipay-screen.theme-blackgold .alipay-balance-card {
+    background: linear-gradient(135deg, #2a2a2a, #000);
+    border: 1px solid #333;
+    color: #d4af37; /* 金色 */
+    box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+}
+#alipay-screen.theme-blackgold .balance-label,
+#alipay-screen.theme-blackgold .balance-status-tag {
+    color: rgba(212, 175, 55, 0.8);
+    border-color: rgba(212, 175, 55, 0.3);
+}
+
+#alipay-screen.theme-blackgold .menu-icon {
+    background: #2c2c2e;
+    color: #d4af37;
+}
+#alipay-screen.theme-blackgold .menu-trend {
+    color: #d4af37; /* 也是金色 */
+}
+
+#alipay-screen.theme-blackgold .bill-filter-header {
+    border-bottom-color: #333;
+}
+#alipay-screen.theme-blackgold .bill-month-separator {
+    background-color: #121212;
+    color: #666;
+}
+#alipay-screen.theme-blackgold .bill-item {
+    border-bottom-color: #333;
+}
+#alipay-screen.theme-blackgold .bill-amount.expense {
+    color: #fff;
+}
+#alipay-screen.theme-blackgold .bill-amount.income {
+    color: #d4af37;
+}
+#alipay-screen.theme-blackgold .kinship-section-title {
+    color: #d4af37;
+}
+#alipay-screen.theme-blackgold #add-kinship-btn {
+    color: #d4af37 !important;
+}
+/* ========================================= */
+/* ▼▼▼ 赛博黑市拍卖行 2.0 (UI 重构) ▼▼▼ */
+/* ========================================= */
+
+/* 1. 全屏背景：深邃的网格背景 */
+#auction-screen {
+    background-color: #050505 !important;
+    background-image: 
+        linear-gradient(rgba(0, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 30px 30px;
+    color: #e0e0e0;
+    font-family: 'Courier New', Courier, monospace; /* 终端字体感 */
+}
+
+/* 2. 头部：霓虹边框 */
+#auction-screen .header {
+    background-color: rgba(20, 20, 20, 0.9) !important;
+    border-bottom: 1px solid #333;
+    box-shadow: 0 0 15px rgba(0, 255, 242, 0.1);
+}
+#auction-screen .header span {
+    color: #00f3ff !important;
+    text-shadow: 0 0 5px rgba(0, 243, 255, 0.5);
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+/* 3. 拍品展示区：全息投影感 */
+#auction-main-display {
+    height: auto !important;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background: radial-gradient(circle at center, #1a1a2e 0%, #000000 80%);
+}
+
+#auction-item-image-container {
+    border: 2px solid #00f3ff !important;
+    box-shadow: 0 0 20px rgba(0, 243, 255, 0.2), inset 0 0 20px rgba(0, 243, 255, 0.1) !important;
+    border-radius: 4px !important; /* 硬朗的角 */
+    position: relative;
+}
+/* 扫描线动画 */
+#auction-item-image-container::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(to bottom, transparent 50%, rgba(0, 255, 255, 0.1) 51%, transparent 52%);
+    background-size: 100% 10px;
+    animation: scanline 5s linear infinite;
+    pointer-events: none;
+}
+@keyframes scanline { 0% {background-position: 0 0;} 100% {background-position: 0 100%;} }
+
+#auction-item-name {
+    font-family: -apple-system, sans-serif;
+    font-weight: 900;
+    font-size: 24px !important;
+    color: #fff !important;
+    text-shadow: 2px 2px 0px #ff0055; /* 故障风阴影 */
+    margin-top: 15px !important;
+}
+
+#auction-item-desc {
+    color: #00f3ff !important;
+    opacity: 0.8;
+    border: 1px dashed #00f3ff;
+    padding: 8px;
+    background: rgba(0, 243, 255, 0.05);
+    margin-top: 10px !important;
+    max-width: 90%;
+}
+
+/* 4. 竞价面板：控制台风格 */
+#auction-screen > div:last-child { /* 指向底部的白色面板 */
+    background-color: #111 !important;
+    border-top: 2px solid #ff0055; /* 撞色边框 */
+    border-radius: 0 !important; /* 方正 */
+    box-shadow: 0 -5px 30px rgba(255, 0, 85, 0.15) !important;
+}
+
+/* 当前价格大字 */
+#auction-current-price {
+    color: #ff0055 !important;
+    text-shadow: 0 0 10px rgba(255, 0, 85, 0.5);
+    font-family: 'DIN Alternate', sans-serif; /* 数字字体 */
+}
+
+/* 倒计时 */
+#auction-timer {
+    color: #f0ad4e !important; /* 警告黄 */
+    font-family: monospace;
+}
+
+/* 5. 滚动日志：终端数据流 */
+#auction-log {
+    background: #000;
+    border: 1px solid #333;
+    font-family: monospace;
+    padding: 5px;
+    margin-bottom: 15px;
+}
+#auction-log div {
+    border-bottom: none !important;
+    padding: 2px 5px !important;
+    font-size: 12px;
+}
+#auction-log .bid-me { color: #00ff00 !important; text-shadow: 0 0 5px #00ff00; } /* 我出价绿色高亮 */
+#auction-log .bid-friend { color: #00f3ff !important; }
+#auction-log .bid-npc { color: #666 !important; }
+
+/* 6. 按钮组：机械感 */
+#auction-controls {
+    gap: 8px !important;
+}
+#auction-controls button {
+    border-radius: 2px !important; /* 方形按钮 */
+    text-transform: uppercase;
+    font-weight: 800 !important;
+    letter-spacing: 1px;
+    transition: all 0.1s;
+}
+
+/* 加价按钮 */
+#auction-controls .form-button-secondary {
+    background: #222 !important;
+    border: 1px solid #444 !important;
+    color: #ccc !important;
+}
+#auction-controls .form-button-secondary:active {
+    background: #fff !important;
+    color: #000 !important;
+}
+
+/* 核心出价按钮 */
+#auction-controls .form-button {
+    background: #ff0055 !important; /* 霓虹红 */
+    color: #fff !important;
+    box-shadow: 0 0 15px rgba(255, 0, 85, 0.4);
+    border: none !important;
+}
+#auction-controls .form-button:active {
+    transform: scale(0.95);
+    box-shadow: 0 0 5px rgba(255, 0, 85, 0.8);
+}
+#auction-log .bid-friend { 
+    color: #ff00ff !important; /* 亮粉色 */
+    font-weight: 900 !important;
+    font-size: 14px !important;
+    border-left: 3px solid #ff00ff; /* 左侧加个粉条 */
+    padding-left: 8px !important;
+    background: rgba(255, 0, 255, 0.1); /* 微弱背景 */
+    text-shadow: 0 0 5px #ff00ff; /* 霓虹光晕 */
+}
