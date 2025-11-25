@@ -1,4 +1,4 @@
-           @font-face { font-family: 'bulangni'; src: url('') format('truetype'); font-weight: normal; font-style: normal; font-display: swap; }
+          @font-face { font-family: 'bulangni'; src: url('') format('truetype'); font-weight: normal; font-style: normal; font-display: swap; }
         :root { --screen-width: 350px; --screen-height: 650px; --secondary-bg: #ffffff; --border-color: #e0e0e0; --text-primary: #1f1f1f; --text-secondary: #8a8a8a; --accent-color: #007bff; }
         html {
             -webkit-text-size-adjust: 100%;
@@ -12478,7 +12478,7 @@ input[type=range] {
 .alipay-header-area {
     background: var(--alipay-header-bg);
     color: white;
-    padding-top: calc(35px + env(safe-area-inset-top));
+    padding-top: calc(10px + env(safe-area-inset-top));
     padding-bottom: 60px; /* 留出空间给卡片上浮 */
     border-radius: 0 0 20px 20px; /* 底部微圆角 */
     flex-shrink: 0;
