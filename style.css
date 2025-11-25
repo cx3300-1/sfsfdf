@@ -12378,3 +12378,78 @@ input[type=range] {
 }
 
 
+/* ============================================================ */
+/* ▼▼▼ 终极修复：消息长按菜单 (还原九宫格 + 自动填满) ▼▼▼ */
+/* ============================================================ */
+
+/* 1. 容器布局：横向排列，允许换行，按钮之间有间隙 */
+#message-actions-modal .custom-modal-footer {
+    display: flex !important;
+    flex-direction: row !important; /* 强制横向 */
+    flex-wrap: wrap !important;     /* 允许换行 */
+    justify-content: space-between !important;
+    padding: 10px !important;
+    gap: 10px !important;           /* 按钮间距 */
+    background-color: transparent !important;
+    max-height: none !important;
+    overflow: visible !important;
+}
+
+/* 2. 功能按钮：灰色方块，自动填满 */
+#message-actions-modal .custom-modal-footer button:not(#cancel-message-action-btn) {
+    /* 基础宽度：约一半减去间隙 */
+    width: 48% !important;
+    /* 【关键修复】：允许按钮自动拉伸！这样如果是奇数个，最后一个会自动占满一行 */
+    flex-grow: 1 !important; 
+    
+    /* 【关键修复】：移除 display: ... !important，让 JS 的隐藏逻辑生效 */
+    display: flex; 
+    align-items: center;
+    justify-content: center;
+    
+    margin: 0 !important;
+    padding: 15px 0 !important; /* 保持高度 */
+    
+    /* 外观：浅灰色圆角 */
+    background-color: #f2f2f7 !important; 
+    color: #007aff !important;
+    border-radius: 10px !important;
+    border: none !important;
+    font-size: 16px !important;
+    font-weight: 500 !important;
+    
+    /* 清除干扰 */
+    border-bottom: none !important;
+}
+
+/* 3. 强制隐藏被 JS 设置为隐藏的按钮 (解决单聊显示群聊按钮的问题) */
+#message-actions-modal .custom-modal-footer button[style*="display: none"] {
+    display: none !important;
+}
+
+/* 4. 取消按钮：样式完全统一（灰色背景、正常字体） */
+#message-actions-modal #cancel-message-action-btn {
+    width: 100% !important;
+    flex-grow: 0 !important;
+    margin-top: 5px !important;
+    padding: 15px 0 !important;
+    
+    /* 【修改】背景色改为和其他按钮一样的浅灰 */
+    background-color: #f2f2f7 !important; 
+    
+    color: #007aff !important;
+    
+    /* 【修改】字体粗细改为正常，不再加粗 */
+    font-weight: 500 !important; 
+    
+    border-radius: 10px !important;
+    border: none !important;
+    box-shadow: none !important; /* 去掉阴影 */
+}
+
+/* 5. 黑金/夜间模式适配 */
+#phone-screen.dark-mode #message-actions-modal .custom-modal-footer button:not(#cancel-message-action-btn),
+#phone-screen.dark-mode #message-actions-modal #cancel-message-action-btn {
+    background-color: #2c2c2e !important; /* 统一深灰块 */
+    color: #0a84ff !important;
+}
