@@ -130,7 +130,24 @@
               </div>
             </div>
             <div id="page-2-app-container">
-              <div class="large-widget" onclick="handleWidgetImageChange('large-widget-img')"> <img class="large-widget-img" id="large-widget-img" src="https://i.imgur.com/Bv63o3h.jpg" alt="Colorful Widget"> </div>
+              <div class="left-column-stack">
+        <!-- 原来的大组件 -->
+        <div class="large-widget" onclick="handleWidgetImageChange('large-widget-img')"> 
+            <img class="large-widget-img" id="large-widget-img" src="https://i.imgur.com/Bv63o3h.jpg" alt="Colorful Widget"> 
+        </div>
+        
+        <!-- 新增：左侧 App 网格 -->
+        <div class="left-app-grid">
+            <!-- 支付宝图标 -->
+            <div class="desktop-app-icon" onclick="openAlipayScreen()">
+    <div class="icon-bg-desktop alipay-icon-bg">
+        <img id="icon-img-alipay" src="https://img.icons8.com/color/96/alipay.png" alt="支付宝">
+    </div> 
+    <span class="label" style="color:white; text-shadow:0 1px 2px rgba(0,0,0,0.5);">支付宝</span>
+</div>
+            <!-- 未来可以在这里加更多 App -->
+        </div>
+    </div>
               <div class="app-subgrid">
                 <div class="small-widget" onclick="openPresetScreen()">
                   <div class="small-widget-icon-wrapper"> <img class="small-widget-img" id="icon-img-preset" src="https://s3plus.meituan.net/opapisdk/op_ticket_885190757_1758510900942_qdqqd_djw0z2.jpeg" alt="预设"> </div> <span class="small-widget-label"data-lang-key="homeAppPreset">预设</span>
@@ -2300,6 +2317,109 @@
       </div>
       <div id="chat-search-results-list" class="list-container" style="padding: 15px; display: flex; flex-direction: column; gap: 15px;"> </div>
     </div>
+<!-- 支付宝屏幕 -->
+<div id="alipay-screen" class="screen">
+    <div class="alipay-header-area">
+        <div class="status-placeholder"></div> <!-- 占位状态栏 -->
+        <div class="alipay-nav">
+            <span class="back-btn" onclick="showScreen('home-screen')">‹</span>
+            <span class="alipay-title">支付宝</span>
+            <span class="alipay-action" onclick="handleUserTopUp()">充值</span>
+        </div>
+    </div>
+    
+    <div class="alipay-card-container">
+        <div class="alipay-balance-card">
+            <div class="balance-label">总资产(CNY)</div>
+            <div class="balance-amount" id="alipay-balance-display">0.00</div>
+            <div class="balance-status-tag" id="alipay-status-tag">标准会员</div>
+        </div>
+    </div>
+   <!-- 将原来的 .alipay-grid-menu 替换为这个 -->
+<div class="alipay-grid-menu">
+    <div class="alipay-menu-item" onclick="openFundScreen()">
+        <div class="menu-icon">📈</div>
+        <div class="menu-info">
+            <div class="menu-title">基金理财</div>
+            <div class="menu-trend" id="fund-market-trend-preview">+2.35%</div>
+        </div>
+        <div class="menu-arrow">›</div> <!-- 增加一个小箭头，更像入口 -->
+    </div>
+</div>
+    <div class="alipay-bill-container">
+        <div class="bill-header">
+            <span>账单明细</span>
+            <span style="font-size: 12px; color: rgba(255,255,255,0.6);">最近交易</span>
+        </div>
+        <div id="alipay-transaction-list">
+            <!-- JS 填充账单 -->
+        </div>
+    </div>
+</div>
+<!-- 基金理财屏幕 (已去掉了内联颜色，改为 class 控制) -->
+<div id="fund-screen" class="screen" style="background-color: #f5f5f5;">
+    <!-- 头部：添加了 class="fund-header-area" -->
+    <div class="header fund-header-area">
+        <span class="back-btn" onclick="showScreen('alipay-screen')" style="color: white;">‹</span>
+        <span>理财市场</span>
+        <span class="action-btn" onclick="refreshFundMarket()" style="font-size: 14px; color: white;">刷新</span>
+    </div>
+    
+    <!-- 资产卡片：添加了 class="fund-asset-card" -->
+    <div class="fund-asset-card">
+        <div style="font-size: 13px; opacity: 0.8;">持有总资产 (CNY)</div>
+        <div style="font-size: 32px; font-weight: 700; margin: 5px 0;" id="fund-total-assets">0.00</div>
+        <div style="font-size: 13px; display: flex; gap: 15px;">
+            <span>昨日收益 <span id="fund-yesterday-profit">0.00</span></span>
+            <span>持有收益 <span id="fund-total-profit">0.00</span></span>
+        </div>
+    </div>
+
+    <div class="list-container" style="padding: 20px 15px; padding-bottom: 80px; background-color: #f5f5f5; border-radius: 20px 20px 0 0; overflow-y: auto; margin-top: -20px;">
+        <div class="frame-tabs" style="background: white; border-radius: 12px; padding: 5px; margin-bottom: 15px; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+            <div id="tab-fund-market" class="frame-tab active" onclick="switchFundTab('market')" style="border-radius: 8px;">市场热门</div>
+            <div id="tab-fund-my" class="frame-tab" onclick="switchFundTab('my')" style="border-radius: 8px;">我的持仓</div>
+        </div>
+
+        <div id="fund-market-list" style="display: block;"></div>
+        <div id="fund-my-list" style="display: none;"></div>
+        
+        <p style="font-size: 12px; color: #999; text-align: center; margin-top: 20px;">
+            市场有风险，投资需谨慎<br>模拟数据仅供娱乐
+        </p>
+    </div>
+</div>
+
+<!-- 基金交易弹窗 -->
+<div id="fund-trade-modal" class="modal">
+    <div class="modal-content" style="width: 300px; height: auto;">
+        <div class="modal-header">
+            <span id="fund-trade-title">基金交易</span>
+        </div>
+        <div class="modal-body">
+            <div style="margin-bottom: 15px; padding: 10px; background: #f9f9f9; border-radius: 8px;">
+                <div id="fund-trade-name" style="font-weight: bold; font-size: 16px;"></div>
+                <div id="fund-trade-code" style="font-size: 12px; color: #999;"></div>
+                <div style="display: flex; justify-content: space-between; margin-top: 8px;">
+                    <span style="font-size: 13px;">当前净值: <span id="fund-trade-nav" style="color: #1677ff; font-weight: bold;"></span></span>
+                    <span style="font-size: 13px;">日涨跌: <span id="fund-trade-change"></span></span>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label id="fund-trade-label">买入金额 (余额: ¥<span id="fund-wallet-balance"></span>)</label>
+                <!-- 修复：强制 type="number" -->
+                <input type="number" id="fund-trade-amount" placeholder="请输入金额" style="font-size: 24px; font-weight: bold; color: #1677ff; border-bottom: 2px solid #eee; padding: 10px 0;">
+            </div>
+            <p id="fund-trade-info" style="font-size: 12px; color: #666; margin-top: 5px;"></p>
+        </div>
+        <div class="modal-footer">
+            <button class="cancel" onclick="document.getElementById('fund-trade-modal').classList.remove('visible')">取消</button>
+            <!-- 修复：直接绑定 onclick 函数，不再依赖 addEventListener -->
+            <button class="save" id="fund-confirm-btn" onclick="handleFundTradeConfirm()">确认</button>
+        </div>
+    </div>
+</div>
     <div id="shopping-screen" class="screen">
       <div class="header">
         <div class="header-left-actions"> <span class="back-btn" id="shopping-back-btn">‹</span> <span class="action-btn" id="generate-shopping-items-btn" title="AI生成商品"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor"
@@ -3275,6 +3395,46 @@
           </div> <button id="close-char-music-player-btn" class="char-player-close-btn">×</button>
         </div>
       </div>
+<!-- 新增：亲属卡赠送专属弹窗 -->
+<div id="kinship-creation-modal" class="modal">
+  <div class="modal-content" style="height: 70%; display: flex; flex-direction: column;">
+    <div class="modal-header">
+      <span>赠送亲属卡</span>
+    </div>
+    
+    <!-- 中间部分：分为上面的角色列表和下面的金额输入 -->
+    <div class="modal-body" style="padding: 0; flex-grow: 1; display: flex; flex-direction: column; overflow: hidden;">
+      
+      <!-- 提示语 -->
+      <div style="padding: 10px 15px; background-color: #f5f5f7; color: #666; font-size: 13px; border-bottom: 1px solid var(--border-color);">
+        请选择赠予对象 (单选)
+      </div>
+
+      <!-- 角色列表区域 (复用清理数据的样式) -->
+      <div id="kinship-char-list" style="flex-grow: 1; overflow-y: auto;">
+        <!-- JS 动态填充 -->
+      </div>
+
+      <!-- 金额输入区域 -->
+      <div style="padding: 20px; background-color: #fff; border-top: 1px solid var(--border-color); box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 2;">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="kinship-limit-input" style="font-weight: 600;">每月消费额度</label>
+          <div style="position: relative; display: flex; align-items: center;">
+             <span style="font-size: 20px; font-weight: bold; margin-right: 5px;">¥</span>
+             <input type="number" id="kinship-limit-input" value="5200" placeholder="请输入金额" 
+                    style="font-size: 24px; font-weight: bold; color: #ff1744; border: none; border-bottom: 1px solid #ddd; border-radius: 0; padding: 5px 0; background: transparent;">
+          </div>
+          <p style="font-size: 12px; color: #999; margin-top: 8px;">优先扣除亲属卡额度，超出部分由对方自付。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="cancel" id="cancel-kinship-creation-btn" data-lang-key="cancel">取消</button>
+      <button class="save" id="confirm-kinship-creation-btn" style="background: linear-gradient(135deg, #ff5252, #ff1744); border: none;">确认赠送</button>
+    </div>
+  </div>
+</div>
 <audio id="silent-audio-player" loop preload="auto" style="display:none;">
     <source src="https://phoebeboo.github.io/mewoooo/1-second-of-silence.mp3" type="audio/mpeg">
   </audio><audio id="tts-audio-player" style="display:none;"></audio>
@@ -3283,7 +3443,6 @@
 
 </body>
 </html>
-
 
 
 
