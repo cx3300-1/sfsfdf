@@ -1,4 +1,4 @@
-          @font-face { font-family: 'bulangni'; src: url('') format('truetype'); font-weight: normal; font-style: normal; font-display: swap; }
+           @font-face { font-family: 'bulangni'; src: url('') format('truetype'); font-weight: normal; font-style: normal; font-display: swap; }
         :root { --screen-width: 350px; --screen-height: 650px; --secondary-bg: #ffffff; --border-color: #e0e0e0; --text-primary: #1f1f1f; --text-secondary: #8a8a8a; --accent-color: #007bff; }
         html {
             -webkit-text-size-adjust: 100%;
@@ -12984,4 +12984,48 @@ input[type=range] {
     padding-left: 8px !important;
     background: rgba(255, 0, 255, 0.1); /* 微弱背景 */
     text-shadow: 0 0 5px #ff00ff; /* 霓虹光晕 */
+}
+/* 1. 头部：不再根据手机刘海自动变高，强制固定 */
+.alipay-header-area {
+    /* 核心：直接写死数字，不使用 env() 变量 */
+    padding-top: 25px !important; 
+    
+    /* 保持下方留白给卡片上浮 */
+    padding-bottom: 50px !important; 
+    
+    /* 清除所有负边距干扰，回归标准位置 */
+    margin-top: 0 !important; 
+}
+
+/* 2. 导航栏：微调位置，确保文字垂直居中 */
+.alipay-nav {
+    /* 不需要负边距了，因为头部 padding 已经固定 */
+    transform: none !important; 
+    padding-top: 5px !important;
+}
+
+/* 3. 卡片容器：标准的上浮距离 */
+.alipay-card-container {
+    /* 让卡片往上盖住蓝色背景 40px */
+    margin-top: -40px !important; 
+    position: relative;
+    z-index: 5;
+}
+
+/* 4. 账单列表：根据你的喜好，紧贴亲属卡 */
+.alipay-bill-container {
+    /* 这里保留你之前喜欢的紧凑感 */
+    margin-top: -50px !important; 
+    
+    /* 核心：去掉手机底部的安全区留白，强制统一 */
+    padding-bottom: 20px !important; 
+    margin-bottom: 0 !important;
+    border-radius: 16px 16px 0 0 !important;
+}
+
+/* 5. 修正亲属卡的高度防止被压扁 */
+#alipay-kinship-section {
+    margin-bottom: 0 !important;
+    padding-bottom: 10px !important;
+    min-height: auto !important;
 }
