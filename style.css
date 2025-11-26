@@ -13029,3 +13029,272 @@ input[type=range] {
     padding-bottom: 10px !important;
     min-height: auto !important;
 }
+/* 1. 强制背景透明，去掉阴影 */
+.icon-bg-desktop.transparent-mode {
+    background-color: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+}
+
+/* 2. 让内部图片撑满，并不强制圆角（保持PNG原形） */
+.icon-bg-desktop.transparent-mode img {
+    width: 100% !important;
+    height: 100% !important;
+    border-radius: 0 !important; /* 不切圆角，保持图片原样 */
+    object-fit: contain !important; /* 保持比例，不拉伸 */
+    transform: scale(1.1); /*稍微放大一点点视觉补偿，因为没有背景框了 */
+}
+/* --- 页面布局调整 --- */
+
+/* 1. 定义右侧列的堆叠方式 (垂直排列) */
+.right-column-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* 上下组件的间距 */
+    min-width: 0; /* 防止被挤压 */
+}
+
+/* --- 黑胶唱片机组件样式 --- */
+
+/* 2. 组件卡片外框 */
+.vinyl-widget-card {
+    width: 155px !important;  /* 强制固定宽度，和左侧大组件一致 */
+    height: 155px !important; /* 强制固定高度，保持正方形 */
+    background-color: white;
+    border-radius: 20px;
+    padding: 15px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    flex-shrink: 0; /* 防止被挤压 */
+}
+
+/* 3. 顶部开关装饰 */
+.vinyl-header {
+    height: 20px;
+    display: flex;
+    align-items: center;
+}
+.vinyl-switch {
+    width: 46px;
+    height: 20px;
+    position: relative;
+}
+.switch-track {
+    background-color: #f0f0f0;
+    border-radius: 10px;
+    width: 100%;
+    height: 100%;
+    font-size: 10px;
+    color: #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 6px;
+    box-sizing: border-box;
+    font-weight: bold;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+}
+.switch-circle {
+    width: 16px;
+    height: 16px;
+    background-color: white;
+    border-radius: 50%;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+/* 4. 中间部分布局 */
+.vinyl-body {
+    flex-grow: 1;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 5. 黑胶唱片纹理 */
+.vinyl-disc-bg {
+    width: 100px; /* 唱片大小 */
+    height: 100px;
+    border-radius: 50%;
+    background: repeating-radial-gradient(
+      #111 0, 
+      #111 2px, 
+      #222 3px, 
+      #222 4px
+    ); 
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+    border: 4px solid #f5f5f5; /* 白色外圈 */
+}
+
+/* 6. 中间可换图片 (圆形封面) */
+.vinyl-cover {
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #111;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+.vinyl-cover:active {
+    opacity: 0.7;
+}
+
+/* 7. 唱针装饰 */
+.vinyl-arm-wrapper {
+    position: absolute;
+    right: -10px;
+    top: -10px;
+    width: 50px;
+    height: 120px;
+    z-index: 2;
+    pointer-events: none;
+    filter: drop-shadow(2px 4px 4px rgba(0,0,0,0.1));
+    transform: rotate(0deg); /* 可调整角度 */
+}
+
+/* 8. 底部文字 */
+.vinyl-footer {
+    text-align: center;
+    font-size: 12px;
+    color: #666;
+    font-weight: 500;
+    margin-top: 5px;
+}
+
+/* --- 适配暗黑模式 --- */
+#phone-screen.dark-mode .vinyl-widget-card {
+    background-color: #2c2c2e;
+}
+#phone-screen.dark-mode .vinyl-disc-bg {
+    border-color: #3a3a3c;
+}
+#phone-screen.dark-mode .vinyl-footer {
+    color: #aaa;
+}
+#phone-screen.dark-mode .switch-track {
+    background-color: #3a3a3c;
+    color: #666;
+}
+
+
+/* --- 透明黑胶唱片机样式 --- */
+
+/* 1. 透明容器：去掉白色背景和阴影，只做定位 */
+.vinyl-transparent-widget {
+    width: 155px !important; /* 保持和其他组件一样大 */
+    height: 155px !important;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* 关键：背景透明，无边框，无阴影 */
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    flex-shrink: 0;
+}
+
+/* 2. 黑胶唱片纹理 */
+.vinyl-disc-bg {
+    width: 135px; /* 稍微调大一点 */
+    height: 135px;
+    border-radius: 50%;
+    background: repeating-radial-gradient(
+      #111 0, 
+      #111 2px, 
+      #222 3px, 
+      #222 4px
+    ); 
+    /* 加强阴影，让它有浮起来的感觉 */
+    box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+    border: 3px solid #f5f5f5;
+}
+
+/* 3. 中间可换图片 */
+.vinyl-cover {
+    width: 75px;
+    height: 75px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #111;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+.vinyl-cover:active {
+    opacity: 0.7;
+}
+
+/* 4. 唱针装饰 (调整位置以适应无边框) */
+.vinyl-arm-wrapper {
+    position: absolute;
+    right: 0px; 
+    top: 0px;   
+    width: 50px;
+    height: 120px;
+    z-index: 2;
+    pointer-events: none;
+    filter: drop-shadow(3px 6px 8px rgba(0,0,0,0.3)); /* 加强阴影 */
+}
+
+/* --- 移除原来的暗黑模式适配 (因为现在是透明的了) --- */
+/* 只保留唱片外圈颜色的适配 */
+#phone-screen.dark-mode .vinyl-disc-bg {
+    border-color: #3a3a3c;
+}
+
+.left-column-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 30px; /* <--- 把这里的 15px 改大，比如 30px */
+}
+
+/* --- 1. 右侧列容器布局 --- */
+.right-column-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 30px; /* 上下间距 */
+    min-width: 0;
+    
+    /* 【关键】让内部元素靠右对齐 (贴近屏幕右侧) */
+    /* 如果您喜欢靠左贴着中间缝隙，改成 flex-start */
+    align-items: flex-end; 
+}
+
+/* --- 2. 右侧 4个APP 的网格布局 --- */
+.app-subgrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px; /* 图标间距 */
+    
+    /* 【关键】强制固定宽度，与左侧大组件/唱片机一致 */
+    width: 155px !important; 
+    
+    /* 让图标在格子里居中 */
+    justify-items: center;
+}
+
+/* --- 3. 再次确保透明唱片机也是固定大小 --- */
+.vinyl-transparent-widget {
+    width: 155px !important;
+    height: 155px !important;
+    /* ...其他样式保持不变... */
+}
+
+
