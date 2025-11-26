@@ -143,35 +143,67 @@
     <div class="icon-bg-desktop alipay-icon-bg">
         <img id="icon-img-alipay" src="https://i.postimg.cc/SK31X0Bb/IMG_2231.png" alt="支付宝">
     </div> 
-    <span class="label" style="color:white; text-shadow:0 1px 2px rgba(0,0,0,0.5);">支付宝</span>
+    <span class="label">支付宝</span>
 </div>
+
 <div class="desktop-app-icon" onclick="openAuctionScreen()">
-    <div class="icon-bg-desktop" style="background: #1a1a1a; display:flex; align-items:center; justify-content:center; border: 1px solid #333;">
-        <span style="font-size: 24px;">⚖️</span>
-    </div> 
-    <span class="label" style="color:white; text-shadow:0 1px 2px rgba(0,0,0,0.5);">黑市</span>
+    <div class="icon-bg-desktop transparent-mode">
+        <img id="icon-img-auction" 
+             src="https://i.postimg.cc/Hs7BLh76/alipay.png" 
+             alt="黑市">
+    </div>
+    <span class="label">黑市</span>
 </div>
             <!-- 未来可以在这里加更多 App -->
         </div>
     </div>
-              <div class="app-subgrid">
-                <div class="small-widget" onclick="openPresetScreen()">
-                  <div class="small-widget-icon-wrapper"> <img class="small-widget-img" id="icon-img-preset" src="https://s3plus.meituan.net/opapisdk/op_ticket_885190757_1758510900942_qdqqd_djw0z2.jpeg" alt="预设"> </div> <span class="small-widget-label"data-lang-key="homeAppPreset">预设</span>
-                </div>
-                <div class="small-widget" onclick="showScreen('tutorial-screen')">
-                  <div class="small-widget-icon-wrapper"> <img class="small-widget-img" id="icon-img-tutorial" src="https://i.postimg.cc/d10GjC4g/IMG-7302.jpg" alt="教程"> </div> <span class="small-widget-label"data-lang-key="homeAppTutorial">教程</span>
-                </div>
-                <div class="small-widget" onclick="openWerewolfLobby('global')">
-                  <div class="small-widget-icon-wrapper"> <img class="small-widget-img" id="icon-img-werewolf" src="https://i.postimg.cc/k401K5g7/IMG-7304.jpg" alt="狼人杀"> </div> <span class="small-widget-label"data-lang-key="homeAppWerewolf">狼人杀</span>
-                </div>
-                <div class="small-widget" onclick="showScreen('x-social-screen')">
-                  <div class="small-widget-icon-wrapper"> <img class="small-widget-img" id="icon-img-x" src="https://i.postimg.cc/Y9d3BztC/1.png" alt="X"> </div> <span class="small-widget-label"data-lang-key="homeAppX">X</span>
-                </div>
-              </div>
-            </div>
-          </div>
+              <div class="right-column-stack">
+    
+    <div class="app-subgrid">
+        <div class="small-widget" onclick="openPresetScreen()">
+            <div class="small-widget-icon-wrapper"> 
+                <img class="small-widget-img" id="icon-img-preset" src="https://s3plus.meituan.net/opapisdk/op_ticket_885190757_1758510900942_qdqqd_djw0z2.jpeg" alt="预设"> 
+            </div> 
+            <span class="small-widget-label" data-lang-key="homeAppPreset">预设</span>
         </div>
-      </div>
+        <div class="small-widget" onclick="showScreen('tutorial-screen')">
+            <div class="small-widget-icon-wrapper"> 
+                <img class="small-widget-img" id="icon-img-tutorial" src="https://i.postimg.cc/d10GjC4g/IMG-7302.jpg" alt="教程"> 
+            </div> 
+            <span class="small-widget-label" data-lang-key="homeAppTutorial">教程</span>
+        </div>
+        <div class="small-widget" onclick="openWerewolfLobby('global')">
+            <div class="small-widget-icon-wrapper"> 
+                <img class="small-widget-img" id="icon-img-werewolf" src="https://i.postimg.cc/k401K5g7/IMG-7304.jpg" alt="狼人杀"> 
+            </div> 
+            <span class="small-widget-label" data-lang-key="homeAppWerewolf">狼人杀</span>
+        </div>
+        <div class="small-widget" onclick="showScreen('x-social-screen')">
+            <div class="small-widget-icon-wrapper"> 
+                <img class="small-widget-img" id="icon-img-x" src="https://i.postimg.cc/Y9d3BztC/1.png" alt="X"> 
+            </div> 
+            <span class="small-widget-label" data-lang-key="homeAppX">X</span>
+        </div>
+    </div>
+
+    <div class="vinyl-transparent-widget">
+                      <div class="vinyl-disc-bg">
+                          <img id="vinyl-img" 
+                               src="https://i.postimg.cc/y8xWzCqj/anime-boy.jpg" 
+                               class="vinyl-cover editable-image" 
+                               onclick="handleWidgetImageChange('vinyl-img')">
+                      </div>
+                      <div class="vinyl-arm-wrapper">
+                          <svg width="50" height="120" viewBox="0 0 50 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <circle cx="35" cy="15" r="12" fill="white" stroke="#ddd" stroke-width="2"/>
+                              <path d="M35 15 L40 80 L25 90" stroke="#ddd" stroke-width="6" stroke-linecap="round" fill="none"/>
+                              <path d="M35 15 L40 80 L25 90" stroke="white" stroke-width="3" stroke-linecap="round" fill="none"/>
+                              <rect x="18" y="88" width="14" height="22" rx="5" fill="white" stroke="#ddd" stroke-width="2"/>
+                              <circle cx="25" cy="102" r="2" fill="#ccc"/>
+                              <circle cx="25" cy="96" r="2" fill="#ccc"/>
+                          </svg>
+                      </div>
+                  </div> </div> </div> </div> </div> </div>
       <div id="home-screen-pagination">
         <div class="pagination-dot active"></div>
         <div class="pagination-dot"></div>
@@ -3491,6 +3523,8 @@
 
 </body>
 </html>
+
+
 
 
 
