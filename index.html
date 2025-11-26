@@ -20,7 +20,7 @@
   <script src="https://cdn.jsdelivr.net/npm/streamsaver@2.0.6/StreamSaver.min.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
-
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
   <script src="script.js" defer="defer"></script>
 </head>
 <body>
@@ -140,7 +140,7 @@
         <div class="left-app-grid">
             <!-- 支付宝图标 -->
             <div class="desktop-app-icon" onclick="openAlipayScreen()">
-    <div class="icon-bg-desktop alipay-icon-bg">
+    <div class="icon-bg-desktop">
         <img id="icon-img-alipay" src="https://i.postimg.cc/SK31X0Bb/IMG_2231.png" alt="支付宝">
     </div> 
     <span class="label">支付宝</span>
@@ -2150,7 +2150,16 @@
                   </select>
                 </div>
              </div>
-
+  <div class="settings-item" id="synth-music-group">
+    <div>
+        <label>启用乐谱合成</label>
+        <div class="settings-desc">允许角色发送乐谱并自动演奏</div>
+    </div>
+    <label class="toggle-switch">
+        <input type="checkbox" id="enable-synth-music-switch">
+        <span class="slider"></span>
+    </label>
+</div>
              <!-- 线下模式 -->
              <div id="offline-mode-group">
                  <div class="settings-item">
