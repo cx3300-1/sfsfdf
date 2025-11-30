@@ -21,6 +21,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
   <script src="script.js" defer="defer"></script>
 </head>
 <body>
@@ -1277,7 +1278,14 @@
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
               </svg>
-            </button></div>
+            </button>
+<button id="open-todo-list-btn" class="chat-action-icon-btn action-button" title="待办事项">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 11l3 3L22 4"></path>
+        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+    </svg>
+</button>
+</div>
         <div id="chat-input-main-row"> <button id="chat-expand-btn" class="chat-action-icon-btn action-button" title="展开功能">+</button><textarea id="chat-input" rows="1" placeholder="输入消息..."></textarea>
           <div id="input-actions-wrapper"> <button id="wait-reply-btn" title="等待回复"><img src="https://i.postimg.cc/q72zq80N/ECE92-BBC-BE57-48-E9-BB2-C-345-B6019-C4-B2.png" alt="等待回复"></button> <button id="send-btn" class="action-button">发送</button> </div>
         </div>
@@ -1629,8 +1637,10 @@
             </div>
             
             <!-- 导入 -->
-            <button class="settings-full-btn" id="import-appearance-btn">导入外观配置 (JSON)</button>
-            <input type="file" id="import-appearance-input" accept="application/json" class="hidden-input">
+            <button class="settings-full-btn" id="export-appearance-btn">导出外观配置 (JSON)</button>
+
+            <button class="settings-full-btn" id="import-appearance-btn">导入外观配置 (JSON/Word/Txt)</button>
+            <input type="file" id="import-appearance-input" accept=".json,.txt,.docx" class="hidden-input">
         </div>
 
         <div style="height: 40px;"></div>
@@ -2160,6 +2170,26 @@
         <span class="slider"></span>
     </label>
 </div>
+<div class="settings-item" id="narrator-mode-group" style="display: flex; justify-content: space-between; align-items: center;">
+    <div style="flex: 1; padding-right: 10px;">
+        <label style="margin-bottom: 2px;">启用旁白模式</label>
+        <div class="settings-desc">AI每轮回复都会附带环境或心理描写 (灰色系统字)</div>
+    </div>
+    <label class="toggle-switch" style="margin: 0;"> 
+        <input type="checkbox" id="narrator-mode-toggle"> 
+        <span class="slider"></span> 
+    </label>
+</div>
+<div class="settings-item" id="todo-list-setting-group">
+    <div style="flex: 1; padding-right: 10px;">
+        <label style="margin-bottom: 2px;">启用待办事项同步</label>
+        <div class="settings-desc">开启后，AI将读取【今日】及【未完成】的待办事项。</div>
+    </div>
+    <label class="toggle-switch" style="margin: 0;"> 
+        <input type="checkbox" id="enable-todo-list-switch"> 
+        <span class="slider"></span> 
+    </label>
+</div>
              <!-- 线下模式 -->
              <div id="offline-mode-group">
                  <div class="settings-item">
@@ -2467,10 +2497,14 @@
 </div>
 <div id="auction-screen" class="screen" style="background-color: #121212; color: #e0e0e0;">
     <div class="header" style="background-color: #1c1c1e; color: #d4af37; border-bottom: 1px solid #333;">
-        <span class="back-btn" onclick="showScreen('home-screen')" style="color: #d4af37;">‹</span>
-        <span>黑市拍卖</span>
-        <span class="action-btn" onclick="generateNewAuctionItem()" style="font-size:14px; color:#d4af37;">新拍品</span>
+    <span class="back-btn" onclick="showScreen('home-screen')" style="color: #d4af37;">‹</span>
+    <span>黑市拍卖</span>
+    <div class="header-actions">
+        <span class="action-btn" onclick="generateNewAuctionItem()">新拍品</span>
+        <span class="action-btn" onclick="openInventoryModal()">📦 仓库</span>
+        
     </div>
+   </div>
     
     <!-- 拍品展示区 -->
     <div id="auction-main-display" style="padding: 20px; text-align: center; height: 45%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
@@ -2508,6 +2542,22 @@
             <button class="form-button" onclick="placeBid('custom')" style="background: linear-gradient(135deg, #d4af37, #f2d06b); color: black; font-weight: bold; border: none;">出价</button>
         </div>
     </div>
+</div>
+<div id="todo-list-screen" class="screen" style="background-color: #f2f2f7;">
+    <div class="header">
+        <span class="back-btn" id="todo-list-back-btn">‹</span>
+        <span>待办事项</span>
+        <span class="action-btn" id="add-todo-btn" style="font-size: 24px;">+</span>
+    </div>
+    
+    <div class="todo-date-navigator">
+        <button id="todo-prev-day-btn">‹</button>
+        <div id="todo-current-date-display">今天</div>
+        <button id="todo-next-day-btn">›</button>
+    </div>
+
+    <div id="todo-list-container" class="list-container" style="padding: 15px;">
+        </div>
 </div>
     <div id="shopping-screen" class="screen">
       <div class="header">
@@ -3523,6 +3573,52 @@
       <button class="save" id="confirm-kinship-creation-btn" style="background: linear-gradient(135deg, #ff5252, #ff1744); border: none;">确认赠送</button>
     </div>
   </div>
+</div>
+<div id="inventory-modal" class="modal">
+    <div class="modal-content" style="height: 70%; background-color: #1c1c1e; color: #e0e0e0; border: 1px solid #333;">
+        <div class="modal-header" style="border-bottom: 1px solid #333; color: #d4af37;">
+            <span>我的藏品</span>
+            <span class="action-btn" onclick="closeInventoryModal()" style="font-size: 20px;">×</span>
+        </div>
+        <div class="modal-body" id="inventory-list" style="padding: 15px; overflow-y: auto;">
+            </div>
+    </div>
+</div>
+<div id="todo-editor-modal" class="modal">
+    <div class="modal-content" style="height: auto;">
+        <div class="modal-header">
+            <span id="todo-editor-title">添加事项</span>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>内容</label>
+                <input type="text" id="todo-content-input" placeholder="例如：记得吃药、下午开会">
+            </div>
+            <div class="form-group">
+                <label>类型/标签</label>
+                <div class="todo-type-selector" id="todo-type-options">
+                    <span class="todo-type-option active" data-value="日常" style="--tag-color: #8e8e93;">日常</span>
+                    <span class="todo-type-option" data-value="工作" style="--tag-color: #007aff;">工作</span>
+                    <span class="todo-type-option" data-value="重要" style="--tag-color: #ff3b30;">重要</span>
+                    <span class="todo-type-option" data-value="生活" style="--tag-color: #34c759;">生活</span>
+                    <span class="todo-type-option" data-value="约会" style="--tag-color: #af52de;">约会</span>
+                    <span class="todo-type-option" data-value="记账" style="--tag-color: #ffc107;">记账</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>日期</label>
+                <input type="date" id="todo-date-input">
+            </div>
+            <div class="form-group">
+                <label>具体时间 (可选)</label>
+                <input type="time" id="todo-time-input">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="cancel" id="cancel-todo-editor-btn">取消</button>
+            <button class="save" id="save-todo-btn">保存</button>
+        </div>
+    </div>
 </div>
 <audio id="silent-audio-player" loop preload="auto" style="display:none;">
     <source src="https://phoebeboo.github.io/mewoooo/1-second-of-silence.mp3" type="audio/mpeg">
