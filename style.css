@@ -1,4 +1,4 @@
-           @font-face { font-family: 'bulangni'; src: url('') format('truetype'); font-weight: normal; font-style: normal; font-display: swap; }
+          @font-face { font-family: 'bulangni'; src: url('') format('truetype'); font-weight: normal; font-style: normal; font-display: swap; }
         :root { --screen-width: 350px; --screen-height: 650px; --secondary-bg: #ffffff; --border-color: #e0e0e0; --text-primary: #1f1f1f; --text-secondary: #8a8a8a; --accent-color: #007bff; }
         html {
             -webkit-text-size-adjust: 100%;
@@ -13382,4 +13382,310 @@ input[type=range] {
     0% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7); }
     70% { box-shadow: 0 0 0 6px rgba(0, 123, 255, 0); }
     100% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0); }
+}
+/* --- 修复黑市头部布局错误 --- */
+
+/* 1. 解除按钮宽度限制，让文字横向显示 */
+#auction-screen .header .action-btn {
+    width: auto !important;      /* 取消固定30px */
+    min-width: 30px;
+    padding: 4px 12px !important; /* 增加内边距 */
+    font-size: 14px !important;
+    white-space: nowrap;         /* 强制不换行 */
+}
+
+/* 2. 确保右上角按钮组横向排列 */
+#auction-screen .header .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    z-index: 20; /* 确保在最上层，可点击 */
+}
+
+/* 3. 仓库弹窗的样式 */
+.inventory-item {
+    display: flex;
+    gap: 12px;
+    background-color: #252525;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    border: 1px solid #333;
+    position: relative;
+}
+
+.inventory-img {
+    width: 70px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #444;
+    background-color: #000;
+}
+
+.inventory-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.inventory-name {
+    font-size: 16px;
+    font-weight: bold;
+    color: #d4af37;
+    margin-bottom: 4px;
+}
+
+.inventory-desc {
+    font-size: 12px;
+    color: #999;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.4;
+}
+
+.inventory-price {
+    font-size: 12px;
+    color: #555;
+    margin-top: 4px;
+    font-family: monospace;
+}
+
+.inventory-use-btn {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    background: linear-gradient(135deg, #d4af37, #f2d06b);
+    color: #000;
+    border: none;
+    border-radius: 4px;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+}
+/* --- To-Do List 样式 --- */
+
+/* 日期导航栏 */
+.todo-date-navigator {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background-color: #fff;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+.todo-date-navigator button {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: var(--accent-color);
+    cursor: pointer;
+    padding: 0 10px;
+}
+#todo-current-date-display {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* 任务卡片 */
+.todo-item {
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: flex-start; /* 对齐顶部，适应多行文本 */
+    gap: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+}
+.todo-item.completed {
+    opacity: 0.6;
+    background-color: #f9f9f9;
+}
+
+/* 复选框样式 */
+.todo-checkbox {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid #c7c7cc;
+    flex-shrink: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    margin-top: 2px; /* 微调对齐 */
+}
+.todo-item.completed .todo-checkbox {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+.todo-item.completed .todo-checkbox::after {
+    content: '✔';
+    color: white;
+    font-size: 14px;
+}
+
+/* 任务内容 */
+.todo-info {
+    flex-grow: 1;
+    min-width: 0;
+}
+.todo-content {
+    font-size: 16px;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+    line-height: 1.4;
+    word-break: break-word;
+}
+.todo-item.completed .todo-content {
+    text-decoration: line-through;
+    color: var(--text-secondary);
+}
+.todo-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+}
+
+/* 标签 Tag */
+.todo-tag {
+    padding: 2px 8px;
+    border-radius: 6px;
+    color: white;
+    font-weight: 500;
+    font-size: 11px;
+    background-color: var(--tag-color, #8e8e93);
+}
+
+/* 时间显示 */
+.todo-time {
+    color: #ff3b30; /* 红色强调时间 */
+    font-weight: 500;
+}
+.todo-item.completed .todo-time {
+    color: var(--text-secondary);
+}
+
+/* 删除按钮 */
+.todo-delete-btn {
+    padding: 5px 10px;
+    color: #ff3b30;
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    margin-left: 5px;
+}
+
+/* 空状态 */
+.todo-empty-state {
+    text-align: center;
+    color: var(--text-secondary);
+    margin-top: 50px;
+}
+
+/* --- 类型选择器样式 --- */
+.todo-type-selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.todo-type-option {
+    padding: 6px 12px;
+    border-radius: 15px;
+    border: 1px solid #e5e5ea;
+    font-size: 14px;
+    cursor: pointer;
+    color: var(--text-primary);
+    background-color: #fff;
+    transition: all 0.2s;
+}
+.todo-type-option.active {
+    background-color: var(--tag-color);
+    color: white;
+    border-color: var(--tag-color);
+}
+
+/* --- 暗黑模式适配 --- */
+#phone-screen.dark-mode #todo-list-screen {
+    background-color: #000 !important;
+}
+#phone-screen.dark-mode .todo-date-navigator {
+    background-color: #1c1c1e;
+    border-bottom-color: #38383a;
+}
+#phone-screen.dark-mode .todo-item {
+    background-color: #1c1c1e;
+}
+#phone-screen.dark-mode .todo-item.completed {
+    background-color: #121212;
+}
+#phone-screen.dark-mode .todo-type-option {
+    background-color: #2c2c2e;
+    border-color: #38383a;
+    color: #fff;
+}
+/* --- 待办事项：左右分栏布局 (Chat Style) --- */
+
+/* 1. AI 创建的 (默认靠左) - 保持原样，微调间距 */
+.todo-item.is-char {
+    flex-direction: row; /* 默认方向：多选框 -> 内容 -> 删除 */
+}
+
+/* 2. 用户创建的 (靠右) - 使用 row-reverse 翻转布局 */
+.todo-item.is-user {
+    flex-direction: row-reverse; /* 翻转方向：删除 -> 内容 -> 多选框 */
+    background-color: #e7f3ff;   /* 可选：给用户发的气泡加一点淡淡的蓝色背景，区分更明显 */
+}
+
+/* 3. 用户内容的文字对齐 */
+.todo-item.is-user .todo-info {
+    text-align: right;       /* 文字靠右 */
+    align-items: flex-end;   /* 如果内部是 flex，则靠右对齐 */
+}
+
+/* 4. 标签和时间的对齐 */
+.todo-item.is-user .todo-meta {
+    justify-content: flex-end; /* 标签和时间靠右排列 */
+}
+
+/* 5. 间距修正 (因为翻转了，margin方向也要反过来) */
+.todo-item.is-user .todo-checkbox {
+    margin-right: 0;
+    margin-left: 12px; /* Checkbox 在最右边，给左边留空隙 */
+}
+
+.todo-item.is-user .todo-delete-btn {
+    margin-left: 0;
+    margin-right: 5px; /* 删除按钮在最左边，给右边留空隙 */
+}
+
+/* 暗黑模式适配 */
+#phone-screen.dark-mode .todo-item.is-user {
+    background-color: #1a2a3a; /* 暗黑模式下的深蓝色背景 */
+}
+#todo-current-date-display {
+    cursor: pointer;       /* 鼠标悬停变小手 */
+    user-select: none;     /* 防止双击选中文字 */
+    transition: opacity 0.2s;
+    padding: 5px 10px;     /* 增加一点点击区域 */
+    border-radius: 8px;
+}
+
+#todo-current-date-display:active {
+    background-color: rgba(0, 0, 0, 0.05); /* 点击时的高亮反馈 */
+    opacity: 0.6;
 }
