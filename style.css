@@ -14675,12 +14675,7 @@ input[type=range] {
     background-color: #000;
 }
 #phone-screen.dark-mode .mail-large-title { color: #fff; }
-.left-app-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr); /* 强制两列 */
-    gap: 15px;
-    justify-items: center;
-}
+
 
 /* ========================================= */
 /* ▼▼▼ Swiss Minimalist Mail Theme ▼▼▼ */
