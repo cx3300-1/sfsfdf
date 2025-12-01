@@ -155,6 +155,20 @@
     </div>
     <span class="label">黑市</span>
 </div>
+<div class="desktop-app-icon" onclick="openGreenRiverScreen()">
+    <div class="icon-bg-desktop"> 
+        <img id="icon-img-green-river" 
+             src="https://i.postimg.cc/0j55Pj1L/green-river-icon.png" 
+             alt="绿江">
+    </div>
+    <span class="label">绿江</span>
+</div>
+<div class="desktop-app-icon" onclick="openEmailApp()">
+    <div class="icon-bg-desktop"> 
+        <img id="icon-img-mail" src="https://i.postimg.cc/PfR7f37x/mail.png" alt="Mail">
+    </div>
+    <span class="label">邮箱</span>
+</div>
             <!-- 未来可以在这里加更多 App -->
         </div>
     </div>
@@ -2572,6 +2586,255 @@
     <div id="todo-list-container" class="list-container" style="padding: 15px;">
         </div>
 </div>
+<div id="green-river-screen" class="screen gr-theme">
+    <div class="gr-header">
+    <button class="gr-icon-btn" onclick="showScreen('home-screen')">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    
+    <span class="gr-title">Green River</span>
+    
+    <div class="gr-header-actions">
+        <button class="gr-icon-btn" onclick="openAuthorManager()" title="作者管理">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        </button>
+        <button class="gr-icon-btn" onclick="createNewStory()" title="新建作品">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        </button>
+    </div>
+</div>
+    
+    <div class="gr-content-area">
+        <div class="gr-section-header">
+            <span class="gr-section-title">书架 Library</span>
+        </div>
+        <div id="gr-book-list" class="gr-grid-list">
+            </div>
+    </div>
+</div>
+
+<div id="gr-author-screen" class="screen gr-theme">
+    <div class="gr-header">
+        <button class="gr-icon-btn" onclick="showScreen('green-river-screen')">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <span class="gr-title">Authors</span>
+        <div class="gr-header-actions">
+            <button class="gr-icon-btn" onclick="addAuthor()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            </button>
+        </div>
+    </div>
+    <div class="gr-content-area" id="gr-author-list"></div>
+</div>
+
+<div id="gr-reader-screen" class="screen gr-theme">
+    <div class="gr-header">
+        <button class="gr-icon-btn" onclick="showScreen('green-river-screen')">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div style="display:flex; flex-direction:column; align-items:center;">
+             <span class="gr-title" id="gr-book-name-display" style="font-size:14px; opacity:0.7;">书名</span>
+             <span class="gr-title" id="gr-chapter-title-display" style="font-size:16px; font-weight:bold;">第一章</span>
+        </div>
+        <button class="gr-icon-btn" onclick="openStorySettings()" title="设定">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        </button>
+    </div>
+
+    <div id="gr-sidebar-overlay" onclick="closeChapterList()"></div>
+    <div id="gr-chapter-sidebar">
+        <div class="gr-sidebar-header">
+            <span>目录 Contents</span>
+            <span id="gr-total-chapters" style="font-size:12px; color:#888;">共 0 章</span>
+        </div>
+        <div id="gr-chapter-list-content">
+            </div>
+    </div>
+    
+    <div class="gr-reader-content" id="gr-reader-content">
+        </div>
+
+    <div class="gr-control-panel">
+        <div id="gr-pagination-controls" style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+            <button class="gr-text-btn" id="gr-prev-chapter-btn">上一章</button>
+            <button class="gr-icon-btn" id="gr-menu-btn" onclick="openChapterList()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+            </button>
+            <button class="gr-text-btn" id="gr-next-chapter-btn">下一章</button>
+        </div>
+
+        <div id="gr-writing-controls" style="display:none; gap:10px; align-items:center; width:100%; margin-top:10px;">
+             <div class="gr-input-group" style="flex-grow:1;">
+                <input type="text" id="gr-direction-input" class="gr-input" placeholder="输入本章剧情走向 (例如：两人发生争吵)...">
+            </div>
+            <button id="gr-reroll-btn" class="gr-main-btn" style="background-color:#F4F4F5; color:#666; border:1px solid #ddd; padding: 10px;" title="重写本章">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+            </button>
+            <button id="gr-generate-btn" class="gr-main-btn">
+                
+                <svg id="gr-gen-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+            </button>
+        </div>
+    </div>
+</div>
+<!-- 邮箱主界面 -->
+<div id="email-screen" class="screen mail-theme">
+    <div class="mail-header">
+    <button class="mail-icon-btn" onclick="showScreen('home-screen')">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        <span style="font-size: 16px; margin-left: -2px;">返回</span>
+    </button>
+    
+    <div class="mail-header-actions">
+        <button class="mail-icon-btn" onclick="openEmailSettings()" title="邮箱配置">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.09a2 2 0 0 1-1-1.74v-.47a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+        </button>
+
+        <button class="mail-icon-btn" onclick="handleQuickReceiveMail()" title="一键接收新邮件">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                <path d="M22 7l-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                <line x1="12" y1="19" x2="12" y2="15"></line>
+                <line x1="10" y1="17" x2="14" y2="17"></line>
+            </svg>
+        </button>
+
+        <button class="mail-icon-btn" onclick="toggleEmailEditMode()" title="编辑列表">
+            编辑
+        </button>
+    </div>
+</div>
+
+    <div style="flex-shrink: 0;">
+        <h1 class="mail-large-title">收件箱</h1>
+        <div class="mail-search-bar">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8E8E93" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" placeholder="搜索" id="mail-search-input">
+        </div>
+    </div>
+
+    <div id="email-list" class="mail-list-container">
+        </div>
+     <div id="mail-action-bar" style="display: none;">
+        <div class="select-all-btn" id="mail-select-all-btn">全选</div>
+        <button id="mail-delete-selected-btn" class="mail-delete-action-btn">删除 (0)</button>
+    </div>
+</div>
+
+<div id="email-detail-screen" class="screen mail-theme" style="background-color: #fff; display: flex; flex-direction: column;">
+    <div class="mail-detail-header">
+        <button class="mail-icon-btn" onclick="closeEmailDetail()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#007AFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            <span style="color: #007AFF; font-size: 16px; margin-left: -2px;">收件箱</span>
+        </button>
+        
+        <div class="mail-header-actions">
+            <button class="mail-icon-btn" id="forward-email-btn" title="转发到聊天">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#007AFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            </button>
+            <button class="mail-icon-btn" id="delete-email-btn" title="删除邮件" style="color: #ff3b30;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </button>
+        </div>
+    </div>
+    
+    <div class="mail-detail-content">
+        <div class="mail-meta-header">
+            <div class="mail-subject-line" id="mail-detail-subject">Subject</div>
+            <div class="mail-meta-row">
+                <div class="mail-sender-avatar" id="mail-detail-avatar"></div>
+                <div class="mail-meta-info">
+                    <div class="mail-from-row">
+                        <span class="mail-from-name" id="mail-detail-from">Sender Name</span>
+                        <span class="mail-time" id="mail-detail-time">Today</span>
+                    </div>
+                    <div class="mail-to-row">To: <span id="mail-detail-to">Me</span></div>
+                </div>
+            </div>
+        </div>
+        <div class="mail-body-text" id="mail-detail-body">
+            </div>
+    </div>
+    </div>
+    <div class="mail-toolbar">
+        <button class="mail-tool-btn" onclick="deleteCurrentEmail()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+        </button>
+        <button class="mail-tool-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg>
+        </button>
+        <button class="mail-tool-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+        </button>
+    </div>
+</div>
+
+<!-- 邮件生成器配置弹窗 -->
+<div id="email-generator-modal" class="modal">
+    <div class="modal-content" style="height: 85%; background-color: #FAFAF9; border-radius: 20px;">
+        <div class="mail-modal-header">
+            <span>收件箱配置</span>
+        </div>
+        <div class="modal-body" style="padding: 20px;">
+            
+            <!-- 1. 身份设定 -->
+            <div class="gr-form-group">
+                <label>收件人身份 (User Persona)</label>
+                
+                <select id="mail-user-persona-select" class="gr-input" style="margin-bottom: 8px; padding: 8px; border:1px solid #ddd;">
+                    <option value="">-- 仅使用下方关键词 --</option>
+                </select>
+
+                <input type="text" id="mail-user-mask" class="gr-input" placeholder="例如：侦探、公司高管、神秘人..." value="普通用户">
+                <p style="font-size:11px; color:#999; margin-top:5px;">选择预设可提供详细背景，下方输入框用于定义当前具体的社会身份。</p>
+            </div>
+
+            <!-- 2. 世界观设定 -->
+            <div class="gr-form-group">
+                <label>邮件系统背景 (World Context)</label>
+                <textarea id="mail-world-context" class="gr-input" rows="3" placeholder="例如：赛博朋克黑客论坛通知、维多利亚时期的信件、现代职场垃圾邮件..."></textarea>
+            </div>
+
+            <!-- 3. 发件人来源 -->
+            <div class="gr-form-group">
+                <label>发件人来源 (多选)</label>
+                <div class="gr-checkbox-list" id="mail-sender-list">
+                    <!-- JS 动态填充角色和 NPC -->
+                </div>
+                <label style="margin-top:10px; display:flex; align-items:center;">
+                    <input type="checkbox" id="mail-allow-random-npc" checked> 允许生成随机陌生人/垃圾邮件
+                </label>
+            </div>
+
+            <!-- 4. 关联上下文 -->
+            <div class="gr-form-group">
+                <label>关联记忆与世界书</label>
+                <div class="gr-checkbox-list" id="mail-context-list">
+                    <!-- JS 动态填充世界书 -->
+                </div>
+            </div>
+          <div class="gr-form-group">
+                <label>生成数量</label>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <input type="number" id="mail-gen-count" class="gr-input" value="3" min="1" max="10" style="flex:1;">
+                    <span style="font-size: 13px; color: #888;">封</span>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer" style="border-top: 1px solid #E5E5E5; display:flex; gap:15px;">
+            <button class="cancel" style="background:#F5F5F7; color:#000; border:none;" onclick="document.getElementById('email-generator-modal').classList.remove('visible')">取消</button>
+            <button class="save" style="background:#007AFF; color:#fff; border:none;" id="start-generate-email-btn">接收邮件</button>
+        </div>
+    </div>
+</div>
+
     <div id="shopping-screen" class="screen">
       <div class="header">
         <div class="header-left-actions"> <span class="back-btn" id="shopping-back-btn">‹</span> <span class="action-btn" id="generate-shopping-items-btn" title="AI生成商品"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor"
@@ -3632,6 +3895,75 @@
             <button class="save" id="save-todo-btn">保存</button>
         </div>
     </div>
+</div>
+<div id="gr-settings-modal" class="modal">
+    <div class="modal-content" style="height: 85%; background-color: #FAFAF9;">
+        <div class="gr-header" style="background: transparent; padding: 15px;">
+            <span class="gr-title" style="color: #1B4F3E;">作品设定</span>
+        </div>
+        <div class="modal-body" style="padding: 0 20px;">
+            <div class="gr-form-group">
+                <label>书名</label>
+                <input type="text" id="gr-story-title" class="gr-input" placeholder="请输入书名">
+            </div>
+            
+            <div class="gr-form-group">
+                <label>指定作者 (文风)</label>
+                <select id="gr-author-select" class="gr-select"></select>
+            </div>
+
+            <div class="gr-form-group">
+                <label>登场角色 (Chat/NPC/群聊)</label>
+                <div class="gr-checkbox-list" id="gr-char-list"></div>
+            </div>
+
+            <div class="gr-form-group">
+                <label>世界观 (World Book)</label>
+                <div class="gr-checkbox-list" id="gr-worldbook-list"></div>
+            </div>
+            
+             <div class="gr-form-group">
+                <label>我的身份 (User Persona)</label>
+                <select id="gr-user-persona-select" class="gr-select">
+                     <option value="">使用默认</option>
+                </select>
+            </div>
+
+            <div class="gr-form-group">
+                <label>单次生成字数 (Token)</label>
+                <input type="number" id="gr-output-length" class="gr-input" value="500">
+            </div>
+             <div class="gr-form-group">
+                <label>上下文引用条数 (History)</label>
+                <input type="number" id="gr-context-limit" class="gr-input" value="20">
+            </div>
+        </div>
+        <div class="modal-footer" style="border-top: 1px solid #E5E5E5;">
+            <button class="cancel" id="gr-cancel-settings-btn" style="color: #666;">取消</button>
+            <button class="save" id="gr-save-story-btn" style="background: #1B4F3E; border: none;">开始创作</button>
+        </div>
+    </div>
+</div>
+<div id="gr-author-editor-modal" class="modal">
+  <div class="modal-content" style="height: auto;">
+    <div class="modal-header">
+      <span id="gr-author-editor-title">编辑作者</span>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>作者名称</label>
+        <input type="text" id="gr-author-name-input" placeholder="例如：鲁迅风格">
+      </div>
+      <div class="form-group">
+        <label>文风描述</label>
+        <textarea id="gr-author-style-input" rows="5" placeholder="在此描述该作者的用词习惯、句式特点..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="cancel" onclick="document.getElementById('gr-author-editor-modal').classList.remove('visible')">取消</button>
+      <button class="save" id="gr-save-author-btn">保存</button>
+    </div>
+  </div>
 </div>
 <audio id="silent-audio-player" loop preload="auto" style="display:none;">
     <source src="https://phoebeboo.github.io/mewoooo/1-second-of-silence.mp3" type="audio/mpeg">
