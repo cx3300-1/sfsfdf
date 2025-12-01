@@ -1,4 +1,4 @@
-          @font-face { font-family: 'bulangni'; src: url('') format('truetype'); font-weight: normal; font-style: normal; font-display: swap; }
+           @font-face { font-family: 'bulangni'; src: url('') format('truetype'); font-weight: normal; font-style: normal; font-display: swap; }
         :root { --screen-width: 350px; --screen-height: 650px; --secondary-bg: #ffffff; --border-color: #e0e0e0; --text-primary: #1f1f1f; --text-secondary: #8a8a8a; --accent-color: #007bff; }
         html {
             -webkit-text-size-adjust: 100%;
@@ -10154,32 +10154,68 @@ body.minimal-chat-ui-active.chat-actions-expanded #chat-interface-screen #chat-m
 }
 /* 多选模式下的头部图标样式调整 */
 #chat-interface-screen .selection-controls .header-actions {
-    gap: 15px; /* 图标之间的间距 */
+    gap: 8px; /* [修改] 减小图标之间的间距 (原 15px) */
 }
 
 #chat-interface-screen .selection-controls .action-btn {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 5px;
+    padding: 6px; /* [修改] 稍微调整点击区域 */
     cursor: pointer;
     transition: opacity 0.2s;
+    /* [新增] 限制按钮本身的大小，防止过大 */
+    width: 32px; 
+    height: 32px;
+    border-radius: 50%; /* 保持圆形 */
 }
 
 #chat-interface-screen .selection-controls .action-btn:hover {
     opacity: 0.7;
     background-color: rgba(0,0,0,0.05); /* 鼠标悬停时的轻微背景 */
-    border-radius: 50%;
 }
 
 #chat-interface-screen .selection-controls .action-btn svg {
-    width: 24px;
-    height: 24px;
+    width: 18px;  /* [修改] 减小图标宽度 (原 24px) */
+    height: 18px; /* [修改] 减小图标高度 (原 24px) */
     stroke-width: 2; /* 确保线条粗细适中 */
 }
 
-/* 暗黑模式适配 */
+/* 暗黑模式适配 (保持不变，只是为了完整性列出) */
 #phone-screen.dark-mode #chat-interface-screen .selection-controls .action-btn:hover {
+    background-color: rgba(255,255,255,0.1);
+}
+/* --- 新增：专门针对左侧取消按钮的样式 --- */
+#chat-interface-screen .selection-controls #selection-cancel-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    cursor: pointer;
+    
+    /* 限制大小为 32px，与右侧保持一致 */
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    transition: opacity 0.2s;
+    
+    /* 确保没有额外的文字大小干扰 */
+    font-size: 0; 
+}
+
+#chat-interface-screen .selection-controls #selection-cancel-btn:hover {
+    background-color: rgba(0,0,0,0.05);
+}
+
+/* 缩小内部的 SVG 图标 */
+#chat-interface-screen .selection-controls #selection-cancel-btn svg {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2.5; /* 稍微加粗一点，因为图标变小了 */
+}
+
+/* 暗黑模式适配 */
+#phone-screen.dark-mode #chat-interface-screen .selection-controls #selection-cancel-btn:hover {
     background-color: rgba(255,255,255,0.1);
 }
 #contact-picker-screen .header #cancel-contact-picker-btn {
@@ -13688,4 +13724,1517 @@ input[type=range] {
 #todo-current-date-display:active {
     background-color: rgba(0, 0, 0, 0.05); /* 点击时的高亮反馈 */
     opacity: 0.6;
+}
+/* --- Green River (绿江) 极简高端风格 --- */
+:root {
+    --gr-primary: #1B4F3E;       /* 深墨绿 */
+    --gr-accent: #2E7D32;        /* 强调绿 */
+    --gr-bg: #FAFAF9;            /* 暖白/象牙白 */
+    --gr-surface: #FFFFFF;       /* 纯白卡片 */
+    --gr-text-main: #1C1C1E;     /* 深黑 */
+    --gr-text-sub: #8E8E93;      /* 中灰 */
+    --gr-border: #E5E5E5;        /* 极细边框 */
+    --gr-shadow: 0 4px 20px rgba(0,0,0,0.03);
+}
+
+/* 全局主题 */
+.gr-theme {
+    background-color: var(--gr-bg) !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--gr-text-main);
+}
+
+/* 头部样式 - 极致简约 */
+.gr-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 24px;
+    padding-top: calc(15px + env(safe-area-inset-top));
+    background-color: rgba(250, 250, 249, 0.95); /* 磨砂背景 */
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    border-bottom: 1px solid transparent; /* 默认无边框 */
+}
+
+.gr-title {
+    font-family: "Georgia", serif; /* 衬线体增加文学感 */
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--gr-primary);
+    letter-spacing: 0.5px;
+}
+
+.gr-icon-btn {
+    background: none;
+    border: none;
+    color: var(--gr-text-main);
+    padding: 8px;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+.gr-icon-btn:hover {
+    opacity: 1;
+    background-color: rgba(0,0,0,0.03);
+}
+
+/* 内容区域 */
+.gr-content-area {
+    padding: 24px;
+    overflow-y: auto;
+    flex-grow: 1;
+}
+
+/* 标题与分割 */
+.gr-section-header {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+}
+.gr-section-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gr-text-sub);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* 书籍列表 (Grid) */
+.gr-grid-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 20px;
+}
+
+/* 书籍卡片 */
+.gr-book-card {
+    background: var(--gr-surface);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: var(--gr-shadow);
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: 1px solid var(--gr-border);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 120px;
+}
+.gr-book-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+    border-color: var(--gr-primary);
+}
+
+.gr-book-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--gr-text-main);
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+.gr-book-meta {
+    font-size: 12px;
+    color: var(--gr-text-sub);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* 作者列表项 */
+.gr-author-item {
+    background: var(--gr-surface);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: var(--gr-shadow);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid var(--gr-border);
+}
+.gr-author-info h3 {
+    margin: 0 0 4px 0;
+    font-size: 16px;
+    color: var(--gr-text-main);
+}
+.gr-author-info p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--gr-text-sub);
+    max-width: 250px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 阅读器正文 */
+.gr-reader-content {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 30px 24px 100px 24px; /* 底部留白给输入框 */
+    font-family: "Georgia", "Songti SC", serif; /* 衬线体适合阅读 */
+    font-size: 17px;
+    line-height: 1.8;
+    color: #333;
+}
+
+.gr-chapter {
+    margin-bottom: 40px;
+}
+.gr-chapter-text {
+    white-space: pre-wrap;
+    margin-bottom: 15px;
+}
+
+/* 摘要折叠块 */
+.gr-summary-box {
+    background-color: #F4F4F5;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    font-family: sans-serif;
+}
+.gr-summary-box summary {
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--gr-text-sub);
+    font-weight: 500;
+    list-style: none; /* 隐藏默认三角 */
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.gr-summary-box summary::before {
+    content: '▸'; 
+    display: inline-block;
+    transition: transform 0.2s;
+}
+.gr-summary-box[open] summary::before {
+    transform: rotate(90deg);
+}
+.gr-summary-content {
+    font-size: 14px;
+    color: #666;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #E5E5E5;
+    line-height: 1.6;
+}
+
+/* 底部控制栏 */
+.gr-control-panel {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(20px);
+    padding: 16px 24px;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--gr-border);
+    box-sizing: border-box;
+}
+
+.gr-input-group {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.gr-input {
+    flex-grow: 1;
+    background: #F4F4F5;
+    border: 1px solid transparent;
+    border-radius: 20px;
+    padding: 12px 16px;
+    font-size: 15px;
+    outline: none;
+    transition: all 0.2s;
+}
+.gr-input:focus {
+    background: #FFF;
+    border-color: var(--gr-primary);
+    box-shadow: 0 0 0 3px rgba(27, 79, 62, 0.1);
+}
+
+.gr-main-btn {
+    background-color: var(--gr-primary);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: transform 0.1s, opacity 0.2s;
+    flex-shrink: 0;
+}
+.gr-main-btn:active {
+    transform: scale(0.96);
+}
+.gr-main-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* 弹窗内表单元素 */
+.gr-form-group {
+    margin-bottom: 20px;
+}
+.gr-form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gr-text-main);
+    margin-bottom: 8px;
+}
+.gr-select {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    background: #fff;
+    font-size: 15px;
+    outline: none;
+}
+.gr-checkbox-list {
+    max-height: 150px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    background: #fff;
+    padding: 5px;
+}
+.gr-checkbox-item {
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    border-radius: 6px;
+}
+.gr-checkbox-item:hover {
+    background-color: #F5F5F7;
+}
+.gr-checkbox-item input {
+    accent-color: var(--gr-primary);
+    width: 16px;
+    height: 16px;
+}
+
+/* 暗黑模式适配 */
+#phone-screen.dark-mode .gr-theme,
+#phone-screen.dark-mode .gr-header,
+#phone-screen.dark-mode .gr-control-panel,
+#phone-screen.dark-mode .gr-book-card,
+#phone-screen.dark-mode .gr-author-item,
+#phone-screen.dark-mode .modal-content {
+    background-color: #1C1C1E !important;
+    color: #FFFFFF;
+}
+#phone-screen.dark-mode .gr-title,
+#phone-screen.dark-mode .gr-section-title,
+#phone-screen.dark-mode .gr-book-title,
+#phone-screen.dark-mode .gr-author-info h3,
+#phone-screen.dark-mode .gr-form-group label {
+    color: #FFFFFF;
+}
+#phone-screen.dark-mode .gr-reader-content {
+    color: #E0E0E0;
+}
+#phone-screen.dark-mode .gr-summary-box {
+    background-color: #2C2C2E;
+}
+#phone-screen.dark-mode .gr-summary-content {
+    color: #AAAAAA;
+    border-top-color: #38383A;
+}
+#phone-screen.dark-mode .gr-input,
+#phone-screen.dark-mode .gr-select,
+#phone-screen.dark-mode .gr-checkbox-list {
+    background-color: #2C2C2E;
+    border-color: #38383A;
+    color: #FFFFFF;
+}
+#phone-screen.dark-mode .gr-icon-btn {
+    color: #FFFFFF;
+}
+#phone-screen.dark-mode .gr-book-card:hover {
+    border-color: #2E7D32; /* 暗黑模式下的绿色高亮 */
+}
+/* 绿江：摘要编辑框样式 */
+.gr-summary-input {
+    width: 100%;
+    background-color: transparent;
+    border: 1px dashed transparent; /* 默认无边框 */
+    font-family: inherit;
+    font-size: 13px;
+    color: #333;
+    resize: vertical;
+    padding: 5px;
+    box-sizing: border-box;
+    transition: all 0.2s;
+    min-height: 60px;
+}
+
+/* 当它是可编辑状态（最后一章）时 */
+.gr-summary-box.editable {
+    background-color: #fffbe6; /* 淡黄色背景，提示这是存档区 */
+    border: 1px solid #e0e0e0;
+}
+
+.gr-summary-box.editable .gr-summary-input {
+    border-color: #ddd; /* 显示虚线框 */
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+.gr-summary-box.editable .gr-summary-input:focus {
+    background-color: #fff;
+    border-color: var(--gr-primary);
+    outline: none;
+}
+
+.gr-mini-btn {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--gr-primary);
+    background-color: var(--gr-primary);
+    color: white;
+    cursor: pointer;
+}
+/* --- 绿江阅读器新样式 (Jinjiang Style) --- */
+
+/* 1. 侧边栏 (Drawer) */
+#gr-sidebar-overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.3);
+    backdrop-filter: blur(2px);
+    z-index: 90;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s;
+}
+#gr-sidebar-overlay.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+#gr-chapter-sidebar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 75%; /* 侧边栏宽度 */
+    height: 100%;
+    background: var(--gr-bg);
+    z-index: 100;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 2px 0 15px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+}
+#gr-chapter-sidebar.visible {
+    transform: translateX(0);
+}
+
+.gr-sidebar-header {
+    padding: 20px;
+    padding-top: calc(20px + env(safe-area-inset-top));
+    border-bottom: 1px solid var(--gr-border);
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#gr-chapter-list-content {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 10px 0;
+}
+
+.gr-sidebar-item {
+    padding: 15px 20px;
+    border-bottom: 1px solid #f5f5f5;
+    cursor: pointer;
+    font-size: 14px;
+    color: #333;
+    transition: background 0.2s;
+}
+.gr-sidebar-item:hover {
+    background-color: rgba(0,0,0,0.02);
+}
+.gr-sidebar-item.active {
+    color: var(--gr-primary);
+    font-weight: 600;
+    background-color: rgba(27, 79, 62, 0.05);
+}
+.gr-sidebar-item span {
+    margin-left: 10px;
+}
+
+/* 2. 底部控制栏调整 */
+.gr-control-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    /* 确保固定在底部 */
+    position: absolute;
+    bottom: 0;
+}
+
+.gr-text-btn {
+    background: transparent;
+    border: none;
+    color: var(--gr-primary);
+    font-size: 14px;
+    font-weight: 600;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+.gr-text-btn:disabled {
+    color: #ccc;
+    cursor: default;
+}
+
+/* 3. 正文区域微调 */
+.gr-reader-content {
+    padding-bottom: 120px; /* 给底部栏留出足够空间 */
+}
+.gr-chapter-title-large {
+    font-family: "Georgia", serif;
+    font-size: 22px;
+    font-weight: bold;
+    text-align: center;
+    margin: 20px 0 30px 0;
+    color: #111;
+}
+
+/* 暗黑模式适配 */
+#phone-screen.dark-mode #gr-chapter-sidebar {
+    background-color: #1c1c1e;
+    border-right: 1px solid #333;
+}
+#phone-screen.dark-mode .gr-sidebar-item {
+    color: #ddd;
+    border-bottom-color: #2c2c2e;
+}
+#phone-screen.dark-mode .gr-sidebar-item.active {
+    background-color: rgba(255,255,255,0.1);
+    color: #fff;
+}
+/* --- 绿江：高端摘要卡片重构 --- */
+
+/* 1. 卡片容器：干净、悬浮感 */
+.gr-summary-card.editable {
+    background-color: #FFFFFF; /* 纯净白底 */
+    border: 1px solid rgba(0,0,0,0.05); /* 几乎不可见的极细边框 */
+    border-radius: 12px; /* 更大的圆角，现代感 */
+    padding: 24px; /* 充足的内部留白，呼吸感 */
+    box-shadow: 0 8px 30px rgba(0,0,0,0.04); /* 极轻柔的高级灰阴影 */
+    margin-top: 40px; /* 与正文拉开更大距离，彰显重要性 */
+    transition: all 0.3s ease;
+}
+/* 鼠标悬停时稍微强调一下 */
+.gr-summary-card.editable:hover {
+    box-shadow: 0 10px 40px rgba(0,0,0,0.06);
+    border-color: rgba(27, 79, 62, 0.1);
+}
+
+/* 2. 卡片头部 */
+.gr-summary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+/* 标题：使用优雅的衬线体，品牌色 */
+.gr-summary-title {
+    font-family: "Georgia", "Songti SC", serif; /* 衬线体 */
+    color: var(--gr-primary); /* 深墨绿 */
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* 3. 输入框本体：极简、融入背景 */
+.gr-summary-input {
+    width: 100%;
+    box-sizing: border-box; /* 关键：防止padding撑破宽度 */
+    background-color: #F9F9F9; /* 极淡的灰，与纯白卡片形成微弱对比 */
+    border: 1px solid #EAEAEA; /* 极细淡灰边框 */
+    border-radius: 8px;
+    padding: 16px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; /* 输入内容用无衬线体更清晰 */
+    font-size: 14px;
+    color: #333;
+    line-height: 1.7;
+    resize: vertical;
+    min-height: 100px;
+    outline: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 输入框聚焦状态：显现品牌感 */
+.gr-summary-input:focus {
+    background-color: #FFFFFF; /* 聚焦变纯白 */
+    border-color: var(--gr-primary); /* 边框变品牌绿 */
+    box-shadow: 0 0 0 4px rgba(27, 79, 62, 0.05); /* 极微弱的绿色光晕 */
+}
+.gr-summary-input::placeholder {
+    color: #CCC;
+}
+
+/* 4. 底部提示小字：弱化处理 */
+.gr-summary-footer {
+    font-size: 12px;
+    color: #AAA; /* 更浅的灰色 */
+    margin-top: 12px;
+    text-align: right; /* 右对齐，不干扰视线 */
+    font-weight: 400;
+}
+
+/* 保存按钮微调 */
+.gr-mini-btn.save-summary-btn {
+    background-color: transparent;
+    color: var(--gr-primary);
+    border: 1px solid var(--gr-primary);
+    padding: 6px 12px;
+    font-weight: 500;
+    opacity: 0; /* 默认隐藏，输入时JS会让它显示，这里配合JS */
+    transition: all 0.2s;
+}
+/* JS控制显示时的样式 */
+.gr-mini-btn.save-summary-btn[style*="display: block"] {
+    opacity: 1;
+}
+.gr-mini-btn.save-summary-btn:hover {
+    background-color: var(--gr-primary);
+    color: white;
+}
+
+/* 暗黑模式适配 */
+#phone-screen.dark-mode .gr-summary-card.editable {
+    background-color: #2C2C2E;
+    border-color: #3A3A3C;
+}
+#phone-screen.dark-mode .gr-summary-title {
+    color: #FFFFFF;
+}
+#phone-screen.dark-mode .gr-summary-input {
+    background-color: #1C1C1E;
+    border-color: #3A3A3C;
+    color: #EEE;
+}
+#phone-screen.dark-mode .gr-summary-input:focus {
+    background-color: #000;
+    border-color: var(--gr-primary);
+}
+#phone-screen.dark-mode .gr-summary-footer {
+    color: #666;
+}
+/* 作者列表项的操作按钮容器 */
+.gr-author-actions {
+    display: flex;
+    gap: 10px; /* 按钮之间的间距 */
+    align-items: center;
+}
+
+/* 如果之前没有定义 gr-input，补充一下以防万一 */
+.gr-input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    background: #f9f9f9;
+    font-size: 15px;
+    outline: none;
+    box-sizing: border-box;
+}
+.gr-input:focus {
+    background: #fff;
+    border-color: #1B4F3E;
+}
+/* ========================================== */
+/* ▼▼▼ 绿江 (Green River) 风格终极修正 ▼▼▼ */
+/* ========================================== */
+
+/* 1. 顶栏布局与宽度统一 (对齐QQ风格) */
+.gr-header {
+    /* 1. 布局与尺寸：强制占满宽度 */
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    
+    /* 2. 高度核心修复：对齐 QQ 头部高度 */
+    /* QQ 头部样式为: padding: 15px 20px; padding-top: 45px; */
+    padding: 15px 20px !important; 
+    padding-top: 45px !important; /* 关键：强制预留 45px 状态栏高度 */
+    
+    /* 3. 定位与外观 */
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 100 !important;
+    background-color: rgba(250, 250, 249, 0.98) !important;
+    border-bottom: 1px solid #E5E5E5 !important;
+    flex-shrink: 0 !important; /* 防止被内容挤压 */
+}
+
+/* 确保标题字体与 QQ 头部大小相近，但保持绿江风格 */
+.gr-title {
+    font-family: "Georgia", "Songti SC", serif !important;
+    font-size: 20px !important; /* 稍微大一点点，显得更有文学感，位置居中 */
+    font-weight: 700 !important;
+    color: #1B4F3E !important;
+    /* 绝对定位居中 (可选，如果想要绝对居中对齐请解开下面注释，否则保持 Flex 居中) */
+    /* position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    */
+}
+
+/* 修复右侧按钮容器，确保横向排列 */
+.gr-header-actions {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 15px !important;
+    align-items: center !important;
+    /* 确保它在最上层，如果使用了标题绝对定位 */
+    z-index: 10 !important; 
+}
+
+/* 修正按钮本身的大小和对齐 */
+.gr-header .gr-icon-btn {
+    width: 32px !important;
+    height: 32px !important;
+    padding: 6px !important;
+    margin: 0 !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    /* 去掉可能导致换行的属性 */
+    flex: none !important; 
+}
+
+/* 3. 作者列表项内按钮强制横向 */
+.gr-author-actions {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 10px !important;
+}
+
+/* 4. 绿江专属模态窗样式 (统一为“添加书”的高端风格) */
+#gr-author-editor-modal .modal-content {
+    background-color: #FAFAF9 !important; /* 暖白背景 */
+    border-radius: 16px !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+}
+
+/* 弹窗头部 */
+#gr-author-editor-modal .modal-header {
+    background: transparent !important;
+    border-bottom: none !important;
+    padding: 25px 25px 10px 25px !important;
+    justify-content: flex-start !important; /* 标题靠左或居中，这里选靠左更像书 */
+}
+
+#gr-author-editor-modal .modal-header span {
+    font-family: "Georgia", "Songti SC", serif !important;
+    color: #1B4F3E !important; /* 墨绿色 */
+    font-size: 22px !important;
+    font-weight: 700 !important;
+}
+
+/* 弹窗主体 */
+#gr-author-editor-modal .modal-body {
+    padding: 10px 25px 30px 25px !important;
+}
+
+/* 输入框组 */
+#gr-author-editor-modal .form-group {
+    margin-bottom: 20px !important;
+}
+
+/* 标签 */
+#gr-author-editor-modal label {
+    color: #1B4F3E !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    margin-bottom: 8px !important;
+    display: block !important;
+    opacity: 0.8;
+}
+
+/* 输入框本体 */
+#gr-author-editor-modal input,
+#gr-author-editor-modal textarea {
+    background-color: #FFFFFF !important;
+    border: 1px solid #E5E5E5 !important;
+    border-radius: 10px !important;
+    padding: 15px !important;
+    font-size: 16px !important;
+    color: #333 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    font-family: -apple-system, sans-serif !important;
+    transition: all 0.2s !important;
+}
+
+#gr-author-editor-modal input:focus,
+#gr-author-editor-modal textarea:focus {
+    border-color: #1B4F3E !important;
+    box-shadow: 0 0 0 3px rgba(27, 79, 62, 0.05) !important;
+    outline: none !important;
+}
+
+/* 弹窗底部 */
+#gr-author-editor-modal .modal-footer {
+    border-top: 1px solid #E5E5E5 !important;
+    padding: 15px 25px !important;
+    background-color: #FFFFFF !important;
+    gap: 15px !important;
+}
+
+/* 按钮 */
+#gr-author-editor-modal .modal-footer button {
+    border-radius: 25px !important;
+    padding: 12px 0 !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    border: none !important;
+}
+
+#gr-author-editor-modal .modal-footer .cancel {
+    background-color: #F5F5F7 !important;
+    color: #8E8E93 !important;
+    width: 30% !important;
+}
+
+#gr-author-editor-modal .modal-footer .save {
+    background-color: #1B4F3E !important;
+    color: #FFFFFF !important;
+    width: 70% !important;
+    box-shadow: 0 4px 15px rgba(27, 79, 62, 0.2) !important;
+}
+/* === Mail App Theme (修复版) === */
+:root {
+    --mail-bg: #F2F2F7;
+    --mail-surface: #FFFFFF;
+    --mail-text-primary: #000000;
+    --mail-text-secondary: #8E8E93;
+    --mail-accent: #007AFF;
+    --mail-separator: #C6C6C8;
+    --mail-border-radius: 12px;
+}
+
+/* 主屏幕背景 */
+#email-screen {
+    background-color: var(--mail-bg);
+    color: var(--mail-text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+    display: flex;         /* 新增：改为Flex布局以便控制滚动 */
+    flex-direction: column;
+}
+
+/* --- 1. 头部区域 (统一QQ风格) --- */
+.mail-header, .mail-detail-header {
+    /* 核心修复：高度和内边距与 QQ 保持一致 */
+    padding: 15px 20px !important;
+    padding-top: 45px !important; /* 避开刘海 */
+    background-color: rgba(242, 242, 247, 0.95); /* 略带透明背景 */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    border-bottom: 0.5px solid #C6C6C8;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+    min-height: 40px;
+}
+
+/* 详情页头部背景改为纯白，与详情页一致 */
+.mail-detail-header {
+    background-color: rgba(255, 255, 255, 0.95);
+}
+
+/* 头部上方的容器 (用于容纳返回按钮和标题) */
+.mail-header-top {
+    display: contents; /* 取消这层容器的布局影响，直接让子元素参与 Grid/Flex */
+}
+
+/* 2. 按钮样式统一 */
+.mail-icon-btn {
+    background: none;
+    border: none;
+    color: var(--mail-accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px; /* 增加点击区域 */
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    transition: opacity 0.2s;
+}
+.mail-icon-btn:active { opacity: 0.6; }
+.mail-icon-btn svg {
+    width: 24px;
+    height: 24px;
+}
+
+/* 右上角操作区 */
+.mail-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px; /* 按钮间距 */
+}
+
+/* 3. 收件箱大标题 (下移，不占用顶栏) */
+.mail-large-title {
+    font-size: 30px;
+    font-weight: 700;
+    margin: 10px 20px 10px 20px; /* 左右边距对齐列表 */
+    letter-spacing: -0.5px;
+    color: #000;
+}
+
+/* 4. 搜索栏 */
+.mail-search-bar {
+    background-color: rgba(118, 118, 128, 0.12);
+    border-radius: 10px;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 16px 10px 16px; /* 增加外边距 */
+}
+.mail-search-bar input {
+    background: transparent;
+    border: none;
+    font-size: 16px;
+    width: 100%;
+    outline: none;
+    color: #000;
+}
+
+/* 5. 列表容器 */
+.mail-list-container {
+    background-color: var(--mail-surface);
+    border-radius: var(--mail-border-radius);
+    margin: 0 16px; /* 两侧留白 */
+    flex-grow: 1;
+    overflow-y: auto;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+    padding-bottom: 20px;
+}
+
+/* 6. 详情页内容调整 */
+.mail-detail-content {
+    padding: 20px;
+    overflow-y: auto;
+    flex-grow: 1; /* 占满剩余空间 */
+    height: auto; /* 取消固定高度计算 */
+    background-color: #fff;
+}
+
+/* 7. 隐藏底部工具栏 */
+.mail-toolbar {
+    display: none !important;
+}
+
+/* 暗黑模式适配 */
+#phone-screen.dark-mode .mail-header,
+#phone-screen.dark-mode .mail-detail-header {
+    background-color: #000;
+    border-bottom-color: #38383A;
+}
+#phone-screen.dark-mode .mail-detail-content {
+    background-color: #000;
+}
+#phone-screen.dark-mode .mail-large-title { color: #fff; }
+.left-app-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 强制两列 */
+    gap: 15px;
+    justify-items: center;
+}
+
+/* ========================================= */
+/* ▼▼▼ Swiss Minimalist Mail Theme ▼▼▼ */
+/* ========================================= */
+
+:root {
+    /* 核心色板 - 极简、冷淡、高级 */
+    --mail-bg: #F2F2F7;            /* iOS系统级浅灰背景 */
+    --mail-surface: #FFFFFF;       /* 纯净白 */
+    --mail-text-main: #1C1C1E;     /* 深炭黑，非纯黑 */
+    --mail-text-sub: #8E8E93;      /* 中性灰 */
+    --mail-accent: #007AFF;        /* 瑞士蓝 (Swiss Blue) */
+    --mail-border: rgba(0, 0, 0, 0.04); /* 极细微的边界 */
+    --mail-divider: #C6C6C8;       /* 分割线 */
+    --mail-radius-l: 16px;         /* 大圆角 */
+    --mail-radius-m: 10px;         /* 中圆角 */
+    --mail-radius-s: 6px;          /* 小圆角 */
+    --mail-shadow: 0 4px 24px rgba(0, 0, 0, 0.03); /* 漂浮感阴影 */
+}
+
+/* 暗黑模式变量重写 */
+#phone-screen.dark-mode {
+    --mail-bg: #000000;
+    --mail-surface: #1C1C1E;
+    --mail-text-main: #FFFFFF;
+    --mail-text-sub: #98989D;
+    --mail-border: rgba(255, 255, 255, 0.1);
+    --mail-divider: #38383A;
+    --mail-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+}
+
+/* 邮箱主容器 */
+#email-screen, #email-detail-screen {
+    background-color: var(--mail-bg) !important;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+    letter-spacing: -0.01em; /* 收紧字间距，更精致 */
+}
+
+
+
+/* --- 2. 标题与搜索栏 --- */
+.mail-large-title {
+    font-size: 34px;
+    font-weight: 700;
+    color: var(--mail-text-main);
+    margin: 10px 20px 15px 20px !important;
+    letter-spacing: 0.01em;
+}
+
+.mail-search-bar {
+    background-color: rgba(118, 118, 128, 0.12);
+    border-radius: 10px;
+    margin: 0 16px 16px 16px;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.2s;
+}
+.mail-search-bar:focus-within {
+    background-color: rgba(118, 118, 128, 0.18);
+}
+.mail-search-bar input {
+    font-size: 17px;
+    color: var(--mail-text-main);
+    height: auto;
+}
+.mail-search-bar input::placeholder {
+    color: var(--mail-text-sub);
+}
+
+/* --- 3. 邮件列表 (List) --- */
+.mail-list-container {
+    background-color: var(--mail-bg) !important; /* 背景透明，显示层级 */
+    padding: 0 16px !important; /* 两侧留白 */
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    gap: 12px; /* 列表项间距 */
+    display: flex;
+    flex-direction: column;
+}
+
+.mail-item {
+    background-color: var(--mail-surface);
+    border-radius: var(--mail-radius-m);
+    padding: 16px !important;
+    margin-bottom: 0 !important; /* 由 gap 控制 */
+    border: 1px solid var(--mail-border);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02); /* 极轻的阴影 */
+    position: relative;
+    transition: transform 0.1s, background-color 0.2s;
+}
+
+.mail-item:active {
+    transform: scale(0.98);
+    background-color: var(--mail-bg);
+}
+
+/* 未读状态：左侧蓝点 */
+.mail-item.unread::before {
+    content: '';
+    position: absolute;
+    left: 10px;
+    top: 20px;
+    width: 8px;
+    height: 8px;
+    background-color: var(--mail-accent);
+    border-radius: 50%;
+    box-shadow: 0 0 8px rgba(0, 122, 255, 0.4);
+}
+.mail-item.unread {
+    padding-left: 26px !important; /* 为蓝点留出空间 */
+}
+
+/* 列表排版优化 */
+.mail-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 4px;
+}
+
+.mail-sender {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--mail-text-main);
+}
+
+.mail-date {
+    font-size: 13px;
+    color: var(--mail-text-sub);
+    font-weight: 400;
+}
+
+.mail-subject {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--mail-text-main);
+    margin-bottom: 4px;
+}
+
+.mail-preview {
+    font-size: 14px;
+    color: var(--mail-text-sub);
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* --- 4. 邮件详情页 (Detail) --- */
+#email-detail-screen {
+    background-color: var(--mail-surface) !important;
+}
+
+.mail-detail-content {
+    padding: 24px 20px !important;
+    max-width: 600px;
+    margin: 0 auto;
+    background-color: transparent !important;
+}
+
+/* 详情页头部信息块 */
+.mail-meta-header {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--mail-border);
+}
+
+.mail-subject-line {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--mail-text-main);
+    line-height: 1.3;
+    margin-bottom: 16px;
+}
+
+.mail-meta-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.mail-sender-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #8E8E93, #636366);
+    color: white;
+    font-size: 18px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.mail-meta-info {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.mail-from-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
+
+.mail-from-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--mail-text-main);
+}
+
+.mail-time {
+    font-size: 12px;
+    color: var(--mail-text-sub);
+}
+
+.mail-to-row {
+    font-size: 13px;
+    color: var(--mail-text-sub);
+    margin-top: 2px;
+}
+
+/* 邮件正文 */
+.mail-body-text {
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--mail-text-main);
+    white-space: pre-wrap;
+}
+
+/* --- 5. 生成器弹窗 (The "Ugly" Fix) --- */
+#email-generator-modal .modal-content {
+    background-color: var(--mail-bg) !important;
+    border-radius: var(--mail-radius-l) !important;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2) !important;
+    border: 1px solid rgba(255,255,255,0.1);
+    max-width: 400px;
+    width: 92%;
+}
+
+.mail-modal-header {
+    padding: 20px 24px !important;
+    border-bottom: 1px solid var(--mail-border);
+}
+.mail-modal-header span {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--mail-text-main);
+}
+
+/* 表单控件优化 */
+.gr-form-group {
+    background-color: var(--mail-surface);
+    border-radius: var(--mail-radius-m);
+    padding: 16px;
+    margin-bottom: 16px !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+
+.gr-form-group label {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--mail-text-sub) !important;
+    margin-bottom: 10px !important;
+    display: block;
+    font-weight: 600;
+}
+
+.gr-input, textarea.gr-input {
+    width: 100%;
+    background-color: var(--mail-bg);
+    border: none;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 15px;
+    color: var(--mail-text-main);
+    outline: none;
+    transition: box-shadow 0.2s;
+}
+.gr-input:focus {
+    box-shadow: 0 0 0 2px var(--mail-accent);
+    background-color: var(--mail-surface);
+}
+
+/* Checkbox 列表优化 */
+.gr-checkbox-list {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.gr-checkbox-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background-color: var(--mail-bg); /* 浅灰底色 */
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.gr-checkbox-item:hover {
+    background-color: #E5E5EA; /* 悬停加深 */
+}
+#phone-screen.dark-mode .gr-checkbox-item:hover {
+    background-color: #3A3A3C;
+}
+
+/* 复选框美化 */
+.gr-checkbox-item input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #C7C7CC;
+    border-radius: 50%; /* 圆形复选框，像选择列表 */
+    margin-right: 12px;
+    position: relative;
+    transition: all 0.2s;
+}
+.gr-checkbox-item input[type="checkbox"]:checked {
+    background-color: var(--mail-accent);
+    border-color: var(--mail-accent);
+}
+.gr-checkbox-item input[type="checkbox"]:checked::after {
+    content: '✔';
+    font-size: 12px;
+    color: white;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* 弹窗底部按钮 */
+.modal-footer {
+    padding: 16px 24px !important;
+    background-color: var(--mail-surface) !important;
+}
+.modal-footer button {
+    padding: 12px 0 !important;
+    border-radius: 10px !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+}
+/* 底部操作栏样式 */
+#mail-action-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: rgba(242, 242, 247, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-top: 0.5px solid #c6c6c8;
+    padding: 10px 20px;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom));
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-sizing: border-box;
+    z-index: 20;
+}
+
+.select-all-btn {
+    color: var(--mail-accent);
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.mail-delete-action-btn {
+    color: #ff3b30;
+    background: none;
+    border: none;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.mail-delete-action-btn:disabled {
+    color: #999;
+    pointer-events: none;
+}
+
+/* 邮件列表项的选择状态样式 */
+.mail-item {
+    transition: transform 0.2s ease, padding-left 0.2s ease;
+    position: relative;
+    overflow: visible !important; /* 允许选中圈显示在左侧 */
+}
+
+/* 编辑模式下，给左侧留出空间 */
+.mail-item.editing {
+    transform: translateX(40px); /* 整体右移 */
+    width: calc(100% - 40px); /* 宽度自适应 */
+}
+
+/* 选择圈 (Checkbox) */
+.mail-select-checkbox {
+    position: absolute;
+    left: -30px; /* 放在卡片左侧 */
+    top: 50%;
+    transform: translateY(-50%);
+    width: 22px;
+    height: 22px;
+    border: 2px solid #c7c7cc;
+    border-radius: 50%;
+    box-sizing: border-box;
+    background-color: transparent;
+    transition: all 0.2s;
+    display: none; /* 默认隐藏 */
+}
+
+/* 编辑模式下显示选择圈 */
+.mail-item.editing .mail-select-checkbox {
+    display: block;
+}
+
+/* 选中状态 */
+.mail-item.selected .mail-select-checkbox {
+    background-color: var(--mail-accent);
+    border-color: var(--mail-accent);
+}
+.mail-item.selected .mail-select-checkbox::after {
+    content: '✔';
+    color: white;
+    font-size: 14px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* 暗黑模式适配 */
+#phone-screen.dark-mode #mail-action-bar {
+    background-color: rgba(28, 28, 30, 0.95);
+    border-top-color: #38383a;
+}
+
+
+/* === 邮件转发卡片样式 === */
+.email-share-card {
+    width: 240px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    border: 1px solid rgba(0,0,0,0.05);
+    cursor: pointer;
+    transition: transform 0.2s;
+    overflow: hidden;
+}
+.email-share-card:active {
+    transform: scale(0.98);
+    background-color: #f9f9f9;
+}
+
+/* 顶部：图标 + 标题信息 */
+.email-card-top {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+    align-items: flex-start;
+}
+
+/* 蓝色图标块 */
+.email-icon-box {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, #007aff, #0056b3);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    flex-shrink: 0;
+    box-shadow: 0 2px 5px rgba(0, 122, 255, 0.2);
+}
+
+.email-card-header-text {
+    flex: 1;
+    overflow: hidden;
+}
+
+.email-card-subject {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1f1f1f;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
+    margin-bottom: 3px;
+}
+
+.email-card-sender {
+    font-size: 12px;
+    color: #8a8a8a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 中间：摘要预览 */
+.email-card-preview {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 8px;
+    background-color: #f7f7f9;
+    padding: 8px;
+    border-radius: 6px;
+}
+
+/* 底部：脚标 */
+.email-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #f0f0f0;
+    padding-top: 8px;
+    font-size: 11px;
+    color: #999;
+}
+
+/* 暗黑模式适配 */
+#phone-screen.dark-mode .email-share-card {
+    background-color: #1c1c1e;
+    border-color: #333;
+}
+#phone-screen.dark-mode .email-share-card:active {
+    background-color: #2c2c2e;
+}
+#phone-screen.dark-mode .email-card-subject {
+    color: #fff;
+}
+#phone-screen.dark-mode .email-card-preview {
+    background-color: #2c2c2e;
+    color: #aaa;
+}
+#phone-screen.dark-mode .email-card-footer {
+    border-top-color: #333;
 }
