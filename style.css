@@ -15420,3 +15420,57 @@ input[type=range] {
     border-top-color: #38383a;
     color: #fff;
 }
+/* --- START: 聊天图片缩略图与放大样式 --- */
+
+/* 1. 强制缩小聊天记录中的图片尺寸 */
+.message-bubble .chat-image, 
+.message-bubble .ai-generated-image, 
+.message-bubble .realimag-image, 
+.message-bubble .naiimag-image {
+    max-width: 140px !important;  /* 缩略图最大宽度 */
+    max-height: 180px !important; /* 缩略图最大高度 */
+    width: auto !important;
+    height: auto !important;
+    border-radius: 8px !important;
+    cursor: zoom-in !important;   /* 鼠标移上去显示放大图标 */
+    object-fit: cover !important;
+    display: block;
+}
+
+/* 2. 简单的全屏放大遮罩层 (不依赖相册组件) */
+#simple-image-zoom-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.85); /* 深色半透明背景 */
+    z-index: 99999; /* 保证在最上层 */
+    display: none; /* 默认隐藏 */
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.25s ease; /* 渐变动画 */
+    backdrop-filter: blur(5px);
+}
+
+#simple-image-zoom-overlay.visible {
+    display: flex;
+    opacity: 1;
+}
+
+/* 放大后的图片本体 */
+#simple-image-zoom-overlay img {
+    max-width: 95%;
+    max-height: 90%;
+    border-radius: 4px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    transform: scale(0.9);
+    transition: transform 0.25s ease;
+    object-fit: contain;
+}
+
+#simple-image-zoom-overlay.visible img {
+    transform: scale(1);
+}
+/* --- END: 聊天图片缩略图与放大样式 --- */
