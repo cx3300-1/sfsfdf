@@ -929,6 +929,8 @@
             <button class="settings-full-btn" id="delete-world-books-btn">删除世界书</button>
             <button class="settings-full-btn" id="clear-specific-data-btn">高级数据清理</button>
             <button class="settings-full-btn" id="check-and-fix-data-btn">数据检查与修复</button>
+            <button class="settings-full-btn" id="emergency-reset-appearance-btn" >重置当前外观</button>
+            <button class="settings-full-btn" id="factory-reset-btn" > 初始化所有内容 (慎用)</button>
         </div>
         
         <!-- 底部垫高 -->
@@ -2378,10 +2380,36 @@
       </div>
     </div>
     <div id="rendering-rules-screen" class="screen">
-      <div class="header"> <span class="back-btn" onclick="showScreen('home-screen')">‹</span> <span data-lang-key="homeAppRenderer">渲染规则</span> <span class="action-btn" id="add-new-rule-btn">+</span> </div>
+      <div class="header"> 
+        <span class="back-btn" onclick="showScreen('home-screen')">‹</span> 
+        <span data-lang-key="homeAppRenderer">渲染规则</span> 
+        <div class="header-actions">
+            <span class="action-btn" id="import-rules-btn" title="导入规则">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            </span>
+            <span class="action-btn" id="manage-rules-btn" title="管理/多选">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+        <polyline points="9 11 12 14 22 4"></polyline>
+    </svg>
+</span>
+            <span class="action-btn" id="add-new-rule-btn">+</span> 
+        </div>
+      </div>
       <div id="rules-tabs"> </div>
-      <div id="rules-content-container"> </div>
+      <div id="rules-content-container" class="list-container"> </div>
+      
+      <div id="rules-action-bar" style="display: none; position: absolute; bottom: 0; left: 0; width: 100%; padding: 15px 20px; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-top: 1px solid #eee; box-sizing: border-box; justify-content: space-between; align-items: center; z-index: 10;">
+          <label style="display:flex; align-items:center; gap:5px; font-size:16px;">
+              <input type="checkbox" id="select-all-rules-checkbox"> 全选
+          </label>
+          <div style="display:flex; gap:10px;">
+              <button id="export-selected-rules-btn" class="settings-mini-btn" style="background-color: #007aff; color: white; border: none;">导出 (0)</button>
+              <button id="delete-selected-rules-btn" class="settings-mini-btn" style="color: #ff3b30;">删除 (0)</button>
+          </div>
+      </div>
     </div>
+    <input type="file" id="import-rules-input" accept=".json" style="display: none;">
     <div id="rule-editor-modal" class="modal">
       <div class="modal-content" style="height: 85%;">
         <div class="modal-header"> <span id="rule-editor-title">创建新规则</span> </div>
@@ -2706,9 +2734,9 @@
             </svg>
         </button>
 
-        <button class="mail-icon-btn" onclick="toggleEmailEditMode()" title="编辑列表">
-            编辑
-        </button>
+        <button id="mail-edit-btn" class="mail-icon-btn" onclick="toggleEmailEditMode()" title="编辑列表">
+        编辑
+    </button>
     </div>
 </div>
 
@@ -3906,7 +3934,10 @@
                 <label>书名</label>
                 <input type="text" id="gr-story-title" class="gr-input" placeholder="请输入书名">
             </div>
-            
+            <div class="gr-form-group">
+    <label>宏大世界观 / IF线设定 (Macro World View)</label>
+    <textarea id="gr-macro-world-view" class="gr-input" rows="3" placeholder="在此输入核心设定。例如：'民国军阀背景，Char是少帅，User是进步学生'，或者 'ABO设定，Char是Enigma'。此设定优先级最高。"></textarea>
+</div>
             <div class="gr-form-group">
                 <label>指定作者 (文风)</label>
                 <select id="gr-author-select" class="gr-select"></select>
@@ -3973,6 +4004,9 @@
 
 </body>
 </html>
+
+
+
 
 
 
