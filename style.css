@@ -9022,7 +9022,8 @@ body.minimal-chat-ui-active.chat-actions-expanded #chat-interface-screen #chat-m
     opacity: 1; 
 }
 .nai-regenerate-btn.loading svg,
-.nai-upload-imgbb-btn.loading svg { /* DING: 同样修改这里 */
+.nai-upload-imgbb-btn.loading svg,
+.nai-save-local-btn.loading svg{ /* DING: 同样修改这里 */
     animation: spin 1s linear infinite;
 }
 /* DING: 在 .nai-image-wrapper 规则后添加 */
@@ -15423,10 +15424,7 @@ input[type=range] {
 /* --- START: 聊天图片缩略图与放大样式 --- */
 
 /* 1. 强制缩小聊天记录中的图片尺寸 */
-.message-bubble .chat-image, 
-.message-bubble .ai-generated-image, 
-.message-bubble .realimag-image, 
-.message-bubble .naiimag-image {
+.message-bubble .chat-image {
     max-width: 140px !important;  /* 缩略图最大宽度 */
     max-height: 180px !important; /* 缩略图最大高度 */
     width: auto !important;
@@ -15474,3 +15472,38 @@ input[type=range] {
     transform: scale(1);
 }
 /* --- END: 聊天图片缩略图与放大样式 --- */
+/* 通用按钮样式 */
+.nai-regenerate-btn,
+.nai-upload-imgbb-btn,
+.nai-save-local-btn {
+    width: 32px;
+    height: 32px;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    opacity: 0;
+    transition: all 0.2s ease-in-out;
+}
+
+/* 悬停显示 */
+.nai-image-wrapper:hover .nai-regenerate-btn,
+.nai-image-wrapper:hover .nai-upload-imgbb-btn,
+.nai-image-wrapper:hover .nai-save-local-btn {
+    opacity: 1;
+}
+
+/* 按钮高亮 */
+.nai-regenerate-btn:hover,
+.nai-upload-imgbb-btn:hover,
+.nai-save-local-btn:hover {
+    background-color: rgba(0, 0, 0, 0.85);
+    transform: scale(1.1);
+}
