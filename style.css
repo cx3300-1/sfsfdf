@@ -17694,7 +17694,7 @@ input[type=range] {
     
     /* 【关键修改】减小行与行之间的间距 */
     /* 原来是 35px，现在改为 10px，立刻变紧凑 */
-    gap: 25px !important; 
+    gap: 35px !important; 
     
     /* 顶部稍微留一点点呼吸空间，防止气泡顶到刘海 */
     padding-top: 15px !important;
@@ -17704,4 +17704,21 @@ input[type=range] {
 .cphone-staggered-group {
     margin-bottom: 0 !important;
     padding-bottom: 5px !important; /* 稍微减小一点底部内边距 */
+}
+
+.cphone-dock-container {
+    /* 核心修改：移除 env() 计算，直接使用固定数值 */
+    /* 20px 是比较标准的距离，如果您想让它更靠下，可以改为 10px */
+    margin-bottom: 20px !important;
+    
+    /* 确保没有额外的底部内边距干扰 */
+    padding-bottom: 0 !important;
+    
+    /* 确保它是通过 margin-top: auto 被推到底部的 (保持原有逻辑) */
+    margin-top: auto !important;
+}
+
+/* 如果您开启了【手机外框模式】，可能需要稍微抬高一点点防止贴边太紧 */
+body.frame-mode-active .cphone-dock-container {
+    margin-bottom: 25px !important;
 }
