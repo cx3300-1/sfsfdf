@@ -285,9 +285,7 @@
               <div class="icon-bg" style="background-color: #FB7299;"><img id="cphone-icon-img-bilibili" src="https://i.postimg.cc/Wz5gV0jB/bilibili-icon.png" style="border-radius:0;"></div><span class="label">Bilibili</span>
             </div>
             <div class="app-icon" onclick="openCharApp('reddit')">
-  <div class="icon-bg" style="background-color: #FF4500;">
-    <img id="cphone-icon-img-reddit" src="https://www.redditinc.com/assets/images/site/reddit-logo.png" style="border-radius:0; width: 80%; height: 80%;">
-  </div>
+  <div class="icon-bg"> <img id="cphone-icon-img-reddit" src=""> </div>
   <span class="label">Reddit</span>
 </div>
             <div class="app-icon" onclick="switchToMyPhone()">
@@ -437,10 +435,19 @@
         <div id="char-music-list" class="list-container"> </div>
       </div>
 <div id="char-reddit-screen" class="char-screen">
-  <div class="header" style="background-color: #FF4500; color: white;">
-    <span class="back-btn" onclick="switchToCharHomeScreen()" style="color: white;">‹</span>
+  <div class="header" >
+    <span class="back-btn" onclick="switchToCharHomeScreen()">‹</span>
     <span>Reddit</span>
-    <div style="width: 30px;"></div> </div>
+    
+    <div class="header-actions"> 
+        <span class="action-btn" id="regenerate-char-reddit-btn" title="根据人设生成推荐流"> 
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 11A8.1 8.1 0 0 0 4.5 9M4 5v4h4"></path>
+                <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"></path>
+            </svg> 
+        </span> 
+    </div>
+    </div>
   
   <div class="search-bar-container" style="background-color: #fff; padding: 10px; border-bottom: 1px solid #eee;">
     <div style="display: flex; gap: 8px;">
@@ -452,7 +459,7 @@
   </div>
 
   <div id="char-reddit-list" class="list-container" style="padding: 0; background-color: #DAE0E6;">
-    </div>
+  </div>
 </div>
       <div id="char-bilibili-screen" class="char-screen">
         <div class="header"> 
@@ -4028,7 +4035,6 @@
 
 </body>
 </html>
-
 
 
 
