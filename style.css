@@ -15683,3 +15683,178 @@ input[type=range] {
 #phone-screen.dark-mode #char-article-content h2 { color: #e0e0e0 !important; }
 #phone-screen.dark-mode #char-article-content div { color: #ccc !important; }
 #phone-screen.dark-mode .reddit-comment-item { border-bottom-color: #333 !important; }
+/* 绿江书籍卡片上的加入书架按钮 */
+.gr-add-shelf-btn {
+    background: none;
+    border: 1px solid var(--gr-primary);
+    color: var(--gr-primary);
+    border-radius: 12px;
+    padding: 2px 8px;
+    font-size: 11px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s;
+    z-index: 2; /* 确保在卡片点击层之上 */
+}
+.gr-add-shelf-btn:hover {
+    background-color: var(--gr-primary);
+    color: white;
+}
+/* 已加入状态：实心背景，显示为已完成 */
+.gr-add-shelf-btn.added {
+    background-color: rgba(0,0,0,0.05);
+    border-color: transparent;
+    color: #888;
+    cursor: pointer; /* 保持可点击 */
+}
+/* 已加入状态悬停：变成红色，提示移除 */
+.gr-add-shelf-btn.added:hover {
+    background-color: #ffebee;
+    color: #ff3b30;
+    border-color: #ff3b30;
+}
+/* 暗黑模式适配 */
+#phone-screen.dark-mode .gr-add-shelf-btn.added {
+    background-color: rgba(255,255,255,0.1);
+    color: #aaa;
+}
+#phone-screen.dark-mode .gr-add-shelf-btn.added:hover {
+    background-color: rgba(255, 59, 48, 0.2);
+    color: #ff453a;
+    border-color: #ff453a;
+}
+/* ========================================= */
+/* ▼▼▼ 瑞士极简主义通知系统 (Swiss Toast) ▼▼▼ */
+/* ========================================= */
+
+.toast-container {
+    position: fixed;
+    top: 12px; /* 顶部留出状态栏呼吸感 */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none; /* 允许点击穿透 */
+}
+
+.toast-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px 12px 16px;
+    background-color: rgba(255, 255, 255, 0.92); /* 极高纯度的白 */
+    backdrop-filter: blur(20px); /* 磨砂玻璃质感 */
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 50px; /* 完全胶囊状 */
+    box-shadow: 
+        0 4px 24px rgba(0, 0, 0, 0.06), /* 弥散阴影 */
+        0 1px 2px rgba(0, 0, 0, 0.04),  /* 锐利阴影 */
+        inset 0 0 0 0.5px rgba(0, 0, 0, 0.05); /* 内描边代替边框 */
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: #1d1d1f; /* 深炭灰，非纯黑 */
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); /* iOS 物理动效曲线 */
+}
+
+.toast-item.visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+.toast-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    color: #0071e3; /* 苹果蓝 */
+}
+
+.toast-icon svg {
+    width: 100%;
+    height: 100%;
+    stroke-width: 2;
+}
+
+/* 加载中动画 */
+.toast-icon.spinning svg {
+    animation: toast-spin 1s linear infinite;
+}
+
+@keyframes toast-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* 暗黑模式适配 - 深邃而通透 */
+#phone-screen.dark-mode .toast-item {
+    background-color: rgba(28, 28, 30, 0.92);
+    color: #f5f5f7;
+    box-shadow: 
+        0 4px 24px rgba(0, 0, 0, 0.2),
+        inset 0 0 0 0.5px rgba(255, 255, 255, 0.1);
+}
+#phone-screen.dark-mode .toast-icon {
+    color: #0a84ff;
+}
+
+/* ========================================= */
+/* ▼▼▼ 设置页面布局优化 (Spa Aesthetics) ▼▼▼ */
+/* ========================================= */
+
+/* 1. 增加呼吸感 */
+.settings-container {
+    padding: 24px 20px !important; /* 增加整体内边距 */
+}
+
+/* 2. 卡片间距与质感 */
+.settings-section {
+    margin-bottom: 24px !important; /* 卡片间距增大 */
+    border-radius: 16px !important; /* 更圆润的角 */
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.02) !important; /* 极轻微的悬浮感 */
+    border: 1px solid rgba(0,0,0,0.03); /* 极其微妙的边界 */
+    overflow: hidden !important;
+}
+
+/* 3. 列表项高度与分割线 */
+.settings-item, .settings-item-block {
+    padding: 18px 20px !important; /* 增加单行高度，不仅是点击区域，更是视觉留白 */
+    min-height: 56px !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important; /* 线条更细更淡 */
+}
+
+/* 4. 字体优化 */
+.settings-item label {
+    font-size: 16px !important;
+    font-weight: 500 !important; /* 略微加粗，提升层级 */
+    letter-spacing: -0.01em;
+    color: #1d1d1f !important;
+}
+
+.settings-header {
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: #86868b !important; /* 高级灰 */
+    margin: 30px 0 10px 20px !important; /* 标题与卡片的距离 */
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* 5. 暗黑模式微调 */
+#phone-screen.dark-mode .settings-section {
+    border: 1px solid rgba(255,255,255,0.05);
+    background-color: #1c1c1e !important;
+}
+#phone-screen.dark-mode .settings-item {
+    border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+}
+#phone-screen.dark-mode .settings-item label {
+    color: #f5f5f7 !important;
+}
