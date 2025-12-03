@@ -15858,3 +15858,1850 @@ input[type=range] {
 #phone-screen.dark-mode .settings-item label {
     color: #f5f5f7 !important;
 }
+/* ========================================= */
+/* ▼▼▼ CPhone Browser 高端重构 (Swiss Style) ▼▼▼ */
+/* ========================================= */
+
+/* 1. 浏览器整体容器背景 */
+#char-browser-screen, 
+#char-browser-article-screen {
+    background-color: #F2F2F7 !important; /* iOS 高级灰底色 */
+}
+#phone-screen.dark-mode #char-browser-screen,
+#phone-screen.dark-mode #char-browser-article-screen {
+    background-color: #000000 !important;
+}
+
+/* 2. 历史记录列表容器 */
+#char-browser-history {
+    padding: 20px !important; /* 增加外边距，让内容呼吸 */
+    display: flex;
+    flex-direction: column;
+    gap: 12px; /* 卡片之间的完美间距 */
+}
+
+/* 3. 单个历史记录卡片 */
+.char-browser-item {
+    background-color: #FFFFFF;
+    padding: 16px 20px !important; /* 内部留白 */
+    border-radius: 12px; /* 现代感圆角 */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02); /* 极轻微的悬浮感 */
+    border: 1px solid rgba(0, 0, 0, 0.03); /* 几乎不可见的边界 */
+    display: flex;
+    align-items: center;
+    gap: 16px; /* 图标与文字的间距 */
+    transition: transform 0.1s, background-color 0.2s;
+}
+.char-browser-item:active {
+    transform: scale(0.98);
+    background-color: #F9F9F9;
+}
+
+/* 4. 列表项左侧图标容器 (替代 Emoji) */
+.char-browser-icon-box {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background-color: #F2F2F7; /* 浅灰背景衬托图标 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #007AFF; /* 瑞士蓝 Accent Color */
+    flex-shrink: 0;
+}
+.char-browser-icon-box svg {
+    width: 20px;
+    height: 20px;
+    stroke-width: 2;
+}
+
+/* 5. 列表项文字内容 */
+.char-browser-info {
+    flex-grow: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 4px; /* 标题与URL的间距 */
+}
+
+.char-browser-item .title {
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    color: #1C1C1E;
+    margin: 0 !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: -0.01em;
+}
+
+.char-browser-item .url {
+    font-size: 12px !important;
+    color: #8E8E93 !important; /* 次要信息灰色 */
+    font-weight: 400;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Mono", monospace; /* 网址用等宽字体更有科技感 */
+}
+
+/* 6. 列表项右侧箭头 */
+.char-browser-arrow {
+    color: #C7C7CC;
+    flex-shrink: 0;
+}
+
+/* 7. 文章详情页排版 (阅读体验优化) */
+#char-article-content {
+    padding: 30px 24px !important; /* 宽敞的阅读边距 */
+    background-color: #FFFFFF !important; /* 纯白阅读背景 */
+    min-height: 100%;
+}
+
+/* 文章标题 */
+#char-article-title {
+    font-size: 17px !important; /* 导航栏标题大小 */
+    font-weight: 600;
+}
+
+/* 文章正文容器内的大标题 (如果有) */
+.article-large-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1C1C1E;
+    margin-bottom: 16px;
+    line-height: 1.3;
+    letter-spacing: -0.02em;
+}
+
+/* 文章正文文字 */
+#char-article-content p {
+    font-size: 17px; /* 最佳阅读字号 */
+    line-height: 1.6; /* 黄金比例行高 */
+    color: #333333;
+    margin-bottom: 20px; /* 段落间距 */
+    text-align: justify; /* 两端对齐 */
+}
+
+/* 文章图片 */
+.char-browser-image-description {
+    margin-top: 40px;
+    padding: 40px 20px;
+    background-color: #F9F9F9;
+    border-radius: 12px;
+    color: #666;
+    font-style: italic;
+    text-align: center;
+    border: 1px dashed #E5E5E5;
+}
+
+/* --- 暗黑模式适配 --- */
+#phone-screen.dark-mode .char-browser-item {
+    background-color: #1C1C1E;
+    border-color: #333;
+}
+#phone-screen.dark-mode .char-browser-icon-box {
+    background-color: #2C2C2E;
+    color: #0A84FF;
+}
+#phone-screen.dark-mode .char-browser-item .title {
+    color: #FFFFFF;
+}
+#phone-screen.dark-mode #char-article-content {
+    background-color: #000000 !important;
+}
+#phone-screen.dark-mode .article-large-title {
+    color: #FFFFFF;
+}
+#phone-screen.dark-mode #char-article-content p {
+    color: #E0E0E0;
+}
+#phone-screen.dark-mode .char-browser-image-description {
+    background-color: #1C1C1E;
+    border-color: #333;
+    color: #AAA;
+}
+/* ========================================= */
+/* ▼▼▼ CPhone 备忘录 & 日记 高端重构 ▼▼▼ */
+/* ========================================= */
+
+/* 1. 列表容器背景 */
+#char-memo-list, #char-diary-list {
+    padding: 20px !important; /* 统一外边距 */
+    display: flex;
+    flex-direction: column;
+    gap: 12px; /* 卡片间距 */
+    background-color: #F2F2F7 !important; /* 统一底色 */
+}
+#phone-screen.dark-mode #char-memo-list, 
+#phone-screen.dark-mode #char-diary-list {
+    background-color: #000000 !important;
+}
+
+/* 2. 列表项卡片样式 */
+.memo-item, .diary-item {
+    background-color: #FFFFFF;
+    padding: 16px 20px !important;
+    border-radius: 12px; /* 现代感圆角 */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    border: 1px solid rgba(0, 0, 0, 0.03);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: transform 0.1s, background-color 0.2s;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(0,0,0,0.03) !important; /* 覆盖旧样式的边框 */
+}
+.memo-item:active, .diary-item:active {
+    transform: scale(0.98);
+    background-color: #F9F9F9;
+}
+
+/* 3. 图标容器 (左侧方形区域) */
+.cphone-item-icon-box {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px; /* iOS 风格圆角 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.cphone-item-icon-box svg {
+    width: 22px;
+    height: 22px;
+    stroke-width: 2;
+}
+
+/* 备忘录专属配色 (暖黄) */
+.memo-icon-style {
+    background-color: #FFF8E1; /* 极淡黄底 */
+    color: #FF9500; /* 活力橙黄 */
+}
+
+/* 日记专属配色 (清新绿) */
+.diary-icon-style {
+    background-color: #E8F5E9; /* 极淡绿底 */
+    color: #34C759; /* 苹果绿 */
+}
+
+/* 4. 中间文字区域 */
+.cphone-item-info {
+    flex-grow: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.cphone-item-title {
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    color: #1C1C1E;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: -0.01em;
+}
+
+.cphone-item-preview {
+    font-size: 13px !important;
+    color: #8E8E93 !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 400;
+    line-height: 1.3;
+}
+
+/* 5. 右侧元素 (箭头或时间) */
+.cphone-item-arrow {
+    color: #C7C7CC;
+    flex-shrink: 0;
+}
+
+/* --- 详情页重构 --- */
+
+/* 备忘录详情页 */
+#char-memo-detail-screen .form-container {
+    padding: 20px !important;
+    background-color: #F2F2F7 !important;
+    height: 100%;
+    box-sizing: border-box;
+}
+#char-memo-detail-content {
+    background-color: #FFFFFF !important;
+    border-radius: 12px;
+    padding: 24px !important;
+    font-size: 16px !important;
+    line-height: 1.6 !important;
+    color: #1C1C1E !important;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.02);
+    border: 1px solid rgba(0,0,0,0.03);
+    height: 100% !important;
+    resize: none;
+    outline: none;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+/* 日记详情页 */
+#char-diary-detail-screen {
+    background-color: #F2F2F7 !important;
+}
+#char-diary-detail-content-wrapper {
+    padding: 20px !important;
+    background: transparent !important;
+}
+#char-diary-detail-content {
+    /* 核心修复：强制高度自动，随文字撑开 */
+    height: auto !important; 
+    
+    /* 保持最小高度，内容少时也好看 */
+    min-height: 80vh; 
+    
+    /* 确保背景色和圆角完整包裹内容 */
+    background-color: #FFFFFF !important;
+    border-radius: 12px;
+    
+    /* 优化内边距 */
+    padding: 32px 28px 60px 28px !important; /* 底部增加内边距，防止文字贴底 */
+    
+    /* 视觉样式 */
+    box-shadow: 0 2px 15px rgba(0,0,0,0.03);
+    border: 1px solid rgba(0,0,0,0.03);
+    font-family: "Georgia", "Songti SC", serif !important;
+    color: #333 !important;
+    line-height: 1.8 !important;
+    
+    /* 防止宽度溢出 */
+    width: 100%;
+    box-sizing: border-box;
+    overflow: visible !important;
+}
+
+/* 确保外层容器允许滚动且布局正确 */
+#char-diary-detail-content-wrapper {
+    padding: 20px !important;
+    background: transparent !important;
+    overflow-y: auto !important; /* 确保竖向滚动条在 wrapper 上 */
+    display: block !important;    /* 防止 Flex 布局某些情况下压缩子元素高度 */
+}
+
+/* --- 暗黑模式适配 --- */
+#phone-screen.dark-mode .memo-item,
+#phone-screen.dark-mode .diary-item {
+    background-color: #1C1C1E;
+    border-color: #333;
+}
+#phone-screen.dark-mode .cphone-item-title {
+    color: #FFFFFF;
+}
+#phone-screen.dark-mode .memo-icon-style {
+    background-color: #332A15; /* 深黄背景 */
+    color: #FFD60A;
+}
+#phone-screen.dark-mode .diary-icon-style {
+    background-color: #1A3021; /* 深绿背景 */
+    color: #30D158;
+}
+#phone-screen.dark-mode #char-memo-detail-screen .form-container,
+#phone-screen.dark-mode #char-diary-detail-screen {
+    background-color: #000000 !important;
+}
+#phone-screen.dark-mode #char-memo-detail-content,
+#phone-screen.dark-mode #char-diary-detail-content {
+    background-color: #1C1C1E !important;
+    color: #E0E0E0 !important;
+    border-color: #333;
+}
+#phone-screen.dark-mode #char-diary-detail-content > p:first-of-type {
+    color: #FFFFFF !important;
+    border-bottom-color: #333;
+}
+/* 1. 外层容器：营造沉浸式阅读环境 */
+#char-diary-detail-screen {
+    background-color: #F2F2F7 !important; /* iOS 系统级浅灰背景，提供视觉支撑 */
+}
+#phone-screen.dark-mode #char-diary-detail-screen {
+    background-color: #000000 !important;
+}
+
+/* 2. 滚动区域 */
+#char-diary-detail-content-wrapper {
+    padding: 20px 16px !important; /* 移动端两侧留出合适的呼吸空间 */
+    background: transparent !important;
+    box-sizing: border-box;
+}
+
+/* 3. 日记纸张本体 (核心修改) */
+#char-diary-detail-content {
+    background-color: #FFFFFF !important;
+    border-radius: 16px; /* 更圆润、友好的圆角 */
+    /* 移除显眼的边框，改用极轻柔的弥散阴影，营造悬浮感 */
+    border: none !important;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04); 
+    
+    /* 内部留白：像高级杂志一样的排版 */
+    padding: 32px 24px 48px 24px !important;
+    
+    /* 字体设置：回归系统原生，追求极致清晰 */
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Songti SC", serif !important; 
+    color: #1D1D1F !important; /* Apple 深炭灰，比纯黑更护眼 */
+    
+    min-height: 85vh; /* 保证纸张长度，即使内容少也不显得单薄 */
+    box-sizing: border-box;
+}
+
+/* 4. 标题/日期 (您觉得太大的那个字) - 重构为“眉批”风格 */
+#char-diary-detail-content > p:first-of-type {
+    /* 即使是标题，也不需要巨大。精致 > 巨大 */
+    font-size: 15px !important; 
+    font-weight: 600 !important;
+    color: #86868B !important; /* 使用高级中灰色，降低视觉干扰 */
+    text-transform: uppercase; /* 增加一点形式感 */
+    letter-spacing: 0.05em; /* 增加字间距，增加透气感 */
+    
+    margin-top: 0 !important;
+    margin-bottom: 24px !important; /* 标题与正文的完美距离 */
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05); /* 极细的分隔线 */
+    text-align: left !important;
+}
+
+#char-diary-detail-content p {
+     
+    line-height: 1.6 !important; 
+    
+    /* 核心修改：减小段落间距 */
+    margin-bottom: 1px !important; /* 从 16px 减小到 8px，更加紧凑 */
+    margin-top: 0 !important;      /* 强制去除顶部间距，防止叠加 */
+    
+    text-align: justify; 
+    letter-spacing: -0.01em; 
+}
+
+/* 6. 特殊格式修饰 (保持风格统一) */
+#char-diary-detail-content strong {
+    font-weight: 600;
+    color: #000;
+}
+
+/* 重点高亮：改为荧光笔风格，而非简单的背景色 */
+#char-diary-detail-content .diary-highlight {
+    background: linear-gradient(120deg, rgba(255, 214, 10, 0.3) 0%, rgba(255, 214, 10, 0.3) 100%);
+    background-position: 0 88%;
+    background-size: 100% 0.4em; /* 只高亮下半部分 */
+    background-repeat: no-repeat;
+    padding: 0;
+    border-radius: 0;
+}
+
+/* --- 暗黑模式适配 (深邃模式) --- */
+#phone-screen.dark-mode #char-diary-detail-content {
+    background-color: #1C1C1E !important; /* 深灰卡片 */
+    color: #F5F5F7 !important; /* 柔白文字 */
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+}
+
+#phone-screen.dark-mode #char-diary-detail-content > p:first-of-type {
+    color: #98989D !important;
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+#phone-screen.dark-mode #char-diary-detail-content .diary-highlight {
+    background: rgba(255, 214, 10, 0.2); /* 暗黑模式下改为全背景淡淡高亮 */
+    background-size: 100% 100%;
+    border-radius: 4px;
+}
+/* =================================================== */
+/* ▼▼▼ CPhone 终极固定布局 (仿 iOS 高级质感) ▼▼▼ */
+/* =================================================== */
+
+#cphone-layout-container {
+    padding: 0 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 25px; /* 行与行之间的间距 */
+    width: 100%;
+    box-sizing: border-box;
+    align-items: center; /* 整体居中 */
+}
+
+/* --- 通用行布局：左右排列 --- */
+.cphone-fixed-row {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 340px; /* 限制最大宽度，防止在大屏上散开 */
+}
+
+/* --- 1. 顶部错落气泡 --- */
+.cphone-staggered-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    max-width: 340px;
+}
+
+.cphone-bubble-pill {
+    width: 85%; /* 不占满，留出空隙显示错落感 */
+    height: 55px;
+    border-radius: 28px;
+    padding: 5px 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-sizing: border-box;
+    
+    /* 玻璃拟态 */
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+/* 左侧气泡靠左 */
+.cphone-bubble-pill.left {
+    align-self: flex-start;
+    border-bottom-left-radius: 4px; /* 稍微改变一点形状增加设计感 */
+}
+
+/* 右侧气泡靠右 */
+.cphone-bubble-pill.right {
+    align-self: flex-end;
+    flex-direction: row-reverse; /* 头像在右边 */
+    border-top-right-radius: 4px;
+}
+
+.bubble-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.8);
+    object-fit: cover;
+    flex-shrink: 0;
+}
+.bubble-content {
+    flex-grow: 1;
+    overflow: hidden;
+}
+.bubble-content p {
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+/* --- 2. 固定大小的 App 网格 (2x2) --- */
+.cphone-fixed-app-grid {
+    width: 155px;  /* 强制固定宽度！ */
+    height: 155px; /* 强制固定高度！ */
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 10px 15px; /* 行间距10，列间距15 */
+    justify-items: center;
+    align-items: center;
+}
+
+/* 调整图标大小以适应紧凑布局 */
+.cphone-fixed-app-grid .app-icon.small {
+    width: 60px; /* 限制整体点击区域 */
+}
+.cphone-fixed-app-grid .app-icon.small .icon-bg {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    margin-bottom: 4px;
+    /* 确保图标不会被拉伸 */
+    min-width: 56px; 
+}
+.cphone-fixed-app-grid .app-icon.small .label {
+    font-size: 11px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+}
+
+/* --- 3. 堆叠拍立得组件 --- */
+.cphone-stack-polaroid-widget {
+    width: 155px; /* 固定大小 */
+    height: 155px;
+    position: relative; /* 用于绝对定位子元素 */
+}
+
+.polaroid-stack-layer {
+    width: 140px;
+    height: 160px;
+    background-color: #fff;
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 8px 8px 25px 8px; /* 底部留白 */
+    box-sizing: border-box;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    border-radius: 2px;
+    transition: transform 0.3s ease;
+}
+
+/* 底层照片：旋转 */
+.polaroid-stack-layer.back {
+    transform: translateX(-50%) rotate(-6deg);
+    z-index: 1;
+    background-color: #f0f0f0; /* 稍微暗一点 */
+}
+
+/* 顶层照片：稍微反向旋转 */
+.polaroid-stack-layer.front {
+    transform: translateX(-50%) rotate(3deg) translateY(-5px);
+    z-index: 2;
+}
+
+/* 悬停效果：散开 */
+.cphone-stack-polaroid-widget:hover .polaroid-stack-layer.back {
+    transform: translateX(-65%) rotate(-12deg);
+}
+.cphone-stack-polaroid-widget:hover .polaroid-stack-layer.front {
+    transform: translateX(-35%) rotate(8deg) scale(1.05);
+}
+
+.polaroid-inner {
+    width: 100%;
+    height: 100%;
+    background: #eee;
+    overflow: hidden;
+}
+.polaroid-inner img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* --- 4. 圆形组件 --- */
+.cphone-circle-widget-container {
+    width: 155px;
+    height: 155px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    
+    /* 背景板 */
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 24px;
+    border: 1px solid rgba(255,255,255,0.3);
+}
+
+.cphone-circle-widget {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid rgba(255,255,255,0.9);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    margin-bottom: 8px;
+}
+.cphone-circle-widget img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.circle-deco-text p {
+    margin: 0;
+    font-size: 12px;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+    font-family: "Georgia", serif; /* 衬线体更文艺 */
+    font-style: italic;
+}
+.circle-deco-line {
+    width: 30px;
+    height: 2px;
+    background: rgba(255,255,255,0.6);
+    margin: 4px auto 0 auto;
+    border-radius: 2px;
+}
+
+/* --- Dock 栏优化 --- */
+.cphone-dock-container {
+    padding: 0 15px;
+    margin-bottom: calc(25px + env(safe-area-inset-bottom));
+    margin-top: auto;
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+}
+
+.cphone-dock.glass {
+    background: rgba(40, 40, 40, 0.4); /* 深色半透明Dock，像iOS */
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 32px;
+    padding: 18px 20px;
+    width: 100%;
+    max-width: 340px; /* 限制Dock最大宽度 */
+    display: flex;
+    justify-content: space-between;
+}
+
+.cphone-dock .app-icon .icon-bg {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    margin-bottom: 0; /* Dock里不要文字，所以不需要下边距 */
+}
+.cphone-dock .app-icon .label {
+    display: none; /* 隐藏Dock文字 */
+}
+
+/* 暗黑模式适配 */
+#phone-screen.dark-mode .cphone-bubble-pill {
+    background: rgba(0, 0, 0, 0.4);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+#phone-screen.dark-mode .polaroid-stack-layer {
+    background-color: #333; /* 拍立得白边变黑 */
+}
+/* =================================================== */
+/* ▼▼▼ CPhone 高级固定布局 V3 (完美复刻版) ▼▼▼ */
+/* =================================================== */
+
+#cphone-layout-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* 强制居中 */
+    gap: 20px;
+    width: 100%;
+}
+
+/* --- 1. 错落气泡组 --- */
+.cphone-staggered-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px; /* 两个气泡之间的间距 */
+    width: 330px; /* 锁定总宽度 */
+}
+
+.cphone-bubble-pill {
+    width: 290px; /* 固定气泡长度 */
+    height: 60px; /* 固定气泡高度 */
+    border-radius: 30px; /* 胶囊形状 */
+    display: flex;
+    align-items: center;
+    padding: 5px 8px;
+    box-sizing: border-box;
+    
+    /* 玻璃质感复刻 */
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    color: #fff;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+
+/* 上方气泡：靠左 */
+.cphone-bubble-pill.top {
+    align-self: flex-start; 
+}
+
+/* 下方气泡：靠右 */
+.cphone-bubble-pill.bottom {
+    align-self: flex-end;
+    justify-content: flex-end; /* 内容靠右 */
+}
+
+/* 头像容器 (带白边) */
+.bubble-avatar-container {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+.bubble-avatar-container img {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* 气泡文字内容区域 */
+.bubble-content {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    gap: 5px;
+    overflow: hidden;
+}
+
+.bubble-content.left-align {
+    justify-content: flex-start;
+}
+.bubble-content.right-align {
+    justify-content: flex-end;
+    text-align: right;
+}
+
+.bubble-content p {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.bubble-deco-icon {
+    font-size: 16px;
+    opacity: 0.9;
+}
+
+/* --- 通用固定行 (锁死宽度) --- */
+.cphone-fixed-row {
+    display: flex;
+    justify-content: space-between;
+    width: 330px; /* 锁死行宽 */
+}
+
+/* --- 2. App 网格 (2x2 固定) --- */
+.cphone-fixed-app-grid {
+    width: 150px;
+    height: 150px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 8px 15px;
+    justify-items: center;
+    align-items: start;
+}
+.app-icon.small .icon-bg {
+    width: 54px;
+    height: 54px;
+    border-radius: 13px;
+    margin-bottom: 3px;
+    min-width: 54px; /* 防止压缩 */
+}
+.app-icon.small .label {
+    font-size: 11px;
+}
+
+/* --- 3. 堆叠拍立得 (复刻) --- */
+.cphone-stack-polaroid {
+    width: 150px;
+    height: 150px;
+    position: relative;
+}
+
+/* 底层照片 (倾斜) */
+.polaroid-bg-layer {
+    width: 125px;
+    height: 140px;
+    background-color: #fff;
+    position: absolute;
+    top: 5px;
+    left: 10px;
+    transform: rotate(-6deg);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border-radius: 3px;
+    z-index: 1;
+}
+
+/* 顶层照片 (主图) */
+.polaroid-main-layer {
+    width: 125px;
+    height: 145px;
+    background-color: #fff;
+    position: absolute;
+    top: 0;
+    left: 15px; /* 稍微错位 */
+    transform: rotate(3deg);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+    border-radius: 3px;
+    z-index: 2;
+    padding: 8px 8px 25px 8px; /* 经典的拍立得留白 */
+    box-sizing: border-box;
+    transition: transform 0.2s;
+}
+
+.polaroid-main-layer:hover {
+    transform: rotate(0deg) scale(1.05) translateY(-5px);
+    z-index: 10;
+}
+
+.polaroid-photo-frame {
+    width: 100%;
+    height: 100%;
+    background-color: #eee;
+    overflow: hidden;
+}
+.polaroid-photo-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* --- 4. 圆形组件 (复刻) --- */
+.cphone-circle-widget-wrapper {
+    width: 150px;
+    height: 150px;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border-radius: 24px;
+    border: 1px solid rgba(255,255,255,0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.cphone-circle-bg {
+    width: 75px;
+    height: 75px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid rgba(255,255,255,0.9);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    margin-bottom: 8px;
+}
+.cphone-circle-bg img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.circle-text-area p {
+    margin: 0;
+    font-size: 12px;
+    color: #fff;
+    font-family: "Georgia", serif;
+    font-style: italic;
+    text-align: center;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.line-deco {
+    width: 40px;
+    height: 2px;
+    background: rgba(255,255,255,0.5);
+    margin: 4px auto 0 auto;
+    border-radius: 2px;
+    position: relative;
+}
+/* 加两个小点在装饰线两端 */
+.line-deco::before, .line-deco::after {
+    content: '';
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: white;
+    border-radius: 50%;
+    top: -1px;
+}
+.line-deco::before { left: -2px; }
+.line-deco::after { right: -2px; }
+
+/* --- Dock 栏 (保持不变但确保宽度) --- */
+.cphone-dock-container {
+    padding: 0;
+    margin-top: auto;
+    margin-bottom: calc(25px + env(safe-area-inset-bottom));
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.cphone-dock {
+    width: 330px; /* 锁死宽度 */
+}
+
+/* 暗黑模式适配 */
+#phone-screen.dark-mode .cphone-bubble-pill,
+#phone-screen.dark-mode .cphone-circle-widget-wrapper {
+    background: rgba(0, 0, 0, 0.4);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+#phone-screen.dark-mode .polaroid-bg-layer,
+#phone-screen.dark-mode .polaroid-main-layer {
+    background-color: #2c2c2e;
+}
+/* --- 1. 错落气泡组 (带倾斜) --- */
+.cphone-staggered-group {
+    display: flex;
+    flex-direction: column;
+    /* gap: 8px;  <-- 移除这个 gap，改用 margin 控制 */
+    width: 330px;
+    padding: 10px 0; /* 增加上下内边距，给倾斜留空间 */
+}
+
+.cphone-bubble-pill {
+    width: 290px;
+    height: 60px;
+    border-radius: 30px;
+    display: flex;
+    align-items: center;
+    padding: 5px 8px;
+    box-sizing: border-box;
+    
+    /* 玻璃质感 */
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    color: #fff;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.15);
+    
+    /* 让旋转更平滑 */
+    transform-origin: center center;
+    backface-visibility: hidden; 
+}
+
+/* 上方气泡：靠左 + 向上倾斜 */
+.cphone-bubble-pill.top {
+    align-self: flex-start;
+    transform: rotate(-3deg); /* 关键：旋转角度 */
+    margin-bottom: -8px; /* 向上拉近距离 */
+    z-index: 2; /* 稍微叠在上面一点 */
+}
+
+/* 下方气泡：靠右 + 向下倾斜 */
+.cphone-bubble-pill.bottom {
+    align-self: flex-end;
+    justify-content: flex-end;
+    transform: rotate(2deg); /* 关键：旋转角度 */
+    margin-top: -5px;
+    z-index: 1;
+}
+
+/* ... (头像容器部分保持不变) ... */
+.bubble-avatar-container {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+.bubble-avatar-container img {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* 气泡文字内容区域 */
+.bubble-content {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    gap: 5px;
+    overflow: hidden;
+    cursor: text; /* 鼠标放上去显示可输入状态 */
+}
+
+/* 编辑时的输入框样式 */
+.bubble-edit-input {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    border-radius: 4px;
+    color: #fff;
+    padding: 4px;
+    width: 100%;
+    outline: none;
+    text-shadow: none;
+}
+/* =================================================== */
+/* ▼▼▼ CPhone 布局修正 V4 (倾斜+外框+编辑修复) ▼▼▼ */
+/* =================================================== */
+
+#cphone-layout-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+}
+
+/* --- 1. 顶部气泡 (倾斜修正) --- */
+.cphone-staggered-group {
+    display: flex;
+    flex-direction: column;
+    width: 330px;
+    /* 给旋转留出上下空间，防止被切掉 */
+    padding: 15px 0; 
+    position: relative;
+}
+
+.cphone-bubble-pill {
+    width: 290px;
+    height: 60px;
+    border-radius: 35px; /* 更圆润 */
+    display: flex;
+    align-items: center;
+    padding: 5px 8px;
+    box-sizing: border-box;
+    
+    /* 玻璃质感 */
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    
+    /* 核心：旋转基点 */
+    transform-origin: center;
+    transition: transform 0.3s ease;
+}
+
+/* 上方气泡：向左上倾斜 (-3度) */
+.cphone-bubble-pill.top {
+    align-self: flex-start;
+    transform: rotate(-3deg); 
+    margin-bottom: -10px; /* 拉近距离 */
+    z-index: 2;
+    margin-left: 5px;
+}
+
+/* 下方气泡：向右下倾斜 (2度) */
+.cphone-bubble-pill.bottom {
+    align-self: flex-end;
+    justify-content: flex-end; /* 内容靠右 */
+    transform: rotate(2deg); 
+    margin-top: -5px;
+    z-index: 1;
+    margin-right: 5px;
+}
+
+/* 编辑时的输入框样式 (修复文字无法修改的问题) */
+.bubble-edit-input {
+    background: rgba(0, 0, 0, 0.1);
+    border: none;
+    border-radius: 4px;
+    color: #fff;
+    padding: 2px 5px;
+    font-size: inherit;
+    font-family: inherit;
+    width: 100%;
+    outline: none;
+}
+
+/* 头像容器 */
+.bubble-avatar-container {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.7); /* 半透明白底 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    border: 1px solid rgba(255,255,255,0.8);
+}
+.bubble-avatar-container img {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* 文字区域 */
+.bubble-content {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    gap: 6px;
+    overflow: hidden;
+    cursor: text; /* 提示可编辑 */
+}
+.bubble-content.left-align { justify-content: flex-start; }
+.bubble-content.right-align { justify-content: flex-end; text-align: right; }
+
+.bubble-content p {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    pointer-events: none; /* 让点击穿透到父容器，触发onclick */
+}
+
+.bubble-deco-icon { font-size: 14px; opacity: 0.9; }
+
+/* --- 2. App 网格 (保持固定) --- */
+.cphone-fixed-row {
+    display: flex;
+    justify-content: space-between;
+    width: 330px;
+}
+.cphone-fixed-app-grid {
+    width: 150px;
+    height: 150px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 8px 15px;
+    justify-items: center;
+    align-items: start;
+}
+.app-icon.small .icon-bg {
+    width: 54px;
+    height: 54px;
+    border-radius: 13px;
+    margin-bottom: 3px;
+    min-width: 54px;
+}
+.app-icon.small .label { font-size: 11px; }
+
+/* --- 3. 拍立得 (保持堆叠) --- */
+.cphone-stack-polaroid {
+    width: 150px;
+    height: 150px;
+    position: relative;
+}
+.polaroid-bg-layer {
+    width: 125px;
+    height: 140px;
+    background-color: #f5f5f5;
+    position: absolute;
+    top: 5px;
+    left: 10px;
+    transform: rotate(-6deg);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-radius: 2px;
+    z-index: 1;
+    border: 1px solid #eee;
+}
+.polaroid-main-layer {
+    width: 125px;
+    height: 145px;
+    background-color: #fff;
+    position: absolute;
+    top: 0;
+    left: 15px;
+    transform: rotate(4deg);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+    border-radius: 2px;
+    z-index: 2;
+    padding: 8px 8px 25px 8px;
+    box-sizing: border-box;
+    transition: transform 0.2s;
+}
+.polaroid-main-layer:hover {
+    transform: rotate(0deg) scale(1.05) translateY(-5px);
+    z-index: 10;
+}
+.polaroid-photo-frame {
+    width: 100%;
+    height: 100%;
+    background-color: #eee;
+    overflow: hidden;
+}
+.polaroid-photo-frame img { width: 100%; height: 100%; object-fit: cover; }
+
+/* --- 4. 圆形组件 (外框修复) --- */
+.cphone-circle-widget-wrapper {
+    width: 150px;
+    height: 150px;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border-radius: 24px;
+    border: 1px solid rgba(255,255,255,0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 【修复】圆形图片的外框 */
+.cphone-circle-bg {
+    width: 75px;
+    height: 75px;
+    border-radius: 50%;
+    overflow: hidden;
+    /* 这里加粗了边框，并且使用了纯白色 */
+    border: 3px solid #ffffff; 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15); /* 增加阴影让白边更明显 */
+    margin-bottom: 8px;
+    background-color: #fff;
+}
+.cphone-circle-bg img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.circle-text-area p {
+    margin: 0;
+    font-size: 12px;
+    color: #fff;
+    font-family: "Georgia", serif;
+    font-style: italic;
+    text-align: center;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+.line-deco {
+    width: 30px;
+    height: 2px;
+    background: rgba(255,255,255,0.8);
+    margin: 5px auto 0 auto;
+    border-radius: 2px;
+    position: relative;
+}
+.line-deco::before, .line-deco::after {
+    content: '';
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: white;
+    border-radius: 50%;
+    top: -1px;
+}
+.line-deco::before { left: -3px; }
+.line-deco::after { right: -3px; }
+
+/* --- Dock --- */
+.cphone-dock-container {
+    padding: 0;
+    margin-top: auto;
+    margin-bottom: calc(25px + env(safe-area-inset-bottom));
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+.cphone-dock { width: 330px; }
+
+/* 暗黑模式 */
+#phone-screen.dark-mode .cphone-bubble-pill,
+#phone-screen.dark-mode .cphone-circle-widget-wrapper {
+    background: rgba(0, 0, 0, 0.4);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+#phone-screen.dark-mode .cphone-circle-bg {
+    border-color: rgba(255, 255, 255, 0.8); /* 暗黑模式下稍微暗一点的白 */
+}
+/* ================================================== */
+/* ▼▼▼ CPhone 界面统一化修复补丁 (去除外框 + 放大图标) ▼▼▼ */
+/* ================================================== */
+
+/* 1. 【左侧组件】去除圆形组件的"丑"外框 */
+.cphone-circle-widget-wrapper {
+    background: transparent !important;       /* 去掉背景色 */
+    border: none !important;                  /* 去掉边框线 */
+    backdrop-filter: none !important;         /* 去掉磨砂玻璃 */
+    -webkit-backdrop-filter: none !important;
+    box-shadow: none !important;              /* 去掉阴影 */
+}
+
+/* 优化去除外框后的文字显示 (加强阴影，防止看不清) */
+.circle-text-area p {
+    text-shadow: 0 1px 4px rgba(0,0,0,0.8) !important;
+    font-weight: 500 !important;
+}
+/* 去除装饰线 (既然不要框了，装饰线悬空会很怪) */
+.line-deco {
+    display: none !important; 
+}
+
+/* 2. 【图标大小】放大 CPhone 图标 (对齐 EPhone) */
+/* 调整网格间距，给大图标腾出空间 */
+.cphone-fixed-app-grid {
+    gap: 2px 15px !important; /* 减小行间距 */
+}
+
+/* 强制放大图标背景 */
+.app-icon.small .icon-bg {
+    width: 62px !important;      /* 原为 54px -> 改为 62px */
+    height: 62px !important;
+    min-width: 62px !important;
+    border-radius: 16px !important; /* 稍微圆润一点 */
+    margin-bottom: 5px !important;
+}
+
+/* 3. 【字体统一】修正 CPhone 字体颜色和大小 */
+.app-icon.small .label {
+    font-size: 13px !important;  /* 原为 11px -> 改为 EPhone 标准的 13px */
+    color: #ffffff !important;   /* 纯白文字 */
+    font-weight: 500 !important;
+    /* 统一使用 EPhone 的强阴影，保证在亮色壁纸上也清晰 */
+    text-shadow: 0 1px 3px rgba(0,0,0,0.6) !important; 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+/* 4. 【Dock栏】改为 EPhone 风格 (浅色透明) */
+.cphone-dock.glass {
+    /* 原为深灰色 rgba(40, 40, 40, 0.4) -> 改为浅白透明 */
+    background: rgba(255, 255, 255, 0.2) !important; 
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    /* 稍微调整圆角，使其不那么圆，更像 EPhone 的 Dock */
+    border-radius: 24px !important; 
+}
+
+/* 5. 【Dock图标】确保 Dock 里的图标也够大 */
+.cphone-dock .app-icon .icon-bg {
+    width: 60px !important;
+    height: 60px !important;
+}
+
+/* --- 暗黑模式下的适配修正 --- */
+#phone-screen.dark-mode .cphone-dock.glass {
+    /* 暗黑模式下稍微深一点，但保持通透 */
+    background: rgba(50, 50, 50, 0.4) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+/* ================================================== */
+/* ▼▼▼ CPhone 界面统一化修复补丁 (去除外框 + 放大图标) ▼▼▼ */
+/* ================================================== */
+
+/* 1. 【左侧组件】去除圆形组件的"丑"外框 */
+.cphone-circle-widget-wrapper {
+    background: transparent !important;       /* 去掉背景色 */
+    border: none !important;                  /* 去掉边框线 */
+    backdrop-filter: none !important;         /* 去掉磨砂玻璃 */
+    -webkit-backdrop-filter: none !important;
+    box-shadow: none !important;              /* 去掉阴影 */
+}
+
+/* 优化去除外框后的文字显示 (加强阴影，防止看不清) */
+.circle-text-area p {
+    text-shadow: 0 1px 4px rgba(0,0,0,0.8) !important;
+    font-weight: 500 !important;
+}
+/* 去除装饰线 (既然不要框了，装饰线悬空会很怪) */
+.line-deco {
+    display: none !important; 
+}
+
+/* 2. 【图标大小】放大 CPhone 图标 (对齐 EPhone) */
+/* 调整网格间距，给大图标腾出空间 */
+.cphone-fixed-app-grid {
+    gap: 2px 15px !important; /* 减小行间距 */
+}
+
+/* 强制放大图标背景 */
+.app-icon.small .icon-bg {
+    width: 62px !important;      /* 原为 54px -> 改为 62px */
+    height: 62px !important;
+    min-width: 62px !important;
+    border-radius: 16px !important; /* 稍微圆润一点 */
+    margin-bottom: 5px !important;
+}
+
+/* 3. 【字体统一】修正 CPhone 字体颜色和大小 */
+.app-icon.small .label {
+    font-size: 13px !important;  /* 原为 11px -> 改为 EPhone 标准的 13px */
+    color: #ffffff !important;   /* 纯白文字 */
+    font-weight: 500 !important;
+    /* 统一使用 EPhone 的强阴影，保证在亮色壁纸上也清晰 */
+    text-shadow: 0 1px 3px rgba(0,0,0,0.6) !important; 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+/* 4. 【Dock栏】改为 EPhone 风格 (浅色透明) */
+.cphone-dock.glass {
+    /* 原为深灰色 rgba(40, 40, 40, 0.4) -> 改为浅白透明 */
+    background: rgba(255, 255, 255, 0.2) !important; 
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    /* 稍微调整圆角，使其不那么圆，更像 EPhone 的 Dock */
+    border-radius: 24px !important; 
+}
+
+/* 5. 【Dock图标】确保 Dock 里的图标也够大 */
+.cphone-dock .app-icon .icon-bg {
+    width: 60px !important;
+    height: 60px !important;
+}
+
+/* --- 暗黑模式下的适配修正 --- */
+#phone-screen.dark-mode .cphone-dock.glass {
+    /* 暗黑模式下稍微深一点，但保持通透 */
+    background: rgba(50, 50, 50, 0.4) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+/* ========================================================= */
+/* ▼▼▼ CPhone 布局微调补丁 V2 (气泡对齐 + 圆形下移) ▼▼▼ */
+/* ========================================================= */
+
+/* 1. 【圆形组件】位置下移修正 */
+.cphone-circle-widget-wrapper {
+    /* 原来是靠顶对齐，现在往下推 30px，视觉上更平衡 */
+    margin-top: 30px !important; 
+    
+    /* 既然去掉了外框，确保它是透明的 */
+    background: transparent !important;
+    border: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: none !important;
+}
+
+/* 2. 【第一行气泡】容器调整 */
+.cphone-staggered-group {
+    width: 100% !important; /* 占满整行 */
+    max-width: 360px !important; /* 限制最大宽 */
+    padding: 10px 5px !important; /* 左右留点呼吸空间 */
+    box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+    /* 去掉 gap，完全靠 margin 控制位置 */
+    gap: 0 !important; 
+}
+
+/* 3. 【上方气泡】严格左对齐 + 向左上倾斜 */
+.cphone-bubble-pill.top {
+    /* 稍微缩短宽度，让“靠左”更明显 */
+    width: 275px !important; 
+    
+    /* 核心对齐代码 */
+    align-self: flex-start !important; 
+    margin-right: auto !important; /* 强制把右边空出来 */
+    margin-left: 5px !important;   /* 离左边缘一点点距离 */
+    
+    /* 倾斜与重叠控制 */
+    transform: rotate(-3deg) !important;
+    margin-bottom: -10px !important; /* 只是轻微重叠，不再是大面积重合 */
+    z-index: 2 !important; /* 压在下面那个上面 */
+}
+
+/* 4. 【下方气泡】严格右对齐 + 向右下倾斜 */
+.cphone-bubble-pill.bottom {
+    /* 宽度保持一致 */
+    width: 275px !important;
+    
+    /* 核心对齐代码 */
+    align-self: flex-end !important;
+    margin-left: auto !important;  /* 强制把左边空出来 */
+    margin-right: 5px !important;  /* 离右边缘一点点距离 */
+    
+    /* 倾斜与重叠控制 */
+    transform: rotate(2deg) !important;
+    margin-top: 0 !important;
+    z-index: 1 !important;
+}
+
+/* 5. 确保气泡内的文字能完整显示 */
+.bubble-content {
+    /* 修复可能被压缩的问题 */
+    flex-shrink: 1 !important;
+    min-width: 0 !important;
+}
+/* ================================================================= */
+/* ▼▼▼ Swiss Style 终极版式修正 (Steve Jobs Approved) ▼▼▼ */
+/* ================================================================= */
+
+/* --- 1. 全局布局容器：增加呼吸感 --- */
+#cphone-layout-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    /* 增加垂直间距，这就是“数千美元”的高级感来源 */
+    gap: 35px !important; 
+    padding-top: 10px; /* 稍微往下压一点，不顶头 */
+}
+
+/* 统一所有行的宽度，确保视觉边缘垂直对齐 */
+.cphone-staggered-group,
+.cphone-fixed-row,
+.cphone-dock {
+    width: 330px !important; /* 黄金宽度，适配大部分手机屏 */
+    max-width: 100% !important;
+}
+
+/* --- 2. 错落气泡：精准对齐算法 --- */
+.cphone-staggered-group {
+    padding: 5px 0 !important;
+    gap: 0 !important; /* 重叠由 margin 控制 */
+    position: relative;
+    /* 确保容器本身不裁剪阴影 */
+    overflow: visible !important; 
+}
+
+.cphone-bubble-pill {
+    /* 稍微缩短宽度，为旋转留出余量，防止视觉溢出 */
+    width: 285px !important; 
+    height: 58px !important;
+    border-radius: 29px !important;
+    
+    /* 玻璃质感增强：更通透 */
+    background: rgba(255, 255, 255, 0.2) !important;
+    backdrop-filter: blur(25px) !important;
+    -webkit-backdrop-filter: blur(25px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.05) !important;
+}
+
+/* 上方气泡：左对齐 + 绕左侧旋转 */
+.cphone-bubble-pill.top {
+    align-self: flex-start !important; /* 物理靠左 */
+    margin-right: auto !important;
+    
+    /* 核心：轴心设在左侧，旋转时左边不动，右边翘起 */
+    transform-origin: center left !important; 
+    transform: rotate(-4deg) translateY(0px) !important;
+    
+    margin-bottom: -18px !important; /* 向下挤压，创造层叠感 */
+    margin-left: 2px !important; /* 微调视觉边缘 */
+    z-index: 2;
+}
+
+/* 下方气泡：右对齐 + 绕右侧旋转 */
+.cphone-bubble-pill.bottom {
+    align-self: flex-end !important; /* 物理靠右 */
+    margin-left: auto !important;
+    
+    /* 核心：轴心设在右侧，旋转时右边不动，左边垂下 */
+    transform-origin: center right !important;
+    transform: rotate(3deg) translateY(0px) !important;
+    
+    margin-top: 0 !important;
+    margin-right: 2px !important; /* 微调视觉边缘 */
+    z-index: 1;
+}
+
+/* --- 3. 圆形组件文字优化：增加间距 --- */
+.cphone-circle-widget-wrapper {
+    /* 移除背景和边框，保持透明 */
+    background: transparent !important;
+    border: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: none !important;
+    
+    /* 垂直布局 */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.cphone-circle-bg {
+    /* 图片容器 */
+    margin-bottom: 0 !important; /* 移除旧边距，由 text-area 的 margin-top 控制 */
+}
+
+.circle-text-area {
+    /* 开启 Flex 布局来控制两行字的间距 */
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    
+    /* 这里控制两行文字中间的距离，这就是你要的 */
+    gap: 6px !important; 
+    
+    /* 控制文字整体与圆图的距离 */
+    margin-top: 15px !important; 
+}
+
+/* 第一行字：主标题 */
+#cphone-circle-text {
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.5px !important; /* 字间距微调 */
+    color: #ffffff !important;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5) !important;
+    line-height: 1 !important;
+    margin: 0 !important;
+}
+
+/* 第二行字：副标题 */
+#cphone-circle-subtext {
+    font-size: 12px !important;
+    font-weight: 400 !important;
+    opacity: 0.85 !important;
+    color: #ffffff !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5) !important;
+    font-family: "Georgia", serif !important; /* 衬线体，优雅 */
+    font-style: italic !important;
+    line-height: 1 !important;
+    margin: 0 !important;
+}
+
+/* --- 4. 再次确保图标大小统一 (防止被覆盖) --- */
+.cphone-fixed-app-grid {
+    gap: 8px 15px !important; /* 微调网格间距 */
+}
+.app-icon.small .icon-bg {
+    width: 62px !important;
+    height: 62px !important;
+    min-width: 62px !important;
+    border-radius: 15px !important; /* iOS 标准圆角 */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1) !important;
+}
+.app-icon.small .label {
+    margin-top: 4px !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    color: #ffffff !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5) !important;
+}
+
+/* --- 5. 拍立得堆叠优化 (右侧组件) --- */
+/* 让拍立得也稍微倾斜一点点，增加随意感 */
+.cphone-stack-polaroid {
+    transform: rotate(2deg);
+}
+
+
+/* --- CPhone 气泡：强制对齐复刻版 --- */
+
+/* 1. 容器：强制居中，锁死宽度 */
+.cphone-staggered-group {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important; /* 核心：垂直居中对齐 */
+    width: 330px !important;        /* 核心：固定宽度 */
+    margin: 0 auto !important;
+    padding: 10px 0 !important;
+    gap: 0 !important;              /* 去掉间隙，用 margin 控制堆叠 */
+}
+
+/* 2. 气泡通用：填满容器，保持一致 */
+.cphone-bubble-pill {
+    width: 100% !important;         /* 强制占满 330px，保证上下一样宽 */
+    height: 60px !important;
+    border-radius: 35px !important; /* 更圆润一点 */
+    box-sizing: border-box !important;
+    transition: transform 0.3s ease !important;
+    
+    /* 核心：全部绕中心旋转，保证不会歪到没边 */
+    transform-origin: center center !important; 
+}
+
+/* 3. 上方气泡：左低右高 (-3deg) */
+.cphone-bubble-pill.top {
+    align-self: center !important;  /* 强制居中，不要靠左 */
+    transform: rotate(-3deg) !important;
+    
+    margin-bottom: -12px !important; /* 向下挤压，产生堆叠感 */
+    z-index: 2 !important;           /* 压在下面那个上面 */
+    
+    /* 清除旧的干扰 */
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+/* 4. 下方气泡：同样左低右高 (-3deg)，保持平行 */
+/* 根据原图，它们是平行的，这样视觉上最整齐 */
+.cphone-bubble-pill.bottom {
+    align-self: center !important;  /* 强制居中，不要靠右 */
+    transform: rotate(-3deg) !important; 
+    
+    margin-top: 0 !important;
+    z-index: 1 !important;
+    
+    /* 清除旧的干扰 */
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+/* 5. 修复 Dock 栏文字显示 */
+.cphone-dock .app-icon .label {
+    display: block !important;
+    margin-top: 4px !important;
+    font-size: 11px !important;
+    font-weight: 500 !important;
+    color: #ffffff !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.6) !important;
+    text-align: center !important;
+}
+/* --- CPhone 气泡：居中对齐 + 反向倾斜 + 增加间距版 --- */
+
+/* 1. 容器：控制整体间距 */
+.cphone-staggered-group {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important; /* 垂直居中 */
+    width: 330px !important;
+    margin: 0 auto !important;
+    padding: 10px 0 !important;
+    
+    /* 【关键修改 1】增加气泡之间的物理间距 */
+    gap: 5px !important; 
+}
+
+/* 2. 气泡通用设置 */
+.cphone-bubble-pill {
+    width: 100% !important;
+    height: 60px !important;
+    border-radius: 35px !important;
+    box-sizing: border-box !important;
+    transition: transform 0.3s ease !important;
+    transform-origin: center center !important;
+}
+
+/* 3. 上方气泡：左低右高 (-3deg) */
+.cphone-bubble-pill.top {
+    align-self: center !important;
+    transform: rotate(-3deg) !important;
+    
+    /* 【关键修改 2】移除负边距，不再挤压 */
+    margin-bottom: 0 !important; 
+    
+    z-index: 2 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+/* 4. 下方气泡：左高右低 (3deg) */
+.cphone-bubble-pill.bottom {
+    align-self: center !important;
+    transform: rotate(3deg) !important; 
+    
+    margin-top: 0 !important;
+    z-index: 1 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+/* 5. 确保Dock文字显示 */
+.cphone-dock .app-icon .label {
+    display: block !important;
+}
+/* --- CPhone 全局布局调整：紧凑版 --- */
+
+#cphone-layout-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    
+    /* 【关键修改】减小行与行之间的间距 */
+    /* 原来是 35px，现在改为 10px，立刻变紧凑 */
+    gap: 25px !important; 
+    
+    /* 顶部稍微留一点点呼吸空间，防止气泡顶到刘海 */
+    padding-top: 15px !important;
+}
+
+/* 确保错落气泡组本身没有多余的外部边距 */
+.cphone-staggered-group {
+    margin-bottom: 0 !important;
+    padding-bottom: 5px !important; /* 稍微减小一点底部内边距 */
+}

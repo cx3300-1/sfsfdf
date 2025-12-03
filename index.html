@@ -244,54 +244,108 @@
     </div>
     <div id="character-phone-screen" class="screen">
       <div id="char-home-screen" class="char-screen active">
-        <div id="char-clock-container">
-          <div id="char-main-time">12:00</div>
-          <div id="char-main-date">1月1日 星期一</div>
-        </div>
-        <div id="char-app-grid">
-          <div class="app-row">
-            <div class="app-icon" onclick="openCharApp('qq')">
-              <div class="icon-bg"><img id="cphone-icon-img-qq" src=""></div><span class="label">QQ</span>
+        <div style="height: 50px;"></div>
+
+        <div id="cphone-layout-container">
+            
+            <div class="cphone-staggered-group">
+                <div class="cphone-bubble-pill top">
+                    <div class="bubble-avatar-container">
+                        <img id="cphone-widget-avatar-1" src="https://i.postimg.cc/y8xWzCqj/anime-boy.jpg" class="editable-image" onclick="handleWidgetImageChange('cphone-widget-avatar-1')">
+                    </div>
+                    <div class="bubble-content left-align" onclick="editBubbleText('cphone-text-1')">
+                         
+                         <p id="cphone-text-1">Cat radio station☆ﾟ.*･｡</p>
+                         
+                    </div>
+                </div>
+                
+                <div class="cphone-bubble-pill bottom">
+                    <div class="bubble-content right-align" onclick="editBubbleText('cphone-text-2')">
+                        <p id="cphone-text-2" style="font-family: 'Times New Roman', serif;">It's 17:03:42 Now, Good Afternoon✨</p>
+                    </div>
+                    <div class="bubble-avatar-container">
+                        <img id="cphone-widget-avatar-2" src="https://i.postimg.cc/VkQfgzGJ/1.jpg" class="editable-image" onclick="handleWidgetImageChange('cphone-widget-avatar-2')">
+                    </div>
+                </div>
             </div>
-            <div class="app-icon" onclick="openCharApp('album')">
-              <div class="icon-bg"><img id="cphone-icon-img-album" src=""></div><span class="label" data-lang-key="cphoneAppAlbum">相册</span>
+
+            <div class="cphone-fixed-row">
+                <div class="cphone-fixed-app-grid">
+                    <div class="app-icon small" onclick="openCharApp('qq')">
+                        <div class="icon-bg"><img id="cphone-icon-img-qq" src=""></div><span class="label">QQ</span>
+                    </div>
+                    <div class="app-icon small" onclick="openCharApp('album')">
+                        <div class="icon-bg"><img id="cphone-icon-img-album" src=""></div><span class="label" data-lang-key="cphoneAppAlbum">相册</span>
+                    </div>
+                    <div class="app-icon small" onclick="openCharApp('browser')">
+                        <div class="icon-bg"><img id="cphone-icon-img-browser" src=""></div><span class="label" data-lang-key="cphoneAppBrowser">浏览器</span>
+                    </div>
+                    <div class="app-icon small" onclick="openCharApp('taobao')">
+                        <div class="icon-bg"><img id="cphone-icon-img-taobao" src=""></div><span class="label" data-lang-key="cphoneAppTaobao">淘宝</span>
+                    </div>
+                </div>
+
+                <div class="cphone-stack-polaroid">
+                    <div class="polaroid-bg-layer"></div>
+                    <div class="polaroid-main-layer">
+                        <div class="polaroid-photo-frame">
+                             <img id="cphone-polaroid-img" src="https://i.imgur.com/Bv63o3h.jpg" class="editable-image" onclick="handleWidgetImageChange('cphone-polaroid-img')">
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="app-icon" onclick="openCharApp('browser')">
-              <div class="icon-bg"><img id="cphone-icon-img-browser" src=""></div><span class="label" data-lang-key="cphoneAppBrowser">浏览器</span>
-            </div>
-            <div class="app-icon" onclick="openCharApp('taobao')">
-              <div class="icon-bg"><img id="cphone-icon-img-taobao" src=""></div><span class="label"data-lang-key="cphoneAppTaobao">淘宝</span>
-            </div>
-          </div>
-          <div class="app-row">
-            <div class="app-icon" onclick="openCharApp('memo')">
-              <div class="icon-bg"><img id="cphone-icon-img-memo" src=""></div><span class="label"data-lang-key="cphoneAppMemo">备忘录</span>
-            </div>
-            <div class="app-icon" onclick="openCharApp('diary')">
-              <div class="icon-bg"><img id="cphone-icon-img-diary" src=""></div><span class="label"data-lang-key="cphoneAppDiary">日记</span>
-            </div>
-            <div class="app-icon" onclick="openCharApp('amap')">
-              <div class="icon-bg"><img id="cphone-icon-img-amap" src=""></div><span class="label"data-lang-key="cphoneAppAmap">高德地图</span>
-            </div>
-            <div class="app-icon" onclick="openCharApp('usage')">
-              <div class="icon-bg"><img id="cphone-icon-img-usage" src=""></div><span class="label"data-lang-key="cphoneAppUsage">App记录</span>
-            </div>
-          </div>
-          <div class="app-row">
-            <div class="app-icon" onclick="openCharApp('music')">
-              <div class="icon-bg"><img id="cphone-icon-img-music" src=""></div><span class="label"data-lang-key="cphoneAppMusic">网易云</span>
-            </div>
-            <div class="app-icon" onclick="openCharApp('bilibili')">
-              <div class="icon-bg" style="background-color: #FB7299;"><img id="cphone-icon-img-bilibili" src="https://i.postimg.cc/Wz5gV0jB/bilibili-icon.png" style="border-radius:0;"></div><span class="label">Bilibili</span>
-            </div>
-            <div class="app-icon" onclick="openCharApp('reddit')">
-  <div class="icon-bg"> <img id="cphone-icon-img-reddit" src=""> </div>
-  <span class="label">Reddit</span>
+
+            <div class="cphone-fixed-row">
+                <div class="cphone-circle-widget-wrapper">
+                    <div class="cphone-circle-bg">
+                         <img id="cphone-circle-img" src="https://i.imgur.com/Wp72cEM.jpg" class="editable-image" onclick="handleWidgetImageChange('cphone-circle-img')">
+                    </div>
+                    <div class="circle-text-area">
+    <p id="cphone-circle-text" onclick="editBubbleText('cphone-circle-text')">Super happy</p>
+    <p id="cphone-circle-subtext" onclick="editBubbleText('cphone-circle-subtext')">Day & Night</p> 
 </div>
-            <div class="app-icon" onclick="switchToMyPhone()">
-              <div class="icon-bg"><img id="cphone-icon-img-ephone" src=""></div><span class="label"data-lang-key="cphoneAppEphone">Ephone</span>
+                </div>
+
+                <div class="cphone-fixed-app-grid">
+                     <div class="app-icon small" onclick="openCharApp('memo')">
+                        <div class="icon-bg"><img id="cphone-icon-img-memo" src=""></div><span class="label"data-lang-key="cphoneAppMemo">备忘录</span>
+                    </div>
+                    <div class="app-icon small" onclick="openCharApp('diary')">
+                        <div class="icon-bg"><img id="cphone-icon-img-diary" src=""></div><span class="label"data-lang-key="cphoneAppDiary">日记</span>
+                    </div>
+                    <div class="app-icon small" onclick="openCharApp('amap')">
+                        <div class="icon-bg"><img id="cphone-icon-img-amap" src=""></div><span class="label"data-lang-key="cphoneAppAmap">高德地图</span>
+                    </div>
+                    <div class="app-icon small" onclick="openCharApp('usage')">
+                        <div class="icon-bg"><img id="cphone-icon-img-usage" src=""></div><span class="label"data-lang-key="cphoneAppUsage">APP记录</span>
+                    </div>
+                </div>
             </div>
-          </div>
+
+        </div>
+
+        <div class="cphone-dock-container">
+            <div class="cphone-dock glass">
+    <div class="app-icon" onclick="openCharApp('music')">
+        <div class="icon-bg"><img id="cphone-icon-img-music" src=""></div>
+        <span class="label" data-lang-key="cphoneAppMusic">音乐</span>
+    </div>
+    <div class="app-icon" onclick="openCharApp('bilibili')">
+        <div class="icon-bg" style="background-color: #FB7299;"><img id="cphone-icon-img-bilibili" src="https://i.postimg.cc/Wz5gV0jB/bilibili-icon.png" style="border-radius:0;"></div>
+        <span class="label">Bilibili</span>
+    </div>
+    <div class="app-icon" onclick="openCharApp('reddit')">
+        <div class="icon-bg"><img id="cphone-icon-img-reddit" src=""></div>
+        <span class="label">Reddit</span>
+    </div>
+    <div class="app-icon" onclick="switchToMyPhone()">
+        <div class="icon-bg"><img id="cphone-icon-img-ephone" src=""></div>
+        <span class="label">Ephone</span>
+    </div>
+</div>
+        </div>
+      </div>
         </div>
       </div>
       <div id="char-amap-screen" class="char-screen">
@@ -4035,6 +4089,35 @@
 
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
