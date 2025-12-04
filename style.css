@@ -15952,7 +15952,18 @@ input[type=range] {
 #char-article-content {
     padding: 30px 24px !important; /* 宽敞的阅读边距 */
     background-color: #FFFFFF !important; /* 纯白阅读背景 */
-    min-height: 100%;
+    
+    /* --- 修复开始 --- */
+    /* 1. 删除或注释掉 min-height: 100%; */
+    /* min-height: 100%; */ 
+    
+    /* 2. 添加 height: 0; 配合 flex-grow 使用，强制它在 flex 容器内滚动 */
+    height: 0 !important; 
+    
+    /* 3. 确保 flex 属性和滚动开启 */
+    flex-grow: 1;
+    overflow-y: auto !important;
+    /* --- 修复结束 --- */
 }
 
 /* 文章标题 */
