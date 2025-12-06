@@ -17733,3 +17733,26 @@ input[type=range] {
 body.frame-mode-active .cphone-dock-container {
     margin-bottom: 25px !important;
 }
+.nai-binding-checkbox {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #ccc;
+    border-radius: 50%; /* 圆形 */
+    appearance: none;
+    -webkit-appearance: none;
+    transition: all 0.2s;
+    position: relative;
+    cursor: pointer;
+}
+.nai-binding-checkbox:checked {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+.nai-binding-checkbox:checked::after {
+    content: '✔';
+    color: white;
+    font-size: 12px;
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+}

@@ -3621,6 +3621,21 @@
             <span class="close" id="close-novelai-settings" style="cursor: pointer; float: right; font-size: 28px; font-weight: bold;">&times;</span>
         </div>
         <div class="modal-body" style="padding: 20px;">
+           <div class="settings-section" style="background-color: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+    <div style="font-weight: 600; margin-bottom: 10px; color: #333;">🎨 风格预设与绑定</div>
+    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+        <select id="nai-preset-select" class="settings-select" style="flex-grow: 1; border: 1px solid #ccc; padding: 8px; border-radius: 6px;">
+            <option value="">-- 当前临时设置 --</option>
+        </select>
+    </div>
+    <div style="display: flex; gap: 10px; justify-content: space-between;">
+        <button id="save-nai-preset-btn" class="settings-mini-btn" style="flex:1;">保存为新预设</button>
+        <button id="update-nai-preset-btn" class="settings-mini-btn" style="flex:1; display:none;">覆盖更新</button>
+        <button id="bind-nai-preset-btn" class="settings-mini-btn" style="flex:1; display:none; background-color: #e3f2fd; color: #1976d2; border-color: #bbdefb;">🔗 绑定角色</button>
+        <button id="delete-nai-preset-btn" class="settings-mini-btn" style="flex:0 0 auto; color: #ff3b30; border-color: #ff3b30; display:none;">删除</button>
+    </div>
+    <p style="font-size: 12px; color: #888; margin-top: 8px; margin-bottom: 0;">* 绑定后，该角色生图时将强制使用此预设的参数（提示词、尺寸、步数等）。</p>
+</div>
             <div class="form-group">
                 <label style="color: #333;">图像尺寸（oplus可无限出小图）</label>
                 <select id="nai-resolution" style="background-color: #f8f9fa; color: #333; border: 1px solid #ccc; padding: 8px; width: 100%; border-radius: 4px;">
@@ -3869,18 +3884,43 @@
     </div>
 </div>
 <div id="quick-reply-modal" class="modal">
-    <div class="modal-content" style="height: 60%;">
-      <div class="modal-header">
-        <span>选择一条快捷回复</span>
-        <button id="add-quick-reply-btn" class="action-button" style="font-size: 26px; color: var(--accent-color); font-weight: 300; cursor: pointer; background: none; border: none; padding: 0 5px;">+</button>
-      </div>
-      <div class="modal-body" id="quick-reply-list" style="padding: 0; display: flex; flex-direction: column;">
-       </div>
-      <div class="modal-footer">
-        <button class="cancel" id="cancel-quick-reply-btn" style="width: 100%;">关闭</button>
-      </div>
+    <div class="modal-content" style="height: 70%;"> <div class="modal-header">
+            <span>快捷回复</span>
+            <div class="header-actions">
+                <button id="manage-quick-reply-categories-btn" class="action-button" style="font-size: 14px; margin-right: 10px;">分类</button>
+                <button id="add-quick-reply-btn" class="action-button" style="font-size: 26px; color: var(--accent-color); font-weight: 300; cursor: pointer; background: none; border: none; padding: 0 5px;">+</button>
+            </div>
+        </div>
+        
+        <div id="quick-reply-tabs" style="display: flex; overflow-x: auto; padding: 0 15px; flex-shrink: 0; border-bottom: 1px solid var(--border-color); background-color: var(--secondary-bg); -ms-overflow-style: none; scrollbar-width: none;">
+            </div>
+
+        <div class="modal-body" id="quick-reply-list" style="padding: 0; display: flex; flex-direction: column;">
+            </div>
+        <div class="modal-footer">
+            <button class="cancel" id="cancel-quick-reply-btn" style="width: 100%;">关闭</button>
+        </div>
     </div>
-  </div>
+</div>
+<div id="quick-reply-category-manager-modal" class="modal">
+    <div class="modal-content" style="height: 60%;">
+        <div class="modal-header"> <span>管理回复分类</span> </div>
+        <div class="modal-body">
+            <div class="form-group"> <label>新建分类</label>
+                <div style="display: flex; gap: 10px;"> 
+                    <input type="text" id="new-quick-reply-category-name-input" placeholder="输入分类名..." style="flex-grow: 1;"> 
+                    <button id="add-new-quick-reply-category-btn" class="form-button" style="width: auto; margin-top: 0; padding: 0 15px;" data-lang-key="add">添加</button> 
+                </div>
+            </div>
+            <hr style="opacity: 0.2;">
+            <div id="existing-quick-reply-categories-list" style="display: flex; flex-direction: column; gap: 10px;"> 
+                </div>
+        </div>
+        <div class="modal-footer"> 
+            <button class="save" id="close-quick-reply-category-manager-btn" style="width: 100%;" data-lang-key="done">完成</button> 
+        </div>
+    </div>
+</div>
 <div id="char-music-restore-btn" style="display: none;">
   <img src="https://static.eeo.cn/upload/images/20251114/78d48a9f1d73b2bc6003.png" alt="Restore Music" style="width: 100%; height: 100%; ">
   </div>
@@ -4078,6 +4118,19 @@
       <button class="save" id="gr-save-author-btn">保存</button>
     </div>
   </div>
+</div>
+<div id="nai-binding-modal" class="modal">
+    <div class="modal-content" style="height: 70%;">
+        <div class="modal-header">
+            <span>绑定预设到角色</span>
+        </div>
+        <div class="modal-body" id="nai-binding-list" style="padding: 0;">
+            </div>
+        <div class="modal-footer">
+            <button class="cancel" id="cancel-nai-binding-btn" data-lang-key="cancel">取消</button>
+            <button class="save" id="save-nai-binding-btn" data-lang-key="save">保存绑定</button>
+        </div>
+    </div>
 </div>
 <audio id="silent-audio-player" loop preload="auto" style="display:none;">
     <source src="https://phoebeboo.github.io/mewoooo/1-second-of-silence.mp3" type="audio/mpeg">
