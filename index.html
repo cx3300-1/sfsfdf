@@ -3628,13 +3628,18 @@
             <option value="">-- 当前临时设置 --</option>
         </select>
     </div>
-    <div style="display: flex; gap: 10px; justify-content: space-between;">
-        <button id="save-nai-preset-btn" class="settings-mini-btn" style="flex:1;">保存为新预设</button>
-        <button id="update-nai-preset-btn" class="settings-mini-btn" style="flex:1; display:none;">覆盖更新</button>
-        <button id="bind-nai-preset-btn" class="settings-mini-btn" style="flex:1; display:none; background-color: #e3f2fd; color: #1976d2; border-color: #bbdefb;">🔗 绑定角色</button>
-        <button id="delete-nai-preset-btn" class="settings-mini-btn" style="flex:0 0 auto; color: #ff3b30; border-color: #ff3b30; display:none;">删除</button>
-    </div>
-    <p style="font-size: 12px; color: #888; margin-top: 8px; margin-bottom: 0;">* 绑定后，该角色生图时将强制使用此预设的参数（提示词、尺寸、步数等）。</p>
+    
+    <div style="display: flex; gap: 8px; align-items: center; justify-content: flex-end;">
+    <button id="save-nai-preset-btn" class="settings-mini-btn">新增</button>
+    
+    <button id="update-nai-preset-btn" class="settings-mini-btn" style="display:none;">更新</button>
+    
+    <button id="bind-nai-preset-btn" class="settings-mini-btn" style="display:none; background-color: #e3f2fd; color: #1976d2; border-color: #bbdefb;">🔗绑定</button>
+    
+    <button id="delete-nai-preset-btn" class="settings-mini-btn" style="color: #ff3b30; border-color: #ff3b30; display:none;">删除</button>
+</div>
+    
+    <p style="font-size: 12px; color: #888; margin-top: 8px; margin-bottom: 0;">* 绑定后，该角色生图时将强制使用此预设。</p>
 </div>
             <div class="form-group">
                 <label style="color: #333;">图像尺寸（oplus可无限出小图）</label>
