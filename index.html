@@ -1446,7 +1446,7 @@
         <div id="sticker-category-tabs"></div>
         <div id="sticker-search-container"> <input type="search" id="sticker-search-input" placeholder="搜索表情名称..."></div>
         <div id="sticker-grid"></div>
-        <div id="sticker-action-bar"> <label class="select-all-label" style="display: flex; align-items: center; gap: 5px;"> <input type="checkbox" id="select-all-stickers-checkbox"> 全选 </label> <button id="export-selected-stickers-btn" style="background-color: #007bff;">导出 (0)</button><button id="delete-selected-stickers-btn">删除 (0)</button> </div>
+        <div id="sticker-action-bar"> <label class="select-all-label" style="display: flex; align-items: center; gap: 5px;"> <input type="checkbox" id="select-all-stickers-checkbox"> 全选 </label><button id="move-selected-stickers-btn" style="background-color: #ff9800; margin-left: 5px;">移动 (0)</button> <button id="export-selected-stickers-btn" style="background-color: #007bff;">导出 (0)</button><button id="delete-selected-stickers-btn">删除 (0)</button> </div>
       </div> <input type="file" id="sticker-upload-input" accept="image/*" style="display: none;"> <input type="file" id="image-upload-input" accept="image/*" style="display: none;">
       <div id="music-player-overlay">
         <div class="music-player-window">
@@ -2164,7 +2164,16 @@
                     </div>
                  </div>
             </div>
-            
+            <div class="settings-item">
+    <div>
+       <label>显示隐藏层消息 (调试)</label>
+       <div class="settings-desc">显示系统提示、内心独白等隐藏内容以便编辑</div>
+   </div>
+   <label class="toggle-switch"> 
+       <input type="checkbox" id="show-hidden-msg-toggle"> 
+       <span class="slider"></span> 
+   </label>
+</div>
             <!-- Token 统计 -->
             <div class="settings-section">
                 <div class="settings-item">
@@ -2874,17 +2883,7 @@
             </div>
     </div>
     </div>
-    <div class="mail-toolbar">
-        <button class="mail-tool-btn" onclick="deleteCurrentEmail()">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-        </button>
-        <button class="mail-tool-btn">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg>
-        </button>
-        <button class="mail-tool-btn">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-        </button>
-    </div>
+    
 </div>
 
 <!-- 邮件生成器配置弹窗 -->
@@ -3889,20 +3888,31 @@
     </div>
 </div>
 <div id="quick-reply-modal" class="modal">
-    <div class="modal-content" style="height: 70%;"> <div class="modal-header">
+    <div class="modal-content" style="height: 70%; position: relative;"> <div class="modal-header">
             <span>快捷回复</span>
             <div class="header-actions">
+                <button id="batch-quick-reply-btn" class="action-button" style="font-size: 14px; margin-right: 10px;">批量</button>
                 <button id="manage-quick-reply-categories-btn" class="action-button" style="font-size: 14px; margin-right: 10px;">分类</button>
                 <button id="add-quick-reply-btn" class="action-button" style="font-size: 26px; color: var(--accent-color); font-weight: 300; cursor: pointer; background: none; border: none; padding: 0 5px;">+</button>
             </div>
         </div>
         
         <div id="quick-reply-tabs" style="display: flex; overflow-x: auto; padding: 0 15px; flex-shrink: 0; border-bottom: 1px solid var(--border-color); background-color: var(--secondary-bg); -ms-overflow-style: none; scrollbar-width: none;">
-            </div>
+        </div>
 
-        <div class="modal-body" id="quick-reply-list" style="padding: 0; display: flex; flex-direction: column;">
+        <div class="modal-body" id="quick-reply-list" style="padding: 0; display: flex; flex-direction: column; padding-bottom: 60px;"> </div>
+
+        <div id="quick-reply-action-bar" style="display: none; position: absolute; bottom: 0; left: 0; width: 100%; padding: 10px 15px; background: rgba(255,255,255,0.95); border-top: 1px solid #eee; box-sizing: border-box; justify-content: space-between; align-items: center; z-index: 10;">
+            <label style="display: flex; align-items: center; gap: 5px;">
+                <input type="checkbox" id="select-all-quick-replies-checkbox"> 全选
+            </label>
+            <div style="display: flex; gap: 8px;">
+                <button id="move-selected-quick-replies-btn" class="settings-mini-btn" style="background-color: #ff9800; color: white; border: none;">移动 (0)</button>
+                <button id="delete-selected-quick-replies-btn" class="settings-mini-btn" style="background-color: #ff3b30; color: white; border: none;">删除 (0)</button>
             </div>
-        <div class="modal-footer">
+        </div>
+
+        <div class="modal-footer" id="quick-reply-normal-footer">
             <button class="cancel" id="cancel-quick-reply-btn" style="width: 100%;">关闭</button>
         </div>
     </div>

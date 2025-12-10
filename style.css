@@ -17756,3 +17756,127 @@ body.frame-mode-active .cphone-dock-container {
     top: 50%; left: 50%;
     transform: translate(-50%, -50%);
 }
+/* 快捷回复管理模式样式 */
+.quick-reply-item {
+    position: relative;
+    transition: background-color 0.2s;
+}
+
+/* 隐藏的复选框 */
+.quick-reply-checkbox {
+    display: none;
+    margin-right: 15px;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #ccc;
+    border-radius: 50%;
+    appearance: none;
+    -webkit-appearance: none;
+    flex-shrink: 0;
+    position: relative;
+}
+
+.quick-reply-checkbox:checked {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+.quick-reply-checkbox:checked::after {
+    content: '✔';
+    color: white;
+    font-size: 12px;
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* 管理模式下显示复选框 */
+#quick-reply-list.management-mode .quick-reply-checkbox {
+    display: block;
+}
+
+#quick-reply-list.management-mode .quick-reply-actions {
+    display: none; /* 管理模式下隐藏单行操作按钮 */
+}
+
+/* 选中状态高亮 */
+.quick-reply-item.selected {
+    background-color: rgba(0, 123, 255, 0.05);
+}
+
+/* 暗黑模式适配 */
+#phone-screen.dark-mode #quick-reply-action-bar {
+    background-color: rgba(28, 28, 30, 0.95);
+    border-top-color: #38383a;
+    color: #fff;
+}/* --- 隐藏层消息显形样式 (完美伪装成系统提示) --- */
+
+/* 1. 布局重置：强制居中 */
+.message-wrapper.hidden-revealed {
+    justify-content: center !important;
+    align-self: center !important;
+    width: 100%;
+    margin: 5px 0; /* 保持系统消息的间距 */
+    padding: 0;
+    border: none !important;
+    background: transparent !important;
+    flex-direction: row !important;
+}
+
+/* 2. 隐藏无关元素 (头像、名字、时间、引用、小尖角) */
+.message-wrapper.hidden-revealed .avatar-group,
+.message-wrapper.hidden-revealed .sender-name,
+.message-wrapper.hidden-revealed .timestamp,
+.message-wrapper.hidden-revealed .quoted-message,
+.message-wrapper.hidden-revealed .message-bubble::after, /* 去掉气泡尖角 */
+.message-wrapper.hidden-revealed .message-bubble::before {
+    display: none !important;
+}
+
+/* 3. 外层气泡：变成灰色小胶囊 */
+.message-wrapper.hidden-revealed .message-bubble {
+    /* 核心外观：模仿系统消息 */
+    background-color: rgba(0, 0, 0, 0.1) !important; 
+    color: #8a8a8a !important; /* 灰色文字 */
+    font-size: 12px !important;
+    padding: 4px 12px !important;
+    border-radius: 10px !important;
+    
+    /* 布局重置 */
+    flex: initial !important; /* 不要自动伸缩 */
+    min-width: auto !important;
+    max-width: 85% !important;
+    width: fit-content !important; /* 宽度随内容 */
+    display: inline-block !important;
+    margin: 0 auto !important; /* 自身居中 */
+    border: none !important;
+    box-shadow: none !important;
+    text-align: center;
+}
+
+/* 4. 【关键修复】彻底剥离内部 .content 的样式 */
+/* 这就是导致“胶囊里有气泡”的元凶，我们把它变透明 */
+.message-wrapper.hidden-revealed .message-bubble .content {
+    background-color: transparent !important; /* 去掉白色背景 */
+    box-shadow: none !important;              /* 去掉阴影 */
+    border: none !important;
+    padding: 0 !important;                    /* 去掉内边距 */
+    margin: 0 !important;
+    
+    /* 字体重置 */
+    color: inherit !important;                /* 继承外层的灰色 */
+    font-size: inherit !important;            /* 继承小字号 */
+    line-height: 1.4 !important;
+    font-weight: normal !important;
+    
+    /* 布局 */
+    display: inline !important;               /* 变成行内元素，紧贴文字 */
+    width: auto !important;
+    min-width: 0 !important;
+}
+
+/* 5. 暗黑模式适配 */
+#phone-screen.dark-mode .message-wrapper.hidden-revealed .message-bubble {
+    background-color: rgba(255, 255, 255, 0.15) !important; /* 深色下的半透明白 */
+    color: #8d8d92 !important; /* 浅灰字 */
+}
