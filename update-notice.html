@@ -1,23 +1,69 @@
-<div data-version="2.19">
-    <h3 style="margin-top:0;">✨ 新版本来啦</h3>
-    <p></p>
-    <ul style="text-align: left; padding-left: 20px;">
-<li><strong>新增：</strong>绿江，，写小说的，无限续杯，也算是弥补群聊没有线下的遗憾</li>
-<li><strong>新增：</strong>邮箱，推剧情的，分享给char会有反应，会收到骚扰邮箱哦，做好准备哈</li>
-<li><strong>新增：</strong>兼容更多表情包格式，支持各种文件导入</li>
- <li>--------------------------</li>       
-<li><strong>新增：</strong>导入txt/docx版本css美化，导出美化</li>
-<li><strong>新增：</strong>旁白，群聊单聊都有，想让char引用旁白需开启开关仅线上，如果你自己用旁白格式/旁白 xxx或者/n xxx</li>
-<li><strong>新增：</strong>todolist，仅单聊，需要开关，入口在快捷回复旁边，变相记账吧</li> 
-<li><strong>修复：</strong>黑市仓库，亲密付不划账</li> 
-<li><strong>修复：</strong>单聊引用3.0格式不对</li> 
- <li>--------------------------</li>       
-<li><strong>须知！！！！！</strong>首先pin码不会获取隐私哦，其次PIN码获取请查看尾巴镇标注信息/新人教程，先获取角色卡，解密，再通过视频教程获取pin码，其次那个id和pin码即使露出来，也没关系，别人用不了，一把钥匙配一把锁，可以这么理解，不同浏览器打开/安装到屏幕上的pin码都会不同</li>         
-<li><strong>唯一不要传的是角色卡里解密出的内容！！兔k也一样不可以传哦！！还有兔k和330的解密网址不一样，别解错了，请详细按照角色卡里的内容去搜索网站</strong></li>
-<li><strong>须知！！！！！</strong>增加了导入酒馆卡/预设和酒馆世界书的锁，为了保护写卡老师和写预设老师的净土，加了这个锁，不会影响其他功能的使用，需要解锁此功能的酒馆宝宝，介时请来尾巴镇ee子区保存角色卡导入酒馆，里面会有详细的步骤哦！</li> 
-     
+<div data-version="2.20">
+    <h3 style="margin-top:0;">✨ Version 2.20 Update / 新版本更新</h3>
+    <p style="font-size: 13px; color: #666; margin-bottom: 15px;">
+        为了提供更稳定的服务并保护创作者，本次更新引入了一些重要变动，请仔细阅读。<br>
+        To ensure better service and protect creators, please read the following changes carefully.
+    </p>
 
+    <ul style="text-align: left; padding-left: 20px; font-size: 14px; line-height: 1.6;">
+        
+        <!-- 新增功能区 -->
+        <li style="margin-bottom: 8px;">
+            🔐 <strong>登录验证 (Login System):</strong><br>
+            为了防止恶意售卖并维护社区环境，我们增加了轻量级的登录验证。请前往 EPhone Discord 频道使用指令<code style="background:#eee;padding:2px 4px;">/login</code> 获取账号密码。<br>
+            <span style="color: #28a745; font-size: 12px;">* 承诺：此过程仅用于验证资格，绝不会获取您的个人隐私信息。</span><br>
+            <span style="font-size: 12px; color: #888;">Added a login system to prevent unauthorized reselling. Get your credentials via <code>/login</code> in our Discord. No personal data is collected.</span>
+        </li>
+
+        <li style="margin-bottom: 8px;">
+            🔔 <strong>系统通知 (System Notifications):</strong><br>
+            支持系统级消息推送！请在“API设置”页面点击授权按钮，允许浏览器发送通知。<br>
+            <span style="font-size: 12px; color: #888;">Enable system notifications in "API Settings" to receive alerts in the background.</span>
+        </li>
+
+        <li style="margin-bottom: 8px;">
+            🔌 <strong>本地API优化 (Local API Fetching):</strong><br>
+            新增本地API模型拉取功能（测试版）。如果自动拉取失败，支持手动输入。<strong>注意：拉取成功后，请务必点击下拉框选择模型，模型名称不再自动填充进输入框。</strong><br>
+            <span style="font-size: 12px; color: #888;">Added Local API fetching. If it fails, manual input works. *Important:* Please manually select the model from the dropdown list after fetching.</span>
+        </li>
+
+        <div style="border-top: 1px dashed #ccc; margin: 10px 0;"></div>
+
+        <!-- 之前的功能保留 -->
+        <li style="margin-bottom: 8px;">
+            📚 <strong>绿江文学 & 邮箱 (Green River & Mail):</strong><br>
+            无限续杯的小说阅读体验，以及推动剧情的邮件系统（分享给角色会有惊喜哦）。<br>
+            <span style="font-size: 12px; color: #888;">Added "Green River" for reading novels and an "Email" system for plot progression. Sharing emails with characters triggers reactions.</span>
+        </li>
+        
+        <li style="margin-bottom: 8px;">
+            🛠️ <strong>其他优化 (Improvements):</strong><br>
+            支持更多表情包格式导入；优化了文档导入的CSS美化；新增旁白功能（指令 <code>/n</code> 或 <code>/旁白</code>）；新增仅单聊的待办事项 (TodoList)。<br>
+            <span style="font-size: 12px; color: #888;">Better sticker support; Doc import beautification; Narrator mode; Todo list (private chat only).</span>
+        </li>
+
+        <div style="border-top: 2px solid #eee; margin: 15px 0;"></div>
+
+        <!-- 重要须知保留 -->
+        <li style="color: #d63031; margin-bottom: 8px;">
+            🛡️ <strong>关于PIN码 (About PIN Code):</strong><br>
+            PIN码验证纯属本地逻辑，<strong>不会窃取隐私</strong>。获取方法请查看尾巴镇的标注信息或新人教程（解密角色卡 -> 视频教程）。每个浏览器/设备的PIN码都是独一无二的，是一把钥匙配一把锁，泄露ID无安全风险。<br>
+            <span style="font-size: 12px; color: #888;">The PIN code logic is local and safe. Check the tutorial in Tail Town to learn how to get it. IDs are unique to your browser and harmless if revealed.</span>
+        </li>
+
+        <li style="color: #d63031; margin-bottom: 8px;">
+            🚫 <strong>禁止传播解密内容 (Do Not Share):</strong><br>
+            <strong>严禁传播角色卡解密后的内容以及兔K密钥！</strong> 兔K和330的解密网址不同，请严格按照卡片内的指引操作。<br>
+            <span style="font-size: 12px; color: #888;">Do NOT share decrypted character card content or keys. Follow the instructions inside the card strictly.</span>
+        </li>
+
+        <li style="color: #d63031; margin-bottom: 8px;">
+            🔒 <strong>酒馆卡导入锁 (Tavern Import Lock):</strong><br>
+            为了保护写卡和预设的作者，导入酒馆卡/预设/世界书增加了锁。此举不影响其他功能。如需解锁，请前往尾巴镇ee子区查看详细步骤。<br>
+            <span style="font-size: 12px; color: #888;">Added a lock for importing Tavern cards/presets to protect creators. Visit the designated section in Tail Town for unlocking instructions.</span>
+        </li>
     </ul>
-    <p>下次点开页面不想再弹出就点<strong>不再弹出</strong></p>
+
+    <p style="margin-top: 15px; font-size: 13px;">下次点开不想再看？点击 <strong>不再弹出 (Don't show again)</strong></p>
 </div>
 

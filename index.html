@@ -22,6 +22,7 @@
   <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
   <script src="script.js" defer="defer"></script>
 </head>
 <body>
@@ -684,7 +685,8 @@
             <div class="settings-item">
                 <label>模型</label>
                 <div class="settings-right">
-                    <select id="model-select" class="settings-select" style="flex-grow: 1; width: auto;"></select>
+                    <input type="text" id="model-select" list="model-list" placeholder="输入或拉取模型..." style="width: 100%; padding: 8px;">
+<datalist id="model-list"></datalist>
                     <button id="fetch-models-btn" class="settings-mini-btn">拉取</button>
                 </div>
             </div>
@@ -710,7 +712,8 @@
                 <label>模型</label>
                 <div class="settings-right">
                      <!-- 下拉框占据剩余空间 -->
-                    <select id="secondary-model-select" class="settings-select" style="flex-grow: 1; width: auto;"></select>
+                    <input type="text" id="secondary-model-select" list="secondary-model-list" placeholder="输入或拉取模型..." style="width: 100%; padding: 8px;">
+<datalist id="secondary-model-list"></datalist>
                     <!-- 按钮放在旁边 -->
                     <button id="fetch-secondary-models-btn" class="settings-mini-btn">拉取</button>
                 </div>
@@ -751,7 +754,24 @@
                 </div>
             </div>
         </div>
-        <div class="settings-desc">开启后台活动会增加 API 费用。</div>
+        <div class="settings-header">系统级通知</div>
+<div class="settings-section">
+    <div class="settings-item">
+        <div>
+            <label>允许系统推送</label>
+            <div class="settings-desc">iOS需添加到主屏幕才能生效</div>
+        </div>
+        <div class="settings-right">
+             <button id="enable-system-notifications-btn" class="settings-mini-btn" style="width: auto; padding: 6px 15px;">点击授权</button>
+        </div>
+    </div>
+    <div class="settings-item">
+        <label>测试系统通知</label>
+        <div class="settings-right">
+             <button id="test-system-notify-btn" class="settings-mini-btn">发送测试</button>
+        </div>
+    </div>
+</div>
 
         <!-- 语音设置 -->
         <div class="settings-header" data-lang-key="apiTtsSettings">Minimax TTS 语音</div>
@@ -1014,6 +1034,9 @@
             <button class="settings-full-btn" id="check-and-fix-data-btn">数据检查与修复</button>
             <button class="settings-full-btn" id="emergency-reset-appearance-btn" >重置当前外观</button>
             <button class="settings-full-btn" id="factory-reset-btn" > 初始化所有内容 (慎用)</button>
+<button class="settings-full-btn" id="logout-btn" >
+    退出登录 (切换账号)
+</button>
         </div>
         
         <!-- 底部垫高 -->

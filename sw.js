@@ -1,7 +1,7 @@
 // Service Worker 文件 (sw.js)
-
+ 
 // 缓存的版本号，当你更新了任何需要缓存的文件时，都需要更改这个版本号
-const CACHE_VERSION = 'v1.7.17';
+const CACHE_VERSION = 'v1.7.18';
 const CACHE_NAME = `ephone-cache-${CACHE_VERSION}`;
 
 // 需要被缓存的文件的列表
@@ -15,7 +15,7 @@ const URLS_TO_CACHE = [
   'https://phoebeboo.github.io/mewoooo/pp.js',
   'https://cdn.jsdelivr.net/npm/streamsaver@2.0.6/StreamSaver.min.js',
   'https://s3plus.meituan.net/opapisdk/op_ticket_885190757_1758510900942_qdqqd_djw0z2.jpeg', // 你的图标
-  'https://s3plus.meituan.net/opapisdk/op_ticket_885190757_1756312261242_qdqqd_g0eriz.jpeg'  // 你的图标
+  'https://s3plus.meituan.net/opapisdk/op_ticket_885190757_1756312261242_qdqqd_g0eriz.jpeg'
 ];
 
 // 1. 安装事件：当 Service Worker 首次被注册时触发
@@ -85,5 +85,26 @@ self.addEventListener('fetch', event => {
         // console.log('从网络请求:', event.request.url);
         return fetch(event.request);
       })
+  );
+});
+
+self.addEventListener('notificationclick', function(event) {
+  event.notification.close(); // 点击后关闭通知
+
+  // 尝试打开或聚焦到应用窗口
+  event.waitUntil(
+    clients.matchAll({type: 'window', includeUncontrolled: true}).then(windowClients => {
+      // 如果窗口已经打开，就聚焦它
+      for (var i = 0; i < windowClients.length; i++) {
+        var client = windowClients[i];
+        if (client.url.includes('index.html') && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      // 如果窗口没打开，就重新打开 (可选)
+      if (clients.openWindow) {
+        return clients.openWindow('./index.html');
+      }
+    })
   );
 });
