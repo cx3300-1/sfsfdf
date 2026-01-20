@@ -1054,7 +1054,23 @@
     退出登录 (切换账号)
 </button>
         </div>
+        <!-- 新增：关于与免责声明区域 -->
+        <div class="settings-header">关于</div>
+        <div class="settings-section">
+            <div class="settings-item clickable" id="open-disclaimer-btn">
+                <label>免责声明 & 版权说明</label>
+                <div class="settings-right">›</div>
+            </div>
+            <div class="settings-item">
+                <label>版本号</label>
+                <div class="settings-right" style="color: #888;">v4.0</div>
+            </div>
+        </div>
         
+        <p style="text-align: center; color: #999; font-size: 12px; margin-top: 20px; line-height: 1.5;">
+            EPhone 为纯本地运行的模拟器<br>
+            不存储任何用户数据
+        </p>
         <!-- 底部垫高 -->
         <div style="height: 60px;"></div>
       </div>
@@ -4183,6 +4199,44 @@
         <div class="modal-footer">
             <button class="cancel" id="cancel-nai-binding-btn" data-lang-key="cancel">取消</button>
             <button class="save" id="save-nai-binding-btn" data-lang-key="save">保存绑定</button>
+        </div>
+    </div>
+</div>
+<!-- 免责声明弹窗 -->
+<div id="disclaimer-modal" class="modal">
+    <div class="modal-content" style="height: 80%; max-width: 600px;">
+        <div class="modal-header">
+            <span>免责声明</span>
+        </div>
+        <div class="modal-body" style="padding: 20px; line-height: 1.6; color: #333; text-align: left;">
+            <h4 style="margin-top: 0;">1. 产品性质</h4>
+            <p style="font-size: 13px; color: #666; margin-bottom: 15px;">
+                EPhone 是一个运行于用户浏览器端的纯前端模拟工具。本应用<b>没有后端服务器</b>，不提供任何云端存储服务（除用户自行配置的第三方图床/备份服务外）。
+            </p>
+
+            <h4 style="margin-top: 0;">2. 数据安全与隐私</h4>
+            <p style="font-size: 13px; color: #666; margin-bottom: 15px;">
+                所有数据（包括但不限于聊天记录、角色设定、图片、API Key）均存储在您设备的本地浏览器数据库（IndexedDB/LocalStorage）中。开发者无法查看、获取或控制您的任何数据。请妥善保管您的设备及导出的备份文件。
+            </p>
+
+            <h4 style="margin-top: 0;">3. 媒体资源版权</h4>
+            <p style="font-size: 13px; color: #666; margin-bottom: 15px;">
+                本应用内的音乐播放器、相册及图标功能仅为渲染工具。<b>所有音频、图片、字体等媒体资源均为用户自行导入或通过第三方链接加载。</b>
+                <br>
+                开发者不提供、不存储、也不分发任何受版权保护的音乐或媒体文件。用户在使用本应用导入网络资源时，应自行承担相关的版权法律责任。
+            </p>
+
+            <h4 style="margin-top: 0;">4. AI 生成内容</h4>
+            <p style="font-size: 13px; color: #666; margin-bottom: 15px;">
+                对话及图像均由用户自行配置的第三方 API（如 OpenAI, Claude, Google Gemini, NovelAI 等）生成。AI 生成的内容具有随机性，不代表开发者立场。请勿利用本工具生成违反法律法规的内容。
+            </p>
+            
+            <div style="background: #f5f5f5; padding: 10px; border-radius: 8px; font-size: 12px; color: #999; margin-top: 20px;">
+                继续使用本应用即代表您已阅读并同意上述条款。
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="save" id="close-disclaimer-btn" style="width: 100%;">我知道了</button>
         </div>
     </div>
 </div>

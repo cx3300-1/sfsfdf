@@ -1,7 +1,7 @@
 // Service Worker 文件 (sw.js) - 强力保活版
 
 // 缓存版本号
-const CACHE_VERSION = 'v1.7.21'; // 版本号+1
+const CACHE_VERSION = 'v1.7.22'; // 版本号+1
 const CACHE_NAME = `ephone-cache-${CACHE_VERSION}`;
 
 const URLS_TO_CACHE = [
