@@ -770,7 +770,25 @@
         </div>
     </div>
 </div>
-
+<div class="settings-header">iOS 后台保活 (防冻结)</div>
+<div class="settings-section">
+    <div class="settings-item">
+        <div>
+            <label>强制激活后台模式</label>
+            <div class="settings-desc">若无法后台运行，请点击此按钮</div>
+        </div>
+        <div class="settings-right">
+             <!-- 点击这个按钮强制测试 -->
+             <button id="force-keep-alive-btn" class="settings-mini-btn" style="width: auto; padding: 6px 15px; background-color: #ff3b30; color: white; border: none;">⚡ 点击激活</button>
+        </div>
+    </div>
+    <div class="settings-item">
+        <label>当前状态</label>
+        <div class="settings-right">
+             <span id="keep-alive-status" style="color: #999; font-size: 13px;">🔴 未激活 / 已暂停</span>
+        </div>
+    </div>
+</div>
         <!-- 语音设置 -->
         <div class="settings-header" data-lang-key="apiTtsSettings">Minimax TTS 语音</div>
         <div class="settings-section">

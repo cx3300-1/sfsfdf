@@ -1,107 +1,107 @@
-// Service Worker 文件 (sw.js)
- 
-// 缓存的版本号，当你更新了任何需要缓存的文件时，都需要更改这个版本号
-const CACHE_VERSION = 'v1.7.20';
+// Service Worker 文件 (sw.js) - 强力保活版
+
+// 缓存版本号
+const CACHE_VERSION = 'v1.7.21'; // 版本号+1
 const CACHE_NAME = `ephone-cache-${CACHE_VERSION}`;
 
-// 需要被缓存的文件的列表
-// 我已经根据你的 HTML 文件，帮你把所有用到的外部 JS 和图片都列出来了
 const URLS_TO_CACHE = [
-  './index.html', // 缓存你的主页面
+  './index.html',
   './style.css',
   './script.js',
   'https://unpkg.com/dexie/dist/dexie.js',
   'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
   'https://phoebeboo.github.io/mewoooo/pp.js',
   'https://cdn.jsdelivr.net/npm/streamsaver@2.0.6/StreamSaver.min.js',
-  'https://s3plus.meituan.net/opapisdk/op_ticket_885190757_1758510900942_qdqqd_djw0z2.jpeg', // 你的图标
+  'https://s3plus.meituan.net/opapisdk/op_ticket_885190757_1758510900942_qdqqd_djw0z2.jpeg',
   'https://s3plus.meituan.net/opapisdk/op_ticket_885190757_1756312261242_qdqqd_g0eriz.jpeg'
 ];
 
-// 1. 安装事件：当 Service Worker 首次被注册时触发
+// --- 强力保活核心代码 Start ---
+// 只要浏览器允许，这个 Interval 会一直运行，试图保持 SW 活跃
+setInterval(() => {
+    // 像看门狗一样，每20秒检查一次
+    // 实际上什么都不做，只是为了保持 JS 线程活跃
+    // 如果需要更强力的，可以尝试 self.registration.update(); 但那会消耗流量
+    // console.log('SW Heartbeat: ❤️');
+}, 20000);
+// --- 强力保活核心代码 End ---
+
+// 1. 安装事件
 self.addEventListener('install', event => {
-  console.log('Service Worker 正在安装...');
-  // event.waitUntil 会等待一个 Promise 完成
+  console.log('Service Worker 正在安装 (保活增强版)...');
+  // 强制跳过等待，立刻接管
+  self.skipWaiting();
+  
   event.waitUntil(
-    // 打开我们指定的缓存
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('缓存已打开，正在缓存核心文件...');
-        // 将所有需要缓存的文件添加到缓存中
+        console.log('缓存核心文件...');
         return cache.addAll(URLS_TO_CACHE);
-      })
-      .then(() => {
-        console.log('所有核心文件已缓存成功！');
-        // 强制新的 Service Worker 立即激活
-        return self.skipWaiting();
       })
   );
 });
 
-// 2. 激活事件：当 Service Worker 被激活时触发 (通常在旧的 SW 关闭后)
+// 2. 激活事件
 self.addEventListener('activate', event => {
   console.log('Service Worker 正在激活...');
   event.waitUntil(
-    // 获取所有的缓存名称
     caches.keys().then(cacheNames => {
       return Promise.all(
-        // 遍历所有缓存
         cacheNames.map(cacheName => {
-          // 如果缓存的名称不是当前我们定义的这个，说明它是旧的缓存
           if (cacheName !== CACHE_NAME) {
-            console.log('正在删除旧的缓存:', cacheName);
-            // 就把它删除掉
+            console.log('删除旧缓存:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
     }).then(() => {
-        console.log('Service Worker 已激活并准备好处理请求！');
-        // 让 Service Worker 立即控制页面
+        console.log('Service Worker 准备就绪，开始接管页面！');
+        // 关键：立即控制所有打开的客户端（Tab页）
         return self.clients.claim();
     })
   );
 });
 
-// 3. 拦截网络请求事件：页面上的所有网络请求都会先经过这里
+// 3. 拦截网络请求
 self.addEventListener('fetch', event => {
-  // 我们只对 GET 请求进行缓存处理
-  if (event.request.method !== 'GET') {
-    return;
+  // 如果是心跳 Ping 请求（虚拟地址），直接返回 200 OK，不走网络
+  // 这是配合 script.js 里的保活 fetch 使用的
+  if (event.request.url.includes('/_keep_alive_ping_')) {
+      event.respondWith(new Response('pong'));
+      return;
   }
 
+  if (event.request.method !== 'GET') return;
+
   event.respondWith(
-    // 首先，尝试在缓存中查找这个请求
     caches.match(event.request)
       .then(cachedResponse => {
-        // 如果在缓存中找到了匹配的响应
         if (cachedResponse) {
-          // 就直接返回缓存的版本，这样就实现了离线访问
-          // console.log('从缓存中返回:', event.request.url);
           return cachedResponse;
         }
-        
-        // 如果缓存中没有找到，就继续执行原始的网络请求
-        // console.log('从网络请求:', event.request.url);
         return fetch(event.request);
       })
   );
 });
 
-self.addEventListener('notificationclick', function(event) {
-  event.notification.close(); // 点击后关闭通知
+// 4. 监听消息（配合主线程心跳）
+self.addEventListener('message', event => {
+    if (event.data === 'ping') {
+        // console.log('SW: 收到主线程 Ping，我还活着');
+        // 可以选择回复，也可以不回复，接收到消息本身就会重置 SW 的休眠倒计时
+    }
+});
 
-  // 尝试打开或聚焦到应用窗口
+self.addEventListener('notificationclick', function(event) {
+  event.notification.close();
   event.waitUntil(
     clients.matchAll({type: 'window', includeUncontrolled: true}).then(windowClients => {
-      // 如果窗口已经打开，就聚焦它
       for (var i = 0; i < windowClients.length; i++) {
         var client = windowClients[i];
         if (client.url.includes('index.html') && 'focus' in client) {
           return client.focus();
         }
       }
-      // 如果窗口没打开，就重新打开 (可选)
       if (clients.openWindow) {
         return clients.openWindow('./index.html');
       }
