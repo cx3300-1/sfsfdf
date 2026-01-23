@@ -2246,51 +2246,7 @@
             </div>
         </div>
 <!-- 天气设置 (仅单聊显示) - UI 优化版 -->
-<div class="settings-section" id="weather-settings-section" style="display: none;">
-    <!-- 开关行 -->
-    <div class="settings-item">
-        <label>启用实时天气同步</label>
-        <label class="toggle-switch">
-            <input type="checkbox" id="enable-weather-switch">
-            <span class="slider"></span>
-        </label>
-    </div>
-    
-    <!-- 详情配置区域 (由JS控制显示/隐藏) -->
-    <div id="weather-config-container" style="display: none;">
-        
-        <!-- 我的位置 -->
-        <div class="settings-item-block">
-            <label style="font-weight: 500;">我的位置 (User)</label>
-            <div class="weather-input-group">
-                <input type="text" id="user-virtual-city" placeholder="虚拟名 (如: 龙城)" class="weather-input">
-                <input type="text" id="user-real-city-search" placeholder="真实城市 (拼音/英文)" class="weather-input">
-                <button id="user-city-search-btn" class="settings-mini-btn" style="margin-left: 0;">搜索</button>
-            </div>
-            <!-- 隐藏域 -->
-            <input type="hidden" id="user-city-lat">
-            <input type="hidden" id="user-city-lon">
-            <!-- 结果展示 -->
-            <div id="user-city-result" class="weather-result-text">未设置映射</div>
-        </div>
 
-        <!-- 对方位置 -->
-        <div class="settings-item-block" style="border-bottom: none;">
-            <label style="font-weight: 500;">对方位置 (Char)</label>
-            <div class="weather-input-group">
-                <input type="text" id="char-virtual-city" placeholder="虚拟名 (如: 哥谭)" class="weather-input">
-                <input type="text" id="char-real-city-search" placeholder="真实城市 (拼音/英文)" class="weather-input">
-                <button id="char-city-search-btn" class="settings-mini-btn" style="margin-left: 0;">搜索</button>
-            </div>
-            <!-- 隐藏域 -->
-            <input type="hidden" id="char-city-lat">
-            <input type="hidden" id="char-city-lon">
-            <!-- 结果展示 -->
-            <div id="char-city-result" class="weather-result-text">未设置映射</div>
-        </div>
-
-    </div>
-</div>
         <!-- 第四组：高级功能 (TTS, NAI, 线下模式) -->
         <div class="settings-section">
              <!-- 语音 -->
